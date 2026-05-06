@@ -31,9 +31,11 @@ tmp
 bin
 /*.iml
 /*.ipr
-/.classpath
 *.iws
 .metals
 .vscode
 .bsp
 project/metals.sbt
+.scala-build/
+app/forms/mappings/.scala-build/
+generated-test/
