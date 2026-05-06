@@ -1,5 +1,5 @@
-@*
- * Copyright 2026 HM Revenue & Customs
+/*
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,16 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this(
-    layout: templates.Layout
-)
+package controllers
 
-@(pageTitle: String, heading: String, message: String)(implicit rh: RequestHeader, messages: Messages)
+import com.google.inject.Inject
+import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.mvc.MessagesControllerComponents
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
-@layout(pageTitle = titleNoForm(pageTitle)) {
-    <h1 class="govuk-heading-xl">@messages(heading)</h1>
+class PlaceholderController @Inject() (
+    override val messagesApi: MessagesApi,
+    val controllerComponents: MessagesControllerComponents
+) extends FrontendBaseController
+    with I18nSupport {
 
-    <p class="govuk-body">@messages(message)</p>
+  def onPageLoad(message: String) = Action {
+    Ok(message)
+  }
+
 }
