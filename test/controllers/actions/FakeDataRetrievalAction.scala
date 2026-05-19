@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,29 @@ package controllers.actions
 
 import models.UserAnswers
 import models.requests.{IdentifierRequest, OptionalDataRequest}
+import play.api.mvc.ActionTransformer
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers]) extends DataRetrievalAction {
+class FakeDataRetrievalActionProvider(dataToReturn: Option[UserAnswers]) extends DataRetrievalAction {
+
+  def apply(): ActionTransformer[IdentifierRequest, OptionalDataRequest] =
+    new FakeDataRetrievalAction(dataToReturn)
+
+}
+
+class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers] = None)
+    extends ActionTransformer[IdentifierRequest, OptionalDataRequest] {
 
   override protected def transform[A](request: IdentifierRequest[A]): Future[OptionalDataRequest[A]] =
-    Future(OptionalDataRequest(request.request, request.userId, dataToReturn))
+    dataToReturn match {
+      case None              =>
+        Future(OptionalDataRequest(request.request, request.userId, request.affinityGroup, None))
+      case Some(userAnswers) =>
+        Future(OptionalDataRequest(request.request, request.userId, request.affinityGroup, Some(userAnswers)))
+    }
 
-  override protected implicit val executionContext: ExecutionContext =
+  implicit override protected val executionContext: ExecutionContext =
     scala.concurrent.ExecutionContext.Implicits.global
+
 }
