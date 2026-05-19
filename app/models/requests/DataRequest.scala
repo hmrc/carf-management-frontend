@@ -25,6 +25,7 @@ case class OptionalDataRequest[A](
     userId: String,
     affinityGroup: AffinityGroup,
     userAnswers: Option[UserAnswers],
+    carfId: String,
     utr: Option[UniqueTaxpayerReference] = None
 ) extends WrappedRequest[A](request)
 
@@ -33,5 +34,6 @@ case class DataRequest[A](
     userId: String,
     affinityGroup: AffinityGroup,
     userAnswers: UserAnswers,
+    carfId: String,
     utr: Option[UniqueTaxpayerReference] = None
 ) extends WrappedRequest[A](request)

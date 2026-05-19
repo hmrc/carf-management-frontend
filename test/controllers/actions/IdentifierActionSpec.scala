@@ -71,11 +71,11 @@ class IdentifierActionSpec extends SpecBase {
         mockAuthConnector.authorise(
           ArgumentMatchers.eq(EmptyPredicate),
           ArgumentMatchers.eq(
-            internalId and allEnrolments and affinityGroup and credentialRole
+            internalId and allEnrolments and affinityGroup
           )
         )(any(), any())
       )
-        .thenReturn(Future(new ~(new ~(new ~(Some(testInternalId), carfEnrolment), Some(Organisation)), Some(User))))
+        .thenReturn(Future(new ~(new ~(Some(testInternalId), carfEnrolment), Some(Organisation))))
 
       val result: Future[Result] = testIdentifierAction.invokeBlock(FakeRequest(), testAction)
 
@@ -89,11 +89,11 @@ class IdentifierActionSpec extends SpecBase {
         mockAuthConnector.authorise(
           ArgumentMatchers.eq(EmptyPredicate),
           ArgumentMatchers.eq(
-            internalId and allEnrolments and affinityGroup and credentialRole
+            internalId and allEnrolments and affinityGroup
           )
         )(any(), any())
       )
-        .thenReturn(Future(new ~(new ~(new ~(Some(testInternalId), emptyEnrolments), Some(Organisation)), Some(User))))
+        .thenReturn(Future(new ~(new ~(Some(testInternalId), emptyEnrolments), Some(Organisation))))
 
       val result: Future[Result] = testIdentifierAction.invokeBlock(FakeRequest(), testAction)
 
@@ -107,11 +107,11 @@ class IdentifierActionSpec extends SpecBase {
         mockAuthConnector.authorise(
           ArgumentMatchers.eq(EmptyPredicate),
           ArgumentMatchers.eq(
-            internalId and allEnrolments and affinityGroup and credentialRole
+            internalId and allEnrolments and affinityGroup
           )
         )(any(), any())
       )
-        .thenReturn(Future(new ~(new ~(new ~(Some(testInternalId), emptyEnrolments), Some(Agent)), Some(User))))
+        .thenReturn(Future(new ~(new ~(Some(testInternalId), emptyEnrolments), Some(Agent))))
 
       val result: Future[Result] = testIdentifierAction.invokeBlock(FakeRequest(), testAction)
 
@@ -124,11 +124,11 @@ class IdentifierActionSpec extends SpecBase {
         mockAuthConnector.authorise(
           ArgumentMatchers.eq(EmptyPredicate),
           ArgumentMatchers.eq(
-            internalId and allEnrolments and affinityGroup and credentialRole
+            internalId and allEnrolments and affinityGroup
           )
         )(any(), any())
       )
-        .thenReturn(Future(new ~(new ~(new ~(Some(testInternalId), emptyEnrolments), None), Some(User))))
+        .thenReturn(Future(new ~(new ~(Some(testInternalId), emptyEnrolments), None)))
 
       val result = intercept[UnauthorizedException] {
         await(testIdentifierAction.invokeBlock(FakeRequest(), testAction))
@@ -142,11 +142,11 @@ class IdentifierActionSpec extends SpecBase {
         mockAuthConnector.authorise(
           ArgumentMatchers.eq(EmptyPredicate),
           ArgumentMatchers.eq(
-            internalId and allEnrolments and affinityGroup and credentialRole
+            internalId and allEnrolments and affinityGroup
           )
         )(any(), any())
       )
-        .thenReturn(Future(new ~(new ~(new ~(None, emptyEnrolments), Some(Organisation)), Some(User))))
+        .thenReturn(Future(new ~(new ~(None, emptyEnrolments), Some(Organisation))))
 
       val result = intercept[UnauthorizedException] {
         await(testIdentifierAction.invokeBlock(FakeRequest(), testAction))
@@ -160,7 +160,7 @@ class IdentifierActionSpec extends SpecBase {
         mockAuthConnector.authorise(
           ArgumentMatchers.eq(EmptyPredicate),
           ArgumentMatchers.eq(
-            internalId and allEnrolments and affinityGroup and credentialRole
+            internalId and allEnrolments and affinityGroup
           )
         )(any(), any())
       )

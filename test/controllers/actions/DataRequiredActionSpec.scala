@@ -48,7 +48,7 @@ class DataRequiredActionSpec extends SpecBase {
       val result =
         harness
           .actionRefine(
-            OptionalDataRequest(identifierRequest, testInternalId, Individual, None)
+            OptionalDataRequest(identifierRequest, testInternalId, Individual, None, testCarfId)
           )
           .futureValue
           .left
@@ -66,7 +66,7 @@ class DataRequiredActionSpec extends SpecBase {
       val harness = new Harness
 
       val optionalDataRequest =
-        OptionalDataRequest(identifierRequest, testInternalId, Individual, Some(emptyUserAnswers))
+        OptionalDataRequest(identifierRequest, testInternalId, Individual, Some(emptyUserAnswers), testCarfId)
 
       val result =
         harness

@@ -72,13 +72,13 @@ class AuthenticatedIdentifierActionWithRegime @Inject() (
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     authorised().retrieve(
-      internalId and allEnrolments and affinityGroup and credentialRole
+      internalId and allEnrolments and affinityGroup
     ) {
-      case _ ~ _ ~ Some(Agent) ~ _                                 =>
+      case _ ~ _ ~ Some(Agent)                                 =>
         Future.successful(Redirect(config.registrationUrl))
-      case Some(internalID) ~ enrolments ~ Some(affinityGroup) ~ _ =>
+      case Some(internalID) ~ enrolments ~ Some(affinityGroup) =>
         handleEnrolmentCheck(request, block, internalID, enrolments, affinityGroup)
-      case _                                                       =>
+      case _                                                   =>
         throw new UnauthorizedException("Failed to retrieve valid auth data")
     } recover {
       case _: NoActiveSession        =>
