@@ -36,10 +36,26 @@ class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers] = None, requestU
   override protected def transform[A](request: IdentifierRequest[A]): Future[OptionalDataRequest[A]] =
     dataToReturn match {
       case None              =>
-        Future(OptionalDataRequest(request.request, request.userId, request.affinityGroup, None, request.carfId))
+        Future(
+          OptionalDataRequest(
+            request.request,
+            request.userId,
+            request.affinityGroup,
+            None,
+            request.carfId,
+            request.utr
+          )
+        )
       case Some(userAnswers) =>
         Future(
-          OptionalDataRequest(request.request, request.userId, request.affinityGroup, Some(userAnswers), request.carfId)
+          OptionalDataRequest(
+            request.request,
+            request.userId,
+            request.affinityGroup,
+            Some(userAnswers),
+            request.carfId,
+            request.utr
+          )
         )
     }
 

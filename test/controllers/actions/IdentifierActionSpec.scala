@@ -26,11 +26,11 @@ import play.api.mvc.Results.Ok
 import play.api.mvc.{BodyParsers, Request, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{await, contentAsString, defaultAwaitTimeout, redirectLocation, status}
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.AffinityGroup.{Agent, Organisation}
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{affinityGroup, allEnrolments, credentialRole, internalId}
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{affinityGroup, allEnrolments, internalId}
 import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.http.UnauthorizedException
 
 import scala.concurrent.Future
@@ -52,10 +52,13 @@ class IdentifierActionSpec extends SpecBase {
   val identifierName = "CARFID"
   val testContent    = "Test"
 
-  val carfEnrolment: Enrolments = Enrolments(
+  val carfEnrolment: Enrolments           = Enrolments(
     Set(Enrolment(carfKey, Seq(EnrolmentIdentifier(identifierName, "456")), state))
   )
-  val emptyEnrolments           = Enrolments(Set.empty[Enrolment])
+  val carfEnrolmentEmptyValue: Enrolments = Enrolments(
+    Set(Enrolment(carfKey, Seq(EnrolmentIdentifier(identifierName, "")), state))
+  )
+  val emptyEnrolments                     = Enrolments(Set.empty[Enrolment])
 
   val testIdentifierAction: AuthenticatedIdentifierActionWithRegime =
     new AuthenticatedIdentifierActionWithRegime(mockAuthConnector, mockAppConfig, defaultBodyParser, true)
@@ -83,7 +86,7 @@ class IdentifierActionSpec extends SpecBase {
       contentAsString(result) mustBe testContent
     }
     "return redirect if carfId exists but has no value" in {
-      when(mockAppConfig.enrolmentKey).thenReturn("")
+      when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
       when(mockAppConfig.registrationUrl).thenReturn("/test")
       when(
         mockAuthConnector.authorise(
@@ -93,7 +96,7 @@ class IdentifierActionSpec extends SpecBase {
           )
         )(any(), any())
       )
-        .thenReturn(Future(new ~(new ~(Some(testInternalId), carfEnrolment), Some(Organisation))))
+        .thenReturn(Future(new ~(new ~(Some(testInternalId), carfEnrolmentEmptyValue), Some(Organisation))))
 
       val result: Future[Result] = testIdentifierAction.invokeBlock(FakeRequest(), testAction)
 
