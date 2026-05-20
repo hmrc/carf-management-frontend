@@ -15,8 +15,8 @@
  *@
 
 @this(
-    layout: templates.Layout,
-    govukButton: GovukButton
+        layout: templates.Layout,
+        govukButton: GovukButton
 )
 
 @()(implicit request: Request[_], messages: Messages)
@@ -28,9 +28,9 @@
     <p class="govuk-body">@messages("journeyRecovery.startAgain.guidance")</p>
 
     <p class="govuk-body">
-        @govukButton(
-            ButtonViewModel(messages("site.startAgain"))
-                .asLink(routes.IndexController.onPageLoad().url)
-        )
+    @govukButton(
+        ButtonViewModel(messages("site.startAgain"))
+        .asLink(routes.HomePageController.onPageLoad().url)
+    )
     </p>
 }

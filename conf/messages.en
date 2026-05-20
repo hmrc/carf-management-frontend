@@ -1,4 +1,4 @@
-service.name = carf-management-frontend
+service.name = Send a Cryptoasset Reporting Framework report
 
 site.back = Back
 site.remove = Remove
@@ -47,3 +47,21 @@ signedOut.guidance = We did not save your answers.
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
+
+homePage.title = Manage your cryptoasset reports
+homePage.heading = Manage your cryptoasset reports
+homePage.noRcasps.p1 = To send a report, you must
+homePage.noRcasps.p1.link = add a reporting cryptoasset service provider (RCASP)
+homePage.carfId.p1 = For reference, your CARF user ID is:
+homePage.yourReports.subheading = Your reports
+homePage.viewResults.linkText = View results of checks on recently sent files
+homePage.yourReports.linkText = Upload an XML file for a reporting cryptoasset service provider (RCASP)
+homePage.yourRcasps.subheading = Your RCASPs
+homePage.yourRcasps.add.linkText = Add an RCASP
+homePage.yourRcasps.manage.linkText = Manage your RCASPs
+homePage.contactDetails.org.subheading = Contact details
+homePage.contactDetails.org.linkText = Change the contact details for {0}
+homePage.contactDetails.ind.subheading = Your contact details
+homePage.contactDetails.ind.linkText = Change your contact details
+homePage.help.subheading = Get help with the service
+homePage.help.linkText = Email:
