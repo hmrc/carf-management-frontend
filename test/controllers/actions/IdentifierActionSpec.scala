@@ -82,6 +82,24 @@ class IdentifierActionSpec extends SpecBase {
       status(result)          mustBe OK
       contentAsString(result) mustBe testContent
     }
+    "return redirect if carfId exists but has no value" in {
+      when(mockAppConfig.enrolmentKey).thenReturn("")
+      when(mockAppConfig.registrationUrl).thenReturn("/test")
+      when(
+        mockAuthConnector.authorise(
+          ArgumentMatchers.eq(EmptyPredicate),
+          ArgumentMatchers.eq(
+            internalId and allEnrolments and affinityGroup
+          )
+        )(any(), any())
+      )
+        .thenReturn(Future(new ~(new ~(Some(testInternalId), carfEnrolment), Some(Organisation))))
+
+      val result: Future[Result] = testIdentifierAction.invokeBlock(FakeRequest(), testAction)
+
+      status(result)                 mustBe SEE_OTHER
+      redirectLocation(result).value mustBe s"/test"
+    }
     "return redirect if enrolment is empty" in {
       when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
       when(mockAppConfig.registrationUrl).thenReturn("/test")

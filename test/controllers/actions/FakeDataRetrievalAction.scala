@@ -22,14 +22,15 @@ import play.api.mvc.ActionTransformer
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeDataRetrievalActionProvider(dataToReturn: Option[UserAnswers]) extends DataRetrievalAction {
+class FakeDataRetrievalActionProvider(dataToReturn: Option[UserAnswers], requestUtr: Option[String])
+    extends DataRetrievalAction {
 
   def apply(): ActionTransformer[IdentifierRequest, OptionalDataRequest] =
-    new FakeDataRetrievalAction(dataToReturn)
+    new FakeDataRetrievalAction(dataToReturn, requestUtr)
 
 }
 
-class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers] = None)
+class FakeDataRetrievalAction(dataToReturn: Option[UserAnswers] = None, requestUtr: Option[String])
     extends ActionTransformer[IdentifierRequest, OptionalDataRequest] {
 
   override protected def transform[A](request: IdentifierRequest[A]): Future[OptionalDataRequest[A]] =
