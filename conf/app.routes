@@ -21,3 +21,8 @@ GET        /account/sign-out               controllers.auth.AuthController.signO
 GET        /account/signed-out             controllers.auth.SignedOutController.onPageLoad()
 
 GET        /unauthorised                   controllers.UnauthorisedController.onPageLoad()
+
+GET        /testOnlyAuthAction                        controllers.testOnlyAuthActionController.onPageLoad(mode: Mode = NormalMode)
+POST       /testOnlyAuthAction                        controllers.testOnlyAuthActionController.onSubmit(mode: Mode = NormalMode)
+GET        /changetestOnlyAuthAction                  controllers.testOnlyAuthActionController.onPageLoad(mode: Mode = CheckMode)
+POST       /changetestOnlyAuthAction                  controllers.testOnlyAuthActionController.onSubmit(mode: Mode = CheckMode)

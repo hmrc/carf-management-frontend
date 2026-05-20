@@ -47,3 +47,10 @@ signedOut.guidance = We did not save your answers.
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
+
+testOnlyAuthAction.title = testOnlyAuthAction
+testOnlyAuthAction.heading = testOnlyAuthAction
+testOnlyAuthAction.checkYourAnswersLabel = testOnlyAuthAction
+testOnlyAuthAction.error.required = Enter testOnlyAuthAction
+testOnlyAuthAction.error.length = testOnlyAuthAction must be 100 characters or less
+testOnlyAuthAction.change.hidden = testOnlyAuthAction
