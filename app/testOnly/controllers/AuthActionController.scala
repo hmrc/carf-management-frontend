@@ -14,43 +14,31 @@
  * limitations under the License.
  */
 
-package controllers
+package testOnly.controllers
 
-import controllers.actions._
-import forms.testOnlyAuthActionFormProvider
-import javax.inject.Inject
-import models.Mode
-import navigation.Navigator
-import pages.testOnlyAuthActionPage
+import controllers.actions.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.SessionRepository
+import testOnly.views.html.AuthActionView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.testOnlyAuthActionView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class testOnlyAuthActionController @Inject() (
+class AuthActionController @Inject() (
     override val messagesApi: MessagesApi,
-    sessionRepository: SessionRepository,
-    navigator: Navigator,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
-    formProvider: testOnlyAuthActionFormProvider,
+    ctUtrRetrievalAction: CtUtrRetrievalAction,
     val controllerComponents: MessagesControllerComponents,
-    view: testOnlyAuthActionView
+    view: AuthActionView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
 
-  val form = formProvider()
-
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData()) { implicit request =>
-    Ok(view(form, mode))
-  }
-
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData()).async { implicit request =>
-    Future.successful(BadRequest(view(form, mode)))
+  def onPageLoad(): Action[AnyContent] = (identify() andThen ctUtrRetrievalAction() andThen getData()).async {
+    implicit request =>
+      val carfIdAndEnrolment: String = s"CARF-ID = ${request.carfId}, CT-UTR = ${request.utr}"
+      Future.successful(Ok(view(carfIdAndEnrolment)))
   }
 }
