@@ -16,8 +16,11 @@
 
 package controllers
 
+import cats.data.EitherT
 import config.FrontendAppConfig
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
+import models.errors.CarfError
+import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{AccountService, UploadInformationService}
@@ -39,7 +42,8 @@ class HomePageController @Inject() (
     view: HomePageView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad(): Action[AnyContent] = (identify() andThen ctUtrRetrievalAction() andThen getData()).async {
     implicit request =>
@@ -52,7 +56,7 @@ class HomePageController @Inject() (
           if (hasOrganisationContactDetails) {
             accountService.getOrganisationName(carfId).map(Some(_))
           } else {
-            Future.successful(None)
+            EitherT.rightT[Future, CarfError](None: Option[String])
           }
         hasUserUploadedFilesInLast28Days <- uploadInformationService.hasUserUploadedFilesInLast28Days(carfId)
       } yield HomePageViewModel(
@@ -64,12 +68,14 @@ class HomePageController @Inject() (
         carfId = carfId
       )
 
-      // TODO: Make bookmarklets, test the existing code, fix page content
-
-      viewModelFuture.map { viewModel =>
-        val aeoiEmail: String               = appConfig.aeoiEmailAddress
-        val changeContactDetailsUrl: String = appConfig.changeContactDetailsIndexUrl
-        Ok(view(viewModel, aeoiEmail, changeContactDetailsUrl))
+      viewModelFuture.value.map {
+        case Left(error)      =>
+          logger.warn("[HomePageController] Error generating view model!")
+          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+        case Right(viewModel) =>
+          val aeoiEmail: String               = appConfig.aeoiEmailAddress
+          val changeContactDetailsUrl: String = appConfig.changeContactDetailsIndexUrl
+          Ok(view(viewModel, aeoiEmail, changeContactDetailsUrl))
       }
   }
 }

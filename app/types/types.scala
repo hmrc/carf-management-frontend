@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-package services
+package types
 
-import models.errors.InternalServerError
-import play.api.Logging
-import types.ResultT
+import cats.data.EitherT
+import models.errors.CarfError
 
-import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-@Singleton
-class UploadInformationService @Inject() ()(implicit ec: ExecutionContext) extends Logging {
+type ResultT[T] = EitherT[Future, CarfError, T]
 
-  def hasUserUploadedFilesInLast28Days(carfId: String): ResultT[Boolean] =
-    carfId.dropRight(1).last.toString match {
-      case "9" =>
-        logger.warn("[hasUserUploadedFilesInLast28Days] Error!")
-        ResultT.fromError(InternalServerError)
-      case "1" => ResultT.fromValue(true)
-      case _   => ResultT.fromValue(false)
-    }
+object ResultT {
+  def fromFuture[T](value: Future[Either[CarfError, T]]): ResultT[T] =
+    EitherT(value)
+
+  def fromValue[T](value: T): ResultT[T] =
+    EitherT(Future.successful(Right(value)))
+
+  def fromError[T](error: CarfError): ResultT[T] =
+    EitherT[Future, CarfError, T](Future.successful(Left(error)))
 
 }

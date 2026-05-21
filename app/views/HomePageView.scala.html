@@ -38,11 +38,11 @@
         <div class="govuk-!-padding-top-5">
             <h2 class="govuk-heading-m">@messages("homePage.yourReports.subheading")</h2>
             <p class="govuk-body govuk-!-margin-bottom-2">@link(viewModel.getUploadXmlLink, messages("homePage.yourReports.linkText"))</p>
-        </div>
 
         @if(viewModel.hasSentFilesInLast28Days) {
-            <p class="govuk-body govuk-!-margin-bottom-2">@link(viewModel.getViewResultsLink, messages("homePage.viewResults.linkText"))</p>
+            <p class="govuk-body">@link(viewModel.getViewResultsLink, messages("homePage.viewResults.linkText"))</p>
         }
+        </div>
 
         <div class="govuk-!-padding-top-5">
             <h2 class="govuk-heading-m">@messages("homePage.yourRcasps.subheading")</h2>

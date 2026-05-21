@@ -35,7 +35,7 @@ case class HomePageViewModel(
       None
     }
 
-  def getNoRcaspsSectionLink(implicit messages: Messages): String =
+  lazy val getNoRcaspsSectionLink: String =
     if (hasZeroRcaspsAdded && ctUtr.nonEmpty) {
       controllers.routes.PlaceholderController
         .onPageLoad("Should redirect to /report-for-registered-business (CARF-151)")
@@ -46,22 +46,22 @@ case class HomePageViewModel(
         .url
     }
 
-  def getUploadXmlLink(implicit messages: Messages): String =
+  lazy val getUploadXmlLink: String =
     controllers.routes.PlaceholderController
       .onPageLoad("Should redirect to /report/upload-file (part of file upload journey)")
       .url
 
-  def getViewResultsLink(implicit messages: Messages): String =
+  lazy val getViewResultsLink: String =
     controllers.routes.PlaceholderController
       .onPageLoad("Should redirect to /result-of-automatic-checks (part of file upload journey)")
       .url
 
-  def getAddRcaspLink(implicit messages: Messages): String =
+  lazy val getAddRcaspLink: String =
     controllers.routes.PlaceholderController
       .onPageLoad("Should redirect to /organisation-or-individual (CARF-151)")
       .url
 
-  def getManageRcaspsLink(implicit messages: Messages): String =
+  lazy val getManageRcaspsLink: String =
     controllers.routes.PlaceholderController
       .onPageLoad("Should redirect to /rcasp/your-rcasps (part of management change journey)")
       .url

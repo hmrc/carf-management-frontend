@@ -16,7 +16,9 @@
 
 package services
 
+import models.errors.InternalServerError
 import play.api.Logging
+import types.ResultT
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -24,25 +26,31 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class AccountService @Inject() ()(implicit ec: ExecutionContext) extends Logging {
 
-  def getNumberOfRcaspsCurrentlyAdded(carfId: String): Future[Int] =
+  def getNumberOfRcaspsCurrentlyAdded(carfId: String): ResultT[Int] =
     carfId.last.toString match {
-      case "9" => Future.failed(new Exception("[getNumberOfRcaspsCurrentlyAdded] Error!"))
-      case "0" => Future.successful(0)
-      case "1" => Future.successful(1)
-      case _   => Future.successful(2)
+      case "9" =>
+        logger.warn("[getNumberOfRcaspsCurrentlyAdded] Error!")
+        ResultT.fromError(InternalServerError)
+      case "0" => ResultT.fromValue(0)
+      case "1" => ResultT.fromValue(1)
+      case _   => ResultT.fromValue(2)
     }
 
-  def hasOrganisationContactDetails(carfId: String): Future[Boolean] =
+  def hasOrganisationContactDetails(carfId: String): ResultT[Boolean] =
     carfId.dropRight(2).last.toString match {
-      case "9" => Future.failed(new Exception("[hasOrganisationContactDetails] Error!"))
-      case "1" => Future.successful(true)
-      case _   => Future.successful(false)
+      case "9" =>
+        logger.warn("[hasOrganisationContactDetails] Error!")
+        ResultT.fromError(InternalServerError)
+      case "1" => ResultT.fromValue(true)
+      case _   => ResultT.fromValue(false)
     }
 
-  def getOrganisationName(carfId: String): Future[String] =
+  def getOrganisationName(carfId: String): ResultT[String] =
     carfId.dropRight(3).last.toString match {
-      case "9" => Future.failed(new Exception("[getOrganisationName] Error!"))
-      case _   => Future.successful("Timmy's Turtles Ltd")
+      case "9" =>
+        logger.warn("[getOrganisationName] Error!")
+        ResultT.fromError(InternalServerError)
+      case _   => ResultT.fromValue("Timmy's Turtles Ltd")
     }
 
 }

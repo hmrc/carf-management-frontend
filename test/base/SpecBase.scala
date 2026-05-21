@@ -18,7 +18,6 @@ package base
 
 import controllers.actions.*
 import models.{UniqueTaxpayerReference, UserAnswers}
-import org.mockito.Mockito.when
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -33,7 +32,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.PlayBodyParsers
 import play.api.test.FakeRequest
 import repositories.SessionRepository
-import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector}
+import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, Instant, ZoneId}
@@ -53,13 +52,13 @@ trait SpecBase
   val userAnswersId: String            = "id"
   val testUtr: UniqueTaxpayerReference = UniqueTaxpayerReference("1234567890")
   val testInternalId: String           = "12345"
-  val testCarfId: String               = "XE0000123456789"
+  val testCarfId: String               = "carfid"
 
-  private val UtcZoneId          = "UTC"
-  implicit val fixedClock: Clock = Clock.fixed(Instant.parse("2020-05-20T12:34:56.789012Z"), ZoneId.of(UtcZoneId))
+  private val UtcZoneId     = "UTC"
+  implicit val clock: Clock = Clock.fixed(Instant.parse("2020-05-20T12:34:56.789012Z"), ZoneId.of(UtcZoneId))
 
   def emptyUserAnswers: UserAnswers =
-    UserAnswers(id = userAnswersId, lastUpdated = Instant.now(fixedClock))
+    UserAnswers(id = userAnswersId, lastUpdated = Instant.now(clock))
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
@@ -77,12 +76,11 @@ trait SpecBase
     new GuiceApplicationBuilder()
       .overrides(
         bind[DataRequiredAction].to[DataRequiredActionImpl],
-        bind[IdentifierAction].toInstance(new FakeIdentifierAction(injectedParsers, affinityGroup)),
-        bind[DataRetrievalAction].toInstance(new FakeDataRetrievalActionProvider(userAnswers, requestUtr)),
+        bind[IdentifierAction].toInstance(new FakeIdentifierAction(injectedParsers, affinityGroup, requestUtr)),
+        bind[DataRetrievalAction].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
         bind[SessionRepository].toInstance(mockSessionRepository)
       )
 
   implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-
 }

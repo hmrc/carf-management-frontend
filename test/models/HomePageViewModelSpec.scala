@@ -1,0 +1,170 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package models
+
+import base.SpecBase
+import play.api.i18n.Messages
+import viewmodels.HomePageViewModel
+
+class HomePageViewModelSpec extends SpecBase {
+
+  val basicViewModel: HomePageViewModel = HomePageViewModel(
+    isBusiness = true,
+    hasZeroRcaspsAdded = true,
+    hasSentFilesInLast28Days = true,
+    organisationName = Some("Timmy Ltd"),
+    ctUtr = Some(testUtr),
+    carfId = testCarfId
+  )
+
+  implicit val implicitMessages: Messages = messages(app)
+
+  "HomePageViewModel" - {
+    "getNoRcaspsSectionText method" - {
+      "must return None when there are more than one Rcasps added" in {
+        val viewModel = basicViewModel.copy(hasZeroRcaspsAdded = false)
+        val result    = viewModel.getNoRcaspsSectionText()
+
+        result mustBe None
+      }
+      "must return a tuple of messages when there are zero Rcasps added" in {
+        val viewModel = basicViewModel
+        val result    = viewModel.getNoRcaspsSectionText()
+        val message1  = "To send a report, you must"
+        val message2  = "add a reporting cryptoasset service provider (RCASP)"
+
+        result mustBe Some(message1, message2)
+      }
+    }
+
+    "getNoRcaspsSectionLink val" - {
+      "must return the url for the special add journey when ct utr is populated and 0 rcasps are present" in {
+        val viewModel   = basicViewModel
+        val result      = viewModel.getNoRcaspsSectionLink
+        val expectedUrl = controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to /report-for-registered-business (CARF-151)")
+          .url
+
+        result mustBe expectedUrl
+      }
+      "must return the url for the normal add journey when ct utr is populated and more than 0 rcasps are present" in {
+        val viewModel   = basicViewModel.copy(hasZeroRcaspsAdded = false)
+        val result      = viewModel.getNoRcaspsSectionLink
+        val expectedUrl = controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to /organisation-or-individual (CARF-151)")
+          .url
+
+        result mustBe expectedUrl
+      }
+      "must return the url for the normal add journey when no ct utr is present and but 0 rcasps are present" in {
+        val viewModel   = basicViewModel.copy(ctUtr = None)
+        val result      = viewModel.getNoRcaspsSectionLink
+        val expectedUrl = controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to /organisation-or-individual (CARF-151)")
+          .url
+
+        result mustBe expectedUrl
+      }
+    }
+    "getUploadXmlLink val" - {
+      "must return the url for the upload xml link" in {
+        val viewModel   = basicViewModel
+        val result      = viewModel.getUploadXmlLink
+        val expectedUrl = controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to /report/upload-file (part of file upload journey)")
+          .url
+
+        result mustBe expectedUrl
+      }
+    }
+    "getViewResultsLink val" - {
+      "must return the url for the view results page" in {
+        val viewModel   = basicViewModel
+        val result      = viewModel.getViewResultsLink
+        val expectedUrl = controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to /result-of-automatic-checks (part of file upload journey)")
+          .url
+
+        result mustBe expectedUrl
+      }
+    }
+    "getAddRcaspLink val" - {
+      "must return the url for the normal add rcasp journey" in {
+        val viewModel   = basicViewModel
+        val result      = viewModel.getAddRcaspLink
+        val expectedUrl = controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to /organisation-or-individual (CARF-151)")
+          .url
+
+        result mustBe expectedUrl
+      }
+    }
+    "getManageRcaspsLink val" - {
+      "must return the url for the manage rcasps page" in {
+        val viewModel   = basicViewModel
+        val result      = viewModel.getManageRcaspsLink
+        val expectedUrl = controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to /rcasp/your-rcasps (part of management change journey)")
+          .url
+
+        result mustBe expectedUrl
+      }
+    }
+
+    "getContactDetailsSectionHeading method" - {
+      "must return the org version of the message when model is an org" in {
+        val viewModel  = basicViewModel
+        val result     = viewModel.getContactDetailsSectionHeading()
+        val messageKey = "Contact details"
+
+        result mustBe messageKey
+      }
+      "must return the ind version of the message when model is an ind" in {
+        val viewModel  = basicViewModel.copy(isBusiness = false)
+        val result     = viewModel.getContactDetailsSectionHeading()
+        val messageKey = "Your contact details"
+
+        result mustBe messageKey
+      }
+    }
+
+    "getContactDetailsSectionLinkText method" - {
+      "must return the org version of the link text when model is an org" in {
+        val viewModel   = basicViewModel
+        val result      = viewModel.getContactDetailsSectionLinkText()
+        val linkTextKey = "Change the contact details for Timmy Ltd"
+
+        result mustBe linkTextKey
+      }
+      "must throw when model is an org but no organisation name is present" in {
+        val viewModel = basicViewModel.copy(organisationName = None)
+        val result    = intercept[Exception] {
+          viewModel.getContactDetailsSectionLinkText()
+        }
+
+        result.getMessage mustBe "Error! Organisation name missing from view model!"
+      }
+      "must return the ind version of the link text when model is an ind" in {
+        val viewModel   = basicViewModel.copy(isBusiness = false)
+        val result      = viewModel.getContactDetailsSectionLinkText()
+        val linkTextKey = "Change your contact details"
+
+        result mustBe linkTextKey
+      }
+    }
+  }
+}
