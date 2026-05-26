@@ -14,29 +14,31 @@
  * limitations under the License.
  */
 
-package controllers
+package testOnly.controllers
 
-import controllers.actions.{DataRetrievalAction, IdentifierAction}
+import controllers.actions.*
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.SessionRepository
+import testOnly.views.html.AuthActionView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class KeepAliveController @Inject() (
-    val controllerComponents: MessagesControllerComponents,
+class AuthActionController @Inject() (
+    override val messagesApi: MessagesApi,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
-    sessionRepository: SessionRepository
+    ctUtrRetrievalAction: CtUtrRetrievalAction,
+    val controllerComponents: MessagesControllerComponents,
+    view: AuthActionView
 )(implicit ec: ExecutionContext)
-    extends FrontendBaseController {
+    extends FrontendBaseController
+    with I18nSupport {
 
-  def keepAlive(): Action[AnyContent] = (identify() andThen getData()).async { implicit request =>
-    request.userAnswers
-      .map { answers =>
-        sessionRepository.keepAlive(answers.id).map(_ => Ok)
-      }
-      .getOrElse(Future.successful(Ok))
+  def onPageLoad(): Action[AnyContent] = (identify() andThen ctUtrRetrievalAction() andThen getData()).async {
+    implicit request =>
+      val carfIdAndEnrolment: String = s"CARF-ID = ${request.carfId}, CT-UTR = ${request.utr}"
+      Future.successful(Ok(view(carfIdAndEnrolment)))
   }
 }

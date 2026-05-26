@@ -19,19 +19,26 @@ package controllers.actions
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.routes
+import models.IdentifierType
 import models.requests.IdentifierRequest
-import play.api.mvc.Results._
-import play.api.mvc._
-import uk.gov.hmrc.auth.core._
+import play.api.Logging
+import play.api.mvc.Results.*
+import play.api.mvc.*
+import uk.gov.hmrc.auth.core.*
+import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{affinityGroup, allEnrolments, credentialRole, internalId}
+import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait IdentifierAction
-    extends ActionBuilder[IdentifierRequest, AnyContent]
-    with ActionFunction[Request, IdentifierRequest]
+trait IdentifierAction {
+  def apply(
+      redirect: Boolean = true
+  ): ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest]
+}
 
 class AuthenticatedIdentifierAction @Inject() (
     override val authConnector: AuthConnector,
@@ -41,14 +48,38 @@ class AuthenticatedIdentifierAction @Inject() (
     extends IdentifierAction
     with AuthorisedFunctions {
 
+  override def apply(
+      redirect: Boolean = true
+  ): ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest] =
+    new AuthenticatedIdentifierActionWithRegime(authConnector, config, parser, redirect)
+}
+
+class AuthenticatedIdentifierActionWithRegime @Inject() (
+    override val authConnector: AuthConnector,
+    config: FrontendAppConfig,
+    val parser: BodyParsers.Default,
+    val redirect: Boolean
+)(implicit val executionContext: ExecutionContext)
+    extends ActionBuilder[IdentifierRequest, AnyContent]
+    with ActionFunction[Request, IdentifierRequest]
+    with AuthorisedFunctions
+    with Logging {
+
+  private def enrolmentKey: String = config.enrolmentKey
+
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
-    authorised().retrieve(Retrievals.internalId) {
-      _.map { internalId =>
-        block(IdentifierRequest(request, internalId))
-      }.getOrElse(throw new UnauthorizedException("Unable to retrieve internal Id"))
+    authorised().retrieve(
+      internalId and allEnrolments and affinityGroup
+    ) {
+      case _ ~ _ ~ Some(Agent)                                 =>
+        Future.successful(Redirect(config.registrationUrl))
+      case Some(internalID) ~ enrolments ~ Some(affinityGroup) =>
+        handleEnrolmentCheck(request, block, internalID, enrolments, affinityGroup)
+      case _                                                   =>
+        throw new UnauthorizedException("Failed to retrieve valid auth data")
     } recover {
       case _: NoActiveSession        =>
         Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))
@@ -56,22 +87,31 @@ class AuthenticatedIdentifierAction @Inject() (
         Redirect(routes.UnauthorisedController.onPageLoad())
     }
   }
-}
 
-class SessionIdentifierAction @Inject() (
-    val parser: BodyParsers.Default
-)(implicit val executionContext: ExecutionContext)
-    extends IdentifierAction {
-
-  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
-
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
-
-    hc.sessionId match {
-      case Some(session) =>
-        block(IdentifierRequest(request, session.value))
-      case None          =>
-        Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+  private def handleEnrolmentCheck[A](
+      request: Request[A],
+      block: IdentifierRequest[A] => Future[Result],
+      internalID: String,
+      enrolments: Enrolments,
+      affinityGroup: AffinityGroup
+  ): Future[Result] =
+    enrolments.enrolments.exists(_.key == enrolmentKey) && redirect match {
+      case true  =>
+        getCarfId(enrolments) match {
+          case Some(carfId) =>
+            block(IdentifierRequest(request, internalID, affinityGroup, enrolments.enrolments, carfId))
+          case None         => Future.successful(Redirect(config.registrationUrl))
+        }
+      case false => Future.successful(Redirect(config.registrationUrl))
     }
-  }
+
+  private def getCarfId(
+      enrolments: Enrolments
+  ): Option[String] =
+    for {
+      enrolment <- enrolments.getEnrolment(config.enrolmentKey)
+      id        <- enrolment.getIdentifier(IdentifierType.CARFID)
+      carfId    <- if (id.value.nonEmpty) Some(id.value) else None
+    } yield carfId
+
 }

@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models.requests
+@import viewmodels.InputWidth._
 
-import models.UniqueTaxpayerReference
-import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolment}
+@this()
 
-case class IdentifierRequest[A](
-    request: Request[A],
-    userId: String,
-    affinityGroup: AffinityGroup,
-    enrolments: Set[Enrolment] = Set.empty,
-    carfId: String,
-    utr: Option[UniqueTaxpayerReference] = None
-) extends WrappedRequest[A](request)
+@(values: String)(implicit request: Request[_], messages: Messages)
+
+@messages(values)

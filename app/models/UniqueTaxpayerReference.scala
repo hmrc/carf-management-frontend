@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package models.requests
+package models
 
-import models.UniqueTaxpayerReference
-import play.api.mvc.{Request, WrappedRequest}
-import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolment}
+import play.api.libs.json.*
 
-case class IdentifierRequest[A](
-    request: Request[A],
-    userId: String,
-    affinityGroup: AffinityGroup,
-    enrolments: Set[Enrolment] = Set.empty,
-    carfId: String,
-    utr: Option[UniqueTaxpayerReference] = None
-) extends WrappedRequest[A](request)
+case class UniqueTaxpayerReference(uniqueTaxPayerReference: String)
+
+object UniqueTaxpayerReference {
+  implicit val format: OFormat[UniqueTaxpayerReference] = Json.format[UniqueTaxpayerReference]
+}
