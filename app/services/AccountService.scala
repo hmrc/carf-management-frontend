@@ -45,12 +45,13 @@ class AccountService @Inject() ()(implicit ec: ExecutionContext) extends Logging
       case _   => ResultT.fromValue(false)
     }
 
-  def getOrganisationName(carfId: String): ResultT[String] =
+  def getOrganisationName(carfId: String): ResultT[Option[String]] =
     carfId.dropRight(3).last.toString match {
       case "9" =>
         logger.warn("[getOrganisationName] Error!")
         ResultT.fromError(InternalServerError)
-      case _   => ResultT.fromValue("Timmy's Turtles Ltd")
+      case "8" => ResultT.fromValue(None)
+      case _   => ResultT.fromValue(Some("Timmy's Turtles Ltd"))
     }
 
 }

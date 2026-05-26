@@ -61,6 +61,7 @@ homePage.yourRcasps.add.linkText = Add an RCASP
 homePage.yourRcasps.manage.linkText = Manage your RCASPs
 homePage.contactDetails.org.subheading = Contact details
 homePage.contactDetails.org.linkText = Change the contact details for {0}
+homePage.contactDetails.org.fallbackBusinessName = your business
 homePage.contactDetails.ind.subheading = Your contact details
 homePage.contactDetails.ind.linkText = Change your contact details
 homePage.help.subheading = Get help with the service

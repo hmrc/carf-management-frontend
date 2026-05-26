@@ -77,7 +77,7 @@ case class HomePageViewModel(
     if (isBusiness) {
       messages(
         "homePage.contactDetails.org.linkText",
-        organisationName.getOrElse(throw new Exception("Error! Organisation name missing from view model!"))
+        organisationName.getOrElse(messages("homePage.contactDetails.org.fallbackBusinessName"))
       )
     } else {
       messages("homePage.contactDetails.ind.linkText")

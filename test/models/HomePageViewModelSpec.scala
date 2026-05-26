@@ -150,13 +150,12 @@ class HomePageViewModelSpec extends SpecBase {
 
         result mustBe linkTextKey
       }
-      "must throw when model is an org but no organisation name is present" in {
+      "must use the default value when model is an org but no organisation name is present" in {
         val viewModel = basicViewModel.copy(organisationName = None)
-        val result    = intercept[Exception] {
-          viewModel.getContactDetailsSectionLinkText()
-        }
+        val result = viewModel.getContactDetailsSectionLinkText()
+        val linkTextKey = "Change the contact details for your business"
 
-        result.getMessage mustBe "Error! Organisation name missing from view model!"
+        result mustBe linkTextKey
       }
       "must return the ind version of the link text when model is an ind" in {
         val viewModel   = basicViewModel.copy(isBusiness = false)

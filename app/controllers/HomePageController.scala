@@ -54,7 +54,7 @@ class HomePageController @Inject() (
         hasOrganisationContactDetails    <- accountService.hasOrganisationContactDetails(carfId)
         organisationName                 <-
           if (hasOrganisationContactDetails) {
-            accountService.getOrganisationName(carfId).map(Some(_))
+            accountService.getOrganisationName(carfId)
           } else {
             EitherT.rightT[Future, CarfError](None: Option[String])
           }
