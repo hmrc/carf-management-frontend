@@ -21,10 +21,9 @@ import play.api.Logging
 import types.ResultT
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UploadInformationService @Inject() ()(implicit ec: ExecutionContext) extends Logging {
+class UploadInformationService @Inject() extends Logging {
 
   def hasUserUploadedFilesInLast28Days(carfId: String): ResultT[Boolean] =
     carfId.dropRight(1).last.toString match {

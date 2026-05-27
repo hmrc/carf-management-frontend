@@ -21,10 +21,9 @@ import play.api.Logging
 import types.ResultT
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AccountService @Inject() ()(implicit ec: ExecutionContext) extends Logging {
+class AccountService @Inject() extends Logging {
 
   def getNumberOfRcaspsCurrentlyAdded(carfId: String): ResultT[Int] =
     carfId.last.toString match {

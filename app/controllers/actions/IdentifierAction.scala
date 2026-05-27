@@ -22,12 +22,12 @@ import controllers.routes
 import models.IdentifierType
 import models.requests.IdentifierRequest
 import play.api.Logging
-import play.api.mvc.Results.*
 import play.api.mvc.*
+import play.api.mvc.Results.*
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.AffinityGroup.Agent
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{affinityGroup, allEnrolments, credentialRole, internalId}
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{affinityGroup, allEnrolments, internalId}
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
@@ -95,14 +95,14 @@ class AuthenticatedIdentifierActionWithRegime @Inject() (
       enrolments: Enrolments,
       affinityGroup: AffinityGroup
   ): Future[Result] =
-    enrolments.enrolments.exists(_.key == enrolmentKey) && redirect match {
-      case true  =>
-        getCarfId(enrolments) match {
-          case Some(carfId) =>
-            block(IdentifierRequest(request, internalID, affinityGroup, enrolments.enrolments, carfId))
-          case None         => Future.successful(Redirect(config.registrationUrl))
-        }
-      case false => Future.successful(Redirect(config.registrationUrl))
+    if (enrolments.enrolments.exists(_.key == enrolmentKey) && redirect) {
+      getCarfId(enrolments) match {
+        case Some(carfId) =>
+          block(IdentifierRequest(request, internalID, affinityGroup, enrolments.enrolments, carfId))
+        case None         => Future.successful(Redirect(config.registrationUrl))
+      }
+    } else {
+      Future.successful(Redirect(config.registrationUrl))
     }
 
   private def getCarfId(

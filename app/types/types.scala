@@ -19,7 +19,7 @@ package types
 import cats.data.EitherT
 import models.errors.CarfError
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 type ResultT[T] = EitherT[Future, CarfError, T]
 
