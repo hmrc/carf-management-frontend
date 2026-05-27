@@ -17,6 +17,7 @@
 package controllers
 
 import cats.data.EitherT
+import config.Constants.ZERO
 import config.FrontendAppConfig
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
 import models.errors.CarfError
@@ -61,7 +62,7 @@ class HomePageController @Inject() (
         hasUserUploadedFilesInLast28Days <- uploadInformationService.hasUserUploadedFilesInLast28Days(carfId)
       } yield HomePageViewModel(
         isBusiness = hasOrganisationContactDetails,
-        hasZeroRcaspsAdded = numberOfRcaspsCurrentlyAdded == 0,
+        hasZeroRcaspsAdded = numberOfRcaspsCurrentlyAdded == ZERO,
         hasSentFilesInLast28Days = hasUserUploadedFilesInLast28Days,
         organisationName = organisationName,
         ctUtr = request.utr,
