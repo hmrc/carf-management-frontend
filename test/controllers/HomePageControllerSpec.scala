@@ -65,7 +65,7 @@ class HomePageControllerSpec extends SpecBase {
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromValue(true))
-      when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue("Timmy Ltd"))
+      when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue(Some("Timmy Ltd")))
 
       running(application) {
         val request = FakeRequest(GET, routes.HomePageController.onPageLoad().url)
@@ -74,6 +74,31 @@ class HomePageControllerSpec extends SpecBase {
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(basicViewModel, "aaa", "bbb")(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when all service calls are successful with a ct utr and organisationName is None" in new Setup(
+      requestUtr = Some(testUtr.uniqueTaxPayerReference)
+    ) {
+      when(mockAppConfig.aeoiEmailAddress) thenReturn "aaa"
+      when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
+      when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
+
+      when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
+
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
+      when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromValue(true))
+      when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue(None))
+
+      val expectedViewModel: HomePageViewModel = basicViewModel.copy(organisationName = None)
+
+      running(application) {
+        val request = FakeRequest(GET, routes.HomePageController.onPageLoad().url)
+        val result  = route(application, request).value
+        val view    = application.injector.instanceOf[HomePageView]
+
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(expectedViewModel, "aaa", "bbb")(request, messages(application)).toString
       }
     }
 
@@ -108,7 +133,7 @@ class HomePageControllerSpec extends SpecBase {
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromError(InternalServerError))
       when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromValue(true))
-      when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue("Timmy Ltd"))
+      when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue(Some("Timmy Ltd")))
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
@@ -134,7 +159,7 @@ class HomePageControllerSpec extends SpecBase {
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromError(InternalServerError))
-      when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue("Timmy Ltd"))
+      when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue(Some("Timmy Ltd")))
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
@@ -186,7 +211,7 @@ class HomePageControllerSpec extends SpecBase {
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromValue(true))
-      when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue("Timmy Ltd"))
+      when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue(Some("Timmy Ltd")))
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any()))
         .thenReturn(ResultT.fromError(InternalServerError))
