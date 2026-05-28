@@ -16,6 +16,7 @@
 
 package controllers.actions
 
+import base.SpecBase
 import models.UniqueTaxpayerReference
 import models.requests.IdentifierRequest
 import play.api.mvc.*
@@ -30,7 +31,8 @@ class FakeIdentifierAction @Inject() (
     requestUtr: Option[String]
 ) extends IdentifierAction
     with ActionBuilder[IdentifierRequest, AnyContent]
-    with ActionFunction[Request, IdentifierRequest] {
+    with ActionFunction[Request, IdentifierRequest]
+    with SpecBase {
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] =
     block(
@@ -38,7 +40,7 @@ class FakeIdentifierAction @Inject() (
         request,
         "id",
         affinityGroup,
-        carfId = "carfid",
+        carfId = testCarfId,
         utr = requestUtr.map(UniqueTaxpayerReference(_))
       )
     )

@@ -57,7 +57,7 @@ class HomePageControllerSpec extends SpecBase {
     "must return OK and the correct view for a GET when all service calls are successful with a ct utr" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
-      when(mockAppConfig.aeoiEmailAddress) thenReturn "aaa"
+      when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
@@ -73,14 +73,14 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(basicViewModel, "aaa", "bbb")(request, messages(application)).toString
+        contentAsString(result) mustEqual view(basicViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(request, messages(application)).toString
       }
     }
 
     "must return OK and the correct view for a GET when all service calls are successful with a ct utr and organisationName is None" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
-      when(mockAppConfig.aeoiEmailAddress) thenReturn "aaa"
+      when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
@@ -98,14 +98,14 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(expectedViewModel, "aaa", "bbb")(request, messages(application)).toString
+        contentAsString(result) mustEqual view(expectedViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(request, messages(application)).toString
       }
     }
 
     "must return OK and the correct view for a GET when all service calls are successful for an individual with multiple rcasps" in new Setup(
       requestUtr = None
     ) {
-      when(mockAppConfig.aeoiEmailAddress) thenReturn "aaa"
+      when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
@@ -120,14 +120,14 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(negativeViewModel, "aaa", "bbb")(request, messages(application)).toString
+        contentAsString(result) mustEqual view(negativeViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(request, messages(application)).toString
       }
     }
 
     "must redirect to journey recovery when the call to getNumberOfRcaspsCurrentlyAdded fails" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
-      when(mockAppConfig.aeoiEmailAddress) thenReturn "aaa"
+      when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
@@ -153,7 +153,7 @@ class HomePageControllerSpec extends SpecBase {
     "must redirect to journey recovery when the call to hasOrganisationContactDetails fails" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
-      when(mockAppConfig.aeoiEmailAddress) thenReturn "aaa"
+      when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
@@ -179,7 +179,7 @@ class HomePageControllerSpec extends SpecBase {
     "must redirect to journey recovery when the call to getOrganisationName fails" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
-      when(mockAppConfig.aeoiEmailAddress) thenReturn "aaa"
+      when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
@@ -205,7 +205,7 @@ class HomePageControllerSpec extends SpecBase {
     "must redirect to journey recovery when the call to hasUserUploadedFilesInLast28Days fails" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
-      when(mockAppConfig.aeoiEmailAddress) thenReturn "aaa"
+      when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
