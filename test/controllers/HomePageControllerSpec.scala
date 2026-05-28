@@ -73,7 +73,10 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(basicViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(request, messages(application)).toString
+        contentAsString(result) mustEqual view(basicViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(
+          request,
+          messages(application)
+        ).toString
       }
     }
 
@@ -98,7 +101,10 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(expectedViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(request, messages(application)).toString
+        contentAsString(result) mustEqual view(expectedViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(
+          request,
+          messages(application)
+        ).toString
       }
     }
 
@@ -120,7 +126,10 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(negativeViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(request, messages(application)).toString
+        contentAsString(result) mustEqual view(negativeViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(
+          request,
+          messages(application)
+        ).toString
       }
     }
 
