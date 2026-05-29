@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,12 +52,38 @@ trait Mappings extends Formatters with Constraints {
 
   protected def localDate(
       invalidKey: String,
+      notRealDateKey: String,
       allRequiredKey: String,
-      twoRequiredKey: String,
-      requiredKey: String,
+      dayRequiredKey: String,
+      monthRequiredKey: String,
+      yearRequiredKey: String,
+      dayAndMonthRequiredKey: String,
+      dayAndYearRequiredKey: String,
+      monthAndYearRequiredKey: String,
+      futureDateKey: String,
+      pastDateKey: String,
+      maxDate: LocalDate,
+      minDate: LocalDate,
       args: Seq[String] = Seq.empty
   )(implicit messages: Messages): FieldMapping[LocalDate] =
-    of(new LocalDateFormatter(invalidKey, allRequiredKey, twoRequiredKey, requiredKey, args))
+    of(
+      new LocalDateFormatter(
+        invalidKey,
+        notRealDateKey,
+        allRequiredKey,
+        dayRequiredKey,
+        monthRequiredKey,
+        yearRequiredKey,
+        dayAndMonthRequiredKey,
+        dayAndYearRequiredKey,
+        monthAndYearRequiredKey,
+        futureDateKey,
+        pastDateKey,
+        maxDate,
+        minDate,
+        args
+      )(messages)
+    )
 
   protected def currency(
       requiredKey: String = "error.required",
@@ -66,4 +92,51 @@ trait Mappings extends Formatters with Constraints {
       args: Seq[String] = Seq.empty
   ): FieldMapping[BigDecimal] =
     of(currencyFormatter(requiredKey, invalidNumeric, nonNumericKey, args))
+
+  protected def validatedUTR(
+      requiredKey: String,
+      invalidKey: String,
+      invalidFormatKey: String,
+      regex: String,
+      msgArg: String = ""
+  ): FieldMapping[String] =
+    of(validatedUtrFormatter(requiredKey, invalidKey, invalidFormatKey, regex, msgArg))
+
+  protected def validatedText(
+      requiredKey: String,
+      invalidKey: String,
+      lengthKey: String,
+      regex: String,
+      maxLength: Int,
+      minLength: Int = 1,
+      msgArg: String = ""
+  ): FieldMapping[String] =
+    of(validatedTextFormatter(requiredKey, invalidKey, lengthKey, regex, maxLength, minLength, msgArg))
+
+  protected def validatedOptionalText(
+      lengthKey: String,
+      invalidKey: String,
+      regex: String,
+      maxLength: Int,
+      msgArg: String = ""
+  ): FieldMapping[Option[String]] =
+    of(validatedOptionalTextFormatter(lengthKey, invalidKey, regex, maxLength, msgArg))
+
+  protected def nationalInsuranceNumber(
+      requiredKey: String,
+      invalidFormatKey: String,
+      invalidKey: String,
+      args: Seq[Any] = Seq.empty
+  ): FieldMapping[String] =
+    of(nationalInsuranceNumberFormatter(requiredKey, invalidFormatKey, invalidKey, args))
+
+  protected def phoneNumber(
+      requiredKey: String,
+      invalidKey: String,
+      lengthKey: String,
+      notRealPhoneNumberKey: String,
+      args: Seq[Any] = Seq.empty
+  ): FieldMapping[String] =
+    of(phoneNumberFormatter(requiredKey, invalidKey, lengthKey, notRealPhoneNumberKey, args))
+
 }

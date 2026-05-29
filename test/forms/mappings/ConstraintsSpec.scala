@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 
 package forms.mappings
 
-import java.time.LocalDate
-
 import config.CurrencyFormatter
 import generators.Generators
 import org.scalacheck.Gen
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.data.validation.{Invalid, Valid}
+
+import java.time.LocalDate
 
 class ConstraintsSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks with Generators with Constraints {
 
@@ -216,4 +216,28 @@ class ConstraintsSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyC
       result mustEqual Invalid("error.max", CurrencyFormatter.currencyFormat(1))
     }
   }
+
+  "validEmailAddress" - {
+
+    "must return Valid for a valid email address" in {
+      val result = validEmailAddress("error.invalid")("test@example.com")
+      result mustEqual Valid
+    }
+
+    "must return Invalid for an email without @" in {
+      val result = validEmailAddress("error.invalid")("testexample.com")
+      result mustEqual Invalid("error.invalid")
+    }
+
+    "must return Invalid for an email without domain" in {
+      val result = validEmailAddress("error.invalid")("test@")
+      result mustEqual Invalid("error.invalid")
+    }
+
+    "must return Invalid for an empty string" in {
+      val result = validEmailAddress("error.invalid")("")
+      result mustEqual Invalid("error.invalid")
+    }
+  }
+
 }

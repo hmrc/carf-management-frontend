@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,15 @@
 
 package forms.mappings
 
+import base.SpecBase
+import base.TestConstants.{invalidBusinessNameExceeds105Chars, invalidPhoneNumber25Chars, validBusinessName105Chars, validPhoneNumber24Chars}
+import config.Constants.{businessNameRegex, validBusinessNameMaxLength, validBusinessNameMinLength}
+import models.{Enumerable, UniqueTaxpayerReference}
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import play.api.data.Forms.*
 import play.api.data.{Form, FormError}
-import models.Enumerable
 
 object MappingsSpec {
 
@@ -37,9 +41,17 @@ object MappingsSpec {
   }
 }
 
-class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mappings {
+class MappingsSpec extends SpecBase with Mappings {
+  val requiredKeyBusinessName           = "Enter the name of your business"
+  val invalidFormatKeyBusinessName      = "businessName.error.invalidFormat"
+  val maximumLengthErrorKeyBusinessName = "businessName.error.maximumLength"
 
-  import MappingsSpec._
+  val businessNameRequiredErrorMessage               = "Enter the name of your business"
+  val invalidCharacterInBusinessNameErrorMessage     =
+    "Business name must only include letters a to z, numbers 0 to 9, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces"
+  val invalidBusinessNameExceeds105CharsErrorMessage = "Business name must be 105 characters or less"
+
+  import MappingsSpec.*
 
   "text" - {
 
@@ -228,6 +240,298 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
     "must unbind a valid value" in {
       val result = testForm.fill(1)
       result.apply("value").value.value mustEqual "1"
+    }
+  }
+
+  "validatedUTR" - {
+    val testForm: Form[UniqueTaxpayerReference] = Form(
+      mapping(
+        "value" -> validatedUTR(
+          requiredKey = "error.required",
+          invalidKey = "error.invalid.key",
+          invalidFormatKey = "error.invalid.formatKey",
+          regex = "^[0-9]*$",
+          msgArg = "UTR"
+        )
+      )(UniqueTaxpayerReference.apply)(utr => Some(utr.uniqueTaxPayerReference))
+    )
+
+    "must bind a valid UTR that is 10 characters long" in {
+      val result = testForm.bind(Map("value" -> "1234267890"))
+      result.get mustBe UniqueTaxpayerReference("1234267890")
+    }
+
+    "must bind a valid UTR that is 13 characters long" in {
+      val result = testForm.bind(Map("value" -> "1234267890121"))
+      result.get mustBe UniqueTaxpayerReference("1234267890121")
+    }
+
+    "must bind a valid UTR that contains spaces" in {
+      val result = testForm.bind(Map("value" -> "1 2 3 4 5 6 7 8 9 0"))
+      result.get mustBe UniqueTaxpayerReference("1234567890")
+    }
+
+    "must bind a UTR with K in the start and whitespace characters" in {
+      val result = testForm.bind(Map("value" -> "K123456 789 0"))
+      result.get mustBe UniqueTaxpayerReference("1234567890")
+    }
+
+    "must remove any 'K' character from the start of the string" in {
+      val result = testForm.bind(Map("value" -> "K1234561289"))
+      result.get mustBe UniqueTaxpayerReference("1234561289")
+    }
+
+    "must remove any 'K' character from the end of the string" in {
+      val result = testForm.bind(Map("value" -> "1234561289K"))
+      result.get mustBe UniqueTaxpayerReference("1234561289")
+    }
+
+    "must not bind an empty string" in {
+      val result = testForm.bind(Map("value" -> ""))
+      result.errors must contain(FormError("value", "error.required", List("UTR")))
+    }
+
+    "must not bind whitespace and k characters only" in {
+      val result = testForm.bind(Map("value" -> "k k K K"))
+      result.errors must contain(FormError("value", "error.required", List("UTR")))
+    }
+
+    "must not bind an invalid UTR (short)" in {
+      val result = testForm.bind(Map("value" -> "123456"))
+      result.errors must contain(FormError("value", "error.invalid.formatKey", List("UTR")))
+    }
+
+    "must not bind a very long invalid UTR " in {
+      val result = testForm.bind(Map("value" -> "1234561234567890"))
+      result.errors must contain(FormError("value", "error.invalid.formatKey", List("UTR")))
+    }
+
+    "must not bind invalid characters" in {
+      val result = testForm.bind(Map("value" -> "ABC123!@#$"))
+      result.errors must contain(FormError("value", "error.invalid.key", List("UTR")))
+    }
+
+    "must not bind a UTR with Kk characters in between and spaces" in {
+      val result = testForm.bind(Map("value" -> "12k 34K 567890"))
+      result.errors must contain(FormError("value", "error.invalid.key", List("UTR")))
+    }
+
+  }
+
+  "validatedBusinessNameField" - {
+    val testBusinessNameForm: Form[String] = Form(
+      "value" -> validatedText(
+        requiredKey = requiredKeyBusinessName,
+        invalidKey = invalidFormatKeyBusinessName,
+        lengthKey = maximumLengthErrorKeyBusinessName,
+        regex = businessNameRegex,
+        maxLength = validBusinessNameMaxLength,
+        minLength = validBusinessNameMinLength,
+        msgArg = "BusinessName"
+      )
+    )
+
+    "must bind a valid Business Name that is 105 characters long" in {
+      val result = testBusinessNameForm.bind(Map("value" -> validBusinessName105Chars))
+      result.get mustBe validBusinessName105Chars
+    }
+
+    "must bind a valid Business Name that is 105 characters long with spaces either side" in {
+      val result = testBusinessNameForm.bind(Map("value" -> s"     $validBusinessName105Chars    "))
+      result.get mustBe validBusinessName105Chars
+    }
+
+    "must not bind an empty Business Name" in {
+      val result = testBusinessNameForm.bind(Map("value" -> ""))
+      result.errors must contain(
+        FormError("value", requiredKeyBusinessName, List("BusinessName"))
+      )
+    }
+
+    "must not bind a Business Name with more than 105 characters" in {
+      val result = testBusinessNameForm.bind(Map("value" -> invalidBusinessNameExceeds105Chars))
+      result.errors must contain(
+        FormError("value", maximumLengthErrorKeyBusinessName)
+      )
+    }
+
+    "must return Bad Request & invalidFormat error when BusinessName contains a forward slash" in {
+      val result = testBusinessNameForm.bind(Map("value" -> "Business Name contains /forward slash/"))
+      result.errors must contain(
+        FormError("value", invalidFormatKeyBusinessName)
+      )
+    }
+
+    "must return Bad Request & invalidFormat error when BusinessName contains an exclamation mark" in {
+      val result = testBusinessNameForm.bind(Map("value" -> "Business Name contains an exclamation mark!"))
+      result.errors must contain(
+        FormError("value", invalidFormatKeyBusinessName)
+      )
+    }
+
+    "must return Bad Request & invalidFormat error when BusinessName contains a pound sign" in {
+      val result = testBusinessNameForm.bind(Map("value" -> "Business Name contains £ a pound sign"))
+      result.errors must contain(
+        FormError("value", invalidFormatKeyBusinessName)
+      )
+    }
+
+    "must return Bad Request & invalidFormat error when BusinessName contains a percent sign" in {
+      val result = testBusinessNameForm.bind(Map("value" -> "Business Name contains % a percent sign"))
+      result.errors must contain(
+        FormError("value", invalidFormatKeyBusinessName)
+      )
+    }
+
+    "must return Bad Request & invalidFormat error when BusinessName contains an asterisk sign" in {
+      val result = testBusinessNameForm.bind(Map("value" -> "Business Name contains * an asterisk sign"))
+      result.errors must contain(
+        FormError("value", invalidFormatKeyBusinessName)
+      )
+    }
+
+    "must return Bad Request & invalidFormat error when BusinessName contains a bracket sign" in {
+      val result = testBusinessNameForm.bind(Map("value" -> "Business Name contains ( a bracket sign"))
+      result.errors must contain(
+        FormError("value", invalidFormatKeyBusinessName)
+      )
+    }
+
+    "must return Bad Request & invalidFormat error when BusinessName contains an equals sign" in {
+      val result = testBusinessNameForm.bind(Map("value" -> "Business Name contains = an equals sign"))
+      result.errors must contain(
+        FormError("value", invalidFormatKeyBusinessName)
+      )
+    }
+
+    "must return Bad Request & invalidFormat error when BusinessName contains a square bracket sign" in {
+      val result = testBusinessNameForm.bind(Map("value" -> "Business Name contains ] a square bracket sign"))
+      result.errors must contain(
+        FormError("value", invalidFormatKeyBusinessName)
+      )
+    }
+
+    "must return Bad Request & invalidFormat error when BusinessName contains a hash sign" in {
+      val result = testBusinessNameForm.bind(Map("value" -> "Business Name contains # a hash sign"))
+      result.errors must contain(
+        FormError("value", invalidFormatKeyBusinessName)
+      )
+    }
+
+    "must return Bad Request & invalidFormat error when BusinessName contains an 'at' sign" in {
+      val result = testBusinessNameForm.bind(Map("value" -> "Business Name contains @ an 'at' sign"))
+      result.errors must contain(
+        FormError("value", invalidFormatKeyBusinessName)
+      )
+    }
+
+  }
+
+  "phoneNumber" - {
+
+    val testRequiredKey           = "firstContactPhoneNumber.error.required"
+    val testInvalidKey            = "firstContactPhoneNumber.error.invalid"
+    val testLengthKey             = "firstContactPhoneNumber.error.length"
+    val testNotRealPhoneNumberKey = "firstContactPhoneNumber.error.notRealNumber"
+
+    val notRealNumbers = Seq(
+      "+44795634982",
+      "09956349826",
+      "+1 555 0101",
+      "+1 760-412-7",
+      "01632 960 001", // test only local area number
+      "07700 900 982", // test only number
+      "07700 990 982", // unallocated number valid format
+      "+44 808 157 0192", // specifically treated as notReal because it is in the user error messages.
+      "08081570192"
+    )
+
+    val invalidNumbers = Seq(
+      "abcdefg",
+      "+999999999",
+      "+44",
+      "071234567890", // too long
+      "+44 123"
+    )
+
+    val testPhoneNumberForm: Form[String] = Form(
+      "value" -> phoneNumber(
+        requiredKey = testRequiredKey,
+        invalidKey = testInvalidKey,
+        lengthKey = testLengthKey,
+        notRealPhoneNumberKey = testNotRealPhoneNumberKey
+      )
+    )
+
+    "must bind a valid Phone Number that is 24 characters long" in {
+      val result = testPhoneNumberForm.bind(Map("value" -> validPhoneNumber24Chars))
+      result.get mustBe validPhoneNumber24Chars
+    }
+
+    "must bind a valid Phone Number that is 105 characters long with spaces either side" in {
+      val result = testPhoneNumberForm.bind(Map("value" -> s"     $validPhoneNumber24Chars    "))
+      result.get mustBe validPhoneNumber24Chars
+    }
+
+    "must not bind an empty Phone Number" in {
+      val result = testPhoneNumberForm.bind(Map("value" -> ""))
+      result.errors must contain(
+        FormError("value", testRequiredKey)
+      )
+    }
+
+    "must not bind Phone Number that is too long" in {
+      val result = testPhoneNumberForm.bind(Map("value" -> invalidPhoneNumber25Chars))
+      result.errors must contain(
+        FormError("value", testLengthKey)
+      )
+    }
+
+    "not bind phone numbers with invalid characters" in {
+      invalidNumbers.foreach { invalidPhoneNumber =>
+        val result = testPhoneNumberForm.bind(Map("value" -> invalidPhoneNumber))
+
+        withClue(s"Expected error for invalid phone number: '$invalidPhoneNumber'") {
+          result.errors mustBe Seq(FormError("value", testInvalidKey))
+        }
+      }
+    }
+
+    "not bind notReal phone numbers" in {
+      notRealNumbers.foreach { notRealPhoneNumber =>
+        val result = testPhoneNumberForm.bind(Map("value" -> notRealPhoneNumber))
+
+        withClue(s"Expected error for invalid phone number: '$notRealPhoneNumber'") {
+          result.errors mustBe Seq(FormError("value", testNotRealPhoneNumberKey))
+        }
+      }
+    }
+
+    "bind valid phone numbers" in {
+      val validNumbers = Seq(
+        "07123456789",
+        "+447123456789",
+        "02079460000",
+        "+1 650 253 0000",
+        "+33 1 42 68 53 00",
+        "+49 30 123456",
+        "+91 98765 43210",
+        "07400111222 ext 5",
+        "++447123456789", // google lib tries to recover extra punctuation where possible, like parsing ++44 as +44
+        "+1 (650) 253-0000 x123",
+        "07700 899 999", // one below test numbers
+        "07700a899g999",
+        "+447700a899g999"
+      )
+
+      validNumbers.foreach { validPhoneNumber =>
+        val testValue = validPhoneNumber
+        val result    = testPhoneNumberForm.bind(Map("value" -> testValue))
+
+        withClue(s"Expected no errors for valid phone number: '$testValue'") {
+          result.errors.isEmpty mustBe true
+        }
+      }
     }
   }
 }

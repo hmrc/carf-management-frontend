@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
 package forms.mappings
 
 import config.CurrencyFormatter
-import java.time.LocalDate
-
+import org.apache.commons.validator.routines.EmailValidator
 import play.api.data.validation.{Constraint, Invalid, Valid}
+
+import java.time.LocalDate
 
 trait Constraints {
 
@@ -33,8 +34,7 @@ trait Constraints {
 
   protected def minimumValue[A](minimum: A, errorKey: String)(implicit ev: Ordering[A]): Constraint[A] =
     Constraint { input =>
-
-      import ev._
+      import ev.*
 
       if (input >= minimum) {
         Valid
@@ -45,8 +45,7 @@ trait Constraints {
 
   protected def maximumValue[A](maximum: A, errorKey: String)(implicit ev: Ordering[A]): Constraint[A] =
     Constraint { input =>
-
-      import ev._
+      import ev.*
 
       if (input <= maximum) {
         Valid
@@ -57,8 +56,7 @@ trait Constraints {
 
   protected def inRange[A](minimum: A, maximum: A, errorKey: String)(implicit ev: Ordering[A]): Constraint[A] =
     Constraint { input =>
-
-      import ev._
+      import ev.*
 
       if (input >= minimum && input <= maximum) {
         Valid
@@ -127,5 +125,11 @@ trait Constraints {
       } else {
         Invalid(errorKey, CurrencyFormatter.currencyFormat(maximum))
       }
+    }
+
+  protected def validEmailAddress(errorKey: String): Constraint[String] =
+    Constraint {
+      case str: String if EmailValidator.getInstance().isValid(str) => Valid
+      case _                                                        => Invalid(errorKey)
     }
 }

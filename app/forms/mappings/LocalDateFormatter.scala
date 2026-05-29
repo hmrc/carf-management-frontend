@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,72 +19,204 @@ package forms.mappings
 import play.api.data.FormError
 import play.api.data.format.Formatter
 import play.api.i18n.Messages
-
 import java.time.{LocalDate, Month}
+import java.time.format.DateTimeFormatter
+import scala.collection.immutable.Seq
 import scala.util.{Failure, Success, Try}
 
-private[mappings] class LocalDateFormatter(
+class LocalDateFormatter(
     invalidKey: String,
+    notRealDateKey: String,
     allRequiredKey: String,
-    twoRequiredKey: String,
-    requiredKey: String,
+    dayRequiredKey: String,
+    monthRequiredKey: String,
+    yearRequiredKey: String,
+    dayAndMonthRequiredKey: String,
+    dayAndYearRequiredKey: String,
+    monthAndYearRequiredKey: String,
+    futureDateKey: String,
+    pastDateKey: String,
+    maxDate: LocalDate,
+    minDate: LocalDate,
     args: Seq[String] = Seq.empty
 )(implicit messages: Messages)
-    extends Formatter[LocalDate]
-    with Formatters {
+    extends Formatter[LocalDate] {
 
   private val fieldKeys: List[String] = List("day", "month", "year")
+  private val monthNames              = Seq(
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december"
+  )
+  private val monthShortNames         = monthNames.map(_.take(3))
 
-  private def toDate(key: String, day: Int, month: Int, year: Int): Either[Seq[FormError], LocalDate] =
-    Try(LocalDate.of(year, month, day)) match {
-      case Success(date) =>
-        Right(date)
-      case Failure(_)    =>
-        Left(Seq(FormError(key, invalidKey, args)))
+  private def parseMonth(monthStr: String): Option[Int] = {
+    val cleaned = monthStr.trim.replaceAll("[\\s-]", "").toLowerCase
+    if (cleaned.forall(_.isDigit)) {
+      Try(cleaned.toInt).toOption.filter(m => m >= 1 && m <= 12)
+    } else {
+      monthNames.indexOf(cleaned) match {
+        case idx if idx >= 0 => Some(idx + 1)
+        case _               =>
+          if (cleaned.length == 3) {
+            monthShortNames.indexOf(cleaned) match {
+              case idx if idx >= 0 => Some(idx + 1)
+              case _               => None
+            }
+          } else None
+      }
     }
-
-  private def formatDate(key: String, data: Map[String, String]): Either[Seq[FormError], LocalDate] = {
-
-    val int = intFormatter(
-      requiredKey = invalidKey,
-      wholeNumberKey = invalidKey,
-      nonNumericKey = invalidKey,
-      args
-    )
-
-    val month = new MonthFormatter(invalidKey, args)
-
-    for {
-      day   <- int.bind(s"$key.day", data)
-      month <- month.bind(s"$key.month", data)
-      year  <- int.bind(s"$key.year", data)
-      date  <- toDate(key, day, month, year)
-    } yield date
   }
 
   override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], LocalDate] = {
+    val cleanedData = data.map { case (k, v) => k -> v.replaceAll("[\\s-]", "") }
+    val dayStr      = cleanedData.getOrElse(s"$key.day", "")
+    val monthStr    = cleanedData.getOrElse(s"$key.month", "")
+    val yearStr     = cleanedData.getOrElse(s"$key.year", "")
 
-    val fields = fieldKeys.map { field =>
-      field -> data.get(s"$key.$field").filter(_.nonEmpty)
-    }.toMap
+    missingFieldErrors(key, dayStr, monthStr, yearStr)
+      .orElse(nonNumericFieldErrors(key, dayStr, monthStr, yearStr))
+      .orElse(outOfRangeFieldErrors(key, dayStr, monthStr, yearStr))
+      .orElse(dateRangeErrors(key, dayStr, monthStr, yearStr))
+      .map(Left(_))
+      .getOrElse {
+        val dayInt   = Try(dayStr.toInt).getOrElse(-1)
+        val monthInt = parseMonth(monthStr).getOrElse(-1)
+        val yearInt  = Try(yearStr.toInt).getOrElse(-1)
+        Right(LocalDate.of(yearInt, monthInt, dayInt))
+      }
+  }
 
-    lazy val missingFields = fields
-      .withFilter(_._2.isEmpty)
-      .map(_._1)
-      .toList
-      .map(field => messages(s"date.error.$field"))
+  private def missingFieldErrors(
+      key: String,
+      dayStr: String,
+      monthStr: String,
+      yearStr: String
+  ): Option[Seq[FormError]] = {
+    val missingFields = fieldKeys.collect {
+      case "day" if dayStr.isEmpty     => "day"
+      case "month" if monthStr.isEmpty => "month"
+      case "year" if yearStr.isEmpty   => "year"
+    }
+    if (missingFields.isEmpty) None
+    else {
+      val errors = missingFields.sorted match {
+        case List("day", "month", "year") =>
+          Seq(
+            FormError(s"$key.day", allRequiredKey, args),
+            FormError(s"$key.month", allRequiredKey, args),
+            FormError(s"$key.year", allRequiredKey, args)
+          )
+        case List("day", "month")         =>
+          Seq(
+            FormError(s"$key.day", dayAndMonthRequiredKey, args),
+            FormError(s"$key.month", dayAndMonthRequiredKey, args)
+          )
+        case List("day", "year")          =>
+          Seq(
+            FormError(s"$key.day", dayAndYearRequiredKey, args),
+            FormError(s"$key.year", dayAndYearRequiredKey, args)
+          )
+        case List("month", "year")        =>
+          Seq(
+            FormError(s"$key.month", monthAndYearRequiredKey, args),
+            FormError(s"$key.year", monthAndYearRequiredKey, args)
+          )
+        case List("day")                  =>
+          Seq(FormError(s"$key.day", dayRequiredKey, args))
+        case List("month")                =>
+          Seq(FormError(s"$key.month", monthRequiredKey, args))
+        case List("year")                 =>
+          Seq(FormError(s"$key.year", yearRequiredKey, args))
+        case _                            =>
+          Seq(
+            FormError(s"$key.day", allRequiredKey, args),
+            FormError(s"$key.month", allRequiredKey, args),
+            FormError(s"$key.year", allRequiredKey, args)
+          )
+      }
+      Some(errors)
+    }
+  }
 
-    fields.count(_._2.isDefined) match {
-      case 3 =>
-        formatDate(key, data).left.map {
-          _.map(_.copy(key = key, args = args))
-        }
-      case 2 =>
-        Left(List(FormError(key, requiredKey, missingFields ++ args)))
-      case 1 =>
-        Left(List(FormError(key, twoRequiredKey, missingFields ++ args)))
-      case _ =>
-        Left(List(FormError(key, allRequiredKey, args)))
+  private def nonNumericFieldErrors(
+      key: String,
+      dayStr: String,
+      monthStr: String,
+      yearStr: String
+  ): Option[Seq[FormError]] = {
+    val dayNonNumeric    = !dayStr.forall(_.isDigit)
+    val monthOpt         = parseMonth(monthStr)
+    val monthNonNumeric  = monthOpt.isEmpty && !monthStr.forall(_.isDigit)
+    val yearNonNumeric   = !yearStr.forall(_.isDigit)
+    val nonNumericFields = List(
+      "day"   -> dayNonNumeric,
+      "month" -> monthNonNumeric,
+      "year"  -> yearNonNumeric
+    ).collect { case (field, true) => field }
+    if (nonNumericFields.nonEmpty)
+      Some(nonNumericFields.map(fieldKey => FormError(s"$key.$fieldKey", invalidKey, args)))
+    else None
+  }
+
+  private def outOfRangeFieldErrors(
+      key: String,
+      dayStr: String,
+      monthStr: String,
+      yearStr: String
+  ): Option[Seq[FormError]] = {
+    val dayInt   = Try(dayStr.toInt).getOrElse(-1)
+    val monthOpt = parseMonth(monthStr)
+    val monthInt = monthOpt.getOrElse(-1)
+    val yearInt  = Try(yearStr.toInt).getOrElse(-1)
+
+    val dayOutOfRange   = !(1 to 31).contains(dayInt)
+    val monthOutOfRange = !(1 to 12).contains(monthInt)
+    val yearOutOfRange  = !(1000 to 9999).contains(yearInt)
+
+    val outOfRangeFields = List(
+      "day"   -> dayOutOfRange,
+      "month" -> monthOutOfRange,
+      "year"  -> yearOutOfRange
+    ).collect { case (field, true) => field }
+
+    outOfRangeFields match {
+      case Nil               => None
+      case List(singleField) =>
+        Some(Seq(FormError(s"$key.$singleField", notRealDateKey, args)))
+      case _                 =>
+        Some(fieldKeys.map(fk => FormError(s"$key.$fk", notRealDateKey, args)))
+    }
+  }
+
+  private def dateRangeErrors(
+      key: String,
+      dayStr: String,
+      monthStr: String,
+      yearStr: String
+  ): Option[Seq[FormError]] = {
+    val dayInt   = Try(dayStr.toInt).getOrElse(-1)
+    val monthInt = parseMonth(monthStr).getOrElse(-1)
+    val yearInt  = Try(yearStr.toInt).getOrElse(-1)
+    Try(LocalDate.of(yearInt, monthInt, dayInt)) match {
+      case Success(date) =>
+        if (date.isAfter(maxDate)) {
+          val displayDate = maxDate.plusDays(1).format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
+          Some(fieldKeys.map(fk => FormError(s"$key.$fk", futureDateKey, Seq(displayDate) ++ args)))
+        } else if (date.isBefore(minDate)) {
+          Some(fieldKeys.map(fk => FormError(s"$key.$fk", pastDateKey, args)))
+        } else None
+      case Failure(_)    =>
+        Some(fieldKeys.map(fk => FormError(s"$key.$fk", notRealDateKey, args)))
     }
   }
 
@@ -94,29 +226,4 @@ private[mappings] class LocalDateFormatter(
       s"$key.month" -> value.getMonthValue.toString,
       s"$key.year"  -> value.getYear.toString
     )
-}
-
-private class MonthFormatter(invalidKey: String, args: Seq[String] = Seq.empty) extends Formatter[Int] with Formatters {
-
-  private val baseFormatter = stringFormatter(invalidKey, args)
-
-  override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Int] = {
-
-    val months = Month.values.toList
-
-    baseFormatter
-      .bind(key, data)
-      .flatMap { str =>
-        months
-          .find(m =>
-            m.getValue.toString == str.replaceAll("^0+", "") || m.toString == str.toUpperCase || m.toString
-              .take(3) == str.toUpperCase
-          )
-          .map(x => Right(x.getValue))
-          .getOrElse(Left(List(FormError(key, invalidKey, args))))
-      }
-  }
-
-  override def unbind(key: String, value: Int): Map[String, String] =
-    Map(key -> value.toString)
 }

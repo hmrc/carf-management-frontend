@@ -47,3 +47,94 @@ signedOut.guidance = We did not save your answers.
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
+
+className.title = titke
+className.heading = titke
+className.o1 = o1m
+className.o2 = o2m
+className.checkYourAnswersLabel = titke
+className.error.required = Select className
+className.change.hidden = className
+
+somethingType.title = somethingType
+somethingType.heading = somethingType
+somethingType.checkYourAnswersLabel = somethingType
+somethingType.error.required = Select yes if somethingType
+somethingType.change.hidden = SomethingType
+
+one.title = one
+one.heading = one
+one.checkYourAnswersLabel = one
+one.error.required = Select yes if one
+one.change.hidden = One
+
+one.title = one
+one.heading = one
+one.checkYourAnswersLabel = one
+one.error.required = Select yes if one
+one.change.hidden = One
+
+one.title = one
+one.heading = one
+one.checkYourAnswersLabel = one
+one.error.required = Select yes if one
+one.change.hidden = One
+
+one.title = one
+one.heading = one
+
+one.title = one
+one.heading = one
+
+one.title = One
+one.heading = One
+one.hint = For example, 12 11 2007
+one.checkYourAnswersLabel = One
+one.error.required.all = Enter the one
+one.error.required.two = The one must include {0} and {1}
+one.error.required = The one must include {0}
+one.error.invalid = Enter a real One
+one.change.hidden = One
+
+1.title = 1
+1.heading = 1
+1.4 = 4
+1.6 = 6
+1.checkYourAnswersLabel = 1
+1.error.4.required = Enter 4
+1.error.6.required = Enter 6
+1.error.4.length = 4 must be 5 characters or less
+1.error.6.length = 6 must be 7 characters or less
+1.4.change.hidden = 4
+1.6.change.hidden = 6
+
+one.title = Four
+one.heading = Four
+one.five = Six
+one.seven = Eight
+one.checkYourAnswersLabel = Four
+one.error.required = Select one
+one.change.hidden = One
+
+one.title = Four
+one.heading = Four
+one.five = Six
+one.seven = Eight
+one.checkYourAnswersLabel = Four
+one.error.required = Select one
+one.change.hidden = One
+
+one.title = Four
+one.heading = Four
+one.five = Six
+one.seven = Eight
+one.checkYourAnswersLabel = Four
+one.error.required = Select one
+one.change.hidden = One
+
+one.title = one
+one.heading = one
+one.checkYourAnswersLabel = one
+one.error.required = Enter one
+one.error.length = One must be 100 characters or less
+one.change.hidden = One
