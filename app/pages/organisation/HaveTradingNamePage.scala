@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package navigation
+package pages.organisation
 
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.Call
-import controllers.routes
-import pages.*
-import models.*
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-@Singleton
-class Navigator @Inject() () extends NormalRoutesNavigator with ChangeRoutesNavigator {
+case object HaveTradingNamePage extends QuestionPage[Boolean] {
 
-  def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call = mode match {
-    case NormalMode =>
-      normalRoutes(page)(userAnswers)
-    case ChangeMode =>
-      changeRoutes(page)(userAnswers)
-  }
+  override def path: JsPath = JsPath \ toString
 
+  override def toString: String = "haveTradingName"
 }

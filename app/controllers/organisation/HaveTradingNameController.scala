@@ -16,43 +16,54 @@
 
 package controllers.organisation
 
-import controllers.actions._
-import forms.organisation.OrganisationNameFormProvider
+import controllers.actions.*
+import forms.GenericYesNoPageFormProvider
+
 import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
-import pages.organisation.{OrganisationNameInUserAnswers, OrganisationNamePage}
+import pages.organisation.{HaveTradingNamePage, OrganisationNameInUserAnswers}
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.organisation.OrganisationNameView
+import views.html.organisation.HaveTradingNameView
 import play.api.data.Form
 
+import java.lang.ProcessBuilder
 import scala.concurrent.{ExecutionContext, Future}
 
-class OrganisationNameController @Inject() (
+class HaveTradingNameController @Inject() (
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     navigator: Navigator,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    formProvider: OrganisationNameFormProvider,
+    formProvider: GenericYesNoPageFormProvider,
     val controllerComponents: MessagesControllerComponents,
-    view: OrganisationNameView
+    view: HaveTradingNameView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
-  val form: Form[String] = formProvider()
+  val form: Form[Boolean] = formProvider("haveTradingName.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(OrganisationNamePage).fold(form)(form.fill)
+      val preparedForm = request.userAnswers.get(HaveTradingNamePage).fold(form)(form.fill)
 
-      Ok(view(preparedForm, mode))
+      request.userAnswers
+        .get(OrganisationNameInUserAnswers)
+        .fold {
+          logger.warn(
+            "[HaveTradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
+          )
+          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+        }(orgName => Ok(view(preparedForm, mode, orgName)))
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
@@ -60,13 +71,20 @@ class OrganisationNameController @Inject() (
       form
         .bindFromRequest()
         .fold(
-          formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode))),
+          formWithErrors =>
+            request.userAnswers
+              .get(OrganisationNameInUserAnswers)
+              .fold {
+                logger.warn(
+                  "[HaveTradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
+                )
+                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+              }(orgName => Future.successful(BadRequest(view(formWithErrors, mode, orgName)))),
           value =>
             for {
-              a              <- Future.fromTry(request.userAnswers.set(OrganisationNamePage, value))
-              updatedAnswers <- Future.fromTry(a.set(OrganisationNameInUserAnswers, value))
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveTradingNamePage, value))
               _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(OrganisationNamePage, mode, updatedAnswers))
+            } yield Redirect(navigator.nextPage(HaveTradingNamePage, mode, updatedAnswers))
         )
   }
 }

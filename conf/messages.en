@@ -74,3 +74,9 @@ organisationName.error.required = Enter the name of the organisation
 organisationName.error.length = Organisation name must be 105 characters or less
 organisationName.error.invalid = Organisation name must only include letters a to z, numbers 0 to 9, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
 organisationName.change.hidden = Change organisation name
+
+haveTradingName.title = Does the reporting cryptoasset service provider (RCASP) trade under a different name?
+haveTradingName.heading = Does {0} trade under a different name?
+haveTradingName.checkYourAnswersLabel = Does the organisation trade under a different name?
+haveTradingName.error.required = Select yes if the RCASP trades under a different name
+haveTradingName.change.hidden = Change if the organisation trades under a different name
