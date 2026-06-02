@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package controllers
+package config
 
-import com.google.inject.Inject
-import config.FrontendAppConfig
-import play.api.i18n.Lang
-import play.api.mvc._
-import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
+object Constants {
 
-class LanguageSwitchController @Inject() (
-    appConfig: FrontendAppConfig,
-    languageUtils: LanguageUtils,
-    cc: ControllerComponents
-) extends LanguageController(languageUtils, cc) {
+  lazy val ZERO: Int = 0
 
-  override def fallbackURL: String = routes.IndexController.onPageLoad().url
-
-  override def languageMap: Map[String, Lang] = appConfig.languageMap
 }

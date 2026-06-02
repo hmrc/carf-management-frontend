@@ -16,6 +16,8 @@
 
 package controllers.actions
 
+import base.SpecBase
+import models.UniqueTaxpayerReference
 import models.requests.IdentifierRequest
 import play.api.mvc.*
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -23,13 +25,25 @@ import uk.gov.hmrc.auth.core.AffinityGroup
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeIdentifierAction @Inject() (bodyParsers: PlayBodyParsers, affinityGroup: AffinityGroup)
-    extends IdentifierAction
+class FakeIdentifierAction @Inject() (
+    bodyParsers: PlayBodyParsers,
+    affinityGroup: AffinityGroup,
+    requestUtr: Option[String]
+) extends IdentifierAction
     with ActionBuilder[IdentifierRequest, AnyContent]
-    with ActionFunction[Request, IdentifierRequest] {
+    with ActionFunction[Request, IdentifierRequest]
+    with SpecBase {
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] =
-    block(IdentifierRequest(request, "id", affinityGroup, carfId = "carfid"))
+    block(
+      IdentifierRequest(
+        request,
+        "id",
+        affinityGroup,
+        carfId = testCarfId,
+        utr = requestUtr.map(UniqueTaxpayerReference(_))
+      )
+    )
 
   override def parser: BodyParser[AnyContent] =
     bodyParsers.default

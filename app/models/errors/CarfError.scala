@@ -14,23 +14,10 @@
  * limitations under the License.
  */
 
-package controllers
+package models.errors
 
-import controllers.actions.IdentifierAction
-import javax.inject.Inject
-import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.IndexView
+sealed trait CarfError
 
-class IndexController @Inject() (
-    val controllerComponents: MessagesControllerComponents,
-    identify: IdentifierAction,
-    view: IndexView
-) extends FrontendBaseController
-    with I18nSupport {
+case object DataError extends CarfError
 
-  def onPageLoad(): Action[AnyContent] = identify() { implicit request =>
-    Ok(view())
-  }
-}
+case object InternalServerError extends CarfError

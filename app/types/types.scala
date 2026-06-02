@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +12,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this(
-    layout: templates.Layout
-)
+package types
 
-@()(implicit request: Request[_], messages: Messages)
+import cats.data.EitherT
+import models.errors.CarfError
 
-@layout(
-    pageTitle    = titleNoForm(messages("index.title")),
-    showBackLink = false
-) {
+import scala.concurrent.Future
 
-    <h1 class="govuk-heading-l">@messages("index.heading")</h1>
+type ResultT[T] = EitherT[Future, CarfError, T]
 
-    <p class="govuk-body">@messages("index.guidance")</p>
+object ResultT {
+  def fromFuture[T](value: Future[Either[CarfError, T]]): ResultT[T] =
+    EitherT(value)
+
+  def fromValue[T](value: T): ResultT[T] =
+    EitherT(Future.successful(Right(value)))
+
+  def fromError[T](error: CarfError): ResultT[T] =
+    EitherT[Future, CarfError, T](Future.successful(Left(error)))
+
 }
