@@ -1,64 +1,63 @@
 package controllers.organisation
 
 import base.SpecBase
-import forms.GenericYesNoPageFormProvider
+import forms.organisation.TradingNameFormProvider
 import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.organisation.HaveTradingNamePage
+import pages.organisation.TradingNamePage
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.organisation.HaveTradingNameView
+import views.html.organisation.TradingNameView
 
 import scala.concurrent.Future
 
-class HaveTradingNameControllerSpec extends SpecBase {
+class TradingNameControllerSpec extends SpecBase{
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider        = new GenericYesNoPageFormProvider()
-  val form: Form[Boolean] = formProvider("haveTradingName.error.required")
+  val formProvider = new TradingNameFormProvider()
+  val form: Form[String] = formProvider()
 
-  lazy val haveTradingNameRoute: String =
-    controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode).url
+  lazy val tradingNameRoute: String = controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode).url
 
-  "HaveTradingName Controller" - {
+  "TradingName Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, haveTradingNameRoute)
+        val request = FakeRequest(GET, tradingNameRoute)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[HaveTradingNameView]
+        val view = application.injector.instanceOf[TradingNameView]
 
-        status(result)          mustEqual OK
+        status(result) mustEqual OK
         contentAsString(result) mustEqual view(form, NormalMode)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(HaveTradingNamePage, true).success.value
+      val userAnswers = emptyUserAnswers.set(TradingNamePage, "answer").success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, haveTradingNameRoute)
+        val request = FakeRequest(GET, tradingNameRoute)
 
-        val view = application.injector.instanceOf[HaveTradingNameView]
+        val view = application.injector.instanceOf[TradingNameView]
 
         val result = route(application, request).value
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode)(request, messages(application)).toString
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode)(request, messages(application)).toString
       }
     }
 
@@ -74,12 +73,12 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
       running(application) {
         val request =
-          FakeRequest(POST, haveTradingNameRoute)
-            .withFormUrlEncodedBody(("value", "true"))
+          FakeRequest(POST, tradingNameRoute)
+            .withFormUrlEncodedBody(("tradingName-input", "answer"))
 
         val result = route(application, request).value
 
-        status(result)                 mustEqual SEE_OTHER
+        status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual onwardRoute.url
       }
     }
@@ -90,16 +89,16 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
       running(application) {
         val request =
-          FakeRequest(POST, haveTradingNameRoute)
+          FakeRequest(POST, tradingNameRoute)
             .withFormUrlEncodedBody(("value", ""))
 
         val boundForm = form.bind(Map("value" -> ""))
 
-        val view = application.injector.instanceOf[HaveTradingNameView]
+        val view = application.injector.instanceOf[TradingNameView]
 
         val result = route(application, request).value
 
-        status(result)          mustEqual BAD_REQUEST
+        status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
       }
     }
@@ -109,11 +108,11 @@ class HaveTradingNameControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, haveTradingNameRoute)
+        val request = FakeRequest(GET, tradingNameRoute)
 
         val result = route(application, request).value
 
-        status(result)                 mustEqual SEE_OTHER
+        status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
@@ -124,12 +123,12 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
       running(application) {
         val request =
-          FakeRequest(POST, haveTradingNameRoute)
-            .withFormUrlEncodedBody(("value", "true"))
+          FakeRequest(POST, tradingNameRoute)
+            .withFormUrlEncodedBody(("value", "answer"))
 
         val result = route(application, request).value
 
-        status(result)                 mustEqual SEE_OTHER
+        status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }

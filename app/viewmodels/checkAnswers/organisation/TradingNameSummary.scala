@@ -18,26 +18,26 @@ package viewmodels.checkAnswers.organisation
 
 import controllers.organisation.routes
 import models.{ChangeMode, UserAnswers}
-import pages.organisation.HaveTradingNamePage
+import pages.organisation.TradingNamePage
 import play.api.i18n.Messages
+import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object HaveTradingNameSummary {
+object TradingNameSummary  {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(HaveTradingNamePage).map { answer =>
+    answers.get(TradingNamePage).map {
+      answer =>
 
-      val value = if (answer) "site.yes" else "site.no"
-
-      SummaryListRowViewModel(
-        key = "haveTradingName.checkYourAnswersLabel",
-        value = ValueViewModel(value),
-        actions = Seq(
-          ActionItemViewModel("site.change", routes.HaveTradingNameController.onPageLoad(ChangeMode).url)
-            .withVisuallyHiddenText(messages("haveTradingName.change.hidden"))
+        SummaryListRowViewModel(
+          key     = "tradingName.checkYourAnswersLabel",
+          value   = ValueViewModel(HtmlFormat.escape(answer).toString),
+          actions = Seq(
+            ActionItemViewModel("site.change", routes.TradingNameController.onPageLoad(ChangeMode).url)
+              .withVisuallyHiddenText(messages("tradingName.change.hidden"))
+          )
         )
-      )
     }
 }

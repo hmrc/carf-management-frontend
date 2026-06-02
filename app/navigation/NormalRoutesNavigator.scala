@@ -18,7 +18,7 @@ package navigation
 
 import models.{NormalMode, UserAnswers}
 import pages.Page
-import pages.organisation.{HaveTradingNamePage, OrganisationNamePage}
+import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, TradingNamePage}
 import play.api.mvc.Call
 
 trait NormalRoutesNavigator {
@@ -26,9 +26,27 @@ trait NormalRoutesNavigator {
   val normalRoutes: Page => UserAnswers => Call = {
     case OrganisationNamePage =>
       _ => controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)
-    case HaveTradingNamePage  => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
+
+    case HaveTradingNamePage =>
+      userAnswers => navigateFromHaveTradingNamePage(userAnswers)
+
+    case TradingNamePage =>
+      _ =>
+        controllers.routes.PlaceholderController.onPageLoad(
+          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr"
+        )
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
+
+  private def navigateFromHaveTradingNamePage(userAnswers: UserAnswers): Call =
+    userAnswers.get(HaveTradingNamePage) match {
+      case Some(true)  => controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
+      case Some(false) =>
+        controllers.routes.PlaceholderController.onPageLoad(
+          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr"
+        )
+      case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
+    }
 
 }

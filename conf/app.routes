@@ -29,3 +29,8 @@ GET        /have-trading-name                        controllers.organisation.Ha
 POST       /have-trading-name                        controllers.organisation.HaveTradingNameController.onSubmit(mode: Mode = NormalMode)
 GET        /change-have-trading-name                  controllers.organisation.HaveTradingNameController.onPageLoad(mode: Mode = ChangeMode)
 POST       /change-have-trading-name                  controllers.organisation.HaveTradingNameController.onSubmit(mode: Mode = ChangeMode)
+
+GET        /trading-name                        controllers.organisation.TradingNameController.onPageLoad(mode: Mode = NormalMode)
+POST       /trading-name                        controllers.organisation.TradingNameController.onSubmit(mode: Mode = NormalMode)
+GET        /change-trading-name                  controllers.organisation.TradingNameController.onPageLoad(mode: Mode = ChangeMode)
+POST       /change-trading-name                  controllers.organisation.TradingNameController.onSubmit(mode: Mode = ChangeMode)

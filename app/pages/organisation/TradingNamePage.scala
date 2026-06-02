@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package controllers
+package pages.organisation
 
-import com.google.inject.Inject
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-class PlaceholderController @Inject() (
-    override val messagesApi: MessagesApi,
-    val controllerComponents: MessagesControllerComponents
-) extends FrontendBaseController
-    with I18nSupport {
+case object TradingNamePage extends QuestionPage[String] {
 
-  def onPageLoad(message: String): Action[AnyContent] = Action {
-    Ok(message)
-  }
+  override def path: JsPath = JsPath \ toString
 
+  override def toString: String = "tradingName"
 }
