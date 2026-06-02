@@ -66,3 +66,11 @@ homePage.contactDetails.ind.subheading = Your contact details
 homePage.contactDetails.ind.linkText = Change your contact details
 homePage.help.subheading = Get help with the service
 homePage.help.linkText = Email:
+
+organisationName.title = What is the name of the organisation?
+organisationName.heading = What is the name of the organisation?
+organisationName.checkYourAnswersLabel = What is the name of the organisation?
+organisationName.error.required = Enter the name of the organisation
+organisationName.error.length = Organisation name must be 105 characters or less
+organisationName.error.invalid = Organisation name must only include letters a to z, numbers 0 to 9, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
+organisationName.change.hidden = Change organisation name

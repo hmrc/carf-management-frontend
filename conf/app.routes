@@ -19,3 +19,8 @@ GET        /account/signed-out                controllers.auth.SignedOutControll
 GET        /unauthorised                      controllers.UnauthorisedController.onPageLoad()
 
 GET        /manage-cryptoasset-reports        controllers.HomePageController.onPageLoad()
+
+GET        /organisation-name                        controllers.organisation.OrganisationNameController.onPageLoad(mode: Mode = NormalMode)
+POST       /organisation-name                        controllers.organisation.OrganisationNameController.onSubmit(mode: Mode = NormalMode)
+GET        /change-organisation-name                  controllers.organisation.OrganisationNameController.onPageLoad(mode: Mode = ChangeMode)
+POST       /change-organisation-name                  controllers.organisation.OrganisationNameController.onSubmit(mode: Mode = ChangeMode)

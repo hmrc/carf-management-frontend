@@ -66,4 +66,16 @@ trait Mappings extends Formatters with Constraints {
       args: Seq[String] = Seq.empty
   ): FieldMapping[BigDecimal] =
     of(currencyFormatter(requiredKey, invalidNumeric, nonNumericKey, args))
+
+  protected def validatedText(
+      requiredKey: String,
+      invalidKey: String,
+      lengthKey: String,
+      regex: String,
+      maxLength: Int,
+      minLength: Int = 1,
+      msgArg: String = ""
+  ): FieldMapping[String] =
+    of(validatedTextFormatter(requiredKey, invalidKey, lengthKey, regex, maxLength, minLength, msgArg))
+
 }
