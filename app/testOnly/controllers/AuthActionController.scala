@@ -23,7 +23,7 @@ import testOnly.views.html.AuthActionView
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class AuthActionController @Inject() (
     override val messagesApi: MessagesApi,
@@ -32,8 +32,7 @@ class AuthActionController @Inject() (
     ctUtrRetrievalAction: CtUtrRetrievalAction,
     val controllerComponents: MessagesControllerComponents,
     view: AuthActionView
-)(implicit ec: ExecutionContext)
-    extends FrontendBaseController
+) extends FrontendBaseController
     with I18nSupport {
 
   def onPageLoad(): Action[AnyContent] = (identify() andThen ctUtrRetrievalAction() andThen getData()).async {

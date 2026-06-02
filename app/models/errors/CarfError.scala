@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package controllers
+package models.errors
 
-import com.google.inject.Inject
-import config.FrontendAppConfig
-import play.api.i18n.Lang
-import play.api.mvc._
-import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
+sealed trait CarfError
 
-class LanguageSwitchController @Inject() (
-    appConfig: FrontendAppConfig,
-    languageUtils: LanguageUtils,
-    cc: ControllerComponents
-) extends LanguageController(languageUtils, cc) {
+case object DataError extends CarfError
 
-  override def fallbackURL: String = routes.IndexController.onPageLoad().url
-
-  override def languageMap: Map[String, Lang] = appConfig.languageMap
-}
+case object InternalServerError extends CarfError

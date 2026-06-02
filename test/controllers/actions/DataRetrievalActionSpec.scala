@@ -44,7 +44,7 @@ class DataRetrievalActionSpec extends SpecBase {
         val action = new Harness(mockSessionRepository)
 
         val result = action
-          .callTransform(IdentifierRequest(fakeRequest, "id", AffinityGroup.Organisation, carfId = "carfId"))
+          .callTransform(IdentifierRequest(fakeRequest, "id", AffinityGroup.Organisation, carfId = testCarfId))
           .futureValue
 
         result.userAnswers must not be defined
@@ -60,7 +60,7 @@ class DataRetrievalActionSpec extends SpecBase {
 
         val result =
           action
-            .callTransform(IdentifierRequest(fakeRequest, "id", AffinityGroup.Organisation, carfId = "carfid"))
+            .callTransform(IdentifierRequest(fakeRequest, "id", AffinityGroup.Organisation, carfId = testCarfId))
             .futureValue
 
         result.userAnswers mustBe defined

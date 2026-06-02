@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,30 +12,26 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this(
-    layout: templates.Layout,
-    govukButton: GovukButton
-)
+package services
 
-@()(implicit request: Request[_], messages: Messages)
+import models.errors.InternalServerError
+import play.api.Logging
+import types.ResultT
 
-@layout(
-    pageTitle    = titleNoForm(messages("signedOut.title")),
-    showBackLink = false,
-    timeout      = false,
-    showSignOut  = false
-) {
+import javax.inject.{Inject, Singleton}
 
-    <h1 class="govuk-heading-xl">@messages("signedOut.heading")</h1>
+@Singleton
+class UploadInformationService @Inject() extends Logging {
 
-    <p class="govuk-body">@messages("signedOut.guidance")</p>
+  def hasUserUploadedFilesInLast28Days(carfId: String): ResultT[Boolean] =
+    carfId.dropRight(1).last.toString match {
+      case "9" =>
+        logger.warn("[hasUserUploadedFilesInLast28Days] Error!")
+        ResultT.fromError(InternalServerError)
+      case "1" => ResultT.fromValue(true)
+      case _   => ResultT.fromValue(false)
+    }
 
-    <p class="govuk-body">
-        @govukButton(
-            ButtonViewModel(messages("site.signIn"))
-                .asLink(routes.HomePageController.onPageLoad().url)
-        )
-    </p>
 }

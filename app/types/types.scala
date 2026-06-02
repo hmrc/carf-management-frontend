@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package controllers
+package types
 
-import controllers.actions.IdentifierAction
-import javax.inject.Inject
-import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.IndexView
+import cats.data.EitherT
+import models.errors.CarfError
 
-class IndexController @Inject() (
-    val controllerComponents: MessagesControllerComponents,
-    identify: IdentifierAction,
-    view: IndexView
-) extends FrontendBaseController
-    with I18nSupport {
+import scala.concurrent.Future
 
-  def onPageLoad(): Action[AnyContent] = identify() { implicit request =>
-    Ok(view())
-  }
+type ResultT[T] = EitherT[Future, CarfError, T]
+
+object ResultT {
+  def fromFuture[T](value: Future[Either[CarfError, T]]): ResultT[T] =
+    EitherT(value)
+
+  def fromValue[T](value: T): ResultT[T] =
+    EitherT(Future.successful(Right(value)))
+
+  def fromError[T](error: CarfError): ResultT[T] =
+    EitherT[Future, CarfError, T](Future.successful(Left(error)))
+
 }

@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this(
-    layout: templates.Layout
-)
+package config
 
-@()(implicit request: Request[_], messages: Messages)
+object Constants {
 
-@layout(
-    pageTitle    = titleNoForm(messages("index.title")),
-    showBackLink = false
-) {
+  lazy val ZERO: Int = 0
 
-    <h1 class="govuk-heading-xl">@messages("index.heading")</h1>
-
-    <p class="govuk-body">@messages("index.guidance")</p>
 }
