@@ -32,6 +32,7 @@ import viewmodels.HomePageViewModel
 import views.html.HomePageView
 
 import java.time.Clock
+import scala.concurrent.Future
 
 class HomePageControllerSpec extends SpecBase {
 
@@ -54,9 +55,11 @@ class HomePageControllerSpec extends SpecBase {
   )
 
   "HomePageController" - {
-    "must return OK and the correct view for a GET when all service calls are successful with a ct utr" in new Setup(
+    "must return OK, instantiate user answers, and return the correct view for a GET when all service calls are successful with a ct utr" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
@@ -77,6 +80,7 @@ class HomePageControllerSpec extends SpecBase {
           request,
           messages(application)
         ).toString
+        verify(mockSessionRepository).set(any())
       }
     }
 

@@ -41,7 +41,6 @@ class HomePageController @Inject() (
     accountService: AccountService,
     uploadInformationService: UploadInformationService,
     appConfig: FrontendAppConfig,
-    // TODO: remove
     sessionRepository: SessionRepository,
     getData: DataRetrievalAction,
     view: HomePageView
@@ -73,16 +72,16 @@ class HomePageController @Inject() (
         carfId = carfId
       )
 
-      viewModelFuture.value.map {
+      viewModelFuture.value.flatMap {
         case Left(error)      =>
           logger.warn("[HomePageController] Error generating view model!")
-          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         case Right(viewModel) =>
-          // TODO: remove
-          sessionRepository.set(request.userAnswers.getOrElse(UserAnswers(id = request.userId)))
           val aeoiEmail: String               = appConfig.aeoiEmailAddress
           val changeContactDetailsUrl: String = appConfig.changeContactDetailsIndexUrl
-          Ok(view(viewModel, aeoiEmail, changeContactDetailsUrl))
+          for {
+            _ <- sessionRepository.set(request.userAnswers.getOrElse(UserAnswers(id = request.userId)))
+          } yield Ok(view(viewModel, aeoiEmail, changeContactDetailsUrl))
       }
   }
 }
