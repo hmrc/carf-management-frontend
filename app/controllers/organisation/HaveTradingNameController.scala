@@ -18,20 +18,18 @@ package controllers.organisation
 
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-
-import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{HaveTradingNamePage, OrganisationNameInUserAnswers}
 import play.api.Logging
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.organisation.HaveTradingNameView
-import play.api.data.Form
 
-import java.lang.ProcessBuilder
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class HaveTradingNameController @Inject() (
@@ -62,7 +60,9 @@ class HaveTradingNameController @Inject() (
           logger.warn(
             "[HaveTradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
           )
-          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+          Redirect(
+            controllers.routes.PlaceholderController.onPageLoad("Should redirect to Some Information is Missing Page")
+          )
         }(orgName => Ok(view(preparedForm, mode, orgName)))
   }
 
@@ -78,7 +78,12 @@ class HaveTradingNameController @Inject() (
                 logger.warn(
                   "[HaveTradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
                 )
-                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+                Future.successful(
+                  Redirect(
+                    controllers.routes.PlaceholderController
+                      .onPageLoad("Should redirect to Some Information is Missing Page")
+                  )
+                )
               }(orgName => Future.successful(BadRequest(view(formWithErrors, mode, orgName)))),
           value =>
             for {

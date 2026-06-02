@@ -61,7 +61,9 @@ class TradingNameController @Inject() (
           logger.warn(
             "[TradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
           )
-          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+          Redirect(
+            controllers.routes.PlaceholderController.onPageLoad("Should redirect to Some Information is Missing Page")
+          )
         }(orgName => Ok(view(preparedForm, mode, orgName)))
   }
 
@@ -77,7 +79,12 @@ class TradingNameController @Inject() (
                 logger.warn(
                   "[TradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
                 )
-                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+                Future.successful(
+                  Redirect(
+                    controllers.routes.PlaceholderController
+                      .onPageLoad("Should redirect to Some Information is Missing Page")
+                  )
+                )
               }(orgName => Future.successful(BadRequest(view(formWithErrors, mode, orgName)))),
           value =>
             for {

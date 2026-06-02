@@ -24,6 +24,7 @@ import play.api.mvc.Call
 trait NormalRoutesNavigator {
 
   val normalRoutes: Page => UserAnswers => Call = {
+
     case OrganisationNamePage =>
       _ => controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)
 

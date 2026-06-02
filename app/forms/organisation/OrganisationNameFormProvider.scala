@@ -23,8 +23,8 @@ import play.api.data.Form
 
 class OrganisationNameFormProvider @Inject() extends Mappings {
 
-  private val maxOrganisationNameLength   = 105
-  private final val organisationNameRegex = """^[a-zA-Z0-9 &'\\`^\-]*$"""
+  private val maxOrganisationNameLength = 105
+  private val organisationNameRegex     = """^[a-zA-Z0-9 &'\\`^\-]*$"""
 
   def apply(): Form[String] =
     Form(

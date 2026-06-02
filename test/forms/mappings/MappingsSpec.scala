@@ -230,4 +230,87 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
       result.apply("value").value.value mustEqual "1"
     }
   }
+
+  "validatedTextFormatter" - {
+
+    val testMaxLength   = 99
+    val testMinLength   = 2
+    val testRegex       = """^[a-zA-Z0-9 &'\\`^\-]*$"""
+    val testInvalidKey  = "test.invalidKey"
+    val testRequiredKey = "test.requiredKey"
+    val testLengthKey   = "test.lengthKey"
+
+    val testForm: Form[String] =
+      Form(
+        "value" -> validatedText(
+          requiredKey = testRequiredKey,
+          invalidKey = testInvalidKey,
+          lengthKey = testLengthKey,
+          regex = testRegex,
+          maxLength = testMaxLength,
+          minLength = testMinLength
+        )
+      )
+
+    "must bind a valid string" in {
+      val result = testForm.bind(Map("value" -> "foobar"))
+      result.get mustEqual "foobar"
+    }
+
+    "must bind a valid of min length" in {
+      val result = testForm.bind(Map("value" -> "a" * testMinLength))
+      result.get mustEqual "a" * testMinLength
+    }
+
+    "must bind a valid of max length" in {
+      val result = testForm.bind(Map("value" -> "a" * testMaxLength))
+      result.get mustEqual "a" * testMaxLength
+    }
+
+    "must replace non-breaking spaces with regular spaces" in {
+      val result = testForm.bind(Map("value" -> "a\u00A0a"))
+      result.get mustEqual "a a"
+    }
+
+    "must replace multiple non-breaking spaces with regular spaces" in {
+      val result = testForm.bind(Map("value" -> "hello\u00A0world\u00A0foo"))
+      result.get mustEqual "hello world foo"
+    }
+
+    "must not bind an empty string" in {
+      val result = testForm.bind(Map("value" -> ""))
+      result.errors must contain(FormError("value", testRequiredKey))
+    }
+
+    "must not bind a string too long" in {
+      val result = testForm.bind(Map("value" -> "a" * (testMaxLength + 1)))
+      result.errors must contain(FormError("value", testLengthKey))
+    }
+
+    "must not bind a string too short" in {
+      val result = testForm.bind(Map("value" -> "a" * (testMinLength - 1)))
+      result.errors must contain(FormError("value", testLengthKey))
+    }
+
+    "must not bind a string that fails the regex check" in {
+      val result = testForm.bind(Map("value" -> "???"))
+      result.errors must contain(FormError("value", testInvalidKey))
+    }
+
+    "must not bind a string of whitespace only" in {
+      val result = testForm.bind(Map("value" -> " \t"))
+      result.errors must contain(FormError("value", testRequiredKey))
+    }
+
+    "must not bind an empty map" in {
+      val result = testForm.bind(Map.empty[String, String])
+      result.errors must contain(FormError("value", testRequiredKey))
+    }
+
+    "must unbind a valid value" in {
+      val result = testForm.fill("foobar")
+      result.apply("value").value.value mustEqual "foobar"
+    }
+  }
+
 }

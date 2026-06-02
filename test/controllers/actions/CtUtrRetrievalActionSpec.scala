@@ -32,16 +32,14 @@ import scala.concurrent.Future
 
 class CtUtrRetrievalActionSpec extends SpecBase {
 
-  private def fakeRequest = FakeRequest("", "")
-
   val mockConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
-  val testContent     = "Test Content "
-  val enrolment       = "IR-CT"
-  val utrKey          = "UTR"
-  val state           = "Activated"
-  val enrolments      = Set(Enrolment(enrolment, Seq(EnrolmentIdentifier(utrKey, "123")), state))
-  val emptyEnrolments = Set.empty[Enrolment]
+  val testContent                = "Test Content "
+  val enrolment                  = "IR-CT"
+  val utrKey                     = "UTR"
+  val state                      = "Activated"
+  val enrolments: Set[Enrolment] = Set(Enrolment(enrolment, Seq(EnrolmentIdentifier(utrKey, "123")), state))
+  val emptyEnrolments            = Set.empty[Enrolment]
 
   val testCtUtrRetrievalActionProvider = new CtUtrRetrievalActionProvider(mockConfig)
 

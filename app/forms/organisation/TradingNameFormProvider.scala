@@ -23,8 +23,8 @@ import play.api.data.Form
 
 class TradingNameFormProvider @Inject() extends Mappings {
 
-  private val maxTradingNameLength    = 105
-  private final val tradingNameRegex = """^[a-zA-Z0-9 &'\\`^\-]*$"""
+  private val maxTradingNameLength = 105
+  private val tradingNameRegex     = """^[a-zA-Z0-9 &'\\`^\-]*$"""
 
   def apply(): Form[String] =
     Form(

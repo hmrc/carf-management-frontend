@@ -16,20 +16,25 @@
 
 package navigation
 
-import models.*
-import pages.*
-import play.api.mvc.Call
+import base.SpecBase
+import models.ChangeMode
+import pages.Page
 
-import javax.inject.{Inject, Singleton}
+class ChangeRoutesNavigatorSpec extends SpecBase {
 
-@Singleton
-class Navigator @Inject() () extends NormalRoutesNavigator with ChangeRoutesNavigator {
+  val navigator = new Navigator()
 
-  def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call = mode match {
-    case NormalMode =>
-      normalRoutes(page)(userAnswers)
-    case ChangeMode =>
-      changeRoutes(page)(userAnswers)
+  case object TestPage extends Page
+
+  "ChangeRoutesNavigator" - {
+    "When passed any page" - {
+      "Should redirect to Journey Recovery" in {
+        navigator.nextPage(
+          TestPage,
+          ChangeMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
+    }
   }
-
 }
