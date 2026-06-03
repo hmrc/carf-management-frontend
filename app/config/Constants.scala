@@ -19,7 +19,7 @@ package config
 object Constants {
 
   inline val ZERO = 0
-  
+
   inline val standardTextInputRegex = """^[a-zA-Z0-9 &'\\`^\-]*$"""
 
 }
