@@ -180,11 +180,12 @@ trait Formatters {
         }
 
       private def handleEmptyInput(key: String) =
-        if (msgArg.isEmpty) {
-          Left(Seq(FormError(key, errorKey)))
-        } else {
-          Left(Seq(FormError(key, errorKey, Seq(msgArg))))
-        }
+        Left(
+          Seq(
+            if msgArg.isEmpty then FormError(key, errorKey)
+            else FormError(key, errorKey, Seq(msgArg))
+          )
+        )
 
       override def unbind(key: String, value: String): Map[String, String] =
         Map(key -> value)
