@@ -21,7 +21,7 @@ import forms.organisation.OrganisationNameFormProvider
 import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
-import pages.organisation.{OrganisationNameInUserAnswers, OrganisationNamePage}
+import pages.organisation.{OrganisationNamePage, OverwritableOrganisationName}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -64,7 +64,7 @@ class OrganisationNameController @Inject() (
           value =>
             for {
               a              <- Future.fromTry(request.userAnswers.set(OrganisationNamePage, value))
-              updatedAnswers <- Future.fromTry(a.set(OrganisationNameInUserAnswers, value))
+              updatedAnswers <- Future.fromTry(a.set(OverwritableOrganisationName, value))
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(OrganisationNamePage, mode, updatedAnswers))
         )

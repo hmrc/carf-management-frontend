@@ -22,7 +22,7 @@ import forms.organisation.TradingNameFormProvider
 import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
-import pages.organisation.{OrganisationNameInUserAnswers, TradingNamePage}
+import pages.organisation.{OverwritableOrganisationName, TradingNamePage}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -56,13 +56,14 @@ class TradingNameController @Inject() (
       val preparedForm = request.userAnswers.get(TradingNamePage).fold(form)(form.fill)
 
       request.userAnswers
-        .get(OrganisationNameInUserAnswers)
+        .get(OverwritableOrganisationName)
         .fold {
           logger.warn(
             "[TradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
           )
           Redirect(
-            controllers.routes.PlaceholderController.onPageLoad("Should redirect to Some Information is Missing Page")
+            controllers.routes.PlaceholderController
+              .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
           )
         }(orgName => Ok(view(preparedForm, mode, orgName)))
   }
@@ -74,7 +75,7 @@ class TradingNameController @Inject() (
         .fold(
           formWithErrors =>
             request.userAnswers
-              .get(OrganisationNameInUserAnswers)
+              .get(OverwritableOrganisationName)
               .fold {
                 logger.warn(
                   "[TradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
@@ -82,7 +83,7 @@ class TradingNameController @Inject() (
                 Future.successful(
                   Redirect(
                     controllers.routes.PlaceholderController
-                      .onPageLoad("Should redirect to Some Information is Missing Page")
+                      .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
                   )
                 )
               }(orgName => Future.successful(BadRequest(view(formWithErrors, mode, orgName)))),

@@ -19,9 +19,9 @@ package pages.organisation
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 
-case object OrganisationNameInUserAnswers extends QuestionPage[String] {
+case object OverwritableOrganisationName extends QuestionPage[String] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "organisationNameInUserAnswers"
+  override def toString: String = "overwritableOrganisationName"
 }

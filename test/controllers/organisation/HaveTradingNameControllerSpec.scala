@@ -22,7 +22,7 @@ import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.organisation.{HaveTradingNamePage, OrganisationNameInUserAnswers}
+import pages.organisation.{HaveTradingNamePage, OverwritableOrganisationName}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -46,7 +46,7 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET when an org name is present in user answers" in {
 
-      val ua = emptyUserAnswers.withPage(OrganisationNameInUserAnswers, testOrgName)
+      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
 
       val application = applicationBuilder(userAnswers = Some(ua)).build()
 
@@ -73,7 +73,7 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
         status(result)               mustEqual SEE_OTHER
         redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to Some Information is Missing Page")
+          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
           .url
       }
     }
@@ -82,7 +82,7 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
       val userAnswers = emptyUserAnswers
         .withPage(HaveTradingNamePage, true)
-        .withPage(OrganisationNameInUserAnswers, testOrgName)
+        .withPage(OverwritableOrganisationName, testOrgName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -125,7 +125,7 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
     "must return a Bad Request and errors when invalid data is submitted and an org name is present in user answers" in {
 
-      val ua = emptyUserAnswers.withPage(OrganisationNameInUserAnswers, testOrgName)
+      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
 
       val application = applicationBuilder(userAnswers = Some(ua)).build()
 
@@ -161,7 +161,7 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
         status(result)               mustEqual SEE_OTHER
         redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to Some Information is Missing Page")
+          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
           .url
       }
     }

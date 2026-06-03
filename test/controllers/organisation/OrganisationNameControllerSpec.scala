@@ -22,7 +22,7 @@ import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{verify, when}
-import pages.organisation.{OrganisationNameInUserAnswers, OrganisationNamePage}
+import pages.organisation.{OrganisationNamePage, OverwritableOrganisationName}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -95,7 +95,7 @@ class OrganisationNameControllerSpec extends SpecBase {
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual onwardRoute.url
-        verify(mockSessionRepository).set(argThat(ua => ua.get(OrganisationNameInUserAnswers).get == testOrgName))
+        verify(mockSessionRepository).set(argThat(ua => ua.get(OverwritableOrganisationName).get == testOrgName))
       }
     }
 

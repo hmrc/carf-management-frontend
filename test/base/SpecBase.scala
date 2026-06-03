@@ -29,7 +29,7 @@ import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsError, JsResultException, JsSuccess, Json, Reads, Writes}
+import play.api.libs.json.*
 import play.api.mvc.PlayBodyParsers
 import play.api.test.FakeRequest
 import queries.{Gettable, Settable}
@@ -87,7 +87,7 @@ trait SpecBase
   implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  implicit class UserAnswersExtension(userAnswers: UserAnswers) {
+  extension (userAnswers: UserAnswers) {
 
     def withPage[T](page: Settable[T] & Gettable[T], value: T)(implicit
         writes: Writes[T],
@@ -107,5 +107,5 @@ trait SpecBase
 
   }
 
-  lazy val testOrgName: String = "Timmy Ltd"
+  inline val testOrgName = "Timmy Ltd"
 }
