@@ -55,7 +55,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NormalMode,
           ua
         ) mustBe controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr"
+          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr (CARF-197)"
         )
       }
 
@@ -75,7 +75,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NormalMode,
           emptyUserAnswers
         ) mustBe controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr"
+          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr (CARF-197)"
         )
       }
     }

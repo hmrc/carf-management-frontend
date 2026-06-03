@@ -34,7 +34,7 @@ trait NormalRoutesNavigator {
     case TradingNamePage =>
       _ =>
         controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr"
+          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr (CARF-197)"
         )
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
@@ -45,7 +45,7 @@ trait NormalRoutesNavigator {
       case Some(true)  => controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
       case Some(false) =>
         controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr"
+          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr (CARF-197)"
         )
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
