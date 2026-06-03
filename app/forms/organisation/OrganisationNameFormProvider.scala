@@ -16,15 +16,15 @@
 
 package forms.organisation
 
-import javax.inject.Inject
-
+import config.Constants.standardTextInputRegex
 import forms.mappings.Mappings
 import play.api.data.Form
+
+import javax.inject.Inject
 
 class OrganisationNameFormProvider @Inject() extends Mappings {
 
   private val maxOrganisationNameLength = 105
-  private val organisationNameRegex     = """^[a-zA-Z0-9 &'\\`^\-]*$"""
 
   def apply(): Form[String] =
     Form(
@@ -32,7 +32,7 @@ class OrganisationNameFormProvider @Inject() extends Mappings {
         requiredKey = "organisationName.error.required",
         invalidKey = "organisationName.error.invalid",
         lengthKey = "organisationName.error.length",
-        regex = organisationNameRegex,
+        regex = standardTextInputRegex,
         maxLength = maxOrganisationNameLength
       )
     )
