@@ -30,14 +30,14 @@ class Navigator @Inject() () {
     _ => routes.JourneyRecoveryController.onPageLoad()
   }
 
-  private val checkRouteMap: Page => UserAnswers => Call = { case _ =>
+  private val changeRouteMap: Page => UserAnswers => Call = { case _ =>
     _ => routes.JourneyRecoveryController.onPageLoad()
   }
 
   def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call = mode match {
     case NormalMode =>
       normalRoutes(page)(userAnswers)
-    case CheckMode  =>
-      checkRouteMap(page)(userAnswers)
+    case ChangeMode =>
+      changeRouteMap(page)(userAnswers)
   }
 }
