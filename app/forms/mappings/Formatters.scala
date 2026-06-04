@@ -16,6 +16,7 @@
 
 package forms.mappings
 
+import config.Constants.{ninoFormatRegex, realNinoRegex}
 import models.Enumerable
 import play.api.data.FormError
 import play.api.data.format.Formatter
@@ -194,4 +195,38 @@ trait Formatters {
 
   private def removeNonBreakingSpaces(str: String) =
     str.replaceAll("\u00A0", " ")
+
+  protected def nationalInsuranceNumberFormatter(
+      requiredKey: String,
+      invalidKey: String,
+      notRealKey: String,
+      args: Seq[Any] = Seq.empty
+  ): Formatter[String] =
+    new Formatter[String] {
+
+      override def bind(key: String, data: Map[String, String]): EitherFormErrorOrValue =
+        data.get(key) match {
+          case None                              =>
+            Left(Seq(FormError(key, requiredKey, args)))
+          case Some(value) if value.trim.isEmpty =>
+            Left(Seq(FormError(key, requiredKey, args)))
+          case Some(value)                       =>
+            val normalized = value.replaceAll("\\s", "").toUpperCase
+
+            if (normalized.length > 9) {
+              Left(Seq(FormError(key, invalidKey, args)))
+            } else if (!normalized.matches(ninoFormatRegex)) {
+              Left(Seq(FormError(key, invalidKey, args)))
+            } else if (!normalized.matches(realNinoRegex)) {
+              Left(Seq(FormError(key, notRealKey, args)))
+            } else {
+              Right(normalized)
+            }
+        }
+
+      override def unbind(key: String, value: String): Map[String, String] =
+        Map(key -> value)
+
+    }
+
 }

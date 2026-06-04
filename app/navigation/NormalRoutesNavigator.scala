@@ -18,6 +18,7 @@ package navigation
 
 import models.{NormalMode, UserAnswers}
 import pages.Page
+import pages.individual.{IndividualNamePage, NiNumberPage}
 import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, TradingNamePage}
 import play.api.mvc.Call
 
@@ -36,6 +37,11 @@ trait NormalRoutesNavigator {
         controllers.routes.PlaceholderController.onPageLoad(
           "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr (CARF-197)"
         )
+
+    case IndividualNamePage => _ => controllers.individual.routes.NiNumberController.onPageLoad(NormalMode)
+
+    case NiNumberPage =>
+      _ => controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }

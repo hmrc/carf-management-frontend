@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-package models.individual
+package forms.individual
 
-import play.api.libs.json._
+import javax.inject.Inject
 
-case class IndividualName(firstName: String, lastName: String) {
+import forms.mappings.Mappings
+import play.api.data.Form
 
-  val fullName: String = s"$firstName $lastName"
+class NiNumberFormProvider @Inject() extends Mappings {
 
-}
-
-object IndividualName {
-  implicit val format: OFormat[IndividualName] = Json.format[IndividualName]
+  def apply(): Form[String] =
+    Form(
+      "value" -> nationalInsuranceNumber(
+        requiredKey = "niNumber.error.required",
+        invalidKey = "niNumber.error.invalid",
+        notRealKey = "niNumber.error.notReal"
+      )
+    )
 }

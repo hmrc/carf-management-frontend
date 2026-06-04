@@ -39,3 +39,8 @@ GET        /individual-name                        controllers.individual.Indivi
 POST       /individual-name                        controllers.individual.IndividualNameController.onSubmit(mode: Mode = NormalMode)
 GET        /change-individual-name                  controllers.individual.IndividualNameController.onPageLoad(mode: Mode = ChangeMode)
 POST       /change-individual-name                  controllers.individual.IndividualNameController.onSubmit(mode: Mode = ChangeMode)
+
+GET        /ni-number                        controllers.individual.NiNumberController.onPageLoad(mode: Mode = NormalMode)
+POST       /ni-number                        controllers.individual.NiNumberController.onSubmit(mode: Mode = NormalMode)
+GET        /change-ni-number                  controllers.individual.NiNumberController.onPageLoad(mode: Mode = ChangeMode)
+POST       /change-ni-number                  controllers.individual.NiNumberController.onSubmit(mode: Mode = ChangeMode)

@@ -17,44 +17,56 @@
 package controllers.individual
 
 import controllers.actions.*
-import forms.individual.IndividualNameFormProvider
+import forms.individual.NiNumberFormProvider
 
 import javax.inject.Inject
 import models.Mode
-import models.individual.IndividualName
 import navigation.Navigator
-import pages.individual.IndividualNamePage
+import pages.individual.{IndividualNamePage, NiNumberPage}
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.individual.IndividualNameView
+import views.html.individual.NiNumberView
 import play.api.data.Form
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class IndividualNameController @Inject() (
+class NiNumberController @Inject() (
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     navigator: Navigator,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    formProvider: IndividualNameFormProvider,
+    formProvider: NiNumberFormProvider,
     val controllerComponents: MessagesControllerComponents,
-    view: IndividualNameView
+    view: NiNumberView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
-  val form: Form[IndividualName] = formProvider()
+  val form: Form[String] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(IndividualNamePage).fold(form)(form.fill)
+      val preparedForm = request.userAnswers.get(NiNumberPage).fold(form)(form.fill)
 
-      Ok(view(preparedForm, mode))
+      request.userAnswers
+        .get(IndividualNamePage)
+        .fold {
+          logger.warn(
+            "[NiNumberController][onPageLoad] Error! Individual name could not be retrieved from user answers"
+          )
+          Redirect(
+            controllers.routes.PlaceholderController
+              .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
+          )
+        }(individualName => Ok(view(preparedForm, mode, individualName.fullName)))
+
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
@@ -62,12 +74,25 @@ class IndividualNameController @Inject() (
       form
         .bindFromRequest()
         .fold(
-          formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode))),
+          formWithErrors =>
+            request.userAnswers
+              .get(IndividualNamePage)
+              .fold {
+                logger.warn(
+                  "[NiNumberController][onSubmit] Error! Individual name could not be retrieved from user answers"
+                )
+                Future.successful(
+                  Redirect(
+                    controllers.routes.PlaceholderController
+                      .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
+                  )
+                )
+              }(individualName => Future.successful(BadRequest(view(formWithErrors, mode, individualName.fullName)))),
           value =>
             for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(IndividualNamePage, value))
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(NiNumberPage, value))
               _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(IndividualNamePage, mode, updatedAnswers))
+            } yield Redirect(navigator.nextPage(NiNumberPage, mode, updatedAnswers))
         )
   }
 }

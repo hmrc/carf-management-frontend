@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package models.individual
+package pages.individual
 
-import play.api.libs.json._
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-case class IndividualName(firstName: String, lastName: String) {
+case object NiNumberPage extends QuestionPage[String] {
 
-  val fullName: String = s"$firstName $lastName"
+  override def path: JsPath = JsPath \ toString
 
-}
-
-object IndividualName {
-  implicit val format: OFormat[IndividualName] = Json.format[IndividualName]
+  override def toString: String = "niNumber"
 }

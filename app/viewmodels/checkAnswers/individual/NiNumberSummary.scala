@@ -18,28 +18,26 @@ package viewmodels.checkAnswers.individual
 
 import controllers.individual.routes
 import models.{ChangeMode, UserAnswers}
-import pages.individual.IndividualNamePage
+import pages.individual.NiNumberPage
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object IndividualNameSummary {
+object NiNumberSummary  {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(IndividualNamePage).map { answer =>
+    answers.get(NiNumberPage).map {
+      answer =>
 
-      val value = HtmlFormat.escape(answer.firstName).toString + "<br/>" + HtmlFormat.escape(answer.lastName).toString
-
-      SummaryListRowViewModel(
-        key = "individualName.checkYourAnswersLabel",
-        value = ValueViewModel(HtmlContent(value)),
-        actions = Seq(
-          ActionItemViewModel("site.change", routes.IndividualNameController.onPageLoad(ChangeMode).url)
-            .withVisuallyHiddenText(messages("individualName.change.hidden"))
+        SummaryListRowViewModel(
+          key     = "niNumber.checkYourAnswersLabel",
+          value   = ValueViewModel(HtmlFormat.escape(answer).toString),
+          actions = Seq(
+            ActionItemViewModel("site.change", routes.NiNumberController.onPageLoad(ChangeMode).url)
+              .withVisuallyHiddenText(messages("niNumber.change.hidden"))
+          )
         )
-      )
     }
 }

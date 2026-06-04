@@ -23,4 +23,8 @@ object Constants {
   inline val standardTextInputRegex               = """^[a-zA-Z0-9 &'\\`^\-]*$"""
   inline val standardTextInputWithoutNumbersRegex = """^[a-zA-Z &'\\`^\-]*$"""
 
+  inline final val ninoFormatRegex = """^[A-Z]{2}[0-9]{6}[A-Z]{1}$"""
+  inline final val realNinoRegex   =
+    "^([ACEHJLMOPRSWXY][A-CEGHJ-NPR-TW-Z]|B[A-CEHJ-NPR-TW-Z]|G[ACEGHJ-NPR-TW-Z]|[KT][A-CEGHJ-MPR-TW-Z]|N[A-CEGHJL-NPR-SW-Z]|Z[A-CEGHJ-NPR-TW-Y])[0-9]{6}[A-D ]$"
+
 }

@@ -101,3 +101,12 @@ individualName.error.lastName.length = The last name must be 35 characters or le
 individualName.error.firstName.invalid = The first name must only include letters a to z, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
 individualName.error.lastName.invalid = The last name must only include letters a to z, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
 individualName.name.change.hidden = Change reporting cryptoasset service provider name
+
+niNumber.title = What is the National Insurance number for the reporting cryptoasset service provider (RCASP)?
+niNumber.heading = What is the National Insurance number for {0}?
+niNumber.hint = It’s on National Insurance cards, benefit letters, payslips or P60 forms — for example, ‘QQ 12 34 56 C’.
+niNumber.checkYourAnswersLabel = National Insurance number
+niNumber.error.required = Enter the National Insurance number for the RCASP
+niNumber.error.invalid = Enter the National Insurance number in the right format
+niNumber.error.notReal = Enter a real National Insurance number
+niNumber.change.hidden = Change National Insurance number

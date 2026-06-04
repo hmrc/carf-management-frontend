@@ -1,76 +1,63 @@
 package controllers.individual
 
 import base.SpecBase
-import forms.individual.IndividualNameFormProvider
+import forms.individual.NiNumberFormProvider
 import models.NormalMode
-import models.individual.IndividualName
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.individual.IndividualNamePage
+import pages.individual.NiNumberPage
 import play.api.data.Form
 import play.api.inject.bind
-import play.api.libs.json.Json
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import views.html.individual.IndividualNameView
+import views.html.individual.NiNumberView
 
-class IndividualNameControllerSpec extends SpecBase {
+import scala.concurrent.Future
+
+class NiNumberControllerSpec extends SpecBase{
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider = new IndividualNameFormProvider()
-  val form         = formProvider()
+  val formProvider = new NiNumberFormProvider()
+  val form: Form[String] = formProvider()
 
-  lazy val individualNameRoute = routes.individual.IndividualNameController.onPageLoad(NormalMode).url
+  lazy val niNumberRoute: String = controllers.individual.routes.NiNumberController.onPageLoad(NormalMode).url
 
-  val userAnswers = UserAnswers(
-    returnId,
-    groupId,
-    userAnswersId,
-    Json.obj(
-      IndividualNamePage.toString -> Json.obj(
-        "firstName" -> "value 1",
-        "lastName"  -> "value 2"
-      )
-    )
-  )
-
-  "IndividualName Controller" - {
+  "NiNumber Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, individualNameRoute)
-
-        val view = application.injector.instanceOf[IndividualNameView]
+        val request = FakeRequest(GET, niNumberRoute)
 
         val result = route(application, request).value
 
-        status(result)          mustEqual OK
+        val view = application.injector.instanceOf[NiNumberView]
+
+        status(result) mustEqual OK
         contentAsString(result) mustEqual view(form, NormalMode)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
+      val userAnswers = emptyUserAnswers.set(NiNumberPage, "answer").success.value
+
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, individualNameRoute)
+        val request = FakeRequest(GET, niNumberRoute)
 
-        val view = application.injector.instanceOf[IndividualNameView]
+        val view = application.injector.instanceOf[NiNumberView]
 
         val result = route(application, request).value
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(IndividualName("value 1", "value 2")), NormalMode)(
-          request,
-          messages(application)
-        ).toString
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode)(request, messages(application)).toString
       }
     }
 
@@ -85,13 +72,11 @@ class IndividualNameControllerSpec extends SpecBase {
           .build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, individualNameRoute)
-            .withFormUrlEncodedBody(("firstName", "value 1"), ("lastName", "value 2"))
+        val request = FakeRequest(POST, niNumberRoute).withFormUrlEncodedBody(("value", "answer"))
 
         val result = route(application, request).value
 
-        status(result)                 mustEqual SEE_OTHER
+        status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual onwardRoute.url
       }
     }
@@ -101,17 +86,15 @@ class IndividualNameControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, individualNameRoute)
-            .withFormUrlEncodedBody(("value", "invalid value"))
+        val request = FakeRequest(POST, niNumberRoute).withFormUrlEncodedBody(("value", ""))
 
-        val boundForm = form.bind(Map("value" -> "invalid value"))
+        val boundForm = form.bind(Map("value" -> ""))
 
-        val view = application.injector.instanceOf[IndividualNameView]
+        val view = application.injector.instanceOf[NiNumberView]
 
         val result = route(application, request).value
 
-        status(result)          mustEqual BAD_REQUEST
+        status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
       }
     }
@@ -121,11 +104,11 @@ class IndividualNameControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, individualNameRoute)
+        val request = FakeRequest(GET, niNumberRoute)
 
         val result = route(application, request).value
 
-        status(result)                 mustEqual SEE_OTHER
+        status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
@@ -135,13 +118,11 @@ class IndividualNameControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, individualNameRoute)
-            .withFormUrlEncodedBody(("firstName", "value 1"), ("lastName", "value 2"))
+        val request = FakeRequest(POST, niNumberRoute).withFormUrlEncodedBody(("value", "answer"))
 
         val result = route(application, request).value
 
-        status(result)                 mustEqual SEE_OTHER
+        status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
