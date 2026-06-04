@@ -1,3 +1,19 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package controllers.individual
 
 import base.SpecBase
@@ -6,30 +22,32 @@ import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.individual.NiNumberPage
+import pages.individual.{IndividualNamePage, NiNumberPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import views.html.individual.NiNumberView
 
 import scala.concurrent.Future
 
-class NiNumberControllerSpec extends SpecBase{
+class NiNumberControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider = new NiNumberFormProvider()
+  val formProvider       = new NiNumberFormProvider()
   val form: Form[String] = formProvider()
 
   lazy val niNumberRoute: String = controllers.individual.routes.NiNumberController.onPageLoad(NormalMode).url
 
   "NiNumber Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET when an individual name is present in user answers" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
+
+      val application = applicationBuilder(userAnswers = Some(ua)).build()
 
       running(application) {
         val request = FakeRequest(GET, niNumberRoute)
@@ -38,14 +56,35 @@ class NiNumberControllerSpec extends SpecBase{
 
         val view = application.injector.instanceOf[NiNumberView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode)(request, messages(application)).toString
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(form, NormalMode, testIndividualName.fullName)(
+          request,
+          messages(application)
+        ).toString
+      }
+    }
+
+    "must redirect to Some Information is Missing GET when an individual name is NOT present in user answers" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, niNumberRoute)
+
+        val result = route(application, request).value
+
+        status(result)               mustEqual SEE_OTHER
+        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
+          .url
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(NiNumberPage, "answer").success.value
+      val userAnswers = emptyUserAnswers
+        .withPage(NiNumberPage, testNiNumber)
+        .withPage(IndividualNamePage, testIndividualName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -56,8 +95,11 @@ class NiNumberControllerSpec extends SpecBase{
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode)(request, messages(application)).toString
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(form.fill(testNiNumber), NormalMode, testIndividualName.fullName)(
+          request,
+          messages(application)
+        ).toString
       }
     }
 
@@ -72,18 +114,20 @@ class NiNumberControllerSpec extends SpecBase{
           .build()
 
       running(application) {
-        val request = FakeRequest(POST, niNumberRoute).withFormUrlEncodedBody(("value", "answer"))
+        val request = FakeRequest(POST, niNumberRoute).withFormUrlEncodedBody(("value", testNiNumber))
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual onwardRoute.url
       }
     }
 
-    "must return a Bad Request and errors when invalid data is submitted" in {
+    "must return a Bad Request and errors when invalid data is submitted and an individual name is present in user answers" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
+
+      val application = applicationBuilder(userAnswers = Some(ua)).build()
 
       running(application) {
         val request = FakeRequest(POST, niNumberRoute).withFormUrlEncodedBody(("value", ""))
@@ -94,8 +138,27 @@ class NiNumberControllerSpec extends SpecBase{
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
+        status(result)          mustEqual BAD_REQUEST
+        contentAsString(result) mustEqual view(boundForm, NormalMode, testIndividualName.fullName)(
+          request,
+          messages(application)
+        ).toString
+      }
+    }
+
+    "must redirect to Some Information is Missing when invalid data is submitted and an org name is NOT present in user answers" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(POST, niNumberRoute).withFormUrlEncodedBody(("value", ""))
+
+        val result = route(application, request).value
+
+        status(result)               mustEqual SEE_OTHER
+        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
+          .url
       }
     }
 
@@ -108,7 +171,7 @@ class NiNumberControllerSpec extends SpecBase{
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
@@ -122,7 +185,7 @@ class NiNumberControllerSpec extends SpecBase{
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }

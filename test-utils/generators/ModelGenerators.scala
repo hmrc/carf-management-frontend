@@ -16,12 +16,18 @@
 
 package generators
 
-trait ModelGenerators {}
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.{Arbitrary, Gen}
+import models.individual.IndividualName
 
-implicit lazy val arbitraryIndividualName: Arbitrary[individual.IndividualName] =
-  Arbitrary {
-    for {
-      firstName <- arbitrary[String]
-      lastName  <- arbitrary[String]
-    } yield individual.IndividualName(firstName, lastName)
-  }
+trait ModelGenerators {
+
+  implicit lazy val arbitraryIndividualName: Arbitrary[IndividualName] =
+    Arbitrary {
+      for {
+        firstName <- arbitrary[String]
+        lastName  <- arbitrary[String]
+      } yield IndividualName(firstName, lastName)
+    }
+
+}

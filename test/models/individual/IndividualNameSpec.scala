@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package config
+package models.individual
 
-object Constants {
+import base.SpecBase
 
-  inline val ZERO = 0
+class IndividualNameSpec extends SpecBase {
 
-  inline val standardTextInputRegex               = """^[a-zA-Z0-9 &'\\`^\-]*$"""
-  inline val standardTextInputWithoutNumbersRegex = """^[a-zA-Z &'\\`^\-]*$"""
+  "IndividualName" - {
+    "fullName method" - {
+      "must concatenate the first and last names with a space in between" in {
+        val testIndividualName = IndividualName(firstName = "Timmy", lastName = "Jimmy")
 
-  inline final val ninoFormatRegex = """^[A-Z]{2}[0-9]{6}[A-Z]{1}$"""
-  inline final val realNinoRegex   =
-    "^([ACEHJLMOPRSWXY][A-CEGHJ-NPR-TW-Z]|B[A-CEHJ-NPR-TW-Z]|G[ACEGHJ-NPR-TW-Z]|[KT][A-CEGHJ-MPR-TW-Z]|N[A-CEGHJL-NPR-SW-Z]|Z[A-CEGHJ-NPR-TW-Y])[0-9]{6}[A-D ]$"
+        val result = testIndividualName.fullName
 
-  inline final val maxNiNumberLength = 9
-
+        result mustBe "Timmy Jimmy"
+      }
+    }
+  }
 }

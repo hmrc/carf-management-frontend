@@ -313,4 +313,75 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
     }
   }
 
+  "nationalInsuranceNumberFormatter" - {
+
+    val testMaxLength   = 9
+    val testRequiredKey = "test.requiredKey"
+    val testInvalidKey  = "test.invalidKey"
+    val testNotRealKey  = "test.notRealKey"
+
+    val testForm: Form[String] = Form(
+      "value" -> nationalInsuranceNumber(
+        requiredKey = testRequiredKey,
+        invalidKey = testInvalidKey,
+        notRealKey = testNotRealKey
+      )
+    )
+
+    "must bind a valid string" in {
+      val result = testForm.bind(Map("value" -> "BA123456A"))
+      result.get mustEqual "BA123456A"
+    }
+
+    "must bind a valid string with spaces at the start and end" in {
+      val result = testForm.bind(Map("value" -> " BA123456A "))
+      result.get mustEqual "BA123456A"
+    }
+
+    "must bind a valid string with spaces throughout" in {
+      val result = testForm.bind(Map("value" -> " BA  1 2   34 56 A "))
+      result.get mustEqual "BA123456A"
+    }
+
+    "must not bind an empty map" in {
+      val result = testForm.bind(Map.empty[String, String])
+      result.errors must contain(FormError("value", testRequiredKey))
+    }
+
+    "must not bind an empty string" in {
+      val result = testForm.bind(Map("value" -> ""))
+      result.errors must contain(FormError("value", testRequiredKey))
+    }
+
+    "must not bind an string with just spaces" in {
+      val result = testForm.bind(Map("value" -> "         "))
+      result.errors must contain(FormError("value", testRequiredKey))
+    }
+
+    "must not bind a string too long" in {
+      val result = testForm.bind(Map("value" -> "a" * (testMaxLength + 1)))
+      result.errors must contain(FormError("value", testInvalidKey))
+    }
+
+    "must not bind a string that fails that has invalid characters" in {
+      val result = testForm.bind(Map("value" -> "???"))
+      result.errors must contain(FormError("value", testInvalidKey))
+    }
+
+    "must not bind a string that has valid characters but is an example ni number" in {
+      val result = testForm.bind(Map("value" -> "QQ 12 34 56 C"))
+      result.errors must contain(FormError("value", testNotRealKey))
+    }
+
+    "must not bind a string that has valid characters but is not real" in {
+      val result = testForm.bind(Map("value" -> "DD123456D"))
+      result.errors must contain(FormError("value", testNotRealKey))
+    }
+
+    "must unbind a valid value" in {
+      val result = testForm.fill("foobar")
+      result.apply("value").value.value mustEqual "foobar"
+    }
+  }
+
 }

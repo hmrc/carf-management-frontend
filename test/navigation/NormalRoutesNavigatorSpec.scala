@@ -19,6 +19,7 @@ package navigation
 import base.SpecBase
 import models.NormalMode
 import pages.Page
+import pages.individual.{IndividualNamePage, NiNumberPage}
 import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, TradingNamePage}
 
 class NormalRoutesNavigatorSpec extends SpecBase {
@@ -77,6 +78,26 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.routes.PlaceholderController.onPageLoad(
           "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr (CARF-197)"
         )
+      }
+    }
+
+    "When passed IndividualNamePage" - {
+      "Should redirect to NiNumberController" in {
+        navigator.nextPage(
+          IndividualNamePage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.individual.routes.NiNumberController.onPageLoad(NormalMode)
+      }
+    }
+
+    "When passed NiNumberPage" - {
+      "Should redirect to FindAddressController" in {
+        navigator.nextPage(
+          NiNumberPage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
       }
     }
 

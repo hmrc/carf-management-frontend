@@ -62,7 +62,7 @@ class OrganisationNameControllerSpec extends SpecBase {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.set(OrganisationNamePage, "answer").success.value
+      val userAnswers = emptyUserAnswers.withPage(OrganisationNamePage, "answer")
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 

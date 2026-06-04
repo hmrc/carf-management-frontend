@@ -16,7 +16,7 @@
 
 package forms.mappings
 
-import config.Constants.{ninoFormatRegex, realNinoRegex}
+import config.Constants.{maxNiNumberLength, ninoFormatRegex, realNinoRegex}
 import models.Enumerable
 import play.api.data.FormError
 import play.api.data.format.Formatter
@@ -213,7 +213,7 @@ trait Formatters {
           case Some(value)                       =>
             val normalized = value.replaceAll("\\s", "").toUpperCase
 
-            if (normalized.length > 9) {
+            if (normalized.length > maxNiNumberLength) {
               Left(Seq(FormError(key, invalidKey, args)))
             } else if (!normalized.matches(ninoFormatRegex)) {
               Left(Seq(FormError(key, invalidKey, args)))

@@ -17,6 +17,7 @@
 package base
 
 import controllers.actions.*
+import models.individual.IndividualName
 import models.{RichJsObject, UniqueTaxpayerReference, UserAnswers}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -107,5 +108,7 @@ trait SpecBase
 
   }
 
-  inline val testOrgName = "Timmy Ltd"
+  val testOrgName        = "Timmy Ltd"
+  val testIndividualName = IndividualName("Timmy", "Jimmison")
+  val testNiNumber       = "BA123456A"
 }

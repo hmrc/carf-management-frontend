@@ -1,3 +1,19 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package controllers.individual
 
 import base.SpecBase
@@ -13,29 +29,20 @@ import play.api.inject.bind
 import play.api.libs.json.Json
 import play.api.mvc.Call
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import views.html.individual.IndividualNameView
+
+import scala.concurrent.Future
 
 class IndividualNameControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider = new IndividualNameFormProvider()
-  val form         = formProvider()
+  val formProvider               = new IndividualNameFormProvider()
+  val form: Form[IndividualName] = formProvider()
 
-  lazy val individualNameRoute = routes.individual.IndividualNameController.onPageLoad(NormalMode).url
-
-  val userAnswers = UserAnswers(
-    returnId,
-    groupId,
-    userAnswersId,
-    Json.obj(
-      IndividualNamePage.toString -> Json.obj(
-        "firstName" -> "value 1",
-        "lastName"  -> "value 2"
-      )
-    )
-  )
+  lazy val individualNameRoute: String =
+    controllers.individual.routes.IndividualNameController.onPageLoad(NormalMode).url
 
   "IndividualName Controller" - {
 
@@ -57,7 +64,9 @@ class IndividualNameControllerSpec extends SpecBase {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
+
+      val application = applicationBuilder(userAnswers = Some(ua)).build()
 
       running(application) {
         val request = FakeRequest(GET, individualNameRoute)
@@ -67,7 +76,10 @@ class IndividualNameControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(IndividualName("value 1", "value 2")), NormalMode)(
+        contentAsString(result) mustEqual view(
+          form.fill(IndividualName(testIndividualName.firstName, testIndividualName.lastName)),
+          NormalMode
+        )(
           request,
           messages(application)
         ).toString
@@ -87,7 +99,7 @@ class IndividualNameControllerSpec extends SpecBase {
       running(application) {
         val request =
           FakeRequest(POST, individualNameRoute)
-            .withFormUrlEncodedBody(("firstName", "value 1"), ("lastName", "value 2"))
+            .withFormUrlEncodedBody(("firstName", "value one"), ("lastName", "value two"))
 
         val result = route(application, request).value
 

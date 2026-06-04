@@ -152,9 +152,7 @@ class TradingNameControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, tradingNameRoute)
-            .withFormUrlEncodedBody(("value", ""))
+        val request = FakeRequest(POST, tradingNameRoute).withFormUrlEncodedBody(("value", ""))
 
         val result = route(application, request).value
 
