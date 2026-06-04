@@ -88,3 +88,16 @@ tradingName.error.required = Enter the trading name for the RCASP
 tradingName.error.length = RCASP trading name must be 105 characters or less
 tradingName.error.invalid = RCASP trading name must only include letters a to z, numbers 0 to 9, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
 tradingName.change.hidden = Change the trading name for the organisation
+
+individualName.title = What is the name of the reporting cryptoasset service provider (RCASP)?
+individualName.heading = What is the name of the reporting cryptoasset service provider (RCASP)?
+individualName.firstName = First name
+individualName.lastName = Last name
+individualName.checkYourAnswersLabel = What is the name of the RCASP?
+individualName.error.firstName.required = Enter the first name for the RCASP
+individualName.error.lastName.required = Enter the last name for the RCASP
+individualName.error.firstName.length = The first name must be 35 characters or less
+individualName.error.lastName.length = The last name must be 35 characters or less
+individualName.error.firstName.invalid = The first name must only include letters a to z, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
+individualName.error.lastName.invalid = The last name must only include letters a to z, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
+individualName.name.change.hidden = Change reporting cryptoasset service provider name

@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package generators
+package pages.individual
 
-trait ModelGenerators {}
+import models.individual.IndividualName
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-implicit lazy val arbitraryIndividualName: Arbitrary[individual.IndividualName] =
-  Arbitrary {
-    for {
-      firstName <- arbitrary[String]
-      lastName  <- arbitrary[String]
-    } yield individual.IndividualName(firstName, lastName)
-  }
+case object IndividualNamePage extends QuestionPage[IndividualName] {
+
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "individualName"
+}

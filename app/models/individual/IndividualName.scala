@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package generators
+package models.individual
 
-trait ModelGenerators {}
+import play.api.libs.json._
 
-implicit lazy val arbitraryIndividualName: Arbitrary[individual.IndividualName] =
-  Arbitrary {
-    for {
-      firstName <- arbitrary[String]
-      lastName  <- arbitrary[String]
-    } yield individual.IndividualName(firstName, lastName)
-  }
+case class IndividualName(firstName: String, lastName: String) {
+  
+  val fullName: String = s"$firstName $lastName"
+  
+}
+
+object IndividualName {
+  implicit val format: OFormat[IndividualName] = Json.format[IndividualName]
+}
