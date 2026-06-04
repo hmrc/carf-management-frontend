@@ -16,8 +16,9 @@
 
 package navigation
 
-import models.{NormalMode, UserAnswers}
+import models.{NormalMode, OrganisationOrIndividual, UserAnswers}
 import pages.Page
+import pages.combined.{OrganisationOrIndividualPage, RegisteredBusinessIsThisYourBusinessNamePage, ReportForRegisteredBusinessPage}
 import pages.individual.{IndividualEmailPage, IndividualHavePhonePage, IndividualNamePage, IndividualPhonePage, NiNumberPage}
 import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, TradingNamePage}
 import play.api.mvc.Call
@@ -37,6 +38,14 @@ trait NormalRoutesNavigator {
         controllers.routes.PlaceholderController.onPageLoad(
           "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
         )
+    case OrganisationOrIndividualPage =>
+      userAnswers => navigateFromOrganisationOrIndividualPage(userAnswers)
+
+    case ReportForRegisteredBusinessPage =>
+      userAnswers => navigateFromReportForRegisteredBusinessPage(userAnswers)
+
+    case RegisteredBusinessIsThisYourBusinessNamePage =>
+      userAnswers => navigateFromRegisteredBusinessIsThisYourBusinessNamePage(userAnswers)
 
     case IndividualNamePage => _ => controllers.individual.routes.NiNumberController.onPageLoad(NormalMode)
 
@@ -71,4 +80,38 @@ trait NormalRoutesNavigator {
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
+  private def navigateFromReportForRegisteredBusinessPage(userAnswers: UserAnswers): Call =
+    userAnswers.get(ReportForRegisteredBusinessPage) match {
+      case Some(true)  =>
+        controllers.combined.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode)
+      case Some(false) => controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode)
+      case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  private def navigateFromRegisteredBusinessIsThisYourBusinessNamePage(userAnswers: UserAnswers): Call =
+    userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage) match {
+      case Some(true)  =>
+        controllers.routes.PlaceholderController.onPageLoad(
+          "CARF-195 - go to /have-trading-name,  controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)"
+        )
+      case Some(false) =>
+        controllers.routes.PlaceholderController.onPageLoad(
+          "CARF-195 - go to /organisation-name,  controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)  "
+        )
+      case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call =
+    userAnswers.get(OrganisationOrIndividualPage) match {
+      case Some(OrganisationOrIndividual.Organisation) =>
+        controllers.routes.PlaceholderController.onPageLoad(
+          "CARF-195 - go to /organisation-name, controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)"
+        )
+      case Some(OrganisationOrIndividual.Individual)   =>
+        controllers.routes.PlaceholderController.onPageLoad(
+          "CARF-297 - go to /individual-name,  controllers.individual.routes.IndivudalNameController.onPageLoad(NormalMode)"
+        )
+      case None                                        =>
+        controllers.routes.JourneyRecoveryController.onPageLoad()
+    }
 }
