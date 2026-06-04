@@ -32,6 +32,7 @@ object RegisteredBusinessIsThisYourBusinessNameSummary {
       val value = if (answer) "site.yes" else "site.no"
 
       SummaryListRowViewModel(
+        //LDS ignore
         key = "registeredBusinessIsThisYourBusinessName.checkYourAnswersLabel",
         value = ValueViewModel(value),
         actions = Seq(
