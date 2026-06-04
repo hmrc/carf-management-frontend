@@ -20,10 +20,12 @@ import cats.data.EitherT
 import config.Constants.ZERO
 import config.FrontendAppConfig
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
+import models.UserAnswers
 import models.errors.CarfError
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import repositories.SessionRepository
 import services.{AccountService, UploadInformationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.HomePageViewModel
@@ -39,6 +41,7 @@ class HomePageController @Inject() (
     accountService: AccountService,
     uploadInformationService: UploadInformationService,
     appConfig: FrontendAppConfig,
+    sessionRepository: SessionRepository,
     getData: DataRetrievalAction,
     view: HomePageView
 )(implicit ec: ExecutionContext)
@@ -69,14 +72,16 @@ class HomePageController @Inject() (
         carfId = carfId
       )
 
-      viewModelFuture.value.map {
+      viewModelFuture.value.flatMap {
         case Left(error)      =>
           logger.warn("[HomePageController] Error generating view model!")
-          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         case Right(viewModel) =>
           val aeoiEmail: String               = appConfig.aeoiEmailAddress
           val changeContactDetailsUrl: String = appConfig.changeContactDetailsIndexUrl
-          Ok(view(viewModel, aeoiEmail, changeContactDetailsUrl))
+          for {
+            _ <- sessionRepository.set(request.userAnswers.getOrElse(UserAnswers(id = request.userId)))
+          } yield Ok(view(viewModel, aeoiEmail, changeContactDetailsUrl))
       }
   }
 }

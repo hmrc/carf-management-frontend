@@ -19,3 +19,18 @@ GET        /account/signed-out                controllers.auth.SignedOutControll
 GET        /unauthorised                      controllers.UnauthorisedController.onPageLoad()
 
 GET        /manage-cryptoasset-reports        controllers.HomePageController.onPageLoad()
+
+GET        /organisation-name                        controllers.organisation.OrganisationNameController.onPageLoad(mode: Mode = NormalMode)
+POST       /organisation-name                        controllers.organisation.OrganisationNameController.onSubmit(mode: Mode = NormalMode)
+GET        /change-organisation-name                  controllers.organisation.OrganisationNameController.onPageLoad(mode: Mode = ChangeMode)
+POST       /change-organisation-name                  controllers.organisation.OrganisationNameController.onSubmit(mode: Mode = ChangeMode)
+
+GET        /have-trading-name                        controllers.organisation.HaveTradingNameController.onPageLoad(mode: Mode = NormalMode)
+POST       /have-trading-name                        controllers.organisation.HaveTradingNameController.onSubmit(mode: Mode = NormalMode)
+GET        /change-have-trading-name                  controllers.organisation.HaveTradingNameController.onPageLoad(mode: Mode = ChangeMode)
+POST       /change-have-trading-name                  controllers.organisation.HaveTradingNameController.onSubmit(mode: Mode = ChangeMode)
+
+GET        /trading-name                        controllers.organisation.TradingNameController.onPageLoad(mode: Mode = NormalMode)
+POST       /trading-name                        controllers.organisation.TradingNameController.onSubmit(mode: Mode = NormalMode)
+GET        /change-trading-name                  controllers.organisation.TradingNameController.onPageLoad(mode: Mode = ChangeMode)
+POST       /change-trading-name                  controllers.organisation.TradingNameController.onSubmit(mode: Mode = ChangeMode)

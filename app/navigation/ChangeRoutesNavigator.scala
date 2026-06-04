@@ -16,20 +16,12 @@
 
 package navigation
 
-import models.*
-import pages.*
+import models.UserAnswers
+import pages.Page
 import play.api.mvc.Call
 
-import javax.inject.{Inject, Singleton}
+trait ChangeRoutesNavigator {
 
-@Singleton
-class Navigator @Inject() () extends NormalRoutesNavigator with ChangeRoutesNavigator {
-
-  def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call = mode match {
-    case NormalMode =>
-      normalRoutes(page)(userAnswers)
-    case ChangeMode =>
-      changeRoutes(page)(userAnswers)
-  }
+  val changeRoutes: Page => UserAnswers => Call = _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
 
 }

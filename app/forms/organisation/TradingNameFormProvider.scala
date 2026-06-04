@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
-package navigation
+package forms.organisation
 
-import models.*
-import pages.*
-import play.api.mvc.Call
+import config.Constants.standardTextInputRegex
+import forms.mappings.Mappings
+import play.api.data.Form
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 
-@Singleton
-class Navigator @Inject() () extends NormalRoutesNavigator with ChangeRoutesNavigator {
+class TradingNameFormProvider @Inject() extends Mappings {
 
-  def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call = mode match {
-    case NormalMode =>
-      normalRoutes(page)(userAnswers)
-    case ChangeMode =>
-      changeRoutes(page)(userAnswers)
-  }
+  private val maxTradingNameLength = 105
 
+  def apply(): Form[String] =
+    Form(
+      "value" -> validatedText(
+        requiredKey = "tradingName.error.required",
+        invalidKey = "tradingName.error.invalid",
+        lengthKey = "tradingName.error.length",
+        regex = standardTextInputRegex,
+        maxLength = maxTradingNameLength
+      )
+    )
 }
