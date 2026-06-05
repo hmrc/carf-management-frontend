@@ -19,7 +19,7 @@ package navigation
 import base.SpecBase
 import models.NormalMode
 import pages.Page
-import pages.individual.{IndividualNamePage, NiNumberPage}
+import pages.individual.{IndividualEmailPage, IndividualHavePhonePage, IndividualNamePage, IndividualPhonePage, NiNumberPage}
 import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, TradingNamePage}
 
 class NormalRoutesNavigatorSpec extends SpecBase {
@@ -98,6 +98,56 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NormalMode,
           emptyUserAnswers
         ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+      }
+    }
+
+    "When passed IndividualEmailPage" - {
+      "Should redirect to IndividualHavePhoneController" in {
+        navigator.nextPage(
+          IndividualEmailPage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.individual.routes.IndividualHavePhoneController.onPageLoad(NormalMode)
+      }
+    }
+
+    "When passed IndividualHavePhonePage" - {
+      "Should redirect to Check answers controller when the user answered No on the page" in {
+        val ua = emptyUserAnswers.withPage(IndividualHavePhonePage, false)
+
+        navigator.nextPage(
+          IndividualHavePhonePage,
+          NormalMode,
+          ua
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+      }
+
+      "Should redirect to IndividualPhoneController when the user answered Yes on the page" in {
+        val ua = emptyUserAnswers.withPage(IndividualHavePhonePage, true)
+
+        navigator.nextPage(
+          IndividualHavePhonePage,
+          NormalMode,
+          ua
+        ) mustBe controllers.individual.routes.IndividualPhoneController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to Journey Recovery when the user has no answer for the page" in {
+        navigator.nextPage(
+          IndividualHavePhonePage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
+    }
+
+    "When passed IndividualPhonePage" - {
+      "Should redirect to Check answers controller" in {
+        navigator.nextPage(
+          IndividualPhonePage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
       }
     }
 

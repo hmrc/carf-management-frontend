@@ -48,4 +48,27 @@ trait FieldBehaviours extends FormSpec with ScalaCheckPropertyChecks with Genera
       result.errors mustEqual Seq(requiredError)
     }
   }
+
+  def fieldWithInvalidData(
+      form: Form[_],
+      fieldName: String,
+      invalidString: String,
+      error: FormError,
+      suffix: Option[String] = None
+  ): Unit = {
+    val testName = if (suffix.isEmpty) "not bind invalid data" else s"not bind invalid data ${suffix.get}"
+    testName in {
+      val result = form.bind(Map(fieldName -> invalidString)).apply(fieldName)
+      result.errors mustEqual Seq(error)
+    }
+  }
+
+  def fieldWithMaxLengthEmail(form: Form[_], fieldName: String, maxLength: Int, lengthError: FormError): Unit =
+    s"must not bind strings longer than $maxLength characters" in {
+
+      forAll(validEmailAddressTooLong(maxLength) -> "longString") { string =>
+        val result = form.bind(Map(fieldName -> string)).apply(fieldName)
+        result.errors mustEqual Seq(lengthError)
+      }
+    }
 }

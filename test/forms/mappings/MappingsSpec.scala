@@ -16,12 +16,12 @@
 
 package forms.mappings
 
+import base.TestConstants.{invalidPhoneNumber25Chars, validPhoneNumber24Chars}
+import models.Enumerable
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.data.{Form, FormError}
-import models.Enumerable
-
 object MappingsSpec {
 
   sealed trait Foo
@@ -39,7 +39,7 @@ object MappingsSpec {
 
 class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mappings {
 
-  import MappingsSpec._
+  import MappingsSpec.*
 
   "text" - {
 

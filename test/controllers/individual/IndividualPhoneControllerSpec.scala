@@ -22,7 +22,7 @@ import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.individual.IndividualPhonePage
+import pages.individual.{IndividualNamePage, IndividualPhonePage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -32,20 +32,23 @@ import views.html.individual.IndividualPhoneView
 
 import scala.concurrent.Future
 
-class IndividualPhoneControllerSpec extends SpecBase{
+class IndividualPhoneControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider = new IndividualPhoneFormProvider()
+  val formProvider       = new IndividualPhoneFormProvider()
   val form: Form[String] = formProvider()
 
-  lazy val individualPhoneRoute: String = controllers.individual.routes.IndividualPhoneController.onPageLoad(NormalMode).url
+  lazy val individualPhoneRoute: String =
+    controllers.individual.routes.IndividualPhoneController.onPageLoad(NormalMode).url
 
   "IndividualPhone Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET when an individual name is present in user answers" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
+
+      val application = applicationBuilder(userAnswers = Some(ua)).build()
 
       running(application) {
         val request = FakeRequest(GET, individualPhoneRoute)
@@ -54,14 +57,35 @@ class IndividualPhoneControllerSpec extends SpecBase{
 
         val view = application.injector.instanceOf[IndividualPhoneView]
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode)(request, messages(application)).toString
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(form, NormalMode, testIndividualName.fullName)(
+          request,
+          messages(application)
+        ).toString
+      }
+    }
+
+    "must redirect to Some Information is Missing GET when an individual name is NOT present in user answers" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, individualPhoneRoute)
+
+        val result = route(application, request).value
+
+        status(result)               mustEqual SEE_OTHER
+        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
+          .url
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.withPage(IndividualPhonePage, "answer")
+      val userAnswers = emptyUserAnswers
+        .withPage(IndividualPhonePage, "answer")
+        .withPage(IndividualNamePage, testIndividualName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -72,8 +96,11 @@ class IndividualPhoneControllerSpec extends SpecBase{
 
         val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode)(request, messages(application)).toString
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode, testIndividualName.fullName)(
+          request,
+          messages(application)
+        ).toString
       }
     }
 
@@ -88,18 +115,20 @@ class IndividualPhoneControllerSpec extends SpecBase{
           .build()
 
       running(application) {
-        val request = FakeRequest(POST, individualPhoneRoute).withFormUrlEncodedBody(("value", "answer"))
+        val request = FakeRequest(POST, individualPhoneRoute).withFormUrlEncodedBody(("value", "07123456789"))
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual onwardRoute.url
       }
     }
 
-    "must return a Bad Request and errors when invalid data is submitted" in {
+    "must return a Bad Request and errors when invalid data is submitted and an individual name is present in user answers" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
+
+      val application = applicationBuilder(userAnswers = Some(ua)).build()
 
       running(application) {
         val request = FakeRequest(POST, individualPhoneRoute).withFormUrlEncodedBody(("value", ""))
@@ -110,8 +139,27 @@ class IndividualPhoneControllerSpec extends SpecBase{
 
         val result = route(application, request).value
 
-        status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
+        status(result)          mustEqual BAD_REQUEST
+        contentAsString(result) mustEqual view(boundForm, NormalMode, testIndividualName.fullName)(
+          request,
+          messages(application)
+        ).toString
+      }
+    }
+
+    "must redirect to Some Information is Missing when invalid data is submitted and an org name is NOT present in user answers" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(POST, individualPhoneRoute).withFormUrlEncodedBody(("value", ""))
+
+        val result = route(application, request).value
+
+        status(result)               mustEqual SEE_OTHER
+        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
+          .url
       }
     }
 
@@ -124,7 +172,7 @@ class IndividualPhoneControllerSpec extends SpecBase{
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
@@ -138,7 +186,7 @@ class IndividualPhoneControllerSpec extends SpecBase{
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
