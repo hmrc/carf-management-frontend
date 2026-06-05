@@ -253,5 +253,22 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
+
+    "must redirect to Some Information is Missing when org name is not present on GET" in {
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers.copy(isCtAutoMatched = true))).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+
+        val result = route(application, request).value
+
+        status(result)               mustEqual SEE_OTHER
+        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
+          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
+          .url
+      }
+    }
+
   }
 }
