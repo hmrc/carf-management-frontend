@@ -33,7 +33,7 @@ trait NormalRoutesNavigator {
     case HaveTradingNamePage =>
       userAnswers => navigateFromHaveTradingNamePage(userAnswers)
 
-    case TradingNamePage =>
+    case TradingNamePage              =>
       _ =>
         controllers.routes.PlaceholderController.onPageLoad(
           "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
