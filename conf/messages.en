@@ -110,3 +110,12 @@ niNumber.error.required = Enter the National Insurance number for the RCASP
 niNumber.error.invalid = Enter the National Insurance number in the right format
 niNumber.error.notReal = Enter a real National Insurance number
 niNumber.change.hidden = Change National Insurance number
+
+individualEmail.title = What is the email address for the reporting cryptoasset service provider (RCASP)?
+individualEmail.heading = What is the email address for {0}?
+individualEmail.p1 = We will use this email address to send confirmation of reports or if we have any questions about them.
+individualEmail.checkYourAnswersLabel = Email address
+individualEmail.error.required = Enter an email address for the RCASP
+individualEmail.error.length = The email address must be 132 characters or less
+individualEmail.error.invalid = Enter an email address in the right format, like yourname@example.com
+individualEmail.change.hidden = Change email address

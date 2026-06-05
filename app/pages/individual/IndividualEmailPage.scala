@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package config
+package pages.individual
 
-object Constants {
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-  inline val ZERO = 0
+case object IndividualEmailPage extends QuestionPage[String] {
 
-  inline val standardTextInputRegex               = """^[a-zA-Z0-9 &'\\`^\-]*$"""
-  inline val standardTextInputWithoutNumbersRegex = """^[a-zA-Z &'\\`^\-]*$"""
+  override def path: JsPath = JsPath \ toString
 
-  inline final val ninoFormatRegex = """^[A-Z]{2}[0-9]{6}[A-Z]{1}$"""
-  inline final val realNinoRegex   =
-    "^([ACEHJLMOPRSWXY][A-CEGHJ-NPR-TW-Z]|B[A-CEHJ-NPR-TW-Z]|G[ACEGHJ-NPR-TW-Z]|[KT][A-CEGHJ-MPR-TW-Z]|N[A-CEGHJL-NPR-SW-Z]|Z[A-CEGHJ-NPR-TW-Y])[0-9]{6}[A-D ]$"
-
-  inline final val maxNiNumberLength = 9
-
-  inline final val maxEmailLength = 132
-
+  override def toString: String = "individualEmail"
 }

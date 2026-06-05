@@ -17,8 +17,9 @@
 package forms.mappings
 
 import config.CurrencyFormatter
-import java.time.LocalDate
+import org.apache.commons.validator.routines.EmailValidator
 
+import java.time.LocalDate
 import play.api.data.validation.{Constraint, Invalid, Valid}
 
 trait Constraints {
@@ -127,5 +128,11 @@ trait Constraints {
       } else {
         Invalid(errorKey, CurrencyFormatter.currencyFormat(maximum))
       }
+    }
+
+  protected def validEmailAddress(errorKey: String): Constraint[String] =
+    Constraint {
+      case str: String if EmailValidator.getInstance().isValid(str) => Valid
+      case _                                                        => Invalid(errorKey)
     }
 }
