@@ -46,7 +46,10 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
   "ReportForRegisteredBusiness Controller" - {
 
     "must return OK and the correct view for a GET when ct auto matched is true and org name is present" in {
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+      val ua =
+        emptyUserAnswers
+          .copy(isCtAutoMatched = true)
+          .withPage(OverwritableOrganisationName, testOrgName)
 
       val application = applicationBuilder(userAnswers = Some(ua)).build()
 
@@ -54,8 +57,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         val request = FakeRequest(GET, routeUnderTest)
 
         val result = route(application, request).value
-
-        val view = application.injector.instanceOf[ReportForRegisteredBusinessView]
+        val view   = application.injector.instanceOf[ReportForRegisteredBusinessView]
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(form, NormalMode, testOrgName)(request, messages(application)).toString
@@ -63,7 +65,10 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     }
 
     "must redirect to OrganisationOrIndividual page when user is not ct auto matched" in {
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+      val ua =
+        emptyUserAnswers
+          .copy(isCtAutoMatched = false)
+          .withPage(OverwritableOrganisationName, testOrgName)
 
       val application =
         applicationBuilder(userAnswers = Some(ua), affinityGroup = uk.gov.hmrc.auth.core.AffinityGroup.Organisation)
@@ -82,16 +87,17 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
-      val userAnswers = emptyUserAnswers
-        .withPage(OverwritableOrganisationName, testOrgName)
-        .withPage(ReportForRegisteredBusinessPage, true)
+      val userAnswers =
+        emptyUserAnswers
+          .copy(isCtAutoMatched = true)
+          .withPage(OverwritableOrganisationName, testOrgName)
+          .withPage(ReportForRegisteredBusinessPage, true)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
-
-        val view = application.injector.instanceOf[ReportForRegisteredBusinessView]
+        val view    = application.injector.instanceOf[ReportForRegisteredBusinessView]
 
         val result = route(application, request).value
 
@@ -107,11 +113,15 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+        applicationBuilder(
+          userAnswers = Some(
+            emptyUserAnswers
+              .copy(isCtAutoMatched = true)
+              .withPage(OverwritableOrganisationName, testOrgName)
           )
-          .build()
+        ).overrides(
+          bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+        ).build()
 
       running(application) {
         val request =
@@ -126,7 +136,10 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     }
 
     "must return a Bad Request and errors when invalid data is submitted and org name is present" in {
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+      val ua =
+        emptyUserAnswers
+          .copy(isCtAutoMatched = true)
+          .withPage(OverwritableOrganisationName, testOrgName)
 
       val application = applicationBuilder(userAnswers = Some(ua)).build()
 
@@ -150,7 +163,8 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     }
 
     "must redirect to Some Information is Missing when invalid data is submitted and org name is not present" in {
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers.copy(isCtAutoMatched = true))).build()
 
       running(application) {
         val request =
@@ -167,7 +181,10 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     }
 
     "must redirect to OrganisationOrIndividual page for a GET when user is not ct auto matched" in {
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+      val ua =
+        emptyUserAnswers
+          .copy(isCtAutoMatched = false)
+          .withPage(OverwritableOrganisationName, testOrgName)
 
       val application =
         applicationBuilder(userAnswers = Some(ua), affinityGroup = uk.gov.hmrc.auth.core.AffinityGroup.Organisation)
@@ -186,7 +203,10 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     }
 
     "must redirect to OrganisationOrIndividual page for a POST when user is not ct auto matched" in {
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+      val ua =
+        emptyUserAnswers
+          .copy(isCtAutoMatched = false)
+          .withPage(OverwritableOrganisationName, testOrgName)
 
       val application =
         applicationBuilder(userAnswers = Some(ua), affinityGroup = uk.gov.hmrc.auth.core.AffinityGroup.Organisation)
