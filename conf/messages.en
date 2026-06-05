@@ -119,3 +119,10 @@ individualEmail.error.required = Enter an email address for the RCASP
 individualEmail.error.length = The email address must be 132 characters or less
 individualEmail.error.invalid = Enter an email address in the right format, like yourname@example.com
 individualEmail.change.hidden = Change email address
+
+individualHavePhone.title = Can we contact the reporting cryptoasset service provider (RCASP) by phone?
+individualHavePhone.heading = Can we contact {0} by phone?
+individualHavePhone.p1 = We will call if we have any questions about the reports you send.
+individualHavePhone.checkYourAnswersLabel = Can we contact the RCASP by phone?
+individualHavePhone.error.required = Select yes if the RCASP can be contacted by phone
+individualHavePhone.change.hidden = Change if we can contact the reporting cryptoasset service provider by phone

@@ -18,7 +18,7 @@ package navigation
 
 import models.{NormalMode, UserAnswers}
 import pages.Page
-import pages.individual.{IndividualNamePage, NiNumberPage}
+import pages.individual.{IndividualEmailPage, IndividualNamePage, NiNumberPage}
 import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, TradingNamePage}
 import play.api.mvc.Call
 
@@ -42,6 +42,8 @@ trait NormalRoutesNavigator {
 
     case NiNumberPage =>
       _ => controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+
+    case IndividualEmailPage => _ => controllers.individual.routes.IndividualHavePhoneController.onPageLoad(NormalMode)
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
