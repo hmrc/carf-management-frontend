@@ -20,7 +20,7 @@ import controllers.actions.*
 import forms.OrganisationOrIndividualFormProvider
 import models.{Mode, OrganisationOrIndividual}
 import navigation.Navigator
-import pages.combined.{OrganisationOrIndividualPage, ReportForRegisteredBusinessPage}
+import pages.combined.OrganisationOrIndividualPage
 import pages.organisation.OverwritableOrganisationName
 import play.api.data.Form
 import play.api.i18n.Lang.logger

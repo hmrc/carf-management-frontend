@@ -96,7 +96,7 @@ trait NormalRoutesNavigator {
         )
       case Some(false) =>
         controllers.routes.PlaceholderController.onPageLoad(
-          "CARF-195 - go to /organisation-name,  controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)  "
+          "CARF-195 - go to /organisation-name,  controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)"
         )
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
