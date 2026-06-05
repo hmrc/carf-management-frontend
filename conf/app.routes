@@ -54,3 +54,8 @@ GET        /individual-have-phone                        controllers.individual.
 POST       /individual-have-phone                        controllers.individual.IndividualHavePhoneController.onSubmit(mode: Mode = NormalMode)
 GET        /change-individual-have-phone                  controllers.individual.IndividualHavePhoneController.onPageLoad(mode: Mode = ChangeMode)
 POST       /change-individual-have-phone                  controllers.individual.IndividualHavePhoneController.onSubmit(mode: Mode = ChangeMode)
+
+GET        /individual-phone                        controllers.individual.IndividualPhoneController.onPageLoad(mode: Mode = NormalMode)
+POST       /individual-phone                        controllers.individual.IndividualPhoneController.onSubmit(mode: Mode = NormalMode)
+GET        /change-individual-phone                  controllers.individual.IndividualPhoneController.onPageLoad(mode: Mode = ChangeMode)
+POST       /change-individual-phone                  controllers.individual.IndividualPhoneController.onSubmit(mode: Mode = ChangeMode)

@@ -19,17 +19,17 @@ package forms.individual
 import forms.behaviours.StringFieldBehaviours
 import play.api.data.FormError
 
-class IndividualEmailFormProviderSpec extends StringFieldBehaviours {
+class IndividualPhoneFormProviderSpec extends StringFieldBehaviours {
 
-  val requiredKey = "individualEmail.error.required"
-  val lengthKey   = "individualEmail.error.length"
-  val maxLength   = 132
+  val requiredKey = "individualPhone.error.required"
+  val lengthKey = "individualPhone.error.length"
+  val maxLength = 24
 
-  val form = new IndividualEmailFormProvider()()
+  val form = new IndividualPhoneFormProvider()()
 
   ".value" - {
 
-    val fieldName = "individualEmail-input"
+    val fieldName = "individualPhone-input"
 
     behave like fieldThatBindsValidData(
       form,

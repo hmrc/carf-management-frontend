@@ -126,3 +126,13 @@ individualHavePhone.p1 = We will call if we have any questions about the reports
 individualHavePhone.checkYourAnswersLabel = Can we contact the RCASP by phone?
 individualHavePhone.error.required = Select yes if the RCASP can be contacted by phone
 individualHavePhone.change.hidden = Change if we can contact the reporting cryptoasset service provider by phone
+
+individualPhone.title = What is the phone number for the reporting cryptoasset service provider (RCASP)?
+individualPhone.heading = What is the phone number for {0}?
+individualPhone.hint = For international numbers, include the country code.
+individualPhone.checkYourAnswersLabel = Phone number
+individualPhone.error.required = Enter a phone number for the RCASP
+individualPhone.error.length = The phone number must be 24 characters or less
+individualPhone.error.invalid = Enter a phone number, like 01632 960 001, 07700 900 982 or +44 808 157 0192
+individualPhone.error.notReal = Enter a real phone number
+individualPhone.change.hidden = Change phone number
