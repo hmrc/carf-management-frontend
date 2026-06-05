@@ -269,6 +269,5 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
           .url
       }
     }
-
   }
 }
