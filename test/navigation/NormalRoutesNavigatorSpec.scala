@@ -161,9 +161,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           OrganisationOrIndividualPage,
           NormalMode,
           ua
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad(
-          "CARF-195 - go to /organisation-name, controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)"
-        )
+        ) mustBe controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
       }
 
       "Should redirect to IndividualNameController when Individual is selected" in {
@@ -225,9 +223,8 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           RegisteredBusinessIsThisYourBusinessNamePage,
           NormalMode,
           ua
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad(
-          "CARF-195 - go to /have-trading-name,  controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)"
-        )
+        ) mustBe
+          controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)
       }
 
       "Should redirect to PlaceholderController when answer is false" in {
@@ -237,9 +234,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           RegisteredBusinessIsThisYourBusinessNamePage,
           NormalMode,
           ua
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad(
-          "CARF-195 - go to /organisation-name,  controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)"
-        )
+        ) mustBe controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
       }
 
       "Should redirect to Journey Recovery when no answer is present" in {

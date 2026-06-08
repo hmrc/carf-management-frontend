@@ -91,22 +91,16 @@ trait NormalRoutesNavigator {
   private def navigateFromRegisteredBusinessIsThisYourBusinessNamePage(userAnswers: UserAnswers): Call =
     userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage) match {
       case Some(true)  =>
-        controllers.routes.PlaceholderController.onPageLoad(
-          "CARF-195 - go to /have-trading-name,  controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)"
-        )
+        controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)
       case Some(false) =>
-        controllers.routes.PlaceholderController.onPageLoad(
-          "CARF-195 - go to /organisation-name,  controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)"
-        )
+        controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
   private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call =
     userAnswers.get(OrganisationOrIndividualPage) match {
       case Some(OrganisationOrIndividual.Organisation) =>
-        controllers.routes.PlaceholderController.onPageLoad(
-          "CARF-195 - go to /organisation-name, controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)"
-        )
+        controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
       case Some(OrganisationOrIndividual.Individual)   =>
         controllers.routes.PlaceholderController.onPageLoad(
           "CARF-297 - go to /individual-name,  controllers.individual.routes.IndivudalNameController.onPageLoad(NormalMode)"
