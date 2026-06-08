@@ -54,11 +54,7 @@ case class HomePageViewModel(
       .url
 
   lazy val getAddRcaspLink: String =
-    if (ctUtr.nonEmpty) {
-      controllers.combined.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
-    } else {
-      controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
-    }
+    controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
 
   lazy val getManageRcaspsLink: String =
     controllers.routes.PlaceholderController
