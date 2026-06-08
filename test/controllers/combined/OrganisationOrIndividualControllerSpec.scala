@@ -23,7 +23,6 @@ import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import pages.combined.OrganisationOrIndividualPage
-import pages.organisation.OverwritableOrganisationName
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -45,52 +44,22 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
 
   "OrganisationOrIndividual Controller" - {
 
-    "must return OK and the correct view for a GET when an org name is present and ct auto matched is true" in {
-      val ua =
-        emptyUserAnswers
-          .copy(isCtAutoMatched = true)
-          .withPage(OverwritableOrganisationName, testOrgName)
-
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
+    "must return OK and the correct view for a GET" in {
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
-
-        val result = route(application, request).value
-        val view   = application.injector.instanceOf[OrganisationOrIndividualView]
+        val result  = route(application, request).value
+        val view    = application.injector.instanceOf[OrganisationOrIndividualView]
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(form, NormalMode)(request, messages(application)).toString
       }
     }
 
-    "must redirect to OrganisationOrIndividual page when user is not ct auto matched" in {
-      val ua =
-        emptyUserAnswers
-          .copy(isCtAutoMatched = false)
-          .withPage(OverwritableOrganisationName, testOrgName)
-
-      val application =
-        applicationBuilder(userAnswers = Some(ua), affinityGroup = uk.gov.hmrc.auth.core.AffinityGroup.Organisation)
-          .build()
-
-      running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.combined.routes.OrganisationOrIndividualController
-          .onPageLoad(NormalMode)
-          .url
-      }
-    }
-
     "must populate the view correctly on a GET when the question has previously been answered" in {
       val userAnswers =
         emptyUserAnswers
-          .copy(isCtAutoMatched = true)
-          .withPage(OverwritableOrganisationName, testOrgName)
           .withPage(OrganisationOrIndividualPage, OrganisationOrIndividual.Organisation)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
@@ -113,15 +82,11 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(
-          userAnswers = Some(
-            emptyUserAnswers
-              .copy(isCtAutoMatched = true)
-              .withPage(OverwritableOrganisationName, testOrgName)
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
           )
-        ).overrides(
-          bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
-        ).build()
+          .build()
 
       running(application) {
         val request =
@@ -136,12 +101,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
-      val ua =
-        emptyUserAnswers
-          .copy(isCtAutoMatched = true)
-          .withPage(OverwritableOrganisationName, testOrgName)
-
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
         val request =
@@ -156,22 +116,6 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
 
         status(result)          mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
-      }
-    }
-
-    "must redirect to Some Information is Missing when org name is not present" in {
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers.copy(isCtAutoMatched = true))).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
-
-        val result = route(application, request).value
-
-        status(result)               mustEqual SEE_OTHER
-        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          .url
       }
     }
 

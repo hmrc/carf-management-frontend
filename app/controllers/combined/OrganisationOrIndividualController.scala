@@ -21,9 +21,7 @@ import forms.OrganisationOrIndividualFormProvider
 import models.{Mode, OrganisationOrIndividual}
 import navigation.Navigator
 import pages.combined.OrganisationOrIndividualPage
-import pages.organisation.OverwritableOrganisationName
 import play.api.data.Form
-import play.api.i18n.Lang.logger
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -51,23 +49,8 @@ class OrganisationOrIndividualController @Inject() (
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
     implicit request =>
-      if (!request.userAnswers.isCtAutoMatched) {
-        Redirect(controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(mode))
-      } else {
-        val preparedForm = request.userAnswers.get(OrganisationOrIndividualPage).fold(form)(form.fill)
-
-        request.userAnswers
-          .get(OverwritableOrganisationName)
-          .fold {
-            logger.warn(
-              "[ReportForRegisteredBusinessController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
-            )
-            Redirect(
-              controllers.routes.PlaceholderController
-                .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-            )
-          }(orgName => Ok(view(preparedForm, mode)))
-      }
+      val preparedForm = request.userAnswers.get(OrganisationOrIndividualPage).fold(form)(form.fill)
+      Ok(view(preparedForm, mode))
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
