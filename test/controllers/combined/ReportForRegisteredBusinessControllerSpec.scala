@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, softwaare
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -22,9 +22,8 @@ import models.{BusinessDetails, NormalMode}
 import models.responses.AddressRegistrationResponse
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{mock, verify, when}
 import pages.combined.ReportForRegisteredBusinessPage
-import pages.organisation.UniqueTaxpayerReferenceInUserAnswers
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -39,8 +38,9 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider                                 = new GenericYesNoPageFormProvider()
-  val form: Form[Boolean]                          = formProvider("reportForRegisteredBusiness.error.required")
+  val formProvider        = new GenericYesNoPageFormProvider()
+  val form: Form[Boolean] = formProvider("reportForRegisteredBusiness.error.required")
+
   val mockRegistrationService: RegistrationService = mock[RegistrationService]
 
   lazy val routeUnderTest: String =
@@ -63,15 +63,16 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET when ct auto matched is true and a UTR is present" in {
       val userAnswers =
-        emptyUserAnswers
-          .copy(isCtAutoMatched = true)
-          .withPage(UniqueTaxpayerReferenceInUserAnswers, testUtr)
+        emptyUserAnswers.copy(isCtAutoMatched = true)
 
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
         .thenReturn(Future.successful(businessDetails))
 
       val application =
-        applicationBuilder(userAnswers = Some(userAnswers))
+        applicationBuilder(
+          userAnswers = Some(userAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
           .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
           .build()
 
@@ -92,14 +93,16 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
       val userAnswers =
         emptyUserAnswers
           .copy(isCtAutoMatched = true)
-          .withPage(UniqueTaxpayerReferenceInUserAnswers, testUtr)
           .withPage(ReportForRegisteredBusinessPage, true)
 
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
         .thenReturn(Future.successful(businessDetails))
 
       val application =
-        applicationBuilder(userAnswers = Some(userAnswers))
+        applicationBuilder(
+          userAnswers = Some(userAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
           .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
           .build()
 
@@ -123,12 +126,13 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         .thenReturn(Future.successful(businessDetails))
 
       val userAnswers =
-        emptyUserAnswers
-          .copy(isCtAutoMatched = true)
-          .withPage(UniqueTaxpayerReferenceInUserAnswers, testUtr)
+        emptyUserAnswers.copy(isCtAutoMatched = true)
 
       val application =
-        applicationBuilder(userAnswers = Some(userAnswers))
+        applicationBuilder(
+          userAnswers = Some(userAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
           .overrides(
             bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
             bind[RegistrationService].toInstance(mockRegistrationService)
@@ -151,13 +155,15 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
       val userAnswers =
         emptyUserAnswers
           .copy(isCtAutoMatched = true)
-          .withPage(UniqueTaxpayerReferenceInUserAnswers, testUtr)
 
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
         .thenReturn(Future.successful(businessDetails))
 
       val application =
-        applicationBuilder(userAnswers = Some(userAnswers))
+        applicationBuilder(
+          userAnswers = Some(userAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
           .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
           .build()
 
@@ -184,10 +190,12 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
       val userAnswers =
         emptyUserAnswers
           .copy(isCtAutoMatched = false)
-          .withPage(UniqueTaxpayerReferenceInUserAnswers, testUtr)
 
       val application =
-        applicationBuilder(userAnswers = Some(userAnswers))
+        applicationBuilder(
+          userAnswers = Some(userAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
           .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
           .build()
 
