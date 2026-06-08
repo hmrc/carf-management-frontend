@@ -22,7 +22,7 @@
         govukButton: GovukButton
 )
 
-@(form: Form[Boolean], mode: Mode, orgName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[Boolean], mode: Mode, businessName: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = title(form, messages("reportForRegisteredBusiness.title"))) {
 
@@ -38,17 +38,17 @@
         <h1 class="govuk-heading-l">@messages("reportForRegisteredBusiness.heading")</h1>
 
         <p class="govuk-body">
-        @messages("reportForRegisteredBusiness.p1", orgName)
+        @messages("reportForRegisteredBusiness.p1", businessName)
         </p>
 
         <p class="govuk-body">
-        @messages("reportForRegisteredBusiness.p2", orgName)
+        @messages("reportForRegisteredBusiness.p2", businessName)
         </p>
 
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("reportForRegisteredBusiness.legend", orgName))
+                legend = LegendViewModel(messages("reportForRegisteredBusiness.legend", businessName))
                 .withCssClass("govuk-fieldset__legend--m")
             )
         )

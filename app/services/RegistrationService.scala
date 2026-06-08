@@ -22,9 +22,9 @@ import models.responses.AddressRegistrationResponse
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegistrationService @Inject()()(implicit ec: ExecutionContext) {
+class RegistrationService @Inject() ()(implicit ec: ExecutionContext) {
 
-  //TODO  link up register-with-id - CARF-519
+  // TODO  link up register-with-id - CARF-519
   def getBusinessWithUtr(utr: String): Future[BusinessDetails] =
     Future.successful(
       BusinessDetails(

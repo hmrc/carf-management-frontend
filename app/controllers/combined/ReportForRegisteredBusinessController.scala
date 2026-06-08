@@ -21,12 +21,12 @@ import forms.GenericYesNoPageFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.combined.ReportForRegisteredBusinessPage
-import pages.organisation.OverwritableOrganisationName
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
+import services.RegistrationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.combined.ReportForRegisteredBusinessView
 
@@ -41,6 +41,7 @@ class ReportForRegisteredBusinessController @Inject() (
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: GenericYesNoPageFormProvider,
+    registrationService: RegistrationService,
     val controllerComponents: MessagesControllerComponents,
     view: ReportForRegisteredBusinessView
 )(implicit ec: ExecutionContext)
@@ -50,29 +51,33 @@ class ReportForRegisteredBusinessController @Inject() (
 
   val form: Form[Boolean] = formProvider("reportForRegisteredBusiness.error.required")
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen requireData).async { implicit request =>
       if (!request.userAnswers.isCtAutoMatched) {
-        Redirect(controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(mode))
+        Future.successful(Redirect(controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(mode)))
       } else {
-        val preparedForm = request.userAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
+        request.utr match {
+          case Some(utr) =>
+            registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).map { businessDetails =>
+              val preparedForm =
+                request.userAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
 
-        request.userAnswers
-          .get(OverwritableOrganisationName)
-          .fold {
-            logger.warn(
-              "[ReportForRegisteredBusinessController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
+              Ok(view(preparedForm, mode, businessDetails.name))
+            }
+
+          case None =>
+            Future.successful(
+              Redirect(
+                controllers.routes.PlaceholderController
+                  .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
+              )
             )
-            Redirect(
-              controllers.routes.PlaceholderController
-                .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-            )
-          }(orgName => Ok(view(preparedForm, mode, orgName)))
+        }
       }
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen requireData).async { implicit request =>
       if (!request.userAnswers.isCtAutoMatched) {
         Future.successful(Redirect(controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(mode)))
       } else {
@@ -80,19 +85,19 @@ class ReportForRegisteredBusinessController @Inject() (
           .bindFromRequest()
           .fold(
             formWithErrors =>
-              request.userAnswers
-                .get(OverwritableOrganisationName)
-                .fold {
-                  logger.warn(
-                    "[ReportForRegisteredBusinessController][onSubmit] Error! Organisation name could not be retrieved from user answers"
-                  )
+              request.utr match {
+                case Some(utr) =>
+                  registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).map { businessDetails =>
+                    BadRequest(view(formWithErrors, mode, businessDetails.name))
+                  }
+                case None      =>
                   Future.successful(
                     Redirect(
                       controllers.routes.PlaceholderController
                         .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
                     )
                   )
-                }(orgName => Future.successful(BadRequest(view(formWithErrors, mode, orgName)))),
+              },
             value =>
               for {
                 updatedAnswers <- Future.fromTry(request.userAnswers.set(ReportForRegisteredBusinessPage, value))
@@ -100,5 +105,5 @@ class ReportForRegisteredBusinessController @Inject() (
               } yield Redirect(navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers))
           )
       }
-  }
+    }
 }
