@@ -55,27 +55,21 @@ class HomePageViewModelSpec extends SpecBase {
       "must return the url for the special add journey when ct utr is populated and 0 rcasps are present" in {
         val viewModel   = basicViewModel
         val result      = viewModel.getNoRcaspsSectionLink
-        val expectedUrl = controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to /report-for-registered-business (CARF-151)")
-          .url
+        val expectedUrl = controllers.combined.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
 
         result mustBe expectedUrl
       }
       "must return the url for the normal add journey when ct utr is populated and more than 0 rcasps are present" in {
         val viewModel   = basicViewModel.copy(hasZeroRcaspsAdded = false)
         val result      = viewModel.getNoRcaspsSectionLink
-        val expectedUrl = controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to /organisation-or-individual (CARF-151)")
-          .url
+        val expectedUrl = controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
 
         result mustBe expectedUrl
       }
       "must return the url for the normal add journey when no ct utr is present and but 0 rcasps are present" in {
         val viewModel   = basicViewModel.copy(ctUtr = None)
         val result      = viewModel.getNoRcaspsSectionLink
-        val expectedUrl = controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to /organisation-or-individual (CARF-151)")
-          .url
+        val expectedUrl = controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
 
         result mustBe expectedUrl
       }
@@ -106,9 +100,7 @@ class HomePageViewModelSpec extends SpecBase {
       "must return the url for the normal add rcasp journey" in {
         val viewModel   = basicViewModel
         val result      = viewModel.getAddRcaspLink
-        val expectedUrl = controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to /organisation-or-individual (CARF-151)")
-          .url
+        val expectedUrl = controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
 
         result mustBe expectedUrl
       }

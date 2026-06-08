@@ -16,7 +16,7 @@
 
 package viewmodels
 
-import models.UniqueTaxpayerReference
+import models.{NormalMode, UniqueTaxpayerReference}
 import play.api.i18n.Messages
 
 case class HomePageViewModel(
@@ -37,13 +37,9 @@ case class HomePageViewModel(
 
   lazy val getNoRcaspsSectionLink: String =
     if (hasZeroRcaspsAdded && ctUtr.nonEmpty) {
-      controllers.routes.PlaceholderController
-        .onPageLoad("Should redirect to /report-for-registered-business (CARF-151)")
-        .url
+      controllers.combined.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
     } else {
-      controllers.routes.PlaceholderController
-        .onPageLoad("Should redirect to /organisation-or-individual (CARF-151)")
-        .url
+      controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
     }
 
   lazy val getUploadXmlLink: String =
@@ -57,9 +53,7 @@ case class HomePageViewModel(
       .url
 
   lazy val getAddRcaspLink: String =
-    controllers.routes.PlaceholderController
-      .onPageLoad("Should redirect to /organisation-or-individual (CARF-151)")
-      .url
+    controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
 
   lazy val getManageRcaspsLink: String =
     controllers.routes.PlaceholderController
