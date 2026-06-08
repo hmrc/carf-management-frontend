@@ -79,8 +79,12 @@ class HomePageController @Inject() (
         case Right(viewModel) =>
           val aeoiEmail: String               = appConfig.aeoiEmailAddress
           val changeContactDetailsUrl: String = appConfig.changeContactDetailsIndexUrl
+          val updatedAnswers =
+            request.userAnswers.getOrElse(UserAnswers(id = request.userId))
+              .copy(isCtAutoMatched = request.utr.nonEmpty)
+
           for {
-            _ <- sessionRepository.set(request.userAnswers.getOrElse(UserAnswers(id = request.userId)))
+            _ <- sessionRepository.set(updatedAnswers)
           } yield Ok(view(viewModel, aeoiEmail, changeContactDetailsUrl))
       }
   }
