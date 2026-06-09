@@ -47,13 +47,7 @@ class SessionRepositorySpec
   private val instant          = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-  private val userAnswers: UserAnswers =
-    UserAnswers(
-      id = "id",
-      isCtAutoMatched = false,
-      data = Json.obj("foo" -> "bar"),
-      lastUpdated = Instant.ofEpochSecond(1)
-    )
+  private val userAnswers = UserAnswers("id", Json.obj("foo" -> "bar"), Instant.ofEpochSecond(1))
 
   private val mockAppConfig = mock[FrontendAppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1L
@@ -75,7 +69,7 @@ class SessionRepositorySpec
       val setResult     = repository.set(userAnswers).futureValue
       val updatedRecord = find(Filters.equal("_id", userAnswers.id)).futureValue.headOption.value
 
-      updatedRecord mustBe expectedResult
+      updatedRecord mustEqual expectedResult
     }
 
     mustPreserveMdc(repository.set(userAnswers))
@@ -84,18 +78,22 @@ class SessionRepositorySpec
   ".get" - {
 
     "when there is a record for this id" - {
+
       "must update the lastUpdated time and get the record" in {
+
         insert(userAnswers).futureValue
 
         val result         = repository.get(userAnswers.id).futureValue
-        val expectedResult = userAnswers.copy(lastUpdated = instant)
+        val expectedResult = userAnswers copy (lastUpdated = instant)
 
-        result.value mustBe expectedResult
+        result.value mustEqual expectedResult
       }
     }
 
     "when there is no record for this id" - {
+
       "must return None" in {
+
         repository.get("id that does not exist").futureValue must not be defined
       }
     }
@@ -106,6 +104,7 @@ class SessionRepositorySpec
   ".clear" - {
 
     "must remove a record" in {
+
       insert(userAnswers).futureValue
 
       val result = repository.clear(userAnswers.id).futureValue
@@ -116,7 +115,7 @@ class SessionRepositorySpec
     "must return true when there is no record to remove" in {
       val result = repository.clear("id that does not exist").futureValue
 
-      result mustBe true
+      result mustEqual true
     }
 
     mustPreserveMdc(repository.clear(userAnswers.id))
@@ -125,20 +124,25 @@ class SessionRepositorySpec
   ".keepAlive" - {
 
     "when there is a record for this id" - {
+
       "must update its lastUpdated to `now` and return true" in {
+
         insert(userAnswers).futureValue
 
         val result = repository.keepAlive(userAnswers.id).futureValue
 
         val expectedUpdatedAnswers = userAnswers copy (lastUpdated = instant)
-        val updatedAnswers         = find(Filters.equal("_id", userAnswers.id)).futureValue.headOption.value
+
+        val updatedAnswers = find(Filters.equal("_id", userAnswers.id)).futureValue.headOption.value
         updatedAnswers mustEqual expectedUpdatedAnswers
       }
     }
 
     "when there is no record for this id" - {
+
       "must return true" in {
-        repository.keepAlive("id that does not exist").futureValue mustBe true
+
+        repository.keepAlive("id that does not exist").futureValue mustEqual true
       }
     }
 
@@ -147,9 +151,11 @@ class SessionRepositorySpec
 
   private def mustPreserveMdc[A](f: => Future[A])(implicit pos: Position): Unit =
     "must preserve MDC" in {
+
       MDC.put("test", "foo")
 
-      val preserved = f.map(_ => Option(MDC.get("test"))).futureValue
-      preserved mustBe Some("foo")
+      (f.map { _ =>
+        Option(MDC.get("test"))
+      }.futureValue) mustEqual Some("foo")
     }
 }
