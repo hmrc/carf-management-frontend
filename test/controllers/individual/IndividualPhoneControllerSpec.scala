@@ -17,7 +17,7 @@
 package controllers.individual
 
 import base.SpecBase
-import forms.individual.IndividualPhoneFormProvider
+import forms.GenericPhoneFormProvider
 import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
@@ -36,8 +36,8 @@ class IndividualPhoneControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider       = new IndividualPhoneFormProvider()
-  val form: Form[String] = formProvider()
+  val formProvider       = new GenericPhoneFormProvider()
+  val form: Form[String] = formProvider("individualPhone")
 
   lazy val individualPhoneRoute: String =
     controllers.individual.routes.IndividualPhoneController.onPageLoad(NormalMode).url

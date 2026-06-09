@@ -17,7 +17,7 @@
 package controllers.individual
 
 import base.SpecBase
-import forms.individual.IndividualEmailFormProvider
+import forms.GenericEmailFormProvider
 import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
@@ -36,8 +36,8 @@ class IndividualEmailControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider       = new IndividualEmailFormProvider()
-  val form: Form[String] = formProvider()
+  val formProvider       = new GenericEmailFormProvider()
+  val form: Form[String] = formProvider("individualEmail")
 
   lazy val individualEmailRoute: String =
     controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode).url

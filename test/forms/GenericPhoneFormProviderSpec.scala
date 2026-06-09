@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package forms.individual
+package forms
 
+import forms.GenericPhoneFormProvider
 import forms.behaviours.StringFieldBehaviours
 import play.api.data.FormError
 
-class IndividualPhoneFormProviderSpec extends StringFieldBehaviours {
+class GenericPhoneFormProviderSpec extends StringFieldBehaviours {
 
-  val form = new IndividualPhoneFormProvider()()
-
+  val testKey     = "testKey"
   val fieldName   = "value"
-  val requiredKey = "individualPhone.error.required"
-  val lengthKey   = "individualPhone.error.length"
-  val invalidKey  = "individualPhone.error.invalid"
+  val requiredKey = s"testKey.error.required"
+  val lengthKey   = s"testKey.error.length"
+  val invalidKey  = s"testKey.error.invalid"
   val maxLength   = 24
+
+  val form = new GenericPhoneFormProvider()(testKey)
 
   ".value" - {
 

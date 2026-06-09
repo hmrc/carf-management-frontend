@@ -17,7 +17,7 @@
 package controllers.individual
 
 import controllers.actions.*
-import forms.individual.IndividualPhoneFormProvider
+import forms.GenericPhoneFormProvider
 
 import javax.inject.Inject
 import models.Mode
@@ -40,7 +40,7 @@ class IndividualPhoneController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    formProvider: IndividualPhoneFormProvider,
+    formProvider: GenericPhoneFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: IndividualPhoneView
 )(implicit ec: ExecutionContext)
@@ -48,7 +48,7 @@ class IndividualPhoneController @Inject() (
     with I18nSupport
     with Logging {
 
-  val form: Form[String] = formProvider()
+  val form: Form[String] = formProvider("individualPhone")
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
     implicit request =>

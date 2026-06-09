@@ -17,7 +17,7 @@
 package controllers.individual
 
 import controllers.actions.*
-import forms.individual.IndividualEmailFormProvider
+import forms.GenericEmailFormProvider
 
 import javax.inject.Inject
 import models.Mode
@@ -40,7 +40,7 @@ class IndividualEmailController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    formProvider: IndividualEmailFormProvider,
+    formProvider: GenericEmailFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: IndividualEmailView
 )(implicit ec: ExecutionContext)
@@ -48,7 +48,7 @@ class IndividualEmailController @Inject() (
     with I18nSupport
     with Logging {
 
-  val form: Form[String] = formProvider()
+  val form: Form[String] = formProvider(messageKey = "individualEmail")
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
     implicit request =>

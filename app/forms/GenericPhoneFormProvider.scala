@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package forms.individual
+package forms
 
-import config.Constants.maxEmailLength
 import forms.mappings.Mappings
 import play.api.data.Form
 
 import javax.inject.Inject
 
-class IndividualEmailFormProvider @Inject() extends Mappings {
+class GenericPhoneFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[String] =
+  def apply(messageKey: String): Form[String] =
     Form(
-      "value" -> text("individualEmail.error.required")
-        .verifying(
-          firstError(
-            maxLength(maxEmailLength, "individualEmail.error.length"),
-            validEmailAddress("individualEmail.error.invalid")
-          )
-        )
+      "value" -> phoneNumber(
+        requiredKey = s"$messageKey.error.required",
+        invalidKey = s"$messageKey.error.invalid",
+        lengthKey = s"$messageKey.error.length",
+        notRealPhoneNumberKey = s"$messageKey.error.notReal"
+      )
     )
 }
