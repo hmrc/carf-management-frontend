@@ -21,12 +21,12 @@ import forms.GenericYesNoPageFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.combined.RegisteredBusinessIsThisYourBusinessNamePage
-import pages.organisation.OverwritableOrganisationName
+import play.api.Logging
 import play.api.data.Form
-import play.api.i18n.Lang.logger
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
+import services.RegistrationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.combined.RegisteredBusinessIsThisYourBusinessNameView
 
@@ -38,64 +38,63 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
     sessionRepository: SessionRepository,
     navigator: Navigator,
     identify: IdentifierAction,
+    ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: GenericYesNoPageFormProvider,
+    registrationService: RegistrationService,
     val controllerComponents: MessagesControllerComponents,
     view: RegisteredBusinessIsThisYourBusinessNameView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[Boolean] = formProvider("registeredBusinessIsThisYourBusinessName.error.required")
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
+      request.utr match {
+        case Some(utr) =>
+          registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).map { businessDetails =>
+            val preparedForm =
+              request.userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).fold(form)(form.fill)
 
-      val preparedForm = request.userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).fold(form)(form.fill)
+            Ok(view(preparedForm, mode, businessDetails.name))
+          }
 
-      request.userAnswers
-        .get(OverwritableOrganisationName)
-        .fold {
+        case None =>
           logger.warn(
-            "[RegisteredBusinessIsThisYourBusinessNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
+            "[RegisteredBusinessIsThisYourBusinessNameController][onPageLoad] Error! CT UTR could not be retrieved from request"
           )
-          Redirect(
-            controllers.routes.PlaceholderController
-              .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          )
-        } { orgName =>
-          Ok(view(preparedForm, mode, orgName))
-        }
-  }
+          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
-      form
-        .bindFromRequest()
-        .fold(
-          formWithErrors =>
-            request.userAnswers
-              .get(OverwritableOrganisationName)
-              .fold {
-                logger.warn(
-                  "[RegisteredBusinessIsThisYourBusinessNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
-                )
-                Future.successful(
-                  Redirect(
-                    controllers.routes.PlaceholderController
-                      .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-                  )
-                )
-              } { orgName =>
-                Future.successful(BadRequest(view(formWithErrors, mode, orgName)))
-              },
-          value =>
-            for {
-              updatedAnswers <-
-                Future.fromTry(request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value))
-              _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, updatedAnswers))
-        )
-  }
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
+      request.utr match {
+        case Some(utr) =>
+          form
+            .bindFromRequest()
+            .fold(
+              formWithErrors =>
+                registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).map { businessDetails =>
+                  BadRequest(view(formWithErrors, mode, businessDetails.name))
+                },
+              value =>
+                for {
+                  updatedAnswers <-
+                    Future.fromTry(request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value))
+                  _              <- sessionRepository.set(updatedAnswers)
+                } yield Redirect(navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, updatedAnswers))
+            )
+
+        case None =>
+          logger.warn(
+            "[RegisteredBusinessIsThisYourBusinessNameController][onSubmit] Error! CT UTR could not be retrieved from request"
+          )
+          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      }
+    }
 }
