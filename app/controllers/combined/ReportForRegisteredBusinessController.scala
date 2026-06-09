@@ -65,7 +65,7 @@ class ReportForRegisteredBusinessController @Inject() (
 
         case None =>
           logger.warn(
-            "[ReportForRegisteredBusinessController][onPageLoad] Error! CT UTR could not be retrieved from request"
+            "[ReportForRegisteredBusinessController][onPageLoad] CT UTR not found in request"
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
@@ -91,7 +91,7 @@ class ReportForRegisteredBusinessController @Inject() (
 
         case None =>
           logger.warn(
-            "[ReportForRegisteredBusinessController][onSubmit] Error! CT UTR could not be retrieved from request"
+            "[ReportForRegisteredBusinessController][onSubmit] CT UTR not found in request"
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
