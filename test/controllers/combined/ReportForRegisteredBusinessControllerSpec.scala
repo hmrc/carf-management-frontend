@@ -22,7 +22,7 @@ import models.{BusinessDetails, NormalMode}
 import models.responses.AddressRegistrationResponse
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.Mockito.{mock, verify, when}
+import org.mockito.Mockito.{mock, when}
 import pages.combined.ReportForRegisteredBusinessPage
 import play.api.data.Form
 import play.api.inject.bind
@@ -61,9 +61,8 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
   "ReportForRegisteredBusiness Controller" - {
 
-    "must return OK and the correct view for a GET when ct auto matched is true and a UTR is present" in {
-      val userAnswers =
-        emptyUserAnswers.copy(isCtAutoMatched = true)
+    "must return OK and the correct view for a GET when a UTR is present" in {
+      val userAnswers = emptyUserAnswers
 
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
         .thenReturn(Future.successful(businessDetails))
@@ -92,7 +91,6 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     "must populate the view correctly on a GET when the question has previously been answered" in {
       val userAnswers =
         emptyUserAnswers
-          .copy(isCtAutoMatched = true)
           .withPage(ReportForRegisteredBusinessPage, true)
 
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
@@ -108,9 +106,8 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
         val view    = application.injector.instanceOf[ReportForRegisteredBusinessView]
-
-        val result = route(application, request).value
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(form.fill(true), NormalMode, businessDetails.name)(
@@ -125,12 +122,9 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
         .thenReturn(Future.successful(businessDetails))
 
-      val userAnswers =
-        emptyUserAnswers.copy(isCtAutoMatched = true)
-
       val application =
         applicationBuilder(
-          userAnswers = Some(userAnswers),
+          userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
         )
           .overrides(
@@ -152,9 +146,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
-      val userAnswers =
-        emptyUserAnswers
-          .copy(isCtAutoMatched = true)
+      val userAnswers = emptyUserAnswers
 
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
         .thenReturn(Future.successful(businessDetails))
@@ -173,8 +165,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
             .withFormUrlEncodedBody(("value", ""))
 
         val boundForm = form.bind(Map("value" -> ""))
-
-        val view = application.injector.instanceOf[ReportForRegisteredBusinessView]
+        val view      = application.injector.instanceOf[ReportForRegisteredBusinessView]
 
         val result = route(application, request).value
 
@@ -186,18 +177,9 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to OrganisationOrIndividual page when user is not ct auto matched" in {
-      val userAnswers =
-        emptyUserAnswers
-          .copy(isCtAutoMatched = false)
-
+    "must redirect to Journey Recovery when UTR is not present on GET" in {
       val application =
-        applicationBuilder(
-          userAnswers = Some(userAnswers),
-          requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
-          .build()
+        applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -205,53 +187,23 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.combined.routes.OrganisationOrIndividualController
-          .onPageLoad(NormalMode)
-          .url
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
-    "must redirect to Some Information is Missing when UTR is not present on GET" in {
-      val userAnswers =
-        emptyUserAnswers.copy(isCtAutoMatched = true)
-
+    "must redirect to Journey Recovery when UTR is not present on POST" in {
       val application =
-        applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
-          .build()
-
-      running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
-
-        val result = route(application, request).value
-
-        status(result)               mustEqual SEE_OTHER
-        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          .url
-      }
-    }
-
-    "must redirect to Some Information is Missing when UTR is not present on POST" in {
-      val userAnswers =
-        emptyUserAnswers.copy(isCtAutoMatched = true)
-
-      val application =
-        applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
-          .build()
+        applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
         val request =
           FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", ""))
+            .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
 
-        status(result)               mustEqual SEE_OTHER
-        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          .url
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 

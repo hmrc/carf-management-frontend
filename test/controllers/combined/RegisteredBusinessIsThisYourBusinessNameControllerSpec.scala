@@ -18,17 +18,18 @@ package controllers.combined
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
-import models.NormalMode
+import models.{BusinessDetails, NormalMode}
+import models.responses.AddressRegistrationResponse
 import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.{mock, verify, when}
 import pages.combined.RegisteredBusinessIsThisYourBusinessNamePage
-import pages.organisation.OverwritableOrganisationName
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.RegistrationService
 import views.html.combined.RegisteredBusinessIsThisYourBusinessNameView
 
 import scala.concurrent.Future
@@ -43,69 +44,105 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
   lazy val routeUnderTest: String =
     controllers.combined.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode).url
 
+  val businessDetails: BusinessDetails =
+    BusinessDetails(
+      name = "Test Business Ltd",
+      address = AddressRegistrationResponse(
+        addressLine1 = "1 Test Street",
+        addressLine2 = Some("Testville"),
+        addressLine3 = None,
+        addressLine4 = None,
+        postalCode = Some("TE1 1ST"),
+        countryCode = "GB"
+      )
+    )
+
+  val mockRegistrationService: RegistrationService = mock[RegistrationService]
+
   "RegisteredBusinessIsThisYourBusinessName Controller" - {
 
-    "must return OK and the correct view for a GET when an org name is present" in {
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+    "must return OK and the correct view for a GET when CT UTR is present" in {
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
+      val userAnswers =
+        emptyUserAnswers
 
-      running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
+      when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
+        .thenReturn(Future.successful(businessDetails))
 
-        val result = route(application, request).value
-
-        val view = application.injector.instanceOf[RegisteredBusinessIsThisYourBusinessNameView]
-
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, testOrgName)(request, messages(application)).toString
-      }
-    }
-
-    "must populate the view correctly on a GET when the question has previously been answered" in {
-      val userAnswers = emptyUserAnswers
-        .withPage(OverwritableOrganisationName, testOrgName)
-        .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application =
+        applicationBuilder(
+          userAnswers = Some(userAnswers),
+          affinityGroup = uk.gov.hmrc.auth.core.AffinityGroup.Organisation,
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
+          .overrides(
+            bind[RegistrationService].toInstance(mockRegistrationService)
+          )
+          .build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
-
-        val view = application.injector.instanceOf[RegisteredBusinessIsThisYourBusinessNameView]
-
-        val result = route(application, request).value
+        val result  = route(application, request).value
+        val view    = application.injector.instanceOf[RegisteredBusinessIsThisYourBusinessNameView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, testOrgName)(
+        contentAsString(result) mustEqual view(form, NormalMode, businessDetails.name)(
           request,
           messages(application)
         ).toString
       }
     }
 
-    "must redirect to Some Information is Missing when org name is not present" in {
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+    "must populate the view correctly on a GET when the question has previously been answered" in {
+      val userAnswers =
+        emptyUserAnswers
+          .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
+
+      when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
+        .thenReturn(Future.successful(businessDetails))
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(userAnswers),
+          affinityGroup = uk.gov.hmrc.auth.core.AffinityGroup.Organisation,
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
+          .overrides(
+            bind[RegistrationService].toInstance(mockRegistrationService)
+          )
+          .build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+        val view    = application.injector.instanceOf[RegisteredBusinessIsThisYourBusinessNameView]
 
-        val result = route(application, request).value
-
-        status(result)               mustEqual SEE_OTHER
-        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          .url
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(form.fill(true), NormalMode, businessDetails.name)(
+          request,
+          messages(application)
+        ).toString
       }
     }
 
     "must redirect to the next page when valid data is submitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
+        .thenReturn(Future.successful(businessDetails))
+
+      val userAnswers =
+        emptyUserAnswers
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)))
+        applicationBuilder(
+          userAnswers = Some(userAnswers),
+          affinityGroup = uk.gov.hmrc.auth.core.AffinityGroup.Organisation,
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[RegistrationService].toInstance(mockRegistrationService)
           )
           .build()
 
@@ -121,10 +158,23 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
       }
     }
 
-    "must return a Bad Request and errors when invalid data is submitted and an org name is present" in {
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+    "must return a Bad Request and errors when invalid data is submitted" in {
+      val userAnswers =
+        emptyUserAnswers
 
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
+      when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
+        .thenReturn(Future.successful(businessDetails))
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(userAnswers),
+          affinityGroup = uk.gov.hmrc.auth.core.AffinityGroup.Organisation,
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
+          .overrides(
+            bind[RegistrationService].toInstance(mockRegistrationService)
+          )
+          .build()
 
       running(application) {
         val request =
@@ -138,27 +188,30 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result)          mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, testOrgName)(
+        contentAsString(result) mustEqual view(boundForm, NormalMode, businessDetails.name)(
           request,
           messages(application)
         ).toString
       }
     }
 
-    "must redirect to Some Information is Missing when invalid data is submitted and org name is not present" in {
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+    "must redirect to Journey Recovery when UTR is not present" in {
+      val application =
+        applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          affinityGroup = uk.gov.hmrc.auth.core.AffinityGroup.Organisation,
+          requestUtr = None
+        )
+          .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
+          .build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", ""))
+        val request = FakeRequest(GET, routeUnderTest)
 
         val result = route(application, request).value
 
-        status(result)               mustEqual SEE_OTHER
-        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          .url
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
@@ -189,5 +242,30 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
+
+    "must redirect to Journey Recovery when CT UTR is not present on POST" in {
+      val application =
+        applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          affinityGroup = uk.gov.hmrc.auth.core.AffinityGroup.Organisation,
+          requestUtr = None
+        )
+          .overrides(
+            bind[RegistrationService].toInstance(mockRegistrationService)
+          )
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, routeUnderTest)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
   }
 }
