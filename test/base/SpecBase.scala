@@ -108,4 +108,7 @@ trait SpecBase
   }
 
   inline val testOrgName = "Timmy Ltd"
+
+  val testEmail = "hi@example.com"
+  val testPhone = "07123456789"
 }

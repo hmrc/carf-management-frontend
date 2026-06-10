@@ -14,22 +14,31 @@
  * limitations under the License.
  */
 
-package queries
+package pages.organisation
 
 import models.UserAnswers
+import pages.QuestionPage
 import play.api.libs.json.JsPath
 
 import scala.util.{Success, Try}
 
-sealed trait Query {
+case object OrganisationHaveSecondContactPage extends QuestionPage[Boolean] {
 
-  def path: JsPath
-}
+  override def path: JsPath = JsPath \ toString
 
-trait Gettable[A] extends Query
+  override def toString: String = "organisationHaveSecondContact"
 
-trait Settable[A] extends Query {
-
-  def cleanup(value: A, userAnswers: UserAnswers, hasChanged: Boolean): Try[UserAnswers] =
-    Success(userAnswers)
+  override def cleanup(value: Boolean, userAnswers: UserAnswers, hasChanged: Boolean): Try[UserAnswers] =
+    if (hasChanged && !value) {
+      userAnswers.remove(
+        List(
+          OrganisationSecondContactNamePage,
+          OrganisationSecondContactEmailPage,
+          OrganisationSecondContactHavePhonePage,
+          OrganisationSecondContactPhoneNumberPage
+        )
+      )
+    } else {
+      Success(userAnswers)
+    }
 }

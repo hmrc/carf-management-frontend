@@ -17,9 +17,10 @@
 package navigation
 
 import base.SpecBase
+import controllers.routes
 import models.NormalMode
 import pages.Page
-import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, TradingNamePage}
+import pages.organisation.{HaveTradingNamePage, OrganisationHaveSecondContactPage, OrganisationNamePage, OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, TradingNamePage}
 
 class NormalRoutesNavigatorSpec extends SpecBase {
 
@@ -78,6 +79,64 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr (CARF-197)"
         )
       }
+    }
+
+    "must navigate from OrganisationHaveSecondContact page to OrganisationSecondContactName page when the provided answer is Yes" in {
+
+      val updatedAnswers =
+        emptyUserAnswers
+          .withPage(OrganisationHaveSecondContactPage, true)
+
+      navigator.nextPage(
+        OrganisationHaveSecondContactPage,
+        NormalMode,
+        updatedAnswers
+      ) mustBe controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
+    }
+
+    "must navigate from OrganisationSecondContactName page to OrganisationSecondContactEmail page when continue is clicked" in {
+
+      val updatedAnswers =
+        emptyUserAnswers
+          .withPage(OrganisationSecondContactNamePage, "name")
+
+      navigator.nextPage(
+        OrganisationSecondContactNamePage,
+        NormalMode,
+        updatedAnswers
+      ) mustBe controllers.organisation.routes.OrganisationSecondContactEmailController.onPageLoad(NormalMode)
+
+    }
+
+    "must navigate from OrganisationHaveSecondContact page to Journey Recovery when no answer exists" in {
+      val userAnswers = emptyUserAnswers
+
+      navigator.nextPage(
+        OrganisationHaveSecondContactPage,
+        NormalMode,
+        userAnswers
+      ) mustBe routes.JourneyRecoveryController.onPageLoad()
+    }
+
+    "OrganisationSecondContactHavePhone navigation" - {
+      "must go to Organisation Second Contact phone Number page when user answers 'Yes'" in {
+        val userAnswers = emptyUserAnswers.withPage(OrganisationSecondContactHavePhonePage, true)
+        navigator.nextPage(
+          OrganisationSecondContactHavePhonePage,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.organisation.routes.OrganisationSecondContactPhoneNumberController.onPageLoad(NormalMode)
+      }
+
+      "must go to Check Your Answers page when user answers 'No'" in {
+        val userAnswers = emptyUserAnswers.withPage(OrganisationSecondContactHavePhonePage, false)
+        navigator.nextPage(
+          OrganisationSecondContactHavePhonePage,
+          NormalMode,
+          userAnswers
+        ) mustBe routes.CheckYourAnswersController.onPageLoad()
+      }
+
     }
 
     "When passed an unknown page" - {

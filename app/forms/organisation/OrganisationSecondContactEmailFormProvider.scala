@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
-package config
+package forms.organisation
 
-object Constants {
+import javax.inject.Inject
 
-  inline val ZERO = 0
+import forms.mappings.Mappings
+import play.api.data.Form
 
-  inline val standardTextInputRegex  = """^[a-zA-Z0-9 &'\\`^\-]*$"""
-  inline final val contactNameRegex  = """^[a-zA-Z0-9 &'\\`^\-]*$"""
-  final val phoneNumberRegex: String = """^[A-Z0-9 )/(\-*#+]*$""".stripMargin
+class OrganisationSecondContactEmailFormProvider @Inject() extends Mappings {
 
-  inline final val maxPhoneLength = 24
+  private val maxLength = 132
 
-  inline final val notReal0808PhoneNumber = "+448081570192"
+  def apply(): Form[String] =
+    Form(
+      "value" -> text("organisationSecondContactEmail.error.required")
+        .verifying(
+          firstError(
+            maxLength(maxLength, "organisationSecondContactEmail.error.length"),
+            validEmailAddress("organisationSecondContactEmail.error.invalid")
+          )
+        )
+    )
 }

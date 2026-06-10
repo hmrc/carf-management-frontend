@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package config
+package pages.organisation
 
-object Constants {
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-  inline val ZERO = 0
+case object OrganisationSecondContactPhoneNumberPage extends QuestionPage[String] {
 
-  inline val standardTextInputRegex  = """^[a-zA-Z0-9 &'\\`^\-]*$"""
-  inline final val contactNameRegex  = """^[a-zA-Z0-9 &'\\`^\-]*$"""
-  final val phoneNumberRegex: String = """^[A-Z0-9 )/(\-*#+]*$""".stripMargin
+  override def path: JsPath = JsPath \ toString
 
-  inline final val maxPhoneLength = 24
-
-  inline final val notReal0808PhoneNumber = "+448081570192"
+  override def toString: String = "organisationSecondContactPhoneNumber"
 }
