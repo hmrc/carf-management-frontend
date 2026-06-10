@@ -43,7 +43,6 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: GenericYesNoPageFormProvider,
-    registrationService: RegistrationService,
     val controllerComponents: MessagesControllerComponents,
     view: RegisteredBusinessIsThisYourBusinessNameView
 )(implicit ec: ExecutionContext)

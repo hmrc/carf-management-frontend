@@ -22,8 +22,9 @@ import models.{BusinessDetails, NormalMode}
 import models.responses.AddressRegistrationResponse
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.Mockito.{mock, when}
+import org.mockito.Mockito.when
 import pages.combined.ReportForRegisteredBusinessPage
+import pages.organisation.CachedBusinessDetailsPage
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -62,6 +63,8 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
   "ReportForRegisteredBusiness Controller" - {
 
     "must return OK and the correct view for a GET when a UTR is present" in {
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
       val userAnswers = emptyUserAnswers
 
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
@@ -89,6 +92,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       val userAnswers =
         emptyUserAnswers
           .withPage(ReportForRegisteredBusinessPage, true)
@@ -119,12 +123,14 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
     "must redirect to the next page when valid data is submitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
-        .thenReturn(Future.successful(businessDetails))
+
+      val userAnswers =
+        emptyUserAnswers
+          .withPage(CachedBusinessDetailsPage, businessDetails)
 
       val application =
         applicationBuilder(
-          userAnswers = Some(emptyUserAnswers),
+          userAnswers = Some(userAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
         )
           .overrides(
@@ -146,10 +152,9 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
-      val userAnswers = emptyUserAnswers
-
-      when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
-        .thenReturn(Future.successful(businessDetails))
+      val userAnswers =
+        emptyUserAnswers
+          .withPage(CachedBusinessDetailsPage, businessDetails)
 
       val application =
         applicationBuilder(
@@ -194,6 +199,29 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     "must redirect to Journey Recovery when UTR is not present on POST" in {
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, routeUnderTest)
+            .withFormUrlEncodedBody(("value", "true"))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must redirect to Journey Recovery on POST when no cached business details found" in {
+      val userAnswers = emptyUserAnswers
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(userAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
+          .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
+          .build()
 
       running(application) {
         val request =

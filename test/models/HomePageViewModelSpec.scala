@@ -34,6 +34,7 @@ class HomePageViewModelSpec extends SpecBase {
   implicit val implicitMessages: Messages = messages(app)
 
   "HomePageViewModel" - {
+
     "getNoRcaspsSectionText method" - {
       "must return None when there are more than one Rcasps added" in {
         val viewModel = basicViewModel.copy(hasZeroRcaspsAdded = false)
@@ -52,28 +53,15 @@ class HomePageViewModelSpec extends SpecBase {
     }
 
     "getNoRcaspsSectionLink val" - {
-      "must return the url for the special add journey when ct utr is populated and 0 rcasps are present" in {
+      "must return the url for the routing controller" in {
         val viewModel   = basicViewModel
         val result      = viewModel.getNoRcaspsSectionLink
-        val expectedUrl = controllers.combined.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
-
-        result mustBe expectedUrl
-      }
-      "must return the url for the normal add journey when ct utr is populated and more than 0 rcasps are present" in {
-        val viewModel   = basicViewModel.copy(hasZeroRcaspsAdded = false)
-        val result      = viewModel.getNoRcaspsSectionLink
-        val expectedUrl = controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
-
-        result mustBe expectedUrl
-      }
-      "must return the url for the normal add journey when no ct utr is present and but 0 rcasps are present" in {
-        val viewModel   = basicViewModel.copy(ctUtr = None)
-        val result      = viewModel.getNoRcaspsSectionLink
-        val expectedUrl = controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
+        val expectedUrl = controllers.routes.RoutingController.onPageLoad().url
 
         result mustBe expectedUrl
       }
     }
+
     "getUploadXmlLink val" - {
       "must return the url for the upload xml link" in {
         val viewModel   = basicViewModel
@@ -85,6 +73,7 @@ class HomePageViewModelSpec extends SpecBase {
         result mustBe expectedUrl
       }
     }
+
     "getViewResultsLink val" - {
       "must return the url for the view results page" in {
         val viewModel   = basicViewModel
@@ -96,15 +85,17 @@ class HomePageViewModelSpec extends SpecBase {
         result mustBe expectedUrl
       }
     }
+
     "getAddRcaspLink val" - {
-      "must return the url for the normal add rcasp journey" in {
+      "must return the url for the routing controller" in {
         val viewModel   = basicViewModel
         val result      = viewModel.getAddRcaspLink
-        val expectedUrl = controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
+        val expectedUrl = controllers.routes.RoutingController.onPageLoad().url
 
         result mustBe expectedUrl
       }
     }
+
     "getManageRcaspsLink val" - {
       "must return the url for the manage rcasps page" in {
         val viewModel   = basicViewModel

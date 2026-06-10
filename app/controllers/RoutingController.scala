@@ -70,7 +70,3 @@ class RoutingController @Inject() (
       }
     }
 }
-
-//jounrey map says
-//do any rcasps added check first - if yes send to /org-or-ind
-// if no - then do the was user a ct-automatched org? if yes send to /report-for-registered-busienss , if no then send to /org-or-ind
