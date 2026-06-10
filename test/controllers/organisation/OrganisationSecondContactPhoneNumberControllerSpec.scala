@@ -68,12 +68,8 @@ class OrganisationSecondContactPhoneNumberControllerSpec extends SpecBase {
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val prePopulatedUserAnswers = UserAnswers(userAnswersId)
-        .set(OrganisationSecondContactNamePage, "Simothy")
-        .success
-        .value
-        .set(OrganisationSecondContactPhoneNumberPage, "12345")
-        .success
-        .value
+        .withPage(OrganisationSecondContactNamePage, "Simothy")
+        .withPage(OrganisationSecondContactPhoneNumberPage, "12345")
 
       val application = applicationBuilder(userAnswers = Some(prePopulatedUserAnswers)).build()
 
@@ -147,7 +143,11 @@ class OrganisationSecondContactPhoneNumberControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustEqual routes.PlaceholderController
+          .onPageLoad(
+            "Should redirect to Some Information is Missing Page (CARF-293)"
+          )
+          .url
       }
     }
 

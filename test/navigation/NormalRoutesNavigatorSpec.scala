@@ -20,7 +20,7 @@ import base.SpecBase
 import controllers.routes
 import models.NormalMode
 import pages.Page
-import pages.organisation.{HaveTradingNamePage, OrganisationHaveSecondContactPage, OrganisationNamePage, OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, TradingNamePage}
+import pages.organisation.*
 
 class NormalRoutesNavigatorSpec extends SpecBase {
 
@@ -81,45 +81,72 @@ class NormalRoutesNavigatorSpec extends SpecBase {
       }
     }
 
-    "must navigate from OrganisationHaveSecondContact page to OrganisationSecondContactName page when the provided answer is Yes" in {
+    "When passed OrganisationHaveSecondContactPage" - {
+      "Should redirect to OrganisationSecondContactNamePage when the provided answer is Yes" in {
+        val updatedAnswers =
+          emptyUserAnswers
+            .withPage(OrganisationHaveSecondContactPage, true)
 
-      val updatedAnswers =
-        emptyUserAnswers
-          .withPage(OrganisationHaveSecondContactPage, true)
+        navigator.nextPage(
+          OrganisationHaveSecondContactPage,
+          NormalMode,
+          updatedAnswers
+        ) mustBe controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
+      }
 
-      navigator.nextPage(
-        OrganisationHaveSecondContactPage,
-        NormalMode,
-        updatedAnswers
-      ) mustBe controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
+      "Should redirect to CheckYourAnswersPage when the provided answer is No" in {
+        val updatedAnswers =
+          emptyUserAnswers
+            .withPage(OrganisationHaveSecondContactPage, false)
+
+        navigator.nextPage(
+          OrganisationHaveSecondContactPage,
+          NormalMode,
+          updatedAnswers
+        ) mustBe controllers.routes.CheckYourAnswersController.onPageLoad()
+      }
+
+      "Should redirect to JourneyRecovery when no answer is provided" in {
+        val userAnswers = emptyUserAnswers
+
+        navigator.nextPage(
+          OrganisationHaveSecondContactPage,
+          NormalMode,
+          userAnswers
+        ) mustBe routes.JourneyRecoveryController.onPageLoad()
+      }
     }
 
-    "must navigate from OrganisationSecondContactName page to OrganisationSecondContactEmail page when continue is clicked" in {
+    "When passed OrganisationSecondContactNamePage" - {
+      "Should to OrganisationSecondContactEmailPage" in {
+        val updatedAnswers =
+          emptyUserAnswers
+            .withPage(OrganisationSecondContactNamePage, "name")
 
-      val updatedAnswers =
-        emptyUserAnswers
-          .withPage(OrganisationSecondContactNamePage, "name")
-
-      navigator.nextPage(
-        OrganisationSecondContactNamePage,
-        NormalMode,
-        updatedAnswers
-      ) mustBe controllers.organisation.routes.OrganisationSecondContactEmailController.onPageLoad(NormalMode)
-
+        navigator.nextPage(
+          OrganisationSecondContactNamePage,
+          NormalMode,
+          updatedAnswers
+        ) mustBe controllers.organisation.routes.OrganisationSecondContactEmailController.onPageLoad(NormalMode)
+      }
     }
 
-    "must navigate from OrganisationHaveSecondContact page to Journey Recovery when no answer exists" in {
-      val userAnswers = emptyUserAnswers
+    "When passed OrganisationSecondContactEmailPage" - {
+      "Should redirect to OrganisationSecondContactHavePhonePage" in {
+        val updatedAnswers =
+          emptyUserAnswers
+            .withPage(OrganisationSecondContactEmailPage, "email@email.com")
 
-      navigator.nextPage(
-        OrganisationHaveSecondContactPage,
-        NormalMode,
-        userAnswers
-      ) mustBe routes.JourneyRecoveryController.onPageLoad()
+        navigator.nextPage(
+          OrganisationSecondContactEmailPage,
+          NormalMode,
+          updatedAnswers
+        ) mustBe controllers.organisation.routes.OrganisationSecondContactHavePhoneController.onPageLoad(NormalMode)
+      }
     }
 
-    "OrganisationSecondContactHavePhone navigation" - {
-      "must go to Organisation Second Contact phone Number page when user answers 'Yes'" in {
+    "When passed OrganisationSecondContactHavePhonePage" - {
+      "Should redirect to OrganisationSecondContactPhoneNumberPage when the provided answer is Yes" in {
         val userAnswers = emptyUserAnswers.withPage(OrganisationSecondContactHavePhonePage, true)
         navigator.nextPage(
           OrganisationSecondContactHavePhonePage,
@@ -128,7 +155,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.organisation.routes.OrganisationSecondContactPhoneNumberController.onPageLoad(NormalMode)
       }
 
-      "must go to Check Your Answers page when user answers 'No'" in {
+      "Should redirect to CheckYourAnswersPage when the provided answer is No" in {
         val userAnswers = emptyUserAnswers.withPage(OrganisationSecondContactHavePhonePage, false)
         navigator.nextPage(
           OrganisationSecondContactHavePhonePage,
@@ -137,6 +164,26 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe routes.CheckYourAnswersController.onPageLoad()
       }
 
+      "Should redirect to JourneyRecovery when no answer is provided" in {
+        val userAnswers = emptyUserAnswers
+
+        navigator.nextPage(
+          OrganisationSecondContactHavePhonePage,
+          NormalMode,
+          userAnswers
+        ) mustBe routes.JourneyRecoveryController.onPageLoad()
+      }
+    }
+
+    "When passed OrganisationSecondContactPhoneNumberPage" - {
+      "Should redirect to CheckYourAnswersPage" in {
+        val userAnswers = emptyUserAnswers.withPage(OrganisationSecondContactPhoneNumberPage, "07123412345")
+        navigator.nextPage(
+          OrganisationSecondContactPhoneNumberPage,
+          NormalMode,
+          userAnswers
+        ) mustBe routes.CheckYourAnswersController.onPageLoad()
+      }
     }
 
     "When passed an unknown page" - {

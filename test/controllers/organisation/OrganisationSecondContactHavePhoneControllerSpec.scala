@@ -21,7 +21,7 @@ import controllers.routes
 import forms.GenericYesNoPageFormProvider
 import models.{NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.organisation.{OrganisationHaveSecondContactPage, OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OverwritableOrganisationName}
@@ -157,7 +157,11 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         val request = FakeRequest(GET, secondContactHavePhoneRoute)
         val result  = route(application, request).value
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustEqual routes.PlaceholderController
+          .onPageLoad(
+            "Should redirect to Some Information is Missing Page (CARF-293)"
+          )
+          .url
       }
     }
 
@@ -167,7 +171,11 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         val request = FakeRequest(GET, secondContactHavePhoneRoute)
         val result  = route(application, request).value
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustEqual routes.PlaceholderController
+          .onPageLoad(
+            "Should redirect to Some Information is Missing Page (CARF-293)"
+          )
+          .url
       }
     }
 

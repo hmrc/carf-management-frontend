@@ -116,7 +116,7 @@ organisationSecondContactEmail.change.hidden = Change second contact email addre
 
 organisationSecondContactHavePhone.title = Can we contact the second contact by phone?
 organisationSecondContactHavePhone.heading = Can we contact {0} by phone?
-organisationSecondContactHavePhone.p1 = We will call if we have any questions about your reports for {0}.
+organisationSecondContactHavePhone.p1 = We will call if we have any questions about reports for {0}.
 organisationSecondContactHavePhone.checkYourAnswersLabel = Can we contact the second contact by phone?
 organisationSecondContactHavePhone.error.required = Select yes if the second contact can be contacted by phone
 organisationSecondContactHavePhone.change.hidden = Change if we can contact the second contact by phone

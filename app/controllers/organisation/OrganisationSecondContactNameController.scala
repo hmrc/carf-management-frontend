@@ -21,6 +21,7 @@ import forms.organisation.OrganisationSecondContactNameFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{OrganisationSecondContactNamePage, OverwritableOrganisationName}
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -43,7 +44,8 @@ class OrganisationSecondContactNameController @Inject() (
     view: OrganisationSecondContactNameView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[String] = formProvider()
 
@@ -53,8 +55,16 @@ class OrganisationSecondContactNameController @Inject() (
       val preparedForm = request.userAnswers.get(OrganisationSecondContactNamePage).fold(form)(form.fill)
 
       request.userAnswers.get(OverwritableOrganisationName) match {
-        case Some(rcaspName) => Ok(view(preparedForm, mode, rcaspName))
-        case None            => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+        case Some(organisationName) => Ok(view(preparedForm, mode, organisationName))
+        case None                   =>
+          logger.warn(
+            "[OrganisationSecondContactNameController] Could not retrieve OverwritableOrganisationName onPageLoad"
+          )
+          Redirect(
+            controllers.routes.PlaceholderController.onPageLoad(
+              "Should redirect to Some Information is Missing Page (CARF-293)"
+            )
+          )
       }
   }
 
@@ -65,8 +75,12 @@ class OrganisationSecondContactNameController @Inject() (
         .fold(
           formWithErrors =>
             request.userAnswers.get(OverwritableOrganisationName) match {
-              case Some(rcaspName) => Future.successful(BadRequest(view(formWithErrors, mode, rcaspName)))
-              case None            => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+              case Some(organisationName) => Future.successful(BadRequest(view(formWithErrors, mode, organisationName)))
+              case None                   =>
+                logger.warn(
+                  "[OrganisationSecondContactNameController] Could not retrieve OverwritableOrganisationName onPageSubmit"
+                )
+                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
             },
           value =>
             for {

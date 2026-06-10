@@ -16,12 +16,14 @@
 
 package controllers.organisation
 
-import controllers.actions._
+import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
+
 import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
 import pages.organisation.OrganisationHaveSecondContactPage
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -43,7 +45,8 @@ class OrganisationHaveSecondContactController @Inject() (
     view: OrganisationHaveSecondContactView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[Boolean] = formProvider("organisationHaveSecondContact.error.required")
 
@@ -55,7 +58,12 @@ class OrganisationHaveSecondContactController @Inject() (
       // TODO: Add FirstContactNamePage (CARF-204)
 //      request.userAnswers.get(FirstContactNamePage) match {
 //        case Some(firstContactName) => Ok(view(preparedForm, mode, firstContactName))
-//        case None                   => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+//        case None                   =>
+//          logger.warn("[OrganisationHaveSecondContactController] Could not retrieve FirstContactNamePage onPageLoad")
+//          Redirect(
+      //          controllers.routes.PlaceholderController.onPageLoad(
+      //              "Should redirect to Some Information is Missing Page (CARF-293)"
+      //            ))
 //      }
 
       Ok(view(preparedForm, mode, "name"))
@@ -71,7 +79,11 @@ class OrganisationHaveSecondContactController @Inject() (
             // TODO: Add FirstContactNamePage (CARF-204)
 //            request.userAnswers.get(FirstContactNamePage) match {
 //              case Some(firstContactName) => Future.successful(BadRequest(view(formWithErrors, mode, firstContactName)))
-//              case None                   => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+//              case None                   =>
+//                logger.warn(
+//                  "[OrganisationHaveSecondContactController] Could not retrieve FirstContactNamePage onPageSubmit"
+//                )
+//                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
 //            }
             Future.successful(BadRequest(view(formWithErrors, mode, "name"))),
           value =>

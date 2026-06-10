@@ -155,7 +155,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
       }
     }
 
-    "must redirect to Journey Recovery for a GET if no organisationName is found" in {
+    "must redirect to Some Information Is Missing for a GET if no organisationName is found" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
@@ -165,7 +165,11 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
         val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustEqual routes.PlaceholderController
+          .onPageLoad(
+            "Should redirect to Some Information is Missing Page (CARF-293)"
+          )
+          .url
       }
     }
 

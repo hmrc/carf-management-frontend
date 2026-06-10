@@ -23,6 +23,7 @@ import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{OrganisationSecondContactNamePage, OrganisationSecondContactPhoneNumberPage}
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -44,7 +45,8 @@ class OrganisationSecondContactPhoneNumberController @Inject() (
     view: OrganisationSecondContactPhoneNumberView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[String] = formProvider()
 
@@ -55,7 +57,15 @@ class OrganisationSecondContactPhoneNumberController @Inject() (
 
       request.userAnswers.get(OrganisationSecondContactNamePage) match {
         case Some(usersName) => Ok(view(preparedForm, mode, usersName))
-        case None            => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+        case None            =>
+          logger.warn(
+            "[OrganisationSecondContactPhoneNumberController] Could not retrieve OrganisationSecondContactNamePage onPageLoad"
+          )
+          Redirect(
+            controllers.routes.PlaceholderController.onPageLoad(
+              "Should redirect to Some Information is Missing Page (CARF-293)"
+            )
+          )
       }
   }
 
@@ -67,7 +77,11 @@ class OrganisationSecondContactPhoneNumberController @Inject() (
           formWithErrors =>
             request.userAnswers.get(OrganisationSecondContactNamePage) match {
               case Some(usersName) => Future.successful(BadRequest(view(formWithErrors, mode, usersName)))
-              case None            => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+              case None            =>
+                logger.warn(
+                  "[OrganisationSecondContactPhoneNumberController] Could not retrieve OrganisationSecondContactNamePage onPageSubmit"
+                )
+                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
             },
           value =>
             for {

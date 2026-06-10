@@ -29,7 +29,7 @@ class OrganisationSecondContactPhoneNumberFormProvider @Inject() extends Mapping
         requiredKey = "organisationSecondContactPhoneNumber.error.required",
         invalidKey = "organisationSecondContactPhoneNumber.error.invalid",
         lengthKey = "organisationSecondContactPhoneNumber.error.length",
-        notRealPhoneNumberKey = "firstContactPhoneNumber.error.notRealNumber"
+        notRealPhoneNumberKey = "organisationSecondContactPhoneNumber.error.notRealNumber"
       )
     )
 }

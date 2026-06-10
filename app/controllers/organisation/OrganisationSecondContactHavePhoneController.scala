@@ -21,6 +21,7 @@ import forms.GenericYesNoPageFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OverwritableOrganisationName}
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -43,7 +44,8 @@ class OrganisationSecondContactHavePhoneController @Inject() (
     view: OrganisationSecondContactHavePhoneView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[Boolean] = formProvider("organisationSecondContactHavePhone.error.required")
 
@@ -59,7 +61,14 @@ class OrganisationSecondContactHavePhoneController @Inject() (
         case (Some(secondContactName), Some(rcaspName)) =>
           Ok(view(preparedForm, mode, secondContactName, rcaspName))
         case _                                          =>
-          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+          logger.warn(
+            "[OrganisationSecondContactHavePhoneController] Could not retrieve OrganisationSecondContactNamePage and/or OverwritableOrganisationName onPageLoad"
+          )
+          Redirect(
+            controllers.routes.PlaceholderController.onPageLoad(
+              "Should redirect to Some Information is Missing Page (CARF-293)"
+            )
+          )
       }
   }
 
@@ -76,6 +85,9 @@ class OrganisationSecondContactHavePhoneController @Inject() (
               case (Some(secondContactName), Some(organisationName)) =>
                 Future.successful(BadRequest(view(formWithErrors, mode, secondContactName, organisationName)))
               case _                                                 =>
+                logger.warn(
+                  "[OrganisationSecondContactHavePhoneController] Could not retrieve OrganisationSecondContactNamePage and/or OverwritableOrganisationName onPageSubmit"
+                )
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
             },
           value =>

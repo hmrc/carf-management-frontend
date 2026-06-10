@@ -19,7 +19,7 @@ package navigation
 import controllers.routes
 import models.{NormalMode, UserAnswers}
 import pages.Page
-import pages.organisation.{HaveTradingNamePage, OrganisationHaveSecondContactPage, OrganisationNamePage, OrganisationSecondContactEmailPage, OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OrganisationSecondContactPhoneNumberPage, TradingNamePage}
+import pages.organisation.*
 import play.api.mvc.Call
 
 trait NormalRoutesNavigator {
