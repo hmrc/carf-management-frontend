@@ -75,7 +75,7 @@ class OrganisationSecondContactEmailController @Inject() (
             ) match {
               case (Some(secondContactName), Some(organisationName)) =>
                 Future.successful(BadRequest(view(formWithErrors, mode, secondContactName, organisationName)))
-              case _                                          =>
+              case _                                                 =>
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
             },
           value =>

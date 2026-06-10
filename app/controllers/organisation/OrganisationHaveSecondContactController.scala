@@ -52,6 +52,7 @@ class OrganisationHaveSecondContactController @Inject() (
 
       val preparedForm = request.userAnswers.get(OrganisationHaveSecondContactPage).fold(form)(form.fill)
 
+      // TODO: Add FirstContactNamePage (CARF-204)
 //      request.userAnswers.get(FirstContactNamePage) match {
 //        case Some(firstContactName) => Ok(view(preparedForm, mode, firstContactName))
 //        case None                   => Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
@@ -67,6 +68,7 @@ class OrganisationHaveSecondContactController @Inject() (
         .bindFromRequest()
         .fold(
           formWithErrors =>
+            // TODO: Add FirstContactNamePage (CARF-204)
 //            request.userAnswers.get(FirstContactNamePage) match {
 //              case Some(firstContactName) => Future.successful(BadRequest(view(formWithErrors, mode, firstContactName)))
 //              case None                   => Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
