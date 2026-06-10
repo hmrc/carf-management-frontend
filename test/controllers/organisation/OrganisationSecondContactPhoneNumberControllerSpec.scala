@@ -133,7 +133,7 @@ class OrganisationSecondContactPhoneNumberControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to Journey Recovery for a GET if no existing contact name is found" in {
+    "must redirect to Some Information Is Missing for a GET if no existing contact name is found" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
@@ -151,7 +151,7 @@ class OrganisationSecondContactPhoneNumberControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to Journey Recovery for a POST if no existing contact name is found in form with errors" in {
+    "must redirect to Some Information Is Missing for a POST if no existing contact name is found in form with errors" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
@@ -163,7 +163,11 @@ class OrganisationSecondContactPhoneNumberControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustEqual routes.PlaceholderController
+          .onPageLoad(
+            "Should redirect to Some Information is Missing Page (CARF-293)"
+          )
+          .url
       }
     }
 

@@ -80,7 +80,13 @@ class OrganisationSecondContactNameController @Inject() (
                 logger.warn(
                   "[OrganisationSecondContactNameController] Could not retrieve OverwritableOrganisationName onPageSubmit"
                 )
-                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+                Future.successful(
+                  Redirect(
+                    controllers.routes.PlaceholderController.onPageLoad(
+                      "Should redirect to Some Information is Missing Page (CARF-293)"
+                    )
+                  )
+                )
             },
           value =>
             for {

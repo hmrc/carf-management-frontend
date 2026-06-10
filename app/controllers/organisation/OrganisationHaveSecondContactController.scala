@@ -83,7 +83,13 @@ class OrganisationHaveSecondContactController @Inject() (
 //                logger.warn(
 //                  "[OrganisationHaveSecondContactController] Could not retrieve FirstContactNamePage onPageSubmit"
 //                )
-//                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+//                Future.successful(
+            //                  Redirect(
+            //                    controllers.routes.PlaceholderController.onPageLoad(
+            //                      "Should redirect to Some Information is Missing Page (CARF-293)"
+            //                    )
+            //                  )
+            //                )
 //            }
             Future.successful(BadRequest(view(formWithErrors, mode, "name"))),
           value =>

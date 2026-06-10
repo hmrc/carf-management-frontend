@@ -151,7 +151,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
       }
     }
 
-    "must redirect to Journey Recovery for a GET if UserAnswers is not empty & OrganisationSecondContactNamePage is None" in {
+    "must redirect to Some Information Is Missing for a GET if UserAnswers is not empty & OrganisationSecondContactNamePage is None" in {
       val application = applicationBuilder(userAnswers = userAnswersWithSecondNamePageNoneOpt).build()
       running(application) {
         val request = FakeRequest(GET, secondContactHavePhoneRoute)
@@ -165,7 +165,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
       }
     }
 
-    "must redirect to Journey Recovery for a GET if UserAnswers is not empty & OverwritableOrganisationNamePage is None" in {
+    "must redirect to Some Information Is Missing for a GET if UserAnswers is not empty & OverwritableOrganisationNamePage is None" in {
       val application = applicationBuilder(userAnswers = userAnswersWithOrganisationNamePageNoneOpt).build()
       running(application) {
         val request = FakeRequest(GET, secondContactHavePhoneRoute)
@@ -190,7 +190,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
       }
     }
-    "redirect to Journey Recovery for a POST if the form for OrganisationSecondContactNamePage has errors" in {
+    "redirect to Some Information Is Missing for a POST if the form for OrganisationSecondContactNamePage has errors" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
       running(application) {
         val request =
@@ -198,7 +198,11 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
             .withFormUrlEncodedBody(("value", "invalid  Boolean"))
         val result  = route(application, request).value
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustEqual routes.PlaceholderController
+          .onPageLoad(
+            "Should redirect to Some Information is Missing Page (CARF-293)"
+          )
+          .url
       }
     }
   }
