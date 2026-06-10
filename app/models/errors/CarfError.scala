@@ -21,3 +21,5 @@ sealed trait CarfError
 case object DataError extends CarfError
 
 case object InternalServerError extends CarfError
+
+case object JsonValidationError extends CarfError
