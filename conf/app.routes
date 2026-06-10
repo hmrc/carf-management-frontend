@@ -79,3 +79,5 @@ GET         /organisation-or-individual                                   contro
 POST        /organisation-or-individual                                   controllers.combined.OrganisationOrIndividualController.onSubmit(mode: Mode = NormalMode)
 GET         /change-organisation-or-individual                            controllers.combined.OrganisationOrIndividualController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-organisation-or-individual                            controllers.combined.OrganisationOrIndividualController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /rcasp/rcasp-routing                                          controllers.RoutingController.onPageLoad(mode: Mode = NormalMode)

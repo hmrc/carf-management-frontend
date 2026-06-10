@@ -35,13 +35,7 @@ case class HomePageViewModel(
       None
     }
 
-  lazy val getNoRcaspsSectionLink: String =
-    if (hasZeroRcaspsAdded && ctUtr.nonEmpty) {
-      controllers.combined.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
-    } else {
-      controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
-
-    }
+  lazy val getNoRcaspsSectionLink: String = controllers.routes.RoutingController.onPageLoad().url
 
   lazy val getUploadXmlLink: String =
     controllers.routes.PlaceholderController
@@ -54,7 +48,7 @@ case class HomePageViewModel(
       .url
 
   lazy val getAddRcaspLink: String =
-    controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
+    controllers.routes.RoutingController.onPageLoad().url
 
   lazy val getManageRcaspsLink: String =
     controllers.routes.PlaceholderController
