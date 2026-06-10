@@ -21,7 +21,7 @@ import forms.GenericYesNoPageFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.combined.RegisteredBusinessIsThisYourBusinessNamePage
-import pages.organisation.OverwritableOrganisationName
+import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -55,18 +55,16 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      request.utr match {
-        case Some(utr) =>
-          registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).map { businessDetails =>
-            val preparedForm =
-              request.userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).fold(form)(form.fill)
+      request.userAnswers.get(CachedBusinessDetailsPage) match {
+        case Some(businessDetails) =>
+          val preparedForm =
+            request.userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).fold(form)(form.fill)
 
-            Ok(view(preparedForm, mode, businessDetails.name))
-          }
+          Future.successful(Ok(view(preparedForm, mode, businessDetails.name)))
 
         case None =>
           logger.warn(
-            "[RegisteredBusinessIsThisYourBusinessNameController][onPageLoad] CT UTR not found in request"
+            "[RegisteredBusinessIsThisYourBusinessNameController][onPageLoad] No cached business details found"
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
@@ -74,30 +72,25 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      request.utr match {
-        case Some(utr) =>
+      request.userAnswers.get(CachedBusinessDetailsPage) match {
+        case Some(businessDetails) =>
           form
             .bindFromRequest()
             .fold(
-              formWithErrors =>
-                registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).map { businessDetails =>
-                  BadRequest(view(formWithErrors, mode, businessDetails.name))
-                },
+              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, businessDetails.name))),
               value =>
                 if (value) {
-                  registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).flatMap { businessDetails =>
-                    for {
-                      updatedAnswers     <- Future.fromTry(
-                                              request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
-                                            )
-                      answersWithOrgName <- Future.fromTry(
-                                              updatedAnswers.set(OverwritableOrganisationName, businessDetails.name)
-                                            )
-                      _                  <- sessionRepository.set(answersWithOrgName)
-                    } yield Redirect(
-                      navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, answersWithOrgName)
-                    )
-                  }
+                  for {
+                    updatedAnswers     <- Future.fromTry(
+                                            request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
+                                          )
+                    answersWithOrgName <- Future.fromTry(
+                                            updatedAnswers.set(OverwritableOrganisationName, businessDetails.name)
+                                          )
+                    _                  <- sessionRepository.set(answersWithOrgName)
+                  } yield Redirect(
+                    navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, answersWithOrgName)
+                  )
                 } else {
                   for {
                     updatedAnswers <- Future.fromTry(
@@ -111,10 +104,9 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
             )
 
         case None =>
-          logger.warn(
-            "[RegisteredBusinessIsThisYourBusinessNameController][onSubmit] CT UTR not found in request"
-          )
+          logger.warn("[RegisteredBusinessIsThisYourBusinessNameController][onSubmit] No cached business details found")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
     }
+
 }

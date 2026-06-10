@@ -21,6 +21,7 @@ import forms.GenericYesNoPageFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.combined.ReportForRegisteredBusinessPage
+import pages.organisation.CachedBusinessDetailsPage
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -56,17 +57,22 @@ class ReportForRegisteredBusinessController @Inject() (
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
       request.utr match {
         case Some(utr) =>
-          registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).map { businessDetails =>
-            val preparedForm =
-              request.userAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
+          registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).flatMap { businessDetails =>
+            for {
+              updatedAnswers <- Future.fromTry(
+                                  request.userAnswers.set(CachedBusinessDetailsPage, businessDetails)
+                                )
+              _              <- sessionRepository.set(updatedAnswers)
+            } yield {
+              val preparedForm =
+                updatedAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
 
-            Ok(view(preparedForm, mode, businessDetails.name))
+              Ok(view(preparedForm, mode, businessDetails.name))
+            }
           }
 
         case None =>
-          logger.warn(
-            "[ReportForRegisteredBusinessController][onPageLoad] CT UTR not found in request"
-          )
+          logger.warn("[ReportForRegisteredBusinessController][onPageLoad] CT UTR not found in request")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
     }
@@ -74,26 +80,31 @@ class ReportForRegisteredBusinessController @Inject() (
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
       request.utr match {
-        case Some(utr) =>
-          form
-            .bindFromRequest()
-            .fold(
-              formWithErrors =>
-                registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).map { businessDetails =>
-                  BadRequest(view(formWithErrors, mode, businessDetails.name))
-                },
-              value =>
-                for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(ReportForRegisteredBusinessPage, value))
-                  _              <- sessionRepository.set(updatedAnswers)
-                } yield Redirect(navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers))
-            )
+        case Some(_) =>
+          request.userAnswers.get(CachedBusinessDetailsPage) match {
+            case Some(businessDetails) =>
+              form
+                .bindFromRequest()
+                .fold(
+                  formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, businessDetails.name))),
+                  value =>
+                    for {
+                      updatedAnswers <- Future.fromTry(
+                                          request.userAnswers.set(ReportForRegisteredBusinessPage, value)
+                                        )
+                      _              <- sessionRepository.set(updatedAnswers)
+                    } yield Redirect(navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers))
+                )
+
+            case None =>
+              logger.warn("[ReportForRegisteredBusinessController][onSubmit] No cached business details found")
+              Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+          }
 
         case None =>
-          logger.warn(
-            "[ReportForRegisteredBusinessController][onSubmit] CT UTR not found in request"
-          )
+          logger.warn("[ReportForRegisteredBusinessController][onSubmit] CT UTR not found in request")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
     }
+
 }
