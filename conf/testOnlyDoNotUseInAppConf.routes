@@ -10,8 +10,8 @@
 # Failing to follow this rule may result in test routes deployed in production.
 
 # Add all the application routes to the prod.routes file
-->         /                                                        prod.Routes
+->         /                                          prod.Routes
 
-GET        /manage-cryptoasset-reports/test-only/AuthAction         testOnly.controllers.AuthActionController.onPageLoad()
+GET        /rcasp/test-only/AuthAction                testOnly.controllers.AuthActionController.onPageLoad()
 
-GET        /manage-cryptoasset-reports/test-only/view-rcasp/:carfId testOnly.controllers.RcaspController.viewRcasp(carfId: String)
+GET        /rcasp/test-only/view-rcasp/:carfId        testOnly.controllers.RcaspController.viewRcasp(carfId: String)
