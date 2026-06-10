@@ -17,7 +17,6 @@
 package controllers
 
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
-import config.FrontendAppConfig
 import models.Mode
 import play.api.Logging
 import models.UserAnswers

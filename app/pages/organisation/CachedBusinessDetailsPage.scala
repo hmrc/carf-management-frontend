@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,21 @@
 
 package pages.organisation
 
-import models.{UniqueTaxpayerReference, UserAnswers}
-import pages.{Page, QuestionPage}
+import models.{BusinessDetails, UserAnswers}
+import pages.QuestionPage
 import play.api.libs.json.JsPath
 
 import scala.util.{Success, Try}
 
-case object UniqueTaxpayerReferenceInUserAnswers extends QuestionPage[UniqueTaxpayerReference] {
+case object CachedBusinessDetailsPage extends QuestionPage[BusinessDetails] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "utr"
+  override def toString: String = "cachedBusinessDetails"
 
   override def cleanup(
-      newValue: Option[UniqueTaxpayerReference],
+      newValue: Option[BusinessDetails],
       updatedUserAnswers: UserAnswers
   ): Try[UserAnswers] =
     Success(updatedUserAnswers)
-
 }
-
-case object YourUtrPageForNavigatorOnly extends Page

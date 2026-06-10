@@ -16,7 +16,7 @@
 
 package viewmodels
 
-import models.{NormalMode, UniqueTaxpayerReference}
+import models.UniqueTaxpayerReference
 import play.api.i18n.Messages
 
 case class HomePageViewModel(

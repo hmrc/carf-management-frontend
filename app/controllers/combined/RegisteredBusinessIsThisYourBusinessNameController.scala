@@ -21,6 +21,7 @@ import forms.GenericYesNoPageFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.combined.RegisteredBusinessIsThisYourBusinessNamePage
+import pages.organisation.OverwritableOrganisationName
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -56,21 +57,11 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
       request.utr match {
         case Some(utr) =>
-          registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).flatMap { businessDetails =>
-            for {
-              updatedAnswers <- Future.fromTry(
-                                  request.userAnswers.set(
-                                    pages.organisation.OverwritableOrganisationName,
-                                    businessDetails.name
-                                  )
-                                )
-              _              <- sessionRepository.set(updatedAnswers)
-            } yield {
-              val preparedForm =
-                updatedAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).fold(form)(form.fill)
+          registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).map { businessDetails =>
+            val preparedForm =
+              request.userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).fold(form)(form.fill)
 
-              Ok(view(preparedForm, mode, businessDetails.name))
-            }
+            Ok(view(preparedForm, mode, businessDetails.name))
           }
 
         case None =>
@@ -93,12 +84,30 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
                   BadRequest(view(formWithErrors, mode, businessDetails.name))
                 },
               value =>
-                for {
-                  updatedAnswers <- Future.fromTry(
-                                      request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
-                                    )
-                  _              <- sessionRepository.set(updatedAnswers)
-                } yield Redirect(navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, updatedAnswers))
+                if (value) {
+                  registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).flatMap { businessDetails =>
+                    for {
+                      updatedAnswers     <- Future.fromTry(
+                                              request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
+                                            )
+                      answersWithOrgName <- Future.fromTry(
+                                              updatedAnswers.set(OverwritableOrganisationName, businessDetails.name)
+                                            )
+                      _                  <- sessionRepository.set(answersWithOrgName)
+                    } yield Redirect(
+                      navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, answersWithOrgName)
+                    )
+                  }
+                } else {
+                  for {
+                    updatedAnswers <- Future.fromTry(
+                                        request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
+                                      )
+                    _              <- sessionRepository.set(updatedAnswers)
+                  } yield Redirect(
+                    navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, updatedAnswers)
+                  )
+                }
             )
 
         case None =>
