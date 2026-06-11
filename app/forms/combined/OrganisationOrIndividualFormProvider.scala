@@ -14,14 +14,21 @@
  * limitations under the License.
  */
 
-package pages.combined
+package forms.combined
 
-import pages.QuestionPage
-import play.api.libs.json.JsPath
+import forms.mappings.Mappings
+import models.OrganisationOrIndividual
+import play.api.data.Form
 
-case object ReportForRegisteredBusinessPage extends QuestionPage[Boolean] {
+import javax.inject.Inject
 
-  override def path: JsPath = JsPath \ toString
+class OrganisationOrIndividualFormProvider @Inject() extends Mappings {
 
-  override def toString: String = "reportForRegisteredBusiness"
+  def apply(requiredErrorMessageKey: String): Form[OrganisationOrIndividual] =
+    Form(
+      "value" -> enumerable[OrganisationOrIndividual](
+        requiredKey = requiredErrorMessageKey,
+        invalidKey = requiredErrorMessageKey
+      )
+    )
 }

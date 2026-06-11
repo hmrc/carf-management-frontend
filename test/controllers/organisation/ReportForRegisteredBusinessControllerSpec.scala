@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package controllers.combined
+package controllers.organisation
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
-import models.{BusinessDetails, NormalMode}
 import models.responses.AddressRegistrationResponse
+import models.{BusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
-import pages.combined.ReportForRegisteredBusinessPage
-import pages.organisation.CachedBusinessDetailsPage
+import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call

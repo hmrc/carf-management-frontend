@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package forms
+package forms.combined
 
 import base.SpecBase
+import forms.combined.OrganisationOrIndividualFormProvider
 import models.OrganisationOrIndividual
 import play.api.data.FormError
 

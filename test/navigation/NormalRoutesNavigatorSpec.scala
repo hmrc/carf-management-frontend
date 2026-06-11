@@ -22,6 +22,8 @@ import pages.Page
 import pages.combined.{OrganisationOrIndividualPage, RegisteredBusinessIsThisYourBusinessNamePage, ReportForRegisteredBusinessPage}
 import pages.individual.{IndividualEmailPage, IndividualHavePhonePage, IndividualNamePage, IndividualPhonePage, NiNumberPage}
 import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, TradingNamePage}
+import pages.combined.OrganisationOrIndividualPage
+import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, RegisteredBusinessIsThisYourBusinessNamePage, ReportForRegisteredBusinessPage, TradingNamePage}
 
 class NormalRoutesNavigatorSpec extends SpecBase {
 

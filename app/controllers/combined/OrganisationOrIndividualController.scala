@@ -17,7 +17,7 @@
 package controllers.combined
 
 import controllers.actions.*
-import forms.OrganisationOrIndividualFormProvider
+import forms.combined.OrganisationOrIndividualFormProvider
 import models.{Mode, OrganisationOrIndividual}
 import navigation.Navigator
 import pages.combined.OrganisationOrIndividualPage

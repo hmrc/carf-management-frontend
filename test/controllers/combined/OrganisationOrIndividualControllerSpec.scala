@@ -17,7 +17,7 @@
 package controllers.combined
 
 import base.SpecBase
-import forms.OrganisationOrIndividualFormProvider
+import forms.combined.OrganisationOrIndividualFormProvider
 import models.{NormalMode, OrganisationOrIndividual}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
