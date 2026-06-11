@@ -50,7 +50,7 @@
                 field = form("value"),
                 legend = LegendViewModel(messages("reportForRegisteredBusiness.legend", businessName))
                 .withCssClass("govuk-fieldset__legend--m")
-            )
+            ).copy(classes = "")
         )
 
         @govukButton(
