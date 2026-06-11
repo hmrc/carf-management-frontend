@@ -34,7 +34,7 @@ class RoutingControllerSpec extends SpecBase {
   val mockAccountService: AccountService = mock[AccountService]
 
   lazy val routeUnderTest: String =
-    controllers.routes.RoutingController.onPageLoad().url
+    controllers.routes.RoutingController.onPageLoad(NormalMode).url
 
   "RoutingController" - {
 

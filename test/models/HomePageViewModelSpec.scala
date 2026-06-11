@@ -56,7 +56,7 @@ class HomePageViewModelSpec extends SpecBase {
       "must return the url for the routing controller" in {
         val viewModel   = basicViewModel
         val result      = viewModel.getNoRcaspsSectionLink
-        val expectedUrl = controllers.routes.RoutingController.onPageLoad().url
+        val expectedUrl = controllers.routes.RoutingController.onPageLoad(NormalMode).url
 
         result mustBe expectedUrl
       }
@@ -90,7 +90,7 @@ class HomePageViewModelSpec extends SpecBase {
       "must return the url for the routing controller" in {
         val viewModel   = basicViewModel
         val result      = viewModel.getAddRcaspLink
-        val expectedUrl = controllers.routes.RoutingController.onPageLoad().url
+        val expectedUrl = controllers.routes.RoutingController.onPageLoad(NormalMode).url
 
         result mustBe expectedUrl
       }

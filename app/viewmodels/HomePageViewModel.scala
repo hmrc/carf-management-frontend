@@ -16,7 +16,7 @@
 
 package viewmodels
 
-import models.UniqueTaxpayerReference
+import models.{NormalMode, UniqueTaxpayerReference}
 import play.api.i18n.Messages
 
 case class HomePageViewModel(
@@ -35,7 +35,7 @@ case class HomePageViewModel(
       None
     }
 
-  lazy val getNoRcaspsSectionLink: String = controllers.routes.RoutingController.onPageLoad().url
+  lazy val getNoRcaspsSectionLink: String = controllers.routes.RoutingController.onPageLoad(NormalMode).url
 
   lazy val getUploadXmlLink: String =
     controllers.routes.PlaceholderController
@@ -48,7 +48,7 @@ case class HomePageViewModel(
       .url
 
   lazy val getAddRcaspLink: String =
-    controllers.routes.RoutingController.onPageLoad().url
+    controllers.routes.RoutingController.onPageLoad(NormalMode).url
 
   lazy val getManageRcaspsLink: String =
     controllers.routes.PlaceholderController
