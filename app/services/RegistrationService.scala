@@ -22,7 +22,7 @@ import models.responses.AddressRegistrationResponse
 import types.ResultT
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class RegistrationService @Inject() ()(implicit ec: ExecutionContext) {
 

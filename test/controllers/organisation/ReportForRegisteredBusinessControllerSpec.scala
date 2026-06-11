@@ -18,6 +18,7 @@ package controllers.organisation
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
+import models.errors.InternalServerError
 import models.responses.AddressRegistrationResponse
 import models.{BusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}
@@ -30,6 +31,7 @@ import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.RegistrationService
+import types.ResultT
 import views.html.organisation.ReportForRegisteredBusinessView
 
 import scala.concurrent.Future
@@ -67,7 +69,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
       val userAnswers = emptyUserAnswers
 
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
-        .thenReturn(Future.successful(businessDetails))
+        .thenReturn(ResultT.fromValue(businessDetails))
 
       val application =
         applicationBuilder(
@@ -92,12 +94,13 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
       val userAnswers =
         emptyUserAnswers
           .withPage(ReportForRegisteredBusinessPage, true)
 
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
-        .thenReturn(Future.successful(businessDetails))
+        .thenReturn(ResultT.fromValue(businessDetails))
 
       val application =
         applicationBuilder(
@@ -117,6 +120,29 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
           request,
           messages(application)
         ).toString
+      }
+    }
+
+    "must redirect to Journey Recovery on GET when registration service returns an error" in {
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
+        .thenReturn(ResultT.fromError(InternalServerError))
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
+          .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
+          .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
@@ -187,8 +213,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
-
-        val result = route(application, request).value
+        val result  = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
@@ -239,8 +264,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
-
-        val result = route(application, request).value
+        val result  = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url

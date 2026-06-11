@@ -17,7 +17,6 @@
 package forms.combined
 
 import base.SpecBase
-import forms.combined.OrganisationOrIndividualFormProvider
 import models.OrganisationOrIndividual
 import play.api.data.FormError
 
