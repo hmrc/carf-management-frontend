@@ -30,7 +30,7 @@ import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.AffinityGroup
-import views.html.combined.RegisteredBusinessIsThisYourBusinessNameView
+import views.html.organisation.RegisteredBusinessIsThisYourBusinessNameView
 
 import scala.concurrent.Future
 
@@ -42,7 +42,7 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
   val form: Form[Boolean] = formProvider("registeredBusinessIsThisYourBusinessName.error.required")
 
   lazy val routeUnderTest: String =
-    controllers.combined.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode).url
+    controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode).url
 
   val businessDetails: BusinessDetails =
     BusinessDetails(

@@ -85,7 +85,7 @@ trait NormalRoutesNavigator {
   private def navigateFromReportForRegisteredBusinessPage(userAnswers: UserAnswers): Call =
     userAnswers.get(ReportForRegisteredBusinessPage) match {
       case Some(true)  =>
-        controllers.combined.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode)
+        controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode)
       case Some(false) => controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode)
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }

@@ -80,7 +80,7 @@ class RoutingControllerSpec extends SpecBase {
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual
-          controllers.combined.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
+          controllers.organisation.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
       }
     }
 

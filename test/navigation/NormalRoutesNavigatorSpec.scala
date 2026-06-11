@@ -195,7 +195,8 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           ReportForRegisteredBusinessPage,
           NormalMode,
           ua
-        ) mustBe controllers.combined.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode)
+        ) mustBe controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController
+          .onPageLoad(NormalMode)
       }
 
       "Should redirect to OrganisationOrIndividualController when answer is false" in {

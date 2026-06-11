@@ -35,15 +35,15 @@ POST        /trading-name                                                       
 GET         /change-trading-name                                                controllers.organisation.TradingNameController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-trading-name                                                controllers.organisation.TradingNameController.onSubmit(mode: Mode = ChangeMode)
 
-GET         /report-for-registered-business                               controllers.combined.ReportForRegisteredBusinessController.onPageLoad(mode: Mode = NormalMode)
-POST        /report-for-registered-business                               controllers.combined.ReportForRegisteredBusinessController.onSubmit(mode: Mode = NormalMode)
-GET         /change-report-for-registered-business                        controllers.combined.ReportForRegisteredBusinessController.onPageLoad(mode: Mode = ChangeMode)
-POST        /change-report-for-registered-business                        controllers.combined.ReportForRegisteredBusinessController.onSubmit(mode: Mode = ChangeMode)
+GET         /report-for-registered-business                               controllers.organisation.ReportForRegisteredBusinessController.onPageLoad(mode: Mode = NormalMode)
+POST        /report-for-registered-business                               controllers.organisation.ReportForRegisteredBusinessController.onSubmit(mode: Mode = NormalMode)
+GET         /change-report-for-registered-business                        controllers.organisation.ReportForRegisteredBusinessController.onPageLoad(mode: Mode = ChangeMode)
+POST        /change-report-for-registered-business                        controllers.organisation.ReportForRegisteredBusinessController.onSubmit(mode: Mode = ChangeMode)
 
-GET         /registered-business/is-this-your-business-name               controllers.combined.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(mode: Mode = NormalMode)
-POST        /registered-business/is-this-your-business-name               controllers.combined.RegisteredBusinessIsThisYourBusinessNameController.onSubmit(mode: Mode = NormalMode)
-GET         /registered-business/change-is-this-your-business-name        controllers.combined.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(mode: Mode = ChangeMode)
-POST        /registered-business/change-is-this-your-business-name        controllers.combined.RegisteredBusinessIsThisYourBusinessNameController.onSubmit(mode: Mode = ChangeMode)
+GET         /registered-business/is-this-your-business-name               controllers.organisation.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(mode: Mode = NormalMode)
+POST        /registered-business/is-this-your-business-name               controllers.organisation.RegisteredBusinessIsThisYourBusinessNameController.onSubmit(mode: Mode = NormalMode)
+GET         /registered-business/change-is-this-your-business-name        controllers.organisation.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(mode: Mode = ChangeMode)
+POST        /registered-business/change-is-this-your-business-name        controllers.organisation.RegisteredBusinessIsThisYourBusinessNameController.onSubmit(mode: Mode = ChangeMode)
 
 GET         /rcasp/organisation-or-individual                                   controllers.combined.OrganisationOrIndividualController.onPageLoad(mode: Mode = NormalMode)
 POST        /rcasp/organisation-or-individual                                   controllers.combined.OrganisationOrIndividualController.onSubmit(mode: Mode = NormalMode)

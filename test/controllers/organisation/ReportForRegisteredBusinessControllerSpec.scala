@@ -30,7 +30,7 @@ import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.RegistrationService
-import views.html.combined.ReportForRegisteredBusinessView
+import views.html.organisation.ReportForRegisteredBusinessView
 
 import scala.concurrent.Future
 
@@ -44,7 +44,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
   val mockRegistrationService: RegistrationService = mock[RegistrationService]
 
   lazy val routeUnderTest: String =
-    controllers.combined.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
+    controllers.organisation.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
 
   val businessDetails: BusinessDetails =
     BusinessDetails(

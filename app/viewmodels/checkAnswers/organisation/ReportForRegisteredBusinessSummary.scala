@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.organisation
 
-import controllers.combined.routes
+import controllers.organisation.routes
 import models.{ChangeMode, UserAnswers}
 import pages.organisation.ReportForRegisteredBusinessPage
 import play.api.i18n.Messages
