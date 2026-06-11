@@ -16,6 +16,7 @@
 
 package controllers
 
+import config.Constants.ZERO
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
 import models.Mode
 import play.api.Logging
@@ -53,15 +54,10 @@ class RoutingController @Inject() (
             request.userAnswers.getOrElse(UserAnswers(id = request.userId))
 
           val redirectUrl =
-            if (numberOfRcasps > 0) {
-              controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(mode)
+            if (numberOfRcasps == ZERO && request.utr.isDefined) {
+              controllers.organisation.routes.ReportForRegisteredBusinessController.onPageLoad(mode)
             } else {
-              request.utr match {
-                case Some(_) =>
-                  controllers.combined.routes.ReportForRegisteredBusinessController.onPageLoad(mode)
-                case None    =>
-                  controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(mode)
-              }
+              controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(mode)
             }
 
           for {
