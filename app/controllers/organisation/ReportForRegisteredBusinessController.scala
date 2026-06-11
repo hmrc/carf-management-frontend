@@ -56,18 +56,23 @@ class ReportForRegisteredBusinessController @Inject() (
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
       request.utr match {
         case Some(utr) =>
-          registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).flatMap { businessDetails =>
-            for {
-              updatedAnswers <- Future.fromTry(
-                                  request.userAnswers.set(CachedBusinessDetailsPage, businessDetails)
-                                )
-              _              <- sessionRepository.set(updatedAnswers)
-            } yield {
-              val preparedForm =
-                updatedAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
+          registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).value.flatMap {
+            case Right(businessDetails) =>
+              for {
+                updatedAnswers <- Future.fromTry(
+                                    request.userAnswers.set(CachedBusinessDetailsPage, businessDetails)
+                                  )
+                _              <- sessionRepository.set(updatedAnswers)
+              } yield {
+                val preparedForm =
+                  updatedAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
 
-              Ok(view(preparedForm, mode, businessDetails.name))
-            }
+                Ok(view(preparedForm, mode, businessDetails.name))
+              }
+
+            case Left(error) =>
+              logger.warn(s"[ReportForRegisteredBusinessController][onPageLoad] Failed to get business details: $error")
+              Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
           }
 
         case None =>

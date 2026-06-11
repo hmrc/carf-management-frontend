@@ -17,7 +17,9 @@
 package services
 
 import models.BusinessDetails
+import models.errors.InternalServerError
 import models.responses.AddressRegistrationResponse
+import types.ResultT
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,18 +27,22 @@ import scala.concurrent.{ExecutionContext, Future}
 class RegistrationService @Inject() ()(implicit ec: ExecutionContext) {
 
   // TODO  link up register-with-id - CARF-519
-  def getBusinessWithUtr(utr: String): Future[BusinessDetails] =
-    Future.successful(
-      BusinessDetails(
-        name = "Test Business Ltd",
-        address = AddressRegistrationResponse(
-          addressLine1 = "1 Test Street",
-          addressLine2 = Some("Testville"),
-          addressLine3 = None,
-          addressLine4 = None,
-          postalCode = Some("TE1 1ST"),
-          countryCode = "GB"
+  def getBusinessWithUtr(utr: String): ResultT[BusinessDetails] =
+    if (utr.startsWith("9")) {
+      ResultT.fromError(InternalServerError)
+    } else {
+      ResultT.fromValue(
+        BusinessDetails(
+          name = "Test Business Ltd",
+          address = AddressRegistrationResponse(
+            addressLine1 = "1 Test Street",
+            addressLine2 = Some("Testville"),
+            addressLine3 = None,
+            addressLine4 = None,
+            postalCode = Some("TE1 1ST"),
+            countryCode = "GB"
+          )
         )
       )
-    )
+    }
 }
