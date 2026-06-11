@@ -14,59 +14,63 @@
  * limitations under the License.
  */
 
-package controllers.organisation
+package controllers.individual
 
 import base.SpecBase
-import forms.organisation.TradingNameFormProvider
+import forms.GenericEmailFormProvider
 import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.organisation.{OverwritableOrganisationName, TradingNamePage}
+import pages.individual.{IndividualEmailPage, IndividualNamePage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import views.html.organisation.TradingNameView
+import views.html.individual.IndividualEmailView
 
 import scala.concurrent.Future
 
-class TradingNameControllerSpec extends SpecBase {
+class IndividualEmailControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider       = new TradingNameFormProvider()
-  val form: Form[String] = formProvider()
+  val formProvider       = new GenericEmailFormProvider()
+  val form: Form[String] = formProvider("individualEmail")
 
-  lazy val tradingNameRoute: String = controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode).url
+  lazy val individualEmailRoute: String =
+    controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode).url
 
-  "TradingName Controller" - {
+  "IndividualEmail Controller" - {
 
-    "must return OK and the correct view for a GET when an org name is present in user answers" in {
+    "must return OK and the correct view for a GET when an individual name is present in user answers" in {
 
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+      val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
 
       val application = applicationBuilder(userAnswers = Some(ua)).build()
 
       running(application) {
-        val request = FakeRequest(GET, tradingNameRoute)
+        val request = FakeRequest(GET, individualEmailRoute)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[TradingNameView]
+        val view = application.injector.instanceOf[IndividualEmailView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, testOrgName)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, NormalMode, testIndividualName.fullName)(
+          request,
+          messages(application)
+        ).toString
       }
     }
 
-    "must redirect to Some Information is Missing GET when an org name is NOT present in user answers" in {
+    "must redirect to Some Information is Missing GET when an individual name is NOT present in user answers" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, tradingNameRoute)
+        val request = FakeRequest(GET, individualEmailRoute)
 
         val result = route(application, request).value
 
@@ -80,20 +84,20 @@ class TradingNameControllerSpec extends SpecBase {
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val userAnswers = emptyUserAnswers
-        .withPage(TradingNamePage, "Timmy2 Ltd.")
-        .withPage(OverwritableOrganisationName, testOrgName)
+        .withPage(IndividualEmailPage, "answer")
+        .withPage(IndividualNamePage, testIndividualName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, tradingNameRoute)
+        val request = FakeRequest(GET, individualEmailRoute)
 
-        val view = application.injector.instanceOf[TradingNameView]
+        val view = application.injector.instanceOf[IndividualEmailView]
 
         val result = route(application, request).value
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill("Timmy2 Ltd."), NormalMode, testOrgName)(
+        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode, testIndividualName.fullName)(
           request,
           messages(application)
         ).toString
@@ -111,9 +115,7 @@ class TradingNameControllerSpec extends SpecBase {
           .build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, tradingNameRoute)
-            .withFormUrlEncodedBody(("value", "answer"))
+        val request = FakeRequest(POST, individualEmailRoute).withFormUrlEncodedBody(("value", "hi@example.com"))
 
         val result = route(application, request).value
 
@@ -122,25 +124,23 @@ class TradingNameControllerSpec extends SpecBase {
       }
     }
 
-    "must return a Bad Request and errors when invalid data is submitted and an org name is present in user answers" in {
+    "must return a Bad Request and errors when invalid data is submitted and an individual name is present in user answers" in {
 
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+      val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
 
       val application = applicationBuilder(userAnswers = Some(ua)).build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, tradingNameRoute)
-            .withFormUrlEncodedBody(("value", ""))
+        val request = FakeRequest(POST, individualEmailRoute).withFormUrlEncodedBody(("value", ""))
 
         val boundForm = form.bind(Map("value" -> ""))
 
-        val view = application.injector.instanceOf[TradingNameView]
+        val view = application.injector.instanceOf[IndividualEmailView]
 
         val result = route(application, request).value
 
         status(result)          mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, testOrgName)(
+        contentAsString(result) mustEqual view(boundForm, NormalMode, testIndividualName.fullName)(
           request,
           messages(application)
         ).toString
@@ -152,7 +152,7 @@ class TradingNameControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(POST, tradingNameRoute).withFormUrlEncodedBody(("value", ""))
+        val request = FakeRequest(POST, individualEmailRoute).withFormUrlEncodedBody(("value", ""))
 
         val result = route(application, request).value
 
@@ -168,7 +168,7 @@ class TradingNameControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, tradingNameRoute)
+        val request = FakeRequest(GET, individualEmailRoute)
 
         val result = route(application, request).value
 
@@ -182,9 +182,7 @@ class TradingNameControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, tradingNameRoute)
-            .withFormUrlEncodedBody(("value", "answer"))
+        val request = FakeRequest(POST, individualEmailRoute).withFormUrlEncodedBody(("value", "answer"))
 
         val result = route(application, request).value
 

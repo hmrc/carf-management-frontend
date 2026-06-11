@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package generators
+package pages.individual
 
-import models.individual.IndividualName
-import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary.arbitrary
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-trait ModelGenerators {
+case object IndividualEmailPage extends QuestionPage[String] {
 
-  implicit lazy val arbitraryIndividualName: Arbitrary[IndividualName] =
-    Arbitrary {
-      for {
-        firstName <- arbitrary[String]
-        lastName  <- arbitrary[String]
-      } yield IndividualName(firstName, lastName)
-    }
+  override def path: JsPath = JsPath \ toString
 
+  override def toString: String = "individualEmail"
 }

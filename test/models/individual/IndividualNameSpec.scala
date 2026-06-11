@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package generators
+package models.individual
 
-import models.individual.IndividualName
-import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary.arbitrary
+import base.SpecBase
 
-trait ModelGenerators {
+class IndividualNameSpec extends SpecBase {
 
-  implicit lazy val arbitraryIndividualName: Arbitrary[IndividualName] =
-    Arbitrary {
-      for {
-        firstName <- arbitrary[String]
-        lastName  <- arbitrary[String]
-      } yield IndividualName(firstName, lastName)
+  "IndividualName" - {
+    "fullName method" - {
+      "must concatenate the first and last names with a space in between" in {
+        val testIndividualName = IndividualName(firstName = "Timmy", lastName = "Jimmy")
+
+        val result = testIndividualName.fullName
+
+        result mustBe "Timmy Jimmy"
+      }
     }
-
+  }
 }

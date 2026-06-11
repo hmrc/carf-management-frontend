@@ -22,23 +22,25 @@
         govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, organisationName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], mode: Mode, individualName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("haveTradingName.title"))) {
+@layout(pageTitle = title(form, messages("individualHavePhone.title"))) {
 
-    @formHelper(action = controllers.organisation.routes.HaveTradingNameController.onSubmit(mode), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.individual.routes.IndividualHavePhoneController.onSubmit(mode), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        <h1 class="govuk-heading-l long-word">@messages("haveTradingName.heading", organisationName)</h1>
+        <h1 class="govuk-heading-l long-word">@messages("individualHavePhone.heading", individualName)</h1>
+
+        <p class="govuk-body">@messages("individualHavePhone.p1")</p>
 
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("haveTradingName.heading", organisationName)).withCssClass("govuk-visually-hidden govuk-!-display-block")
-            ).copy(classes = "")
+                legend = LegendViewModel(messages("individualHavePhone.heading", individualName)).withCssClass("govuk-visually-hidden govuk-!-display-block")
+        ).copy(classes = "")
         )
 
         @govukButton(

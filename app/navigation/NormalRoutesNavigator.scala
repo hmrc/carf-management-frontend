@@ -18,6 +18,7 @@ package navigation
 
 import models.{NormalMode, UserAnswers}
 import pages.Page
+import pages.individual.{IndividualEmailPage, IndividualHavePhonePage, IndividualNamePage, IndividualPhonePage, NiNumberPage}
 import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, TradingNamePage}
 import play.api.mvc.Call
 
@@ -34,8 +35,20 @@ trait NormalRoutesNavigator {
     case TradingNamePage =>
       _ =>
         controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr (CARF-197)"
+          "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
         )
+
+    case IndividualNamePage => _ => controllers.individual.routes.NiNumberController.onPageLoad(NormalMode)
+
+    case NiNumberPage =>
+      _ => controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+
+    case IndividualEmailPage => _ => controllers.individual.routes.IndividualHavePhoneController.onPageLoad(NormalMode)
+
+    case IndividualHavePhonePage => userAnswers => navigateFromIndividualHavePhonePage(userAnswers)
+
+    case IndividualPhonePage =>
+      _ => controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
@@ -45,8 +58,16 @@ trait NormalRoutesNavigator {
       case Some(true)  => controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
       case Some(false) =>
         controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-business-correct, else nav to /utr (CARF-197)"
+          "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
         )
+      case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  private def navigateFromIndividualHavePhonePage(userAnswers: UserAnswers): Call =
+    userAnswers.get(IndividualHavePhonePage) match {
+      case Some(true)  => controllers.individual.routes.IndividualPhoneController.onPageLoad(NormalMode)
+      case Some(false) =>
+        controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 

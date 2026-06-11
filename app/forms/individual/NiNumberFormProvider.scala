@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package generators
+package forms.individual
 
-import models.individual.IndividualName
-import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary.arbitrary
+import javax.inject.Inject
 
-trait ModelGenerators {
+import forms.mappings.Mappings
+import play.api.data.Form
 
-  implicit lazy val arbitraryIndividualName: Arbitrary[IndividualName] =
-    Arbitrary {
-      for {
-        firstName <- arbitrary[String]
-        lastName  <- arbitrary[String]
-      } yield IndividualName(firstName, lastName)
-    }
+class NiNumberFormProvider @Inject() extends Mappings {
 
+  def apply(): Form[String] =
+    Form(
+      "value" -> nationalInsuranceNumber(
+        requiredKey = "niNumber.error.required",
+        invalidKey = "niNumber.error.invalid",
+        notRealKey = "niNumber.error.notReal"
+      )
+    )
 }

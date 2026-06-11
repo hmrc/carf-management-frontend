@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package generators
+package models.individual
 
-import models.individual.IndividualName
-import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary.arbitrary
+import play.api.libs.json._
 
-trait ModelGenerators {
+case class IndividualName(firstName: String, lastName: String) {
 
-  implicit lazy val arbitraryIndividualName: Arbitrary[IndividualName] =
-    Arbitrary {
-      for {
-        firstName <- arbitrary[String]
-        lastName  <- arbitrary[String]
-      } yield IndividualName(firstName, lastName)
-    }
+  val fullName: String = s"$firstName $lastName"
 
+}
+
+object IndividualName {
+  implicit val format: OFormat[IndividualName] = Json.format[IndividualName]
 }

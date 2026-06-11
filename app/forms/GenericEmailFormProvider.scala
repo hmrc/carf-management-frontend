@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package generators
+package forms
 
-import models.individual.IndividualName
-import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary.arbitrary
+import config.Constants.maxEmailLength
+import forms.mappings.Mappings
+import play.api.data.Form
 
-trait ModelGenerators {
+import javax.inject.Inject
 
-  implicit lazy val arbitraryIndividualName: Arbitrary[IndividualName] =
-    Arbitrary {
-      for {
-        firstName <- arbitrary[String]
-        lastName  <- arbitrary[String]
-      } yield IndividualName(firstName, lastName)
-    }
+class GenericEmailFormProvider @Inject() extends Mappings {
 
+  def apply(messageKey: String): Form[String] =
+    Form(
+      "value" -> text(s"$messageKey.error.required")
+        .verifying(
+          firstError(
+            maxLength(maxEmailLength, s"$messageKey.error.length"),
+            validEmailAddress(s"$messageKey.error.invalid")
+          )
+        )
+    )
 }

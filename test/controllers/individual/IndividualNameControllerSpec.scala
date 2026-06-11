@@ -14,46 +14,47 @@
  * limitations under the License.
  */
 
-package controllers.organisation
+package controllers.individual
 
 import base.SpecBase
-import forms.organisation.OrganisationNameFormProvider
+import forms.individual.IndividualNameFormProvider
 import models.NormalMode
+import models.individual.IndividualName
 import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.{any, argThat}
-import org.mockito.Mockito.{verify, when}
-import pages.organisation.{OrganisationNamePage, OverwritableOrganisationName}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import pages.individual.IndividualNamePage
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import views.html.organisation.OrganisationNameView
+import views.html.individual.IndividualNameView
 
 import scala.concurrent.Future
 
-class OrganisationNameControllerSpec extends SpecBase {
+class IndividualNameControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider       = new OrganisationNameFormProvider()
-  val form: Form[String] = formProvider()
+  val formProvider               = new IndividualNameFormProvider()
+  val form: Form[IndividualName] = formProvider()
 
-  lazy val organisationNameRoute: String =
-    controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode).url
+  lazy val individualNameRoute: String =
+    controllers.individual.routes.IndividualNameController.onPageLoad(NormalMode).url
 
-  "OrganisationName Controller" - {
+  "IndividualName Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationNameRoute)
+        val request = FakeRequest(GET, individualNameRoute)
+
+        val view = application.injector.instanceOf[IndividualNameView]
 
         val result = route(application, request).value
-
-        val view = application.injector.instanceOf[OrganisationNameView]
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(form, NormalMode)(request, messages(application)).toString
@@ -62,23 +63,29 @@ class OrganisationNameControllerSpec extends SpecBase {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers.withPage(OrganisationNamePage, "answer")
+      val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(ua)).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationNameRoute)
+        val request = FakeRequest(GET, individualNameRoute)
 
-        val view = application.injector.instanceOf[OrganisationNameView]
+        val view = application.injector.instanceOf[IndividualNameView]
 
         val result = route(application, request).value
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(
+          form.fill(IndividualName(testIndividualName.firstName, testIndividualName.lastName)),
+          NormalMode
+        )(
+          request,
+          messages(application)
+        ).toString
       }
     }
 
-    "must redirect to the next page and set OrganisationNameInUserAnswers when valid data is submitted" in {
+    "must redirect to the next page when valid data is submitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
@@ -89,13 +96,14 @@ class OrganisationNameControllerSpec extends SpecBase {
           .build()
 
       running(application) {
-        val request = FakeRequest(POST, organisationNameRoute).withFormUrlEncodedBody(("value", testOrgName))
+        val request =
+          FakeRequest(POST, individualNameRoute)
+            .withFormUrlEncodedBody(("firstName", "value one"), ("lastName", "value two"))
 
         val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual onwardRoute.url
-        verify(mockSessionRepository).set(argThat(ua => ua.get(OverwritableOrganisationName).get == testOrgName))
       }
     }
 
@@ -105,12 +113,12 @@ class OrganisationNameControllerSpec extends SpecBase {
 
       running(application) {
         val request =
-          FakeRequest(POST, organisationNameRoute)
-            .withFormUrlEncodedBody(("value", ""))
+          FakeRequest(POST, individualNameRoute)
+            .withFormUrlEncodedBody(("value", "invalid value"))
 
-        val boundForm = form.bind(Map("value" -> ""))
+        val boundForm = form.bind(Map("value" -> "invalid value"))
 
-        val view = application.injector.instanceOf[OrganisationNameView]
+        val view = application.injector.instanceOf[IndividualNameView]
 
         val result = route(application, request).value
 
@@ -124,7 +132,7 @@ class OrganisationNameControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationNameRoute)
+        val request = FakeRequest(GET, individualNameRoute)
 
         val result = route(application, request).value
 
@@ -139,8 +147,8 @@ class OrganisationNameControllerSpec extends SpecBase {
 
       running(application) {
         val request =
-          FakeRequest(POST, organisationNameRoute)
-            .withFormUrlEncodedBody(("value", "answer"))
+          FakeRequest(POST, individualNameRoute)
+            .withFormUrlEncodedBody(("firstName", "value 1"), ("lastName", "value 2"))
 
         val result = route(application, request).value
 
