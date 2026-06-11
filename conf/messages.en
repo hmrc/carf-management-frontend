@@ -91,7 +91,7 @@ tradingName.change.hidden = Change the trading name for the organisation
 
 reportForRegisteredBusiness.title = Adding a reporting cryptoasset service provider (RCASP)
 reportForRegisteredBusiness.heading = Adding a reporting cryptoasset service provider (RCASP)
-reportForRegisteredBusiness.p1 = You''ve registered for this service using the business details for {0}.
+reportForRegisteredBusiness.p1 = You’ve registered for this service using the business details for {0}.
 reportForRegisteredBusiness.p2 = If {0} is an RCASP, you can add them as one now to send reports for them.
 reportForRegisteredBusiness.legend = Is {0} an RCASP?
 reportForRegisteredBusiness.error.required = Select yes if the registered business is an RCASP

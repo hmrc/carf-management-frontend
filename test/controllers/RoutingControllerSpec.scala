@@ -129,19 +129,6 @@ class RoutingControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
-        val result  = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual
-          controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
     "must create new UserAnswers and save to session when no existing answers found" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
