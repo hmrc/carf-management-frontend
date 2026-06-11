@@ -89,7 +89,7 @@ tradingName.error.length = RCASP trading name must be 105 characters or less
 tradingName.error.invalid = RCASP trading name must only include letters a to z, numbers 0 to 9, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
 tradingName.change.hidden = Change the trading name for the organisation
 
-reportForRegisteredBusiness.title = Adding a reporting cryptoasset service provider (RCASP) - Send a Cryptoasset Reporting Framework report - GOV.UK
+reportForRegisteredBusiness.title = Adding a reporting cryptoasset service provider (RCASP)
 reportForRegisteredBusiness.heading = Adding a reporting cryptoasset service provider (RCASP)
 reportForRegisteredBusiness.p1 = You''ve registered for this service using the business details for {0}.
 reportForRegisteredBusiness.p2 = If {0} is an RCASP, you can add them as one now to send reports for them.
@@ -98,13 +98,13 @@ reportForRegisteredBusiness.error.required = Select yes if the registered busine
 reportForRegisteredBusiness.checkYourAnswersLabel = Is the registered business an RCASP?
 reportForRegisteredBusiness.change.hidden = Change if the registered business is an RCASP
 
-registeredBusinessIsThisYourBusinessName.title = Is this still the correct name for the business? - Send a Cryptoasset Reporting Framework report - GOV.UK
+registeredBusinessIsThisYourBusinessName.title = Is this still the correct name for the business?
 registeredBusinessIsThisYourBusinessName.heading = Is {0} still the correct name for the business?
 registeredBusinessIsThisYourBusinessName.error.required = Select yes if this is still the correct name for the business
 registeredBusinessIsThisYourBusinessName.checkYourAnswersLabel = Is this still the correct name for the business?
 registeredBusinessIsThisYourBusinessName.change.hidden = Change if this is still the correct name for the business
 
-organisationOrIndividual.title = Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)? - Send a Cryptoasset Reporting Framework report - GOV.UK
+organisationOrIndividual.title = Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?
 organisationOrIndividual.heading = Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?
 organisationOrIndividual.organisation = Organisation
 organisationOrIndividual.individual = Individual

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package viewmodels.combined
+package viewmodels.checkAnswers.combined
 
 import controllers.combined.routes
 import models.{ChangeMode, OrganisationOrIndividual, UserAnswers}
