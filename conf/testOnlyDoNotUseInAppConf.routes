@@ -12,6 +12,6 @@
 # Add all the application routes to the prod.routes file
 ->         /                                          prod.Routes
 
-GET        /rcasp/test-only/AuthAction                testOnly.controllers.AuthActionController.onPageLoad()
+GET        /manage-your-rcasps/test-only/AuthAction                testOnly.controllers.AuthActionController.onPageLoad()
 
-GET        /rcasp/test-only/view-rcasp/:carfId        testOnly.controllers.RcaspController.viewRcasp(carfId: String)
+GET        /manage-your-rcasps/test-only/view-rcasp/:carfId        testOnly.controllers.RcaspController.viewRcasp(carfId: String)
