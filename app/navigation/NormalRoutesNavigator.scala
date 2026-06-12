@@ -18,11 +18,9 @@ package navigation
 
 import models.{NormalMode, OrganisationOrIndividual, UserAnswers}
 import pages.Page
-import pages.combined.OrganisationOrIndividualPage
 import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, RegisteredBusinessIsThisYourBusinessNamePage, ReportForRegisteredBusinessPage, TradingNamePage}
-import pages.combined.{OrganisationOrIndividualPage, RegisteredBusinessIsThisYourBusinessNamePage, ReportForRegisteredBusinessPage}
+import pages.combined.OrganisationOrIndividualPage
 import pages.individual.{IndividualEmailPage, IndividualHavePhonePage, IndividualNamePage, IndividualPhonePage, NiNumberPage}
-import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, TradingNamePage}
 import play.api.mvc.Call
 
 trait NormalRoutesNavigator {
