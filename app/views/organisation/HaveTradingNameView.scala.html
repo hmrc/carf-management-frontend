@@ -28,11 +28,11 @@
 
     @formHelper(action = controllers.organisation.routes.HaveTradingNameController.onSubmit(mode), Symbol("autoComplete") -> "off") {
 
-        <h1 class="govuk-heading-l long-word">@messages("haveTradingName.heading", organisationName)</h1>
-
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
+
+        <h1 class="govuk-heading-l long-word">@messages("haveTradingName.heading", organisationName)</h1>
 
         @govukRadios(
             RadiosViewModel.yesNo(

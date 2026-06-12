@@ -89,6 +89,54 @@ tradingName.error.length = RCASP trading name must be 105 characters or less
 tradingName.error.invalid = RCASP trading name must only include letters a to z, numbers 0 to 9, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
 tradingName.change.hidden = Change the trading name for the organisation
 
+individualName.title = What is the name of the reporting cryptoasset service provider (RCASP)?
+individualName.heading = What is the name of the reporting cryptoasset service provider (RCASP)?
+individualName.firstName = First name
+individualName.lastName = Last name
+individualName.checkYourAnswersLabel = What is the name of the RCASP?
+individualName.error.firstName.required = Enter the first name for the RCASP
+individualName.error.lastName.required = Enter the last name for the RCASP
+individualName.error.firstName.length = The first name must be 35 characters or less
+individualName.error.lastName.length = The last name must be 35 characters or less
+individualName.error.firstName.invalid = The first name must only include letters a to z, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
+individualName.error.lastName.invalid = The last name must only include letters a to z, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
+individualName.name.change.hidden = Change reporting cryptoasset service provider name
+
+niNumber.title = What is the National Insurance number for the reporting cryptoasset service provider (RCASP)?
+niNumber.heading = What is the National Insurance number for {0}?
+niNumber.hint = It’s on National Insurance cards, benefit letters, payslips or P60 forms — for example, ‘QQ 12 34 56 C’.
+niNumber.checkYourAnswersLabel = National Insurance number
+niNumber.error.required = Enter the National Insurance number for the RCASP
+niNumber.error.invalid = Enter the National Insurance number in the right format
+niNumber.error.notReal = Enter a real National Insurance number
+niNumber.change.hidden = Change National Insurance number
+
+individualEmail.title = What is the email address for the reporting cryptoasset service provider (RCASP)?
+individualEmail.heading = What is the email address for {0}?
+individualEmail.p1 = We will use this email address to send confirmation of reports or if we have any questions about them.
+individualEmail.checkYourAnswersLabel = Email address
+individualEmail.error.required = Enter an email address for the RCASP
+individualEmail.error.length = The email address must be 132 characters or less
+individualEmail.error.invalid = Enter an email address in the right format, like yourname@example.com
+individualEmail.change.hidden = Change email address
+
+individualHavePhone.title = Can we contact the reporting cryptoasset service provider (RCASP) by phone?
+individualHavePhone.heading = Can we contact {0} by phone?
+individualHavePhone.p1 = We will call if we have any questions about the reports you send.
+individualHavePhone.checkYourAnswersLabel = Can we contact the RCASP by phone?
+individualHavePhone.error.required = Select yes if the RCASP can be contacted by phone
+individualHavePhone.change.hidden = Change if we can contact the reporting cryptoasset service provider by phone
+
+individualPhone.title = What is the phone number for the reporting cryptoasset service provider (RCASP)?
+individualPhone.heading = What is the phone number for {0}?
+individualPhone.hint = For international numbers, include the country code.
+individualPhone.checkYourAnswersLabel = Phone number
+individualPhone.error.required = Enter a phone number for the RCASP
+individualPhone.error.length = The phone number must be 24 characters or less
+individualPhone.error.invalid = Enter a phone number, like 01632 960 001, 07700 900 982 or +44 808 157 0192
+individualPhone.error.notReal = Enter a real phone number
+individualPhone.change.hidden = Change phone number
+
 organisationHaveSecondContact.title = Is there someone else we can contact if your first contact is not available?
 organisationHaveSecondContact.heading = Is there someone else we can contact if {0} is not available?
 organisationHaveSecondContact.hint = This can be a team mailbox or another contact.

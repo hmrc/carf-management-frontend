@@ -12,11 +12,11 @@
 
     @formHelper(action = controllers.$section$.routes.$className$Controller.onSubmit(mode), Symbol("autoComplete") -> "off") {
 
-        <h1 class="govuk-heading-l long-word">@messages("$className;format="decap"$.heading")</h1>
-
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
+
+        <h1 class="govuk-heading-l long-word">@messages("$className;format="decap"$.heading")</h1>
 
         @govukRadios(
             RadiosViewModel.yesNo(

@@ -16,12 +16,12 @@
 
 package forms.mappings
 
+import base.TestConstants.{invalidPhoneNumber25Chars, validPhoneNumber24Chars}
+import models.Enumerable
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.data.{Form, FormError}
-import models.Enumerable
-
 object MappingsSpec {
 
   sealed trait Foo
@@ -39,7 +39,7 @@ object MappingsSpec {
 
 class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mappings {
 
-  import MappingsSpec._
+  import MappingsSpec.*
 
   "text" - {
 
@@ -311,6 +311,186 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
       val result = testForm.fill("foobar")
       result.apply("value").value.value mustEqual "foobar"
     }
+  }
+
+  "nationalInsuranceNumberFormatter" - {
+
+    val testMaxLength   = 9
+    val testRequiredKey = "test.requiredKey"
+    val testInvalidKey  = "test.invalidKey"
+    val testNotRealKey  = "test.notRealKey"
+
+    val testForm: Form[String] = Form(
+      "value" -> nationalInsuranceNumber(
+        requiredKey = testRequiredKey,
+        invalidKey = testInvalidKey,
+        notRealKey = testNotRealKey
+      )
+    )
+
+    "must bind a valid string" in {
+      val result = testForm.bind(Map("value" -> "BA123456A"))
+      result.get mustEqual "BA123456A"
+    }
+
+    "must bind a valid string with spaces at the start and end" in {
+      val result = testForm.bind(Map("value" -> " BA123456A "))
+      result.get mustEqual "BA123456A"
+    }
+
+    "must bind a valid string with spaces throughout" in {
+      val result = testForm.bind(Map("value" -> " BA  1 2   34 56 A "))
+      result.get mustEqual "BA123456A"
+    }
+
+    "must not bind an empty map" in {
+      val result = testForm.bind(Map.empty[String, String])
+      result.errors must contain(FormError("value", testRequiredKey))
+    }
+
+    "must not bind an empty string" in {
+      val result = testForm.bind(Map("value" -> ""))
+      result.errors must contain(FormError("value", testRequiredKey))
+    }
+
+    "must not bind an string with just spaces" in {
+      val result = testForm.bind(Map("value" -> "         "))
+      result.errors must contain(FormError("value", testRequiredKey))
+    }
+
+    "must not bind a string too long" in {
+      val result = testForm.bind(Map("value" -> "a" * (testMaxLength + 1)))
+      result.errors must contain(FormError("value", testInvalidKey))
+    }
+
+    "must not bind a string that fails that has invalid characters" in {
+      val result = testForm.bind(Map("value" -> "???"))
+      result.errors must contain(FormError("value", testInvalidKey))
+    }
+
+    "must not bind a string that has valid characters but is an example ni number" in {
+      val result = testForm.bind(Map("value" -> "QQ 12 34 56 C"))
+      result.errors must contain(FormError("value", testNotRealKey))
+    }
+
+    "must not bind a string that has valid characters but is not real" in {
+      val result = testForm.bind(Map("value" -> "DD123456D"))
+      result.errors must contain(FormError("value", testNotRealKey))
+    }
+
+    "must unbind a valid value" in {
+      val result = testForm.fill("foobar")
+      result.apply("value").value.value mustEqual "foobar"
+    }
+  }
+
+  "phoneNumber" - {
+
+    val testRequiredKey           = "firstContactPhoneNumber.error.required"
+    val testInvalidKey            = "firstContactPhoneNumber.error.invalid"
+    val testLengthKey             = "firstContactPhoneNumber.error.length"
+    val testNotRealPhoneNumberKey = "firstContactPhoneNumber.error.notRealNumber"
+
+    val notRealNumbers = Seq(
+      "+44795634982",
+      "09956349826",
+      "+1 555 0101",
+      "+1 760-412-7",
+      "01632 960 001", // test only local area number
+      "07700 900 982", // test only number
+      "07700 990 982", // unallocated number valid format
+      "+44 808 157 0192", // specifically treated as notReal because it is in the user error messages.
+      "08081570192"
+    )
+
+    val invalidNumbers = Seq(
+      "abcdefg",
+      "+999999999",
+      "+44",
+      "071234567890", // too long
+      "+44 123"
+    )
+
+    val testPhoneNumberForm: Form[String] = Form(
+      "value" -> phoneNumber(
+        requiredKey = testRequiredKey,
+        invalidKey = testInvalidKey,
+        lengthKey = testLengthKey,
+        notRealPhoneNumberKey = testNotRealPhoneNumberKey
+      )
+    )
+
+    "must bind a valid Phone Number that is 24 characters long" in {
+      val result = testPhoneNumberForm.bind(Map("value" -> validPhoneNumber24Chars))
+      result.get mustBe validPhoneNumber24Chars
+    }
+
+    "must bind a valid Phone Number that is 105 characters long with spaces either side" in {
+      val result = testPhoneNumberForm.bind(Map("value" -> s"     $validPhoneNumber24Chars    "))
+      result.get mustBe validPhoneNumber24Chars
+    }
+
+    "must not bind an empty Phone Number" in {
+      val result = testPhoneNumberForm.bind(Map("value" -> ""))
+      result.errors must contain(
+        FormError("value", testRequiredKey)
+      )
+    }
+
+    "must not bind Phone Number that is too long" in {
+      val result = testPhoneNumberForm.bind(Map("value" -> invalidPhoneNumber25Chars))
+      result.errors must contain(
+        FormError("value", testLengthKey)
+      )
+    }
+
+    "not bind phone numbers with invalid characters" in {
+      invalidNumbers.foreach { invalidPhoneNumber =>
+        val result = testPhoneNumberForm.bind(Map("value" -> invalidPhoneNumber))
+
+        withClue(s"Expected error for invalid phone number: '$invalidPhoneNumber'") {
+          result.errors mustBe Seq(FormError("value", testInvalidKey))
+        }
+      }
+    }
+
+    "not bind notReal phone numbers" in {
+      notRealNumbers.foreach { notRealPhoneNumber =>
+        val result = testPhoneNumberForm.bind(Map("value" -> notRealPhoneNumber))
+
+        withClue(s"Expected error for invalid phone number: '$notRealPhoneNumber'") {
+          result.errors mustBe Seq(FormError("value", testNotRealPhoneNumberKey))
+        }
+      }
+    }
+
+    "bind valid phone numbers" in {
+      val validNumbers = Seq(
+        "07123456789",
+        "+447123456789",
+        "02079460000",
+        "+1 650 253 0000",
+        "+33 1 42 68 53 00",
+        "+49 30 123456",
+        "+91 98765 43210",
+        "07400111222 ext 5",
+        "++447123456789", // google lib tries to recover extra punctuation where possible, like parsing ++44 as +44
+        "+1 (650) 253-0000 x123",
+        "07700 899 999", // one below test numbers
+        "07700a899g999",
+        "+447700a899g999"
+      )
+
+      validNumbers.foreach { validPhoneNumber =>
+        val testValue = validPhoneNumber
+        val result    = testPhoneNumberForm.bind(Map("value" -> testValue))
+
+        withClue(s"Expected no errors for valid phone number: '$testValue'") {
+          result.errors.isEmpty mustBe true
+        }
+      }
+    }
+
   }
 
 }

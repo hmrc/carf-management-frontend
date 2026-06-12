@@ -17,15 +17,14 @@
 package forms.mappings
 
 import com.google.i18n.phonenumbers.{NumberParseException, PhoneNumberUtil, Phonenumber}
-import config.Constants
-import config.Constants.maxPhoneLength
+import config.Constants.*
 import models.Enumerable
 import play.api.Logging
 import play.api.data.FormError
 import play.api.data.format.Formatter
 
-import scala.util.{Failure, Success, Try}
 import scala.util.control.Exception.nonFatalCatch
+import scala.util.{Failure, Success, Try}
 
 trait Formatters extends Logging {
 
@@ -200,6 +199,39 @@ trait Formatters extends Logging {
   private def removeNonBreakingSpaces(str: String) =
     str.replaceAll("\u00A0", " ")
 
+  protected def nationalInsuranceNumberFormatter(
+      requiredKey: String,
+      invalidKey: String,
+      notRealKey: String,
+      args: Seq[Any] = Seq.empty
+  ): Formatter[String] =
+    new Formatter[String] {
+
+      override def bind(key: String, data: Map[String, String]): EitherFormErrorOrValue =
+        data.get(key) match {
+          case None                              =>
+            Left(Seq(FormError(key, requiredKey, args)))
+          case Some(value) if value.trim.isEmpty =>
+            Left(Seq(FormError(key, requiredKey, args)))
+          case Some(value)                       =>
+            val normalized = value.replaceAll("\\s", "").toUpperCase
+
+            if (normalized.length > maxNiNumberLength) {
+              Left(Seq(FormError(key, invalidKey, args)))
+            } else if (!normalized.matches(ninoFormatRegex)) {
+              Left(Seq(FormError(key, invalidKey, args)))
+            } else if (!normalized.matches(realNinoRegex)) {
+              Left(Seq(FormError(key, notRealKey, args)))
+            } else {
+              Right(normalized)
+            }
+        }
+
+      override def unbind(key: String, value: String): Map[String, String] =
+        Map(key -> value)
+
+    }
+
   protected def phoneNumberFormatter(
       requiredKey: String,
       invalidKey: String,
@@ -243,14 +275,14 @@ trait Formatters extends Logging {
         Map(key -> value)
     }
 
-  /** To deal with the possibility that a user *MIGHT* respond to the Invalid error message ["Enter a phone number, like
-    * 01632 960 001, 07700 900 982 or +44 808 157 0192"], by inputting "0808 157 0192" or "+44 808 157 0192" or
-    * "+448081570192" etc, we explicitly give 'not real' error for these cases. This is because the google
-    * PhoneNumberUtil validator does not consider "+44 808 157 0192" etc to be not Real, but correctly considers 01632
-    * 960 001 & 07700 900 982 as not Real numbers.
-    */
+    /** To deal with the possibility that a user *MIGHT* respond to the Invalid error message ["Enter a phone number,
+      * like 01632 960 001, 07700 900 982 or +44 808 157 0192"], by inputting "0808 157 0192" or "+44 808 157 0192" or
+      * "+448081570192" etc, we explicitly give 'not real' error for these cases. This is because the Google
+      * PhoneNumberUtil validator does not consider "+44 808 157 0192" etc to be not Real, but correctly considers 01632
+      * 960 001 & 07700 900 982 as not Real numbers.
+      */
 
-  protected def validateNot0808Number(
+  private def validateNot0808Number(
       phoneUtil: PhoneNumberUtil,
       key: String,
       value: String,
@@ -260,10 +292,11 @@ trait Formatters extends Logging {
   ): Either[Seq[FormError], String] = {
     val formattedNumber = phoneUtil.format(number, PhoneNumberUtil.PhoneNumberFormat.E164)
 
-    if (formattedNumber == Constants.notReal0808PhoneNumber) {
+    if (formattedNumber == notReal0808PhoneNumber) {
       Left(Seq(FormError(key, notRealErrorKey, args)))
     } else {
       Right(value)
     }
   }
+
 }
