@@ -45,10 +45,10 @@ POST        /registered-business/is-this-your-business-name               contro
 GET         /registered-business/change-is-this-your-business-name        controllers.organisation.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(mode: Mode = ChangeMode)
 POST        /registered-business/change-is-this-your-business-name        controllers.organisation.RegisteredBusinessIsThisYourBusinessNameController.onSubmit(mode: Mode = ChangeMode)
 
-GET         /rcasp/organisation-or-individual                                   controllers.combined.OrganisationOrIndividualController.onPageLoad(mode: Mode = NormalMode)
-POST        /rcasp/organisation-or-individual                                   controllers.combined.OrganisationOrIndividualController.onSubmit(mode: Mode = NormalMode)
-GET         /rcasp/change-organisation-or-individual                            controllers.combined.OrganisationOrIndividualController.onPageLoad(mode: Mode = ChangeMode)
-POST        /rcasp/change-organisation-or-individual                            controllers.combined.OrganisationOrIndividualController.onSubmit(mode: Mode = ChangeMode)
+GET         /organisation-or-individual                                   controllers.combined.OrganisationOrIndividualController.onPageLoad(mode: Mode = NormalMode)
+POST        /organisation-or-individual                                   controllers.combined.OrganisationOrIndividualController.onSubmit(mode: Mode = NormalMode)
+GET         /change-organisation-or-individual                            controllers.combined.OrganisationOrIndividualController.onPageLoad(mode: Mode = ChangeMode)
+POST        /change-organisation-or-individual                            controllers.combined.OrganisationOrIndividualController.onSubmit(mode: Mode = ChangeMode)
 
 GET         /individual-name                                                    controllers.individual.IndividualNameController.onPageLoad(mode: Mode = NormalMode)
 POST        /individual-name                                                    controllers.individual.IndividualNameController.onSubmit(mode: Mode = NormalMode)
