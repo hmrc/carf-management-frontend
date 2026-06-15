@@ -16,7 +16,10 @@
 
 package models
 
+import play.api.i18n.Messages
 import play.api.libs.json.{Format, JsError, JsString, JsSuccess, Reads, Writes}
+import uk.gov.hmrc.govukfrontend.views.Aliases.Text
+import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 
 sealed trait OrganisationOrIndividual {
   override def toString: String = this match {
@@ -31,6 +34,15 @@ object OrganisationOrIndividual {
   case object Individual extends OrganisationOrIndividual
 
   val values: Seq[OrganisationOrIndividual] = Seq(Organisation, Individual)
+
+  def options(implicit messages: Messages): Seq[RadioItem] =
+    values.zipWithIndex.map { case (value, index) =>
+      RadioItem(
+        content = Text(messages(s"organisationOrIndividual.${value.toString.toLowerCase}")),
+        value = Some(value.toString),
+        id = Some(s"value_$index")
+      )
+    }
 
   implicit val enumerable: Enumerable[OrganisationOrIndividual] =
     Enumerable(values.map(v => v.toString -> v): _*)

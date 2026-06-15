@@ -38,16 +38,8 @@
                 legend = LegendViewModel(messages("organisationOrIndividual.heading"))
                 .withCssClass("govuk-fieldset__legend--l")
                 .asPageHeading(),
-                items = Seq(
-                    RadioItem(
-                        content = Text(messages("organisationOrIndividual.organisation")),
-                        value = Some("Organisation")
-                    ),
-                    RadioItem(
-                        content = Text(messages("organisationOrIndividual.individual")),
-                        value = Some("Individual")
-                    )
-                )
+                items = OrganisationOrIndividual.options
+
             )
         )
 
