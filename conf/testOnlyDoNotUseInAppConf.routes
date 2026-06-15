@@ -10,5 +10,8 @@
 # Failing to follow this rule may result in test routes deployed in production.
 
 # Add all the application routes to the prod.routes file
-->         /                                  prod.Routes
-->         /manage-your-rcasps                testOnly.Routes
+->         /                                                       prod.Routes
+
+GET        /manage-your-rcasps/test-only/AuthAction                testOnly.controllers.AuthActionController.onPageLoad()
+
+GET        /manage-your-rcasps/test-only/view-rcasp/:carfId        testOnly.controllers.RcaspController.viewRcasp(carfId: String)
