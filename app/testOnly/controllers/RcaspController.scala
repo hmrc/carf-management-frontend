@@ -18,14 +18,16 @@ package testOnly.controllers
 
 import com.google.inject.Inject
 import connectors.RcaspConnector
-import models.responses.ViewRcaspResponse
+import models.{RcaspAddress, RcaspContactDetails, TinDetails}
+import models.requests.{CreateRcaspRequest, IndividualRcaspDetails, OrganisationRcaspDetails, RCASPManagementRequest, RcaspCreateRequestCommon, RequestParameter}
+import models.responses.{SubmitRcaspResponse, ViewRcaspResponse}
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import types.ResultT
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class RcaspController @Inject() (
     connector: RcaspConnector,
@@ -35,14 +37,93 @@ class RcaspController @Inject() (
     with I18nSupport {
 
   def viewRcasp(carfId: String): Action[AnyContent] = Action.async { implicit request =>
-    connector.viewRcasp(carfId).processResponse
+    connector.viewRcasp(carfId).processResponse(data => Ok(Json.prettyPrint(Json.toJson(data))))
   }
 
-  extension (result: ResultT[ViewRcaspResponse]) {
-    private def processResponse =
+  def createRcasp(email: String, isIndividual: String) = Action.async { implicit request =>
+
+    val fullAddress = RcaspAddress(
+      AddressLine1 = "2 High Street",
+      AddressLine2 = Some("Birmingham"),
+      AddressLine3 = Some("Nowhereshire"),
+      AddressLine4 = Some("Down the road"),
+      PostalCode = "B23 2AZ",
+      CountryCode = "GB"
+    )
+
+    val tinDetails = TinDetails(
+      TINType = "UTR",
+      TIN = "6893649",
+      IssuedBy = "GB"
+    )
+
+    val createRcaspRequest: CreateRcaspRequest =
+      CreateRcaspRequest(
+        RCASPManagementRequest(
+          RcaspCreateRequestCommon(
+            OriginatingSystem = "CADX",
+            TransmittingSystem = "EIS",
+            RequestType = "VIEW",
+            Regime = "CARF",
+            RequestParameters = List(RequestParameter("key", "value"))
+          ),
+          if (isIndividual.toBoolean) {
+            IndividualRcaspDetails(
+              SubscriptionID = "XCARF000000001",
+              IsRCASPUser = true,
+              PartyType = "Individual",
+              FirstName = "Penny",
+              LastName = "Cassiopeia",
+              TINDetails = Some(
+                List(
+                  tinDetails
+                )
+              ),
+              AddressDetails = fullAddress,
+              PrimaryContactDetails = Some(
+                RcaspContactDetails(
+                  ContactName = "Penny Cassiopeia",
+                  EmailAddress = email,
+                  PhoneNumber = Some("07123412345")
+                )
+              )
+            )
+          } else {
+            OrganisationRcaspDetails(
+              SubscriptionID = "XCARF000000001",
+              IsRCASPUser = true,
+              PartyType = "Organisation",
+              RCASPName = "Mesagoza",
+              TradingName = "Uva Academy",
+              TINDetails = Some(List(tinDetails)),
+              AddressDetails = fullAddress,
+              PrimaryContactDetails = Some(
+                RcaspContactDetails(
+                  ContactName = "Clavell",
+                  EmailAddress = email,
+                  PhoneNumber = Some("07123412344")
+                )
+              ),
+              SecondaryContactDetails = Some(
+                RcaspContactDetails(
+                  ContactName = "Jacq",
+                  EmailAddress = "jacq@uva.edu.org",
+                  PhoneNumber = Some("07123412345")
+                )
+              )
+            )
+          }
+        )
+      )
+
+    connector.createRcasp(createRcaspRequest).processResponse(data => Ok(Json.prettyPrint(Json.toJson(data))))
+  }
+
+  extension [T](result: ResultT[T]) {
+    private def processResponse(f: T => Result): Future[Result] =
       result.value
         .map {
-          case Right(data) => Ok(Json.prettyPrint(Json.toJson(data)))
+          case Right(data) => f(data)
           case Left(error) => Ok(error.toString)
         }
   }

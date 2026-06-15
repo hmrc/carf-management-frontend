@@ -17,15 +17,19 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.errors.{InternalServerError, JsonValidationError}
-import models.responses.ViewRcaspResponse
+import models.errors.{CarfError, InternalServerError, JsonValidationError}
+import models.requests.CreateRcaspRequest
+import models.responses.{SubmitRcaspResponse, ViewRcaspResponse}
 import play.api.Logging
-import play.api.http.Status.OK
+import play.api.http.Status.*
+import play.api.libs.json.*
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import types.ResultT
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 
+import java.net.URL
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
@@ -41,21 +45,51 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
       s"[RcaspConnector] Viewing RCASP with ID: $carfId"
     )
 
+    val requestBuilder = http.get(baseUrl)
+
+    sendRequest(baseUrl, requestBuilder) { httpResponse =>
+      Try(httpResponse.json.as[ViewRcaspResponse]) match {
+        case Success(data)      => Right(data)
+        case Failure(exception) =>
+          logger.warn(s"Error parsing ViewRcaspResponse with endpoint: ${baseUrl.toURI}")
+          Left(JsonValidationError)
+      }
+    }
+  }
+
+  def createRcasp(
+      createRcaspRequest: CreateRcaspRequest
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] = {
+    val baseUrl = url"${config.carfManagementBaseUrl}/create"
+
+    logger.debug(s"[RcaspConnector] Creating RCASP")
+
+    sendRequest(
+      url = baseUrl,
+      requestBuilder = http.post(baseUrl).withBody(Json.toJson(createRcaspRequest))
+    ) { httpResponse =>
+      Try(httpResponse.json.as[SubmitRcaspResponse]) match {
+        case Success(data)      => Right(data)
+        case Failure(exception) =>
+          logger.warn(s"Error parsing SubmitRcaspResponse with endpoint: ${baseUrl.toURI}")
+          Left(JsonValidationError)
+      }
+    }
+  }
+
+  private def sendRequest[T](url: URL, requestBuilder: RequestBuilder)(
+      successfulResult: HttpResponse => Either[CarfError, T]
+  )(implicit ec: ExecutionContext): ResultT[T] = {
+    logger.info(s"Calling endpoint: ${url.toString}")
+
     ResultT.fromFuture(
-      http
-        .get(baseUrl)
+      requestBuilder
         .execute[HttpResponse]
         .map { httpResponse =>
           httpResponse.status match {
-            case OK =>
-              Try(httpResponse.json.as[ViewRcaspResponse]) match {
-                case Success(data)      => Right(data)
-                case Failure(exception) =>
-                  logger.warn(s"Error parsing ViewRcaspResponse with endpoint: ${baseUrl.toURI}")
-                  Left(JsonValidationError)
-              }
+            case OK => successfulResult(httpResponse)
             case _  =>
-              logger.warn(s"Unexpected response: status  code: ${httpResponse.status}, from endpoint: ${baseUrl.toURI}")
+              logger.warn(s"Unexpected response: status code: ${httpResponse.status}, from endpoint: ${url.toURI}")
               Left(InternalServerError)
           }
         }
