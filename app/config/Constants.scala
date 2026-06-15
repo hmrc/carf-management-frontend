@@ -31,8 +31,9 @@ object Constants {
 
   inline final val maxNiNumberLength = 9
 
-  inline final val maxEmailLength = 132
-  inline final val maxPhoneLength = 24
+  inline final val maxEmailLength                   = 132
+  inline final val maxPhoneLength                   = 24
+  inline final val maxOrganisationContactNameLength = 35
 
   inline final val notReal0808PhoneNumber = "+448081570192"
 

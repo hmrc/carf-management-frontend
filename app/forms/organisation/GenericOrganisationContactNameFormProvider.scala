@@ -16,24 +16,22 @@
 
 package forms.organisation
 
-import config.Constants.contactNameRegex
+import config.Constants.{contactNameRegex, maxOrganisationContactNameLength}
 
 import javax.inject.Inject
 import forms.mappings.Mappings
 import play.api.data.Form
 
-class OrganisationSecondContactNameFormProvider @Inject() extends Mappings {
+class GenericOrganisationContactNameFormProvider @Inject() extends Mappings {
 
-  private val maxOrganisationSecondContactNameLength = 35
-
-  def apply(): Form[String] =
+  def apply(messagesBaseKey: String): Form[String] =
     Form(
       "value" -> validatedText(
-        requiredKey = "organisationSecondContactName.error.required",
-        invalidKey = "organisationSecondContactName.error.invalid",
-        lengthKey = "organisationSecondContactName.error.length",
+        requiredKey = s"$messagesBaseKey.error.required",
+        invalidKey = s"$messagesBaseKey.error.invalid",
+        lengthKey = s"$messagesBaseKey.error.length",
         regex = contactNameRegex,
-        maxLength = maxOrganisationSecondContactNameLength
+        maxLength = maxOrganisationContactNameLength
       )
     )
 }

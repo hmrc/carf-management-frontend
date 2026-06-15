@@ -18,28 +18,26 @@ package viewmodels.checkAnswers.organisation
 
 import controllers.organisation.routes
 import models.{ChangeMode, UserAnswers}
-import pages.organisation.OrganisationSecondContactHavePhonePage
+import pages.organisation.OrganisationFirstContactPhoneNumberPage
 import play.api.i18n.Messages
-import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist.*
-import viewmodels.implicits.*
+import viewmodels.govuk.summarylist._
+import viewmodels.implicits._
 
-object OrganisationSecondContactHavePhoneSummary {
+object OrganisationFirstContactPhoneNumberSummary {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(OrganisationSecondContactHavePhonePage).map { answer =>
-
-      val value = if (answer) "site.yes" else "site.no"
-
+    answers.get(OrganisationFirstContactPhoneNumberPage).map { answer =>
       SummaryListRowViewModel(
-        key = "organisationSecondContactHavePhone.checkYourAnswersLabel",
-        value = ValueViewModel(value),
+        key = "organisationFirstContactPhoneNumber.checkYourAnswersLabel",
+        value = ValueViewModel(HtmlFormat.escape(answer).toString),
         actions = Seq(
           ActionItemViewModel(
-            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
-            href = routes.OrganisationSecondContactHavePhoneController.onPageLoad(ChangeMode).url
-          ).withVisuallyHiddenText(messages("organisationSecondContactHavePhone.change.hidden"))
+            "site.change",
+            routes.OrganisationFirstContactPhoneNumberController.onPageLoad(ChangeMode).url
+          )
+            .withVisuallyHiddenText(messages("organisationFirstContactPhoneNumber.change.hidden"))
         )
       )
     }

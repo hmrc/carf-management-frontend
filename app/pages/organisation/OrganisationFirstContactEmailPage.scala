@@ -14,25 +14,14 @@
  * limitations under the License.
  */
 
-package forms.organisation
+package pages.organisation
 
-import javax.inject.Inject
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-import forms.mappings.Mappings
-import play.api.data.Form
+case object OrganisationFirstContactEmailPage extends QuestionPage[String] {
 
-class OrganisationSecondContactEmailFormProvider @Inject() extends Mappings {
+  override def path: JsPath = JsPath \ toString
 
-  private val maxLength = 132
-
-  def apply(): Form[String] =
-    Form(
-      "value" -> text("organisationSecondContactEmail.error.required")
-        .verifying(
-          firstError(
-            maxLength(maxLength, "organisationSecondContactEmail.error.length"),
-            validEmailAddress("organisationSecondContactEmail.error.invalid")
-          )
-        )
-    )
+  override def toString: String = "organisationFirstContactEmail"
 }

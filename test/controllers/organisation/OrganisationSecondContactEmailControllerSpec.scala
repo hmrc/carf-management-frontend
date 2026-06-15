@@ -18,7 +18,7 @@ package controllers.organisation
 
 import base.SpecBase
 import controllers.routes
-import forms.organisation.OrganisationSecondContactEmailFormProvider
+import forms.organisation.GenericOrganisationContactNameFormProvider
 import models.{NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
@@ -38,10 +38,10 @@ class OrganisationSecondContactEmailControllerSpec extends SpecBase with Mockito
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider: OrganisationSecondContactEmailFormProvider = new OrganisationSecondContactEmailFormProvider()
-  val form: Form[String]                                       = formProvider()
-  val secondContactName: String                                = "name"
-  val organisationName: String                                 = "organisation"
+  val formProvider              = new GenericOrganisationContactNameFormProvider()
+  val form: Form[String]        = formProvider("organisationSecondContactEmail")
+  val secondContactName: String = "name"
+  val organisationName: String  = "organisation"
 
   lazy val organisationSecondContactEmailRoute: String =
     controllers.organisation.routes.OrganisationSecondContactEmailController.onPageLoad(NormalMode).url

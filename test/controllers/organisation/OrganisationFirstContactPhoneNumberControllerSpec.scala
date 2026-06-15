@@ -18,75 +18,69 @@ package controllers.organisation
 
 import base.SpecBase
 import controllers.routes
-import forms.organisation.GenericOrganisationContactNameFormProvider
+import forms.GenericPhoneFormProvider
 import models.{NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
-import pages.organisation.{OrganisationSecondContactNamePage, OverwritableOrganisationName}
+import pages.organisation.{OrganisationFirstContactNamePage, OrganisationFirstContactPhoneNumberPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import views.html.organisation.OrganisationSecondContactNameView
+import views.html.organisation.OrganisationFirstContactPhoneNumberView
 
 import scala.concurrent.Future
 
-class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoSugar {
+class OrganisationFirstContactPhoneNumberControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider       = new GenericOrganisationContactNameFormProvider()
-  val form: Form[String] = formProvider("organisationSecondContactName")
+  val formProvider       = new GenericPhoneFormProvider()
+  val form: Form[String] = formProvider("organisationFirstContactPhoneNumber")
 
-  val organisationName: String = "organisation"
+  lazy val organisationFirstContactPhoneNumberRoute: String =
+    controllers.organisation.routes.OrganisationFirstContactPhoneNumberController.onPageLoad(NormalMode).url
 
-  lazy val organisationSecondContactNameRoute: String =
-    controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode).url
+  val userAnswersWithName: UserAnswers =
+    emptyUserAnswers.set(OrganisationFirstContactNamePage, "Mimothy").success.value
 
-  "OrganisationSecondContactName Controller" - {
+  "OrganisationFirstContactPhoneNumber Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
-        .withPage(OverwritableOrganisationName, organisationName)
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithName)).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
+        val request = FakeRequest(GET, organisationFirstContactPhoneNumberRoute)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[OrganisationSecondContactNameView]
+        val view = application.injector.instanceOf[OrganisationFirstContactPhoneNumberView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, organisationName)(
-          request,
-          messages(application)
-        ).toString
+        contentAsString(result) mustEqual view(form, NormalMode, "Mimothy")(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
-        .withPage(OverwritableOrganisationName, organisationName)
-        .withPage(OrganisationSecondContactNamePage, "answer")
+      val prePopulatedUserAnswers = UserAnswers(userAnswersId)
+        .withPage(OrganisationFirstContactNamePage, "Mimothy")
+        .withPage(OrganisationFirstContactPhoneNumberPage, "12345")
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(prePopulatedUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
+        val request = FakeRequest(GET, organisationFirstContactPhoneNumberRoute)
 
-        val view = application.injector.instanceOf[OrganisationSecondContactNameView]
+        val view = application.injector.instanceOf[OrganisationFirstContactPhoneNumberView]
 
         val result = route(application, request).value
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode, organisationName)(
+        contentAsString(result) mustEqual view(form.fill("12345"), NormalMode, "Mimothy")(
           request,
           messages(application)
         ).toString
@@ -97,7 +91,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(userAnswersWithName))
           .overrides(
             bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
           )
@@ -105,8 +99,8 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
       running(application) {
         val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
-            .withFormUrlEncodedBody(("value", "answer"))
+          FakeRequest(POST, organisationFirstContactPhoneNumberRoute)
+            .withFormUrlEncodedBody(("value", "07123456789"))
 
         val result = route(application, request).value
 
@@ -117,50 +111,33 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
-        .withPage(OverwritableOrganisationName, organisationName)
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithName)).build()
 
       running(application) {
         val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
+          FakeRequest(POST, organisationFirstContactPhoneNumberRoute)
             .withFormUrlEncodedBody(("value", ""))
 
         val boundForm = form.bind(Map("value" -> ""))
 
-        val view = application.injector.instanceOf[OrganisationSecondContactNameView]
+        val view = application.injector.instanceOf[OrganisationFirstContactPhoneNumberView]
 
         val result = route(application, request).value
 
         status(result)          mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, organisationName)(
+        contentAsString(result) mustEqual view(boundForm, NormalMode, "Mimothy")(
           request,
           messages(application)
         ).toString
       }
     }
 
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Some Information Is Missing for a GET if no organisationName is found" in {
+    "must redirect to Some Information Is Missing for a GET if no existing contact name is found" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
+        val request = FakeRequest(GET, organisationFirstContactPhoneNumberRoute)
 
         val result = route(application, request).value
 
@@ -170,6 +147,40 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
             "Should redirect to Some Information is Missing Page (CARF-293)"
           )
           .url
+      }
+    }
+
+    "must redirect to Some Information Is Missing for a POST if no existing contact name is found in form with errors" in {
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, organisationFirstContactPhoneNumberRoute)
+            .withFormUrlEncodedBody(("value", "invalid answer"))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.PlaceholderController
+          .onPageLoad(
+            "Should redirect to Some Information is Missing Page (CARF-293)"
+          )
+          .url
+      }
+    }
+
+    "must redirect to Journey Recovery for a GET if no existing data is found" in {
+
+      val application = applicationBuilder(userAnswers = None).build()
+
+      running(application) {
+        val request = FakeRequest(GET, organisationFirstContactPhoneNumberRoute)
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
@@ -179,33 +190,13 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
       running(application) {
         val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
+          FakeRequest(POST, organisationFirstContactPhoneNumberRoute)
             .withFormUrlEncodedBody(("value", "answer"))
 
         val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Some Information Is Missing for a POST if no organisationName is found" in {
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
-            .withFormUrlEncodedBody(("value", "email.com"))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.PlaceholderController
-          .onPageLoad(
-            "Should redirect to Some Information is Missing Page (CARF-293)"
-          )
-          .url
       }
     }
   }

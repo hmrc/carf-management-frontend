@@ -17,36 +17,35 @@
 package controllers.organisation
 
 import base.SpecBase
-import controllers.routes
 import forms.organisation.GenericOrganisationContactNameFormProvider
 import models.{NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
-import pages.organisation.{OrganisationSecondContactNamePage, OverwritableOrganisationName}
+import pages.organisation.{OrganisationFirstContactNamePage, OverwritableOrganisationName}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import views.html.organisation.OrganisationSecondContactNameView
+import views.html.organisation.OrganisationFirstContactNameView
+import controllers.routes
 
 import scala.concurrent.Future
 
-class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoSugar {
+class OrganisationFirstContactNameControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
   val formProvider       = new GenericOrganisationContactNameFormProvider()
-  val form: Form[String] = formProvider("organisationSecondContactName")
+  val form: Form[String] = formProvider("organisationFirstContactName")
 
   val organisationName: String = "organisation"
 
-  lazy val organisationSecondContactNameRoute: String =
-    controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode).url
+  lazy val organisationFirstContactNameRoute: String =
+    controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode).url
 
-  "OrganisationSecondContactName Controller" - {
+  "OrganisationFirstContactName Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
@@ -56,11 +55,11 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
+        val request = FakeRequest(GET, organisationFirstContactNameRoute)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[OrganisationSecondContactNameView]
+        val view = application.injector.instanceOf[OrganisationFirstContactNameView]
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(form, NormalMode, organisationName)(
@@ -74,14 +73,14 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
       val userAnswers = UserAnswers(userAnswersId)
         .withPage(OverwritableOrganisationName, organisationName)
-        .withPage(OrganisationSecondContactNamePage, "answer")
+        .withPage(OrganisationFirstContactNamePage, "answer")
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
+        val request = FakeRequest(GET, organisationFirstContactNameRoute)
 
-        val view = application.injector.instanceOf[OrganisationSecondContactNameView]
+        val view = application.injector.instanceOf[OrganisationFirstContactNameView]
 
         val result = route(application, request).value
 
@@ -105,7 +104,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
       running(application) {
         val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
+          FakeRequest(POST, organisationFirstContactNameRoute)
             .withFormUrlEncodedBody(("value", "answer"))
 
         val result = route(application, request).value
@@ -124,12 +123,12 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
       running(application) {
         val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
+          FakeRequest(POST, organisationFirstContactNameRoute)
             .withFormUrlEncodedBody(("value", ""))
 
         val boundForm = form.bind(Map("value" -> ""))
 
-        val view = application.injector.instanceOf[OrganisationSecondContactNameView]
+        val view = application.injector.instanceOf[OrganisationFirstContactNameView]
 
         val result = route(application, request).value
 
@@ -146,7 +145,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
+        val request = FakeRequest(GET, organisationFirstContactNameRoute)
 
         val result = route(application, request).value
 
@@ -160,7 +159,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
+        val request = FakeRequest(GET, organisationFirstContactNameRoute)
 
         val result = route(application, request).value
 
@@ -179,7 +178,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
       running(application) {
         val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
+          FakeRequest(POST, organisationFirstContactNameRoute)
             .withFormUrlEncodedBody(("value", "answer"))
 
         val result = route(application, request).value
@@ -194,9 +193,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
-            .withFormUrlEncodedBody(("value", "email.com"))
+        val request = FakeRequest(POST, organisationFirstContactNameRoute).withFormUrlEncodedBody(("value", ""))
 
         val result = route(application, request).value
 

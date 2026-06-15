@@ -23,47 +23,48 @@ import models.{NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
-import pages.organisation.{OrganisationSecondContactNamePage, OverwritableOrganisationName}
+import pages.organisation.{OrganisationFirstContactEmailPage, OrganisationFirstContactNamePage, OverwritableOrganisationName}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import views.html.organisation.OrganisationSecondContactNameView
+import views.html.organisation.OrganisationFirstContactEmailView
 
 import scala.concurrent.Future
 
-class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoSugar {
+class OrganisationFirstContactEmailControllerControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
   val formProvider       = new GenericOrganisationContactNameFormProvider()
-  val form: Form[String] = formProvider("organisationSecondContactName")
+  val form: Form[String] = formProvider("organisationFirstContactEmail")
 
-  val organisationName: String = "organisation"
+  val firstContactName = "Timmy"
+  val organisationName = "Timmy Ltd"
 
-  lazy val organisationSecondContactNameRoute: String =
-    controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode).url
+  lazy val organisationFirstContactEmailRoute: String =
+    controllers.organisation.routes.OrganisationFirstContactEmailController.onPageLoad(NormalMode).url
 
-  "OrganisationSecondContactName Controller" - {
+  "OrganisationFirstContactEmail Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val userAnswers = UserAnswers(userAnswersId)
+        .withPage(OrganisationFirstContactNamePage, firstContactName)
         .withPage(OverwritableOrganisationName, organisationName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
+        val request = FakeRequest(GET, organisationFirstContactEmailRoute)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[OrganisationSecondContactNameView]
+        val view = application.injector.instanceOf[OrganisationFirstContactEmailView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, organisationName)(
+        contentAsString(result) mustEqual view(form, NormalMode, firstContactName, organisationName)(
           request,
           messages(application)
         ).toString
@@ -73,20 +74,26 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val userAnswers = UserAnswers(userAnswersId)
+        .withPage(OrganisationFirstContactNamePage, firstContactName)
         .withPage(OverwritableOrganisationName, organisationName)
-        .withPage(OrganisationSecondContactNamePage, "answer")
+        .withPage(OrganisationFirstContactEmailPage, "anexampleevalidemail@email.com")
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
+        val request = FakeRequest(GET, organisationFirstContactEmailRoute)
 
-        val view = application.injector.instanceOf[OrganisationSecondContactNameView]
+        val view = application.injector.instanceOf[OrganisationFirstContactEmailView]
 
         val result = route(application, request).value
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill("answer"), NormalMode, organisationName)(
+        contentAsString(result) mustEqual view(
+          form.fill("anexampleevalidemail@email.com"),
+          NormalMode,
+          firstContactName,
+          organisationName
+        )(
           request,
           messages(application)
         ).toString
@@ -105,8 +112,8 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
       running(application) {
         val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
-            .withFormUrlEncodedBody(("value", "answer"))
+          FakeRequest(POST, organisationFirstContactEmailRoute)
+            .withFormUrlEncodedBody(("value", "answer@email.com"))
 
         val result = route(application, request).value
 
@@ -118,23 +125,23 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
     "must return a Bad Request and errors when invalid data is submitted" in {
 
       val userAnswers = UserAnswers(userAnswersId)
+        .withPage(OrganisationFirstContactNamePage, firstContactName)
         .withPage(OverwritableOrganisationName, organisationName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
       running(application) {
         val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
+          FakeRequest(POST, organisationFirstContactEmailRoute)
             .withFormUrlEncodedBody(("value", ""))
 
         val boundForm = form.bind(Map("value" -> ""))
 
-        val view = application.injector.instanceOf[OrganisationSecondContactNameView]
+        val view = application.injector.instanceOf[OrganisationFirstContactEmailView]
 
         val result = route(application, request).value
 
         status(result)          mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, organisationName)(
+        contentAsString(result) mustEqual view(boundForm, NormalMode, firstContactName, organisationName)(
           request,
           messages(application)
         ).toString
@@ -146,7 +153,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
       val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
+        val request = FakeRequest(GET, organisationFirstContactEmailRoute)
 
         val result = route(application, request).value
 
@@ -155,12 +162,40 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
       }
     }
 
-    "must redirect to Some Information Is Missing for a GET if no organisationName is found" in {
+    "must redirect to Some Information Is Missing for a GET if no first contact name is found" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val userAnswers = UserAnswers(userAnswersId)
+        .withPage(OrganisationFirstContactEmailPage, "test@example.com")
+        .withPage(OverwritableOrganisationName, organisationName)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, organisationSecondContactNameRoute)
+        val request =
+          FakeRequest(GET, organisationFirstContactEmailRoute)
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.PlaceholderController
+          .onPageLoad(
+            "Should redirect to Some Information is Missing Page (CARF-293)"
+          )
+          .url
+      }
+    }
+
+    "must redirect to Some Information Is Missing for a GET if no organisation name is found" in {
+
+      val userAnswers = UserAnswers(userAnswersId)
+        .withPage(OrganisationFirstContactEmailPage, "test@example.com")
+        .withPage(OrganisationFirstContactNamePage, firstContactName)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request =
+          FakeRequest(GET, organisationFirstContactEmailRoute)
 
         val result = route(application, request).value
 
@@ -179,8 +214,8 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
       running(application) {
         val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
-            .withFormUrlEncodedBody(("value", "answer"))
+          FakeRequest(POST, organisationFirstContactEmailRoute)
+            .withFormUrlEncodedBody(("value", "wrong email format@"))
 
         val result = route(application, request).value
 
@@ -189,13 +224,37 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
       }
     }
 
-    "must redirect to Some Information Is Missing for a POST if no organisationName is found" in {
+    "must redirect to Some Information Is Missing for a POST if no firstContactName is found" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
         val request =
-          FakeRequest(POST, organisationSecondContactNameRoute)
+          FakeRequest(POST, organisationFirstContactEmailRoute)
+            .withFormUrlEncodedBody(("value", "email.com"))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.PlaceholderController
+          .onPageLoad(
+            "Should redirect to Some Information is Missing Page (CARF-293)"
+          )
+          .url
+      }
+    }
+
+    "must redirect to Some Information Is Missing for a POST if no organisationName is found" in {
+
+      val userAnswers = UserAnswers(userAnswersId)
+        .withPage(OrganisationFirstContactEmailPage, "test@example.com")
+        .withPage(OrganisationFirstContactNamePage, firstContactName)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, organisationFirstContactEmailRoute)
             .withFormUrlEncodedBody(("value", "email.com"))
 
         val result = route(application, request).value

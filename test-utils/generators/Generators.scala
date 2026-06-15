@@ -117,4 +117,10 @@ trait Generators extends ModelGenerators {
       part <- listOfN(maxLength, Gen.alphaChar).map(_.mkString)
 
     } yield s"$part.$part@$part.$part"
+
+  def stringsLongerThanAlphaNumeric(minLength: Int): Gen[String] = for {
+    maxLength <- (minLength * 2).max(100)
+    length    <- Gen.chooseNum(minLength + 1, maxLength)
+    chars     <- listOfN(length, Gen.alphaChar)
+  } yield chars.mkString
 }
