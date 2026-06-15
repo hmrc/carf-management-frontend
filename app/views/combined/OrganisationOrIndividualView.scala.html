@@ -29,7 +29,7 @@
     @formHelper(action = controllers.combined.routes.OrganisationOrIndividualController.onSubmit(mode), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
+            @govukErrorSummary(ErrorSummaryViewModel(form, errorLinkOverrides = Map("value" -> "value_0")))
         }
 
         @govukRadios(
@@ -51,6 +51,8 @@
             )
         )
 
-        @govukButton(ButtonViewModel(messages("site.continue")))
+        @govukButton(
+            ButtonViewModel(messages("site.continue")).withAttribute("id" -> "continue")
+        )
     }
 }
