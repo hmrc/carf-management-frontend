@@ -101,7 +101,7 @@ class HomePageViewModelSpec extends SpecBase {
         val viewModel   = basicViewModel
         val result      = viewModel.getManageRcaspsLink
         val expectedUrl = controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to /rcasp/your-rcasps (part of management change journey)")
+          .onPageLoad("Should redirect to /manage-your-rcasps/your-rcasps (part of management change journey)")
           .url
 
         result mustBe expectedUrl

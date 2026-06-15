@@ -1,0 +1,5 @@
+# Test-only routes (mounted at /manage-your-rcasps in testOnlyDoNotUseInAppConf.routes)
+
+GET        /test-only/AuthAction              testOnly.controllers.AuthActionController.onPageLoad()
+
+GET        /test-only/view-rcasp/:carfId      testOnly.controllers.RcaspController.viewRcasp(carfId: String)

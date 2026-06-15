@@ -81,7 +81,7 @@
         additionalScriptsBlock = Some(additionalScripts)
     ),
     serviceURLs = ServiceURLs(
-        serviceUrl = Some(routes.HomePageController.onPageLoad().url),
+        serviceUrl = Some(controllers.home.routes.HomePageController.onPageLoad().url),
         signOutUrl = if(showSignOut) Some(controllers.auth.routes.AuthController.signOut().url) else None
     ),
     banners = Banners(
