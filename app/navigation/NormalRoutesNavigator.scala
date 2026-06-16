@@ -16,11 +16,11 @@
 
 package navigation
 
-import controllers.routes
-import models.{NormalMode, UserAnswers}
+import models.{NormalMode, OrganisationOrIndividual, UserAnswers}
 import pages.Page
 import pages.organisation.*
 import pages.individual.*
+import pages.combined.OrganisationOrIndividualPage
 import play.api.mvc.Call
 
 trait NormalRoutesNavigator {
@@ -38,6 +38,14 @@ trait NormalRoutesNavigator {
         controllers.routes.PlaceholderController.onPageLoad(
           "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
         )
+    case OrganisationOrIndividualPage =>
+      userAnswers => navigateFromOrganisationOrIndividualPage(userAnswers)
+
+    case ReportForRegisteredBusinessPage =>
+      userAnswers => navigateFromReportForRegisteredBusinessPage(userAnswers)
+
+    case RegisteredBusinessIsThisYourBusinessNamePage =>
+      userAnswers => navigateFromRegisteredBusinessIsThisYourBusinessNamePage(userAnswers)
 
     case IndividualNamePage => _ => controllers.individual.routes.NiNumberController.onPageLoad(NormalMode)
 
@@ -87,6 +95,32 @@ trait NormalRoutesNavigator {
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
+  private def navigateFromReportForRegisteredBusinessPage(userAnswers: UserAnswers): Call =
+    userAnswers.get(ReportForRegisteredBusinessPage) match {
+      case Some(true)  =>
+        controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode)
+      case Some(false) => controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode)
+      case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  private def navigateFromRegisteredBusinessIsThisYourBusinessNamePage(userAnswers: UserAnswers): Call =
+    userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage) match {
+      case Some(true)  =>
+        controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)
+      case Some(false) =>
+        controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
+      case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call =
+    userAnswers.get(OrganisationOrIndividualPage) match {
+      case Some(OrganisationOrIndividual.Organisation) =>
+        controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
+      case Some(OrganisationOrIndividual.Individual)   =>
+        controllers.individual.routes.IndividualNameController.onPageLoad(NormalMode)
+      case None                                        =>
+        controllers.routes.JourneyRecoveryController.onPageLoad()
+    }
   private def navigateFromOrganisationHaveSecondContactController(userAnswers: UserAnswers): Call =
     userAnswers.get(OrganisationHaveSecondContactPage) match {
       case Some(true)  =>

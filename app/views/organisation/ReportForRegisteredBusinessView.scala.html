@@ -1,0 +1,60 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@this(
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukRadios: GovukRadios,
+        govukButton: GovukButton
+)
+
+@(form: Form[Boolean], mode: Mode, businessName: String)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = title(form, messages("reportForRegisteredBusiness.title"))) {
+
+    @formHelper(
+        action = controllers.organisation.routes.ReportForRegisteredBusinessController.onSubmit(mode),
+        Symbol("autoComplete") -> "off"
+    ) {
+
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(form))
+        }
+
+        <h1 class="govuk-heading-l">@messages("reportForRegisteredBusiness.heading")</h1>
+
+        <p class="govuk-body">
+        @messages("reportForRegisteredBusiness.p1", businessName)
+        </p>
+
+        <p class="govuk-body">
+        @messages("reportForRegisteredBusiness.p2", businessName)
+        </p>
+
+        @govukRadios(
+            RadiosViewModel.yesNo(
+                field = form("value"),
+                legend = LegendViewModel(messages("reportForRegisteredBusiness.legend", businessName))
+                .withCssClass("govuk-fieldset__legend--m")
+            ).copy(classes = "")
+        )
+
+        @govukButton(
+            ButtonViewModel(messages("site.continue")).withAttribute("id" -> "continue")
+        )
+    }
+}
