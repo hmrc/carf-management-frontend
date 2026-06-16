@@ -16,16 +16,12 @@
 
 package pages.organisation
 
-import models.{BusinessDetails, UserAnswers}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 
-import scala.util.{Success, Try}
-
-case object CachedBusinessDetailsPage extends QuestionPage[BusinessDetails] {
+case object OrganisationSecondContactEmailPage extends QuestionPage[String] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "cachedBusinessDetails"
-
+  override def toString: String = "organisationSecondContactEmail"
 }

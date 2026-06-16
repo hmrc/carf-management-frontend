@@ -22,6 +22,8 @@ object Constants {
 
   inline val standardTextInputRegex               = """^[a-zA-Z0-9 &'\\`^\-]*$"""
   inline val standardTextInputWithoutNumbersRegex = """^[a-zA-Z &'\\`^\-]*$"""
+  inline final val contactNameRegex               = """^[a-zA-Z0-9 &'\\`^\-]*$"""
+  final val phoneNumberRegex: String              = """^[A-Z0-9 )/(\-*#+]*$""".stripMargin
 
   inline final val ninoFormatRegex = """^[A-Z]{2}[0-9]{6}[A-Z]{1}$"""
   inline final val realNinoRegex   =
