@@ -28,9 +28,4 @@ case object CachedBusinessDetailsPage extends QuestionPage[BusinessDetails] {
 
   override def toString: String = "cachedBusinessDetails"
 
-  override def cleanup(
-      newValue: Option[BusinessDetails],
-      updatedUserAnswers: UserAnswers
-  ): Try[UserAnswers] =
-    Success(updatedUserAnswers)
 }

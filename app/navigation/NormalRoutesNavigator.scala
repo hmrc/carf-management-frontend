@@ -16,6 +16,7 @@
 
 package navigation
 
+import controllers.routes
 import models.{NormalMode, OrganisationOrIndividual, UserAnswers}
 import pages.Page
 import pages.organisation.*
@@ -33,7 +34,7 @@ trait NormalRoutesNavigator {
     case HaveTradingNamePage =>
       userAnswers => navigateFromHaveTradingNamePage(userAnswers)
 
-    case TradingNamePage =>
+    case TradingNamePage              =>
       _ =>
         controllers.routes.PlaceholderController.onPageLoad(
           "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
@@ -112,7 +113,7 @@ trait NormalRoutesNavigator {
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
-  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call =
+  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call            =
     userAnswers.get(OrganisationOrIndividualPage) match {
       case Some(OrganisationOrIndividual.Organisation) =>
         controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
