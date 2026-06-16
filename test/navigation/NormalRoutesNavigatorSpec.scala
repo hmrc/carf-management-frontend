@@ -268,7 +268,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           OrganisationHaveSecondContactPage,
           NormalMode,
           updatedAnswers
-        ) mustBe controllers.routes.CheckYourAnswersController.onPageLoad()
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
       }
 
       "Should redirect to JourneyRecovery when no answer is provided" in {
@@ -326,7 +326,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           OrganisationSecondContactHavePhonePage,
           NormalMode,
           userAnswers
-        ) mustBe routes.CheckYourAnswersController.onPageLoad()
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
       }
 
       "Should redirect to JourneyRecovery when no answer is provided" in {
@@ -347,7 +347,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           OrganisationSecondContactPhoneNumberPage,
           NormalMode,
           userAnswers
-        ) mustBe routes.CheckYourAnswersController.onPageLoad()
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
       }
     }
 
