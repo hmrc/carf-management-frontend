@@ -1,0 +1,47 @@
+@import viewmodels.InputWidth._
+
+@this(
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukInput: GovukInput,
+        govukButton: GovukButton
+)
+
+@(form: Form[_], mode: Mode, name: String, manualAddressUrl: String)(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = title(form, messages("findAddress.title"))) {
+
+    @formHelper(action = controllers.sectionName.routes.FindAddressController.onSubmit(mode)) {
+
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummaryViewModel(form))
+        }
+
+        <h1 class="govuk-heading-l">@messages("findAddress.heading", name)</h1>
+
+        @govukInput(
+            InputViewModel(
+                field = form("value"),
+                label = LabelViewModel(messages("findAddress.postcode.paragraph"))
+            )
+            .withWidth(Fixed10)
+            .withAutocomplete("postal-code")
+        )
+
+        @govukInput(
+            InputViewModel(
+                field = form("value"),
+                label = LabelViewModel(messages("findAddress.property.paragraph"))
+            )
+            .withWidth(ThreeQuarters)
+            .withHint("findAddress.hint")
+        )
+
+        <p class="govuk-body">@link(manualAddressUrl, messages("findAddress.address.linkText"))</p>
+
+        @govukButton(
+            ButtonViewModel(messages("site.continue")).withAttribute("id" -> "continue")
+        )
+    }
+}

@@ -59,3 +59,8 @@ GET        /individual-phone                        controllers.individual.Indiv
 POST       /individual-phone                        controllers.individual.IndividualPhoneController.onSubmit(mode: Mode = NormalMode)
 GET        /change-individual-phone                  controllers.individual.IndividualPhoneController.onPageLoad(mode: Mode = ChangeMode)
 POST       /change-individual-phone                  controllers.individual.IndividualPhoneController.onSubmit(mode: Mode = ChangeMode)
+
+GET        /find-address                        controllers.sectionName.FindAddressController.onPageLoad(mode: Mode = NormalMode)
+POST       /find-address                        controllers.sectionName.FindAddressController.onSubmit(mode: Mode = NormalMode)
+GET        /change-find-address                  controllers.sectionName.FindAddressController.onPageLoad(mode: Mode = ChangeMode)
+POST       /change-find-address                  controllers.sectionName.FindAddressController.onSubmit(mode: Mode = ChangeMode)
