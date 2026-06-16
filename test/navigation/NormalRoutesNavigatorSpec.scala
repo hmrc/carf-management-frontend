@@ -171,9 +171,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           OrganisationOrIndividualPage,
           NormalMode,
           ua
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad(
-          "CARF-297 - go to /individual-name,  controllers.individual.routes.IndivudalNameController.onPageLoad(NormalMode)"
-        )
+        ) mustBe controllers.individual.routes.IndividualNameController.onPageLoad(NormalMode)
       }
 
       "Should redirect to Journey Recovery when no answer is present" in {
