@@ -17,16 +17,18 @@
 package navigation
 
 import base.SpecBase
-import models.NormalMode
+import models.{NormalMode, OrganisationOrIndividual}
 import pages.Page
 import pages.individual.{IndividualEmailPage, IndividualHavePhonePage, IndividualNamePage, IndividualPhonePage, NiNumberPage}
-import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, TradingNamePage}
+import pages.combined.OrganisationOrIndividualPage
+import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, RegisteredBusinessIsThisYourBusinessNamePage, ReportForRegisteredBusinessPage, TradingNamePage}
 
 class NormalRoutesNavigatorSpec extends SpecBase {
 
   val navigator = new Navigator()
 
   "NormalRoutesNavigator" - {
+
     "When passed OrganisationNamePage" - {
       "Should redirect to HaveTradingNameController" in {
         navigator.nextPage(
@@ -148,6 +150,98 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NormalMode,
           emptyUserAnswers
         ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+      }
+    }
+
+    "When passed OrganisationOrIndividualPage" - {
+      "Should redirect to OrganisationNameController when Organisation is selected" in {
+        val ua = emptyUserAnswers.withPage(OrganisationOrIndividualPage, OrganisationOrIndividual.Organisation)
+
+        navigator.nextPage(
+          OrganisationOrIndividualPage,
+          NormalMode,
+          ua
+        ) mustBe controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to IndividualNameController when Individual is selected" in {
+        val ua = emptyUserAnswers.withPage(OrganisationOrIndividualPage, OrganisationOrIndividual.Individual)
+
+        navigator.nextPage(
+          OrganisationOrIndividualPage,
+          NormalMode,
+          ua
+        ) mustBe controllers.individual.routes.IndividualNameController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to Journey Recovery when no answer is present" in {
+        navigator.nextPage(
+          OrganisationOrIndividualPage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
+    }
+
+    "When passed ReportForRegisteredBusinessPage" - {
+      "Should redirect to RegisteredBusinessIsThisYourBusinessNameController when answer is true" in {
+        val ua = emptyUserAnswers.withPage(ReportForRegisteredBusinessPage, true)
+
+        navigator.nextPage(
+          ReportForRegisteredBusinessPage,
+          NormalMode,
+          ua
+        ) mustBe controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController
+          .onPageLoad(NormalMode)
+      }
+
+      "Should redirect to OrganisationOrIndividualController when answer is false" in {
+        val ua = emptyUserAnswers.withPage(ReportForRegisteredBusinessPage, false)
+
+        navigator.nextPage(
+          ReportForRegisteredBusinessPage,
+          NormalMode,
+          ua
+        ) mustBe controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to Journey Recovery when no answer is present" in {
+        navigator.nextPage(
+          ReportForRegisteredBusinessPage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
+    }
+
+    "When passed RegisteredBusinessIsThisYourBusinessNamePage" - {
+      "Should redirect to PlaceholderController when answer is true" in {
+        val ua = emptyUserAnswers.withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
+
+        navigator.nextPage(
+          RegisteredBusinessIsThisYourBusinessNamePage,
+          NormalMode,
+          ua
+        ) mustBe
+          controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to PlaceholderController when answer is false" in {
+        val ua = emptyUserAnswers.withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
+
+        navigator.nextPage(
+          RegisteredBusinessIsThisYourBusinessNamePage,
+          NormalMode,
+          ua
+        ) mustBe controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to Journey Recovery when no answer is present" in {
+        navigator.nextPage(
+          RegisteredBusinessIsThisYourBusinessNamePage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
       }
     }
 
