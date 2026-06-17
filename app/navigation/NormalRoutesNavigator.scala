@@ -60,15 +60,6 @@ trait NormalRoutesNavigator {
     case IndividualPhonePage =>
       _ => controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
 
-    case OrganisationSecondContactEmailPage =>
-      _ => controllers.organisation.routes.OrganisationSecondContactHavePhoneController.onPageLoad(NormalMode)
-
-    case OrganisationSecondContactHavePhonePage =>
-      userAnswers => navigateFromOrganisationSecondContactHavePhonePage(userAnswers)
-
-    case OrganisationSecondContactPhoneNumberPage =>
-      _ => controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
-
     case OrganisationFirstContactNamePage =>
       _ => controllers.organisation.routes.OrganisationFirstContactEmailController.onPageLoad(NormalMode)
 
@@ -86,6 +77,15 @@ trait NormalRoutesNavigator {
 
     case OrganisationSecondContactNamePage =>
       _ => controllers.organisation.routes.OrganisationSecondContactEmailController.onPageLoad(NormalMode)
+
+    case OrganisationSecondContactEmailPage =>
+      _ => controllers.organisation.routes.OrganisationSecondContactHavePhoneController.onPageLoad(NormalMode)
+
+    case OrganisationSecondContactHavePhonePage =>
+      userAnswers => navigateFromOrganisationSecondContactHavePhonePage(userAnswers)
+
+    case OrganisationSecondContactPhoneNumberPage =>
+      _ => controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
