@@ -10,7 +10,9 @@ GET        /there-is-a-problem                controllers.JourneyRecoveryControl
 
 GET        /placeholder                       controllers.PlaceholderController.onPageLoad(message: String)
 
-GET        /check-your-answers                controllers.CheckYourAnswersController.onPageLoad()
+GET         /problem/some-information-is-missing                          controllers.InformationMissingController.onPageLoad()
+
+GET         /check-your-answers                                           controllers.CheckYourAnswersController.onPageLoad()
 
 GET        /account/sign-out-survey           controllers.auth.AuthController.signOut()
 GET        /account/sign-out                  controllers.auth.AuthController.signOutNoSurvey()
