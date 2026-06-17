@@ -52,7 +52,7 @@ case class HomePageViewModel(
 
   lazy val getManageRcaspsLink: String =
     controllers.routes.PlaceholderController
-      .onPageLoad("Should redirect to /rcasp/your-rcasps (part of management change journey)")
+      .onPageLoad("Should redirect to /manage-your-rcasps/your-rcasps (part of management change journey)")
       .url
 
   def getContactDetailsSectionHeading(implicit messages: Messages): String =

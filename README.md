@@ -44,10 +44,10 @@ Port: 17002
 ### How to test a journey locally and on staging
 
 Local:
-http://localhost:9949/auth-login-stub/gg-sign-in?continue=http://localhost:17002/rcasp/manage-cryptoasset-reports 
+http://localhost:9949/auth-login-stub/gg-sign-in?continue=http://localhost:17002/manage-cryptoasset-reports 
 
 Staging:
-https://www.staging.tax.service.gov.uk/auth-login-stub/gg-sign-in?continue=%2Frcasp%2Fmanage-cryptoasset-reports
+https://www.staging.tax.service.gov.uk/auth-login-stub/gg-sign-in?continue=%2Fmanage-cryptoasset-reports
 
 In both cases, a user must have a carf registration.
 
