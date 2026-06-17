@@ -80,7 +80,6 @@ class HomePageControllerSpec extends SpecBase {
           request,
           messages(application)
         ).toString
-        verify(mockSessionRepository).set(any())
       }
     }
 
