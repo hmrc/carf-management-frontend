@@ -25,17 +25,17 @@ import views.html.InformationMissingView
 
 import javax.inject.Inject
 
-class InformationMissingController @Inject()(
-                                       override val messagesApi: MessagesApi,
-                                       identify: IdentifierAction,
-                                       getData: DataRetrievalAction,
-                                       requireData: DataRequiredAction,
-                                       val controllerComponents: MessagesControllerComponents,
-                                       view: InformationMissingView
-                                     ) extends FrontendBaseController with I18nSupport {
+class InformationMissingController @Inject() (
+    override val messagesApi: MessagesApi,
+    identify: IdentifierAction,
+    getData: DataRetrievalAction,
+    requireData: DataRequiredAction,
+    val controllerComponents: MessagesControllerComponents,
+    view: InformationMissingView
+) extends FrontendBaseController
+    with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
-      Ok(view(routes.RoutingController.onPageLoad(NormalMode).url))
+  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
+    Ok(view(routes.RoutingController.onPageLoad(NormalMode).url))
   }
 }
