@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.home
 
 import cats.data.EitherT
 import config.Constants.ZERO
