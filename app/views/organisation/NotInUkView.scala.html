@@ -1,0 +1,46 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import config.FrontendAppConfig
+@import controllers.organisation.routes
+
+@this(
+        layout: templates.Layout,
+        appConfig: FrontendAppConfig
+)
+
+@(rcaspName: String)(implicit request: RequestHeader, messages: Messages)
+
+@layout(
+    pageTitle = titleNoForm(messages("notInUk.title"))
+) {
+
+    <h1 class="govuk-heading-l">@messages("notInUk.heading")</h1>
+
+    <p class="govuk-body">@messages("notInUk.p1", rcaspName)</p>
+
+    <p class="govuk-body">
+    @Html(messages("notInUk.p2",
+        s"""<a class="govuk-link" href="${routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(NormalMode)}">${messages("notInUk.p2.linkText")}</a>"""
+    ))
+    </p>
+
+    <p class="govuk-body">
+    @Html(messages("notInUk.p3",
+        s"""<a class="govuk-link" href="mailto:${appConfig.aeoiEmailAddress}">${appConfig.aeoiEmailAddress}</a>"""
+    ))
+    </p>
+}
