@@ -27,6 +27,6 @@
 
     <p class="govuk-body">@messages("informationMissing.paragraph")</p>
     @govukButton(
-        ButtonViewModel(messages("site.continue")).withAttribute("id" -> "submit").asLink(continueUrl)
+        ButtonViewModel(messages("site.continue")).withCssClass("govuk-!-margin-top-5").withAttribute("id" -> "submit").asLink(continueUrl)
     )
 }
