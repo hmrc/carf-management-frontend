@@ -52,10 +52,11 @@ class UtrController @Inject() (
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>
-      val rcaspName    = rcaspDisplayName(request.userAnswers).getOrElse("")
-      val preparedForm = request.userAnswers
-        .get(UtrPage)
-        .fold(form)(form.fill)
+      rcaspDisplayName(request.userAnswers) match {
+        case Some(rcaspName) =>
+          val preparedForm = request.userAnswers
+            .get(UtrPage)
+            .fold(form)(form.fill)
 
           Ok(view(preparedForm, mode, rcaspName))
 
