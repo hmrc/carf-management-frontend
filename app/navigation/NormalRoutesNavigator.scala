@@ -166,7 +166,6 @@ trait NormalRoutesNavigator {
       case None        => routes.JourneyRecoveryController.onPageLoad()
     }
 
-
   private def navigateFromFindAddressPage(userAnswers: UserAnswers): Call =
     userAnswers.get(AddressLookupPage) match {
       case Some(addresses) if addresses.size == 1 =>
