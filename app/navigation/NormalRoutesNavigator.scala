@@ -35,11 +35,12 @@ trait NormalRoutesNavigator {
     case HaveTradingNamePage =>
       userAnswers => navigateFromHaveTradingNamePage(userAnswers)
 
-    case TradingNamePage              =>
-      _ =>
-        controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
-        )
+    case UtrPage =>
+      _ => controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+
+    case RegisteredBusinessIsTheAddressCorrectPage =>
+      userAnswers => navigateFromRegisteredBusinessIsTheAddressCorrectPage(userAnswers)
+
     case OrganisationOrIndividualPage =>
       userAnswers => navigateFromOrganisationOrIndividualPage(userAnswers)
 
@@ -96,12 +97,10 @@ trait NormalRoutesNavigator {
 
   private def navigateFromHaveTradingNamePage(userAnswers: UserAnswers): Call =
     userAnswers.get(HaveTradingNamePage) match {
-      case Some(true)  => controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
-      case Some(false) =>
-        controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
-        )
-      case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
+      case Some(true) => controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
+      // false path handled in controller because redirect depends on
+      // request-scoped UTR and async RCASP count lookup
+      case None       => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
   private def navigateFromIndividualHavePhonePage(userAnswers: UserAnswers): Call =
@@ -129,7 +128,7 @@ trait NormalRoutesNavigator {
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
-  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call            =
+  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call =
     userAnswers.get(OrganisationOrIndividualPage) match {
       case Some(OrganisationOrIndividual.Organisation) =>
         controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
@@ -155,6 +154,21 @@ trait NormalRoutesNavigator {
         controllers.routes.CheckDetailsController.onPageLoad
       case None        =>
         routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  private def navigateFromRegisteredBusinessIsTheAddressCorrectPage(userAnswers: UserAnswers): Call =
+    userAnswers.get(RegisteredBusinessIsTheAddressCorrectPage) match {
+      case Some(true)  =>
+        userAnswers.get(CachedBusinessDetailsPage).map(_.address.countryCode) match {
+          case Some("GB") =>
+            controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+          case _          =>
+            controllers.organisation.routes.NotInUkController.onPageLoad()
+        }
+      case Some(false) =>
+        controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+      case None        =>
+        controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
   private def navigateFromOrganisationFirstContactHavePhonePage(userAnswers: UserAnswers): Call =

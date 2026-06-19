@@ -31,7 +31,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
   "NormalRoutesNavigator" - {
 
     "When passed OrganisationNamePage" - {
-      "Should redirect to HaveTradingNameController" in {
+      "Should redirect to HaveTradingController" in {
         navigator.nextPage(
           OrganisationNamePage,
           NormalMode,

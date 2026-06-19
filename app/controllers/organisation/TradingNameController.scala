@@ -18,6 +18,7 @@ package controllers.organisation
 
 import controllers.actions.*
 import forms.organisation.TradingNameFormProvider
+import models.{Mode, NormalMode}
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{OverwritableOrganisationName, TradingNamePage}
@@ -26,6 +27,7 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
+import services.AccountService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.organisation.TradingNameView
 
@@ -35,23 +37,24 @@ import scala.concurrent.{ExecutionContext, Future}
 class TradingNameController @Inject() (
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
-    navigator: Navigator,
     identify: IdentifierAction,
+    ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: TradingNameFormProvider,
+    accountService: AccountService,
     val controllerComponents: MessagesControllerComponents,
     view: TradingNameView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
-    with Logging {
+    with Logging
+    with RcaspHelper {
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
-
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData) { implicit request =>
       val preparedForm = request.userAnswers.get(TradingNamePage).fold(form)(form.fill)
 
       request.userAnswers
@@ -62,10 +65,10 @@ class TradingNameController @Inject() (
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
         }(orgName => Ok(view(preparedForm, mode, orgName)))
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -84,7 +87,19 @@ class TradingNameController @Inject() (
             for {
               updatedAnswers <- Future.fromTry(request.userAnswers.set(TradingNamePage, value))
               _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(TradingNamePage, mode, updatedAnswers))
+              result         <- accountService
+                                  .getNumberOfRcaspsCurrentlyAdded(request.carfId)
+                                  .value
+                                  .map {
+                                    case Right(count) =>
+                                      Redirect(rcaspIsUserRedirect(count, request.utr, updatedAnswers))
+                                    case Left(error)  =>
+                                      logger.warn(
+                                        s"[TradingNameController][onSubmit] Error retrieving RCASP count: $error"
+                                      )
+                                      Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+                                  }
+            } yield result
         )
-  }
+    }
 }

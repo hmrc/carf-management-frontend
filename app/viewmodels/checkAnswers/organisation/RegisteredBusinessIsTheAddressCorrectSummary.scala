@@ -31,7 +31,7 @@ object RegisteredBusinessIsTheAddressCorrectSummary {
       val value = if (answer) "site.yes" else "site.no"
 
       SummaryListRowViewModel(
-        key   = "registeredBusinessIsTheAddressCorrect.checkYourAnswersLabel",
+        key = "registeredBusinessIsTheAddressCorrect.checkYourAnswersLabel",
         value = ValueViewModel(value),
         actions = Seq(
           ActionItemViewModel(

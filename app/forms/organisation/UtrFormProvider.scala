@@ -28,10 +28,10 @@ class UtrFormProvider @Inject() extends Mappings {
   def apply(): Form[String] =
     Form(
       "value" -> validatedUTR(
-        requiredKey      = "utr.error.required",
-        invalidKey       = "utr.error.invalid",
+        requiredKey = "utr.error.required",
+        invalidKey = "utr.error.invalid",
         invalidFormatKey = "utr.error.invalidFormat",
-        regex            = utrRegex
+        regex = utrRegex
       )
     )
 }

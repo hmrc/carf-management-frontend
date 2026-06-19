@@ -25,11 +25,27 @@ import javax.inject.Inject
 
 class RegistrationService @Inject() {
 
-  // TODO  link up register-with-id - CARF-519
+  // TODO link up register-with-id - CARF-519
   def getBusinessWithUtr(utr: String): ResultT[BusinessDetails] =
     if (utr.startsWith("9")) {
       ResultT.fromError(InternalServerError)
+    } else if (utr.startsWith("6")) {
+      // Non-GB address — triggers /problem/not-in-uk
+      ResultT.fromValue(
+        BusinessDetails(
+          name = "Test Business Ltd",
+          address = AddressRegistrationResponse(
+            addressLine1 = "3 Apple Street",
+            addressLine2 = Some("New York"),
+            addressLine3 = None,
+            addressLine4 = None,
+            postalCode = Some("11722"),
+            countryCode = "US"
+          )
+        )
+      )
     } else {
+      // GB address
       ResultT.fromValue(
         BusinessDetails(
           name = "Test Business Ltd",

@@ -35,7 +35,7 @@ class NotInUkController @Inject() (
 ) extends FrontendBaseController
     with I18nSupport
     with Logging
-    with RcaspNameHelper {
+    with RcaspHelper {
 
   def onPageLoad(): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>

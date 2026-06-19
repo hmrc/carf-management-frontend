@@ -29,7 +29,7 @@ object UtrSummary {
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(UtrPage).map { answer =>
       SummaryListRowViewModel(
-        key   = "utr.checkYourAnswersLabel",
+        key = "utr.checkYourAnswersLabel",
         value = ValueViewModel(answer),
         actions = Seq(
           ActionItemViewModel("site.change", routes.UtrController.onPageLoad(ChangeMode).url)

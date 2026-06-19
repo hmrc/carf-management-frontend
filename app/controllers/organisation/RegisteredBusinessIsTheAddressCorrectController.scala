@@ -46,7 +46,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
     extends FrontendBaseController
     with I18nSupport
     with Logging
-    with RcaspNameHelper {
+    with RcaspHelper {
 
   val form: Form[Boolean] = formProvider("registeredBusinessIsTheAddressCorrect.error.required")
 

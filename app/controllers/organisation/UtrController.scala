@@ -46,7 +46,7 @@ class UtrController @Inject() (
     extends FrontendBaseController
     with I18nSupport
     with Logging
-    with RcaspNameHelper {
+    with RcaspHelper {
 
   val form: Form[String] = formProvider()
 

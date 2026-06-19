@@ -56,23 +56,23 @@
 
         <h1 class="govuk-heading-l">@messages("registeredBusinessIsTheAddressCorrect.heading", rcaspName)</h1>
 
-        <p>
-        @addressLines.zipWithIndex.map { case (line, index) =>
-            @if(index < addressLines.length - 1) {
-                <span class="govuk-!-margin-bottom-0">@line</span><br/>
-            } else {
-                @line
-            }
-        }
+        <p class="govuk-body">
+        @Html(
+            addressLines.zipWithIndex.map { case (line, index) =>
+                if (index < addressLines.length - 1)
+                    s"""<span class="govuk-!-margin-bottom-0">$line</span><br/>"""
+                else
+                    line
+            }.mkString("\n")
+        )
         </p>
+
 
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(
-                    messages("registeredBusinessIsTheAddressCorrect.heading", rcaspName)
-                ).withCssClass("govuk-visually-hidden")
-            )
+                legend = LegendViewModel(messages("registeredBusinessIsTheAddressCorrect.heading", rcaspName)).withCssClass("govuk-visually-hidden govuk-!-display-block")
+            ).copy(classes = "")
         )
 
         @govukButton(

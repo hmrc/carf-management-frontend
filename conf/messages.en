@@ -261,7 +261,7 @@ notInUk.title = This service is only for reporting cryptoasset service providers
 notInUk.heading = This service is only for reporting cryptoasset service providers (RCASPs) based in the UK
 notInUk.p1 = You have confirmed that the registered business address for {0} is not in the UK.
 notInUk.p2 = If you confirmed this by mistake, then you can {0}
-notInUk.p2.link = review and change the address to the right one.
+notInUk.p2.linkText = review and change the address to the right one.
 notInUk.p3 = Email {0} if you need help with this service.
 
 checkDetailsAnswers.summaryListTitle = Contact details
