@@ -105,3 +105,23 @@ GET         /second-contact-phone                    controllers.organisation.Or
 POST        /second-contact-phone                    controllers.organisation.OrganisationSecondContactPhoneNumberController.onSubmit(mode: Mode = NormalMode)
 GET         /change-second-contact-phone             controllers.organisation.OrganisationSecondContactPhoneNumberController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-second-contact-phone             controllers.organisation.OrganisationSecondContactPhoneNumberController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /contact-name                            controllers.organisation.OrganisationFirstContactNameController.onPageLoad(mode: Mode = NormalMode)
+POST        /contact-name                            controllers.organisation.OrganisationFirstContactNameController.onSubmit(mode: Mode = NormalMode)
+GET         /change-contact-name                     controllers.organisation.OrganisationFirstContactNameController.onPageLoad(mode: Mode = ChangeMode)
+POST        /change-contact-name                     controllers.organisation.OrganisationFirstContactNameController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /email                                   controllers.organisation.OrganisationFirstContactEmailController.onPageLoad(mode: Mode = NormalMode)
+POST        /email                                   controllers.organisation.OrganisationFirstContactEmailController.onSubmit(mode: Mode = NormalMode)
+GET         /change-email                            controllers.organisation.OrganisationFirstContactEmailController.onPageLoad(mode: Mode = ChangeMode)
+POST        /change-email                            controllers.organisation.OrganisationFirstContactEmailController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /have-phone                              controllers.organisation.OrganisationFirstContactHavePhoneController.onPageLoad(mode: Mode = NormalMode)
+POST        /have-phone                              controllers.organisation.OrganisationFirstContactHavePhoneController.onSubmit(mode: Mode = NormalMode)
+GET         /change-have-phone                       controllers.organisation.OrganisationFirstContactHavePhoneController.onPageLoad(mode: Mode = ChangeMode)
+POST        /change-have-phone                       controllers.organisation.OrganisationFirstContactHavePhoneController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /phone                                   controllers.organisation.OrganisationFirstContactPhoneNumberController.onPageLoad(mode: Mode = NormalMode)
+POST        /phone                                   controllers.organisation.OrganisationFirstContactPhoneNumberController.onSubmit(mode: Mode = NormalMode)
+GET         /change-phone                            controllers.organisation.OrganisationFirstContactPhoneNumberController.onPageLoad(mode: Mode = ChangeMode)
+POST        /change-phone                            controllers.organisation.OrganisationFirstContactPhoneNumberController.onSubmit(mode: Mode = ChangeMode)

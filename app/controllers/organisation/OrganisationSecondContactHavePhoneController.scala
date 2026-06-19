@@ -86,7 +86,7 @@ class OrganisationSecondContactHavePhoneController @Inject() (
                 Future.successful(BadRequest(view(formWithErrors, mode, secondContactName, organisationName)))
               case _                                                 =>
                 logger.warn(
-                  "[OrganisationSecondContactHavePhoneController] Could not retrieve OrganisationSecondContactNamePage and/or OverwritableOrganisationName onPageSubmit"
+                  "[OrganisationSecondContactHavePhoneController] Could not retrieve Contact and/or Org name onPageSubmit"
                 )
                 Future.successful(
                   Redirect(

@@ -18,21 +18,22 @@ package controllers.organisation
 
 import controllers.actions.*
 import forms.organisation.GenericOrganisationContactNameFormProvider
+
+import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
-import pages.organisation.{OrganisationSecondContactNamePage, OverwritableOrganisationName}
+import pages.organisation.{OrganisationFirstContactNamePage, OverwritableOrganisationName}
 import play.api.Logging
-import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.organisation.OrganisationSecondContactNameView
+import views.html.organisation.OrganisationFirstContactNameView
+import play.api.data.Form
 
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class OrganisationSecondContactNameController @Inject() (
+class OrganisationFirstContactNameController @Inject() (
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     navigator: Navigator,
@@ -41,24 +42,24 @@ class OrganisationSecondContactNameController @Inject() (
     requireData: DataRequiredAction,
     formProvider: GenericOrganisationContactNameFormProvider,
     val controllerComponents: MessagesControllerComponents,
-    view: OrganisationSecondContactNameView
+    view: OrganisationFirstContactNameView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  val form: Form[String] = formProvider("organisationSecondContactName")
+  val form: Form[String] = formProvider("organisationFirstContactName")
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(OrganisationSecondContactNamePage).fold(form)(form.fill)
+      val preparedForm = request.userAnswers.get(OrganisationFirstContactNamePage).fold(form)(form.fill)
 
       request.userAnswers.get(OverwritableOrganisationName) match {
         case Some(organisationName) => Ok(view(preparedForm, mode, organisationName))
         case None                   =>
           logger.warn(
-            "[OrganisationSecondContactNameController] Could not retrieve OverwritableOrganisationName onPageLoad"
+            "[OrganisationFirstContactNameController] Could not retrieve OverwritableOrganisationName onPageLoad"
           )
           Redirect(
             controllers.routes.PlaceholderController.onPageLoad(
@@ -78,7 +79,7 @@ class OrganisationSecondContactNameController @Inject() (
               case Some(organisationName) => Future.successful(BadRequest(view(formWithErrors, mode, organisationName)))
               case None                   =>
                 logger.warn(
-                  "[OrganisationSecondContactNameController] Could not retrieve OverwritableOrganisationName onPageSubmit"
+                  "[OrganisationFirstContactNameController] Could not retrieve OverwritableOrganisationName onPageSubmit"
                 )
                 Future.successful(
                   Redirect(
@@ -90,9 +91,9 @@ class OrganisationSecondContactNameController @Inject() (
             },
           value =>
             for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(OrganisationSecondContactNamePage, value))
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(OrganisationFirstContactNamePage, value))
               _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(OrganisationSecondContactNamePage, mode, updatedAnswers))
+            } yield Redirect(navigator.nextPage(OrganisationFirstContactNamePage, mode, updatedAnswers))
         )
   }
 }

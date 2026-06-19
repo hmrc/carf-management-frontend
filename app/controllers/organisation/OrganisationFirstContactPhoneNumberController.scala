@@ -17,48 +17,48 @@
 package controllers.organisation
 
 import controllers.actions.*
-import forms.organisation.GenericOrganisationContactNameFormProvider
+import forms.GenericPhoneFormProvider
 import models.Mode
 import navigation.Navigator
-import pages.organisation.{OrganisationSecondContactNamePage, OverwritableOrganisationName}
+import pages.organisation.{OrganisationFirstContactNamePage, OrganisationFirstContactPhoneNumberPage}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.organisation.OrganisationSecondContactNameView
+import views.html.organisation.OrganisationFirstContactPhoneNumberView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class OrganisationSecondContactNameController @Inject() (
+class OrganisationFirstContactPhoneNumberController @Inject() (
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     navigator: Navigator,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    formProvider: GenericOrganisationContactNameFormProvider,
+    formProvider: GenericPhoneFormProvider,
     val controllerComponents: MessagesControllerComponents,
-    view: OrganisationSecondContactNameView
+    view: OrganisationFirstContactPhoneNumberView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  val form: Form[String] = formProvider("organisationSecondContactName")
+  val form: Form[String] = formProvider("organisationFirstContactPhoneNumber")
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(OrganisationSecondContactNamePage).fold(form)(form.fill)
+      val preparedForm = request.userAnswers.get(OrganisationFirstContactPhoneNumberPage).fold(form)(form.fill)
 
-      request.userAnswers.get(OverwritableOrganisationName) match {
-        case Some(organisationName) => Ok(view(preparedForm, mode, organisationName))
-        case None                   =>
+      request.userAnswers.get(OrganisationFirstContactNamePage) match {
+        case Some(contactName) => Ok(view(preparedForm, mode, contactName))
+        case None              =>
           logger.warn(
-            "[OrganisationSecondContactNameController] Could not retrieve OverwritableOrganisationName onPageLoad"
+            "[OrganisationFirstContactPhoneNumberController] Could not retrieve OrganisationFirstContactNamePage onPageLoad"
           )
           Redirect(
             controllers.routes.PlaceholderController.onPageLoad(
@@ -74,11 +74,11 @@ class OrganisationSecondContactNameController @Inject() (
         .bindFromRequest()
         .fold(
           formWithErrors =>
-            request.userAnswers.get(OverwritableOrganisationName) match {
-              case Some(organisationName) => Future.successful(BadRequest(view(formWithErrors, mode, organisationName)))
-              case None                   =>
+            request.userAnswers.get(OrganisationFirstContactNamePage) match {
+              case Some(contactName) => Future.successful(BadRequest(view(formWithErrors, mode, contactName)))
+              case None              =>
                 logger.warn(
-                  "[OrganisationSecondContactNameController] Could not retrieve OverwritableOrganisationName onPageSubmit"
+                  "[OrganisationFirstContactPhoneNumberController] Could not retrieve OrganisationFirstContactNamePage onPageSubmit"
                 )
                 Future.successful(
                   Redirect(
@@ -90,9 +90,9 @@ class OrganisationSecondContactNameController @Inject() (
             },
           value =>
             for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(OrganisationSecondContactNamePage, value))
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(OrganisationFirstContactPhoneNumberPage, value))
               _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(OrganisationSecondContactNamePage, mode, updatedAnswers))
+            } yield Redirect(navigator.nextPage(OrganisationFirstContactPhoneNumberPage, mode, updatedAnswers))
         )
   }
 }

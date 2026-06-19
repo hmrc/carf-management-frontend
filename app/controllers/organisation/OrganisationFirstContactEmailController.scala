@@ -17,48 +17,53 @@
 package controllers.organisation
 
 import controllers.actions.*
-import forms.organisation.GenericOrganisationContactNameFormProvider
+
+import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
-import pages.organisation.{OrganisationSecondContactNamePage, OverwritableOrganisationName}
-import play.api.Logging
-import play.api.data.Form
+import pages.organisation.{OrganisationFirstContactEmailPage, OrganisationFirstContactNamePage, OverwritableOrganisationName}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.organisation.OrganisationSecondContactNameView
+import forms.GenericEmailFormProvider
+import play.api.Logging
+import play.api.data.Form
+import views.html.organisation.OrganisationFirstContactEmailView
 
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class OrganisationSecondContactNameController @Inject() (
+class OrganisationFirstContactEmailController @Inject() (
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     navigator: Navigator,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    formProvider: GenericOrganisationContactNameFormProvider,
+    formProvider: GenericEmailFormProvider,
     val controllerComponents: MessagesControllerComponents,
-    view: OrganisationSecondContactNameView
+    view: OrganisationFirstContactEmailView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  val form: Form[String] = formProvider("organisationSecondContactName")
+  val form: Form[String] = formProvider("organisationFirstContactEmail")
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(OrganisationSecondContactNamePage).fold(form)(form.fill)
+      val preparedForm = request.userAnswers.get(OrganisationFirstContactEmailPage).fold(form)(form.fill)
 
-      request.userAnswers.get(OverwritableOrganisationName) match {
-        case Some(organisationName) => Ok(view(preparedForm, mode, organisationName))
-        case None                   =>
+      (
+        request.userAnswers.get(OrganisationFirstContactNamePage),
+        request.userAnswers.get(OverwritableOrganisationName)
+      ) match {
+        case (Some(firstContactName), Some(rcaspName)) =>
+          Ok(view(preparedForm, mode, firstContactName, rcaspName))
+        case _                                         =>
           logger.warn(
-            "[OrganisationSecondContactNameController] Could not retrieve OverwritableOrganisationName onPageLoad"
+            "[OrganisationFirstContactEmailController] Could not retrieve OrganisationFirstContactNamePage and/or OverwritableOrganisationName onPageLoad"
           )
           Redirect(
             controllers.routes.PlaceholderController.onPageLoad(
@@ -74,11 +79,15 @@ class OrganisationSecondContactNameController @Inject() (
         .bindFromRequest()
         .fold(
           formWithErrors =>
-            request.userAnswers.get(OverwritableOrganisationName) match {
-              case Some(organisationName) => Future.successful(BadRequest(view(formWithErrors, mode, organisationName)))
-              case None                   =>
+            (
+              request.userAnswers.get(OrganisationFirstContactNamePage),
+              request.userAnswers.get(OverwritableOrganisationName)
+            ) match {
+              case (Some(firstContactName), Some(organisationName)) =>
+                Future.successful(BadRequest(view(formWithErrors, mode, firstContactName, organisationName)))
+              case _                                                =>
                 logger.warn(
-                  "[OrganisationSecondContactNameController] Could not retrieve OverwritableOrganisationName onPageSubmit"
+                  "[OrganisationFirstContactEmailController] Could not retrieve Contact and/or Org name onPageSubmit"
                 )
                 Future.successful(
                   Redirect(
@@ -90,9 +99,9 @@ class OrganisationSecondContactNameController @Inject() (
             },
           value =>
             for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(OrganisationSecondContactNamePage, value))
+              updatedAnswers <- Future.fromTry(request.userAnswers.set(OrganisationFirstContactEmailPage, value))
               _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(OrganisationSecondContactNamePage, mode, updatedAnswers))
+            } yield Redirect(navigator.nextPage(OrganisationFirstContactEmailPage, mode, updatedAnswers))
         )
   }
 }

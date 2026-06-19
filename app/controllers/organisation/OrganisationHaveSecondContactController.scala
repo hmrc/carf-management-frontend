@@ -22,7 +22,7 @@ import forms.GenericYesNoPageFormProvider
 import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
-import pages.organisation.OrganisationHaveSecondContactPage
+import pages.organisation.{OrganisationFirstContactNamePage, OrganisationHaveSecondContactPage}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -55,19 +55,18 @@ class OrganisationHaveSecondContactController @Inject() (
 
       val preparedForm = request.userAnswers.get(OrganisationHaveSecondContactPage).fold(form)(form.fill)
 
-      // TODO: Add FirstContactNamePage (CARF-204)
-//      request.userAnswers.get(FirstContactNamePage) match {
-//        case Some(firstContactName) => Ok(view(preparedForm, mode, firstContactName))
-//        case None                   =>
-//          logger.warn("[OrganisationHaveSecondContactController] Could not retrieve FirstContactNamePage onPageLoad")
-//          Redirect(
-      //          controllers.routes.PlaceholderController.onPageLoad(
-      //              "Should redirect to Some Information is Missing Page (CARF-293)"
-      //            ))
-//      }
-
-      Ok(view(preparedForm, mode, "name"))
-
+      request.userAnswers.get(OrganisationFirstContactNamePage) match {
+        case Some(contactName) => Ok(view(preparedForm, mode, contactName))
+        case None              =>
+          logger.warn(
+            "[OrganisationHaveSecondContactController] Could not retrieve OrganisationFirstContactNamePage onPageLoad"
+          )
+          Redirect(
+            controllers.routes.PlaceholderController.onPageLoad(
+              "Should redirect to Some Information is Missing Page (CARF-293)"
+            )
+          )
+      }
   }
 
   def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
@@ -76,22 +75,20 @@ class OrganisationHaveSecondContactController @Inject() (
         .bindFromRequest()
         .fold(
           formWithErrors =>
-            // TODO: Add FirstContactNamePage (CARF-204)
-//            request.userAnswers.get(FirstContactNamePage) match {
-//              case Some(firstContactName) => Future.successful(BadRequest(view(formWithErrors, mode, firstContactName)))
-//              case None                   =>
-//                logger.warn(
-//                  "[OrganisationHaveSecondContactController] Could not retrieve FirstContactNamePage onPageSubmit"
-//                )
-//                Future.successful(
-            //                  Redirect(
-            //                    controllers.routes.PlaceholderController.onPageLoad(
-            //                      "Should redirect to Some Information is Missing Page (CARF-293)"
-            //                    )
-            //                  )
-            //                )
-//            }
-            Future.successful(BadRequest(view(formWithErrors, mode, "name"))),
+            request.userAnswers.get(OrganisationFirstContactNamePage) match {
+              case Some(contactName) => Future.successful(BadRequest(view(formWithErrors, mode, contactName)))
+              case None              =>
+                logger.warn(
+                  "[OrganisationHaveSecondContactController] Could not retrieve OrganisationFirstContactNamePage onPageSubmit"
+                )
+                Future.successful(
+                  Redirect(
+                    controllers.routes.PlaceholderController.onPageLoad(
+                      "Should redirect to Some Information is Missing Page (CARF-293)"
+                    )
+                  )
+                )
+            },
           value =>
             for {
               updatedAnswers <- Future.fromTry(request.userAnswers.set(OrganisationHaveSecondContactPage, value))

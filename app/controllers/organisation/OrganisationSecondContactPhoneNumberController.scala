@@ -17,7 +17,6 @@
 package controllers.organisation
 
 import controllers.actions.*
-import forms.organisation.OrganisationSecondContactPhoneNumberFormProvider
 
 import javax.inject.Inject
 import models.Mode
@@ -30,7 +29,7 @@ import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.organisation.OrganisationSecondContactPhoneNumberView
 import play.api.data.Form
-
+import forms.GenericPhoneFormProvider
 import scala.concurrent.{ExecutionContext, Future}
 
 class OrganisationSecondContactPhoneNumberController @Inject() (
@@ -40,7 +39,7 @@ class OrganisationSecondContactPhoneNumberController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    formProvider: OrganisationSecondContactPhoneNumberFormProvider,
+    formProvider: GenericPhoneFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: OrganisationSecondContactPhoneNumberView
 )(implicit ec: ExecutionContext)
@@ -48,7 +47,7 @@ class OrganisationSecondContactPhoneNumberController @Inject() (
     with I18nSupport
     with Logging {
 
-  val form: Form[String] = formProvider()
+  val form: Form[String] = formProvider("organisationSecondContactPhoneNumber")
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
     implicit request =>

@@ -24,7 +24,7 @@ import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.organisation.OrganisationHaveSecondContactPage
+import pages.organisation.{OrganisationFirstContactNamePage, OrganisationHaveSecondContactPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -50,8 +50,7 @@ class OrganisationHaveSecondContactControllerSpec extends SpecBase with MockitoS
 
     "must return OK and the correct view for a GET" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
-//        .withPage(FirstContactNamePage, firstContactName)
+      val userAnswers = UserAnswers(userAnswersId).withPage(OrganisationFirstContactNamePage, firstContactName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -74,7 +73,7 @@ class OrganisationHaveSecondContactControllerSpec extends SpecBase with MockitoS
 
       val userAnswers = UserAnswers(userAnswersId)
         .withPage(OrganisationHaveSecondContactPage, true)
-//        .withPage(FirstContactNamePage, firstContactName)
+        .withPage(OrganisationFirstContactNamePage, firstContactName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -121,8 +120,7 @@ class OrganisationHaveSecondContactControllerSpec extends SpecBase with MockitoS
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
-//        .withPage(FirstContactNamePage, firstContactName)
+      val userAnswers = UserAnswers(userAnswersId).withPage(OrganisationFirstContactNamePage, firstContactName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -159,23 +157,27 @@ class OrganisationHaveSecondContactControllerSpec extends SpecBase with MockitoS
       }
     }
 
-//    "must redirect to Journey Recovery for a GET if no first contact name is found" in {
-//
-//      val userAnswers = UserAnswers(userAnswersId)
-//        .withPage(OrganisationHaveSecondContactPage, true)
-//
-//      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-//
-//      running(application) {
-//        val request =
-//          FakeRequest(GET, organisationHaveSecondContactRoute)
-//
-//        val result = route(application, request).value
-//
-//        status(result)                 mustEqual SEE_OTHER
-//        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-//      }
-//    }
+    "must redirect to the Some Information is Missing page for a GET if no first contact name exists in user answers" in {
+
+      val userAnswers = UserAnswers(userAnswersId)
+        .withPage(OrganisationHaveSecondContactPage, true)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request =
+          FakeRequest(GET, organisationHaveSecondContactRoute)
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.PlaceholderController
+          .onPageLoad(
+            "Should redirect to Some Information is Missing Page (CARF-293)"
+          )
+          .url
+      }
+    }
 
     "must redirect to Journey Recovery for a POST if no existing data is found" in {
 
@@ -193,22 +195,25 @@ class OrganisationHaveSecondContactControllerSpec extends SpecBase with MockitoS
       }
     }
 
-//    "must redirect to Journey Recovery for a POST if no first contact name is found" in {
-//
-//      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-//        .build()
-//
-//      running(application) {
-//        val request =
-//          FakeRequest(POST, organisationHaveSecondContactRoute)
-//            .withFormUrlEncodedBody(("value", "invalid"))
-//
-//        val result = route(application, request).value
-//
-//        status(result)                 mustEqual SEE_OTHER
-//        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-//      }
-//    }
+    "must redirect to the Some Information is Missing page for a POST if no first contact name exists in user answers when the form contains errors" in {
 
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, organisationHaveSecondContactRoute)
+            .withFormUrlEncodedBody(("value", "invalid"))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.PlaceholderController
+          .onPageLoad(
+            "Should redirect to Some Information is Missing Page (CARF-293)"
+          )
+          .url
+      }
+    }
   }
 }

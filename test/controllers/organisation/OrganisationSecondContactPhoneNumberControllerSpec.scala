@@ -18,7 +18,7 @@ package controllers.organisation
 
 import base.SpecBase
 import controllers.routes
-import forms.organisation.OrganisationSecondContactPhoneNumberFormProvider
+import forms.GenericPhoneFormProvider
 import models.{NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
@@ -37,9 +37,8 @@ class OrganisationSecondContactPhoneNumberControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider: OrganisationSecondContactPhoneNumberFormProvider =
-    new OrganisationSecondContactPhoneNumberFormProvider()
-  val form: Form[String]                                             = formProvider()
+  val formProvider       = new GenericPhoneFormProvider()
+  val form: Form[String] = formProvider("organisationSecondContactPhoneNumber")
 
   lazy val organisationSecondContactPhoneNumberRoute: String =
     controllers.organisation.routes.OrganisationSecondContactPhoneNumberController.onPageLoad(NormalMode).url

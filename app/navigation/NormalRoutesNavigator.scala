@@ -19,9 +19,9 @@ package navigation
 import controllers.routes
 import models.{NormalMode, OrganisationOrIndividual, UserAnswers}
 import pages.Page
-import pages.organisation.*
-import pages.individual.*
 import pages.combined.OrganisationOrIndividualPage
+import pages.individual.*
+import pages.organisation.*
 import play.api.mvc.Call
 
 trait NormalRoutesNavigator {
@@ -59,6 +59,18 @@ trait NormalRoutesNavigator {
 
     case IndividualPhonePage =>
       _ => controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+
+    case OrganisationFirstContactNamePage =>
+      _ => controllers.organisation.routes.OrganisationFirstContactEmailController.onPageLoad(NormalMode)
+
+    case OrganisationFirstContactEmailPage =>
+      _ => controllers.organisation.routes.OrganisationFirstContactHavePhoneController.onPageLoad(NormalMode)
+
+    case OrganisationFirstContactHavePhonePage =>
+      userAnswers => navigateFromOrganisationFirstContactHavePhonePage(userAnswers)
+
+    case OrganisationFirstContactPhoneNumberPage =>
+      _ => controllers.organisation.routes.OrganisationHaveSecondContactController.onPageLoad(NormalMode)
 
     case OrganisationHaveSecondContactPage =>
       userAnswers => navigateFromOrganisationHaveSecondContactController(userAnswers)
@@ -139,6 +151,15 @@ trait NormalRoutesNavigator {
         controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
       case None        =>
         routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  private def navigateFromOrganisationFirstContactHavePhonePage(userAnswers: UserAnswers): Call =
+    userAnswers.get(OrganisationFirstContactHavePhonePage) match {
+      case Some(true)  =>
+        controllers.organisation.routes.OrganisationFirstContactPhoneNumberController.onPageLoad(NormalMode)
+      case Some(false) =>
+        controllers.organisation.routes.OrganisationHaveSecondContactController.onPageLoad(NormalMode)
+      case None        => routes.JourneyRecoveryController.onPageLoad()
     }
 
 }

@@ -17,7 +17,7 @@
 package controllers.organisation
 
 import controllers.actions.*
-import forms.organisation.OrganisationSecondContactEmailFormProvider
+import forms.GenericEmailFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{OrganisationSecondContactEmailPage, OrganisationSecondContactNamePage, OverwritableOrganisationName}
@@ -39,7 +39,7 @@ class OrganisationSecondContactEmailController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    formProvider: OrganisationSecondContactEmailFormProvider,
+    formProvider: GenericEmailFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: OrganisationSecondContactEmailView
 )(implicit ec: ExecutionContext)
@@ -47,7 +47,7 @@ class OrganisationSecondContactEmailController @Inject() (
     with I18nSupport
     with Logging {
 
-  val form: Form[String] = formProvider()
+  val form: Form[String] = formProvider("organisationSecondContactEmail")
 
   def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
     implicit request =>
