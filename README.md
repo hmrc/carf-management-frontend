@@ -58,6 +58,18 @@ Identifier Value: 1111
 
 To test different starting parameters, please refer to the carf testing area on our confluence page, or our stubs repository
 
+### Running the service in test only mode
+```
+sm2 --start CARF_ALL
+```
+```
+sm2 --stop CARF_MANAGEMENT_FRONTEND
+```
+Starts service locally with test-only routes enabled.
+```
+sbt "run -Dapplication.router=testOnlyDoNotUseInAppConf.routes"
+```
+
 ### License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").

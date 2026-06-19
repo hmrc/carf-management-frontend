@@ -15,3 +15,5 @@
 GET        /manage-your-rcasps/test-only/AuthAction                testOnly.controllers.AuthActionController.onPageLoad()
 
 GET        /manage-your-rcasps/test-only/view-rcasp/:carfId        testOnly.controllers.RcaspController.viewRcasp(carfId: String)
+
+GET        /manage-your-rcasps/test-only/create-rcasp/:email/isIndividual/:isIndividual     testOnly.controllers.RcaspController.createRcasp(email: String, isIndividual: String)
