@@ -30,22 +30,14 @@
         <h1 class="govuk-heading-l">@messages("checkDetailsAnswers.heading", name)</h1>
 
         @sections.map { section =>
-            @if(section == sections.head) {
-                <h2 class="govuk-heading-m">@section.sectionName</h2>
-            } else {
-                <h2 class="govuk-heading-m govuk-!-padding-top-9">@section.sectionName</h2>
-            }
+            <h2 class="govuk-heading-m">@section.sectionName</h2>
 
             @govukSummaryList(SummaryList(
                 rows = section.rows,
-                classes = "govuk-!-margin-bottom-0"
+                classes = "govuk-summary-list govuk-!-margin-bottom-9"
             ))
         }
 
-        <br>
-        <br>
-        <br>
-        
         <h2 class="govuk-heading-m">@messages("checkDetailsAnswers.declaration.subtitle")</h2>
 
         <p class="govuk-body">@messages("checkDetailsAnswers.declaration.p1")</p>
