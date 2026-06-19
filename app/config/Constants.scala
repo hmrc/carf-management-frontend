@@ -24,6 +24,8 @@ object Constants {
 
   inline val standardTextInputRegex               = """^[a-zA-Z0-9 &'\\`^\-]*$"""
   inline val standardTextInputWithoutNumbersRegex = """^[a-zA-Z &'\\`^\-]*$"""
+  inline final val contactNameRegex               = """^[a-zA-Z0-9 &'\\`^\-]*$"""
+  final val phoneNumberRegex: String              = """^[A-Z0-9 )/(\-*#+]*$""".stripMargin
 
   inline final val ninoFormatRegex = """^[A-Z]{2}[0-9]{6}[A-Z]{1}$"""
   inline final val realNinoRegex   =
@@ -34,8 +36,9 @@ object Constants {
 
   inline final val maxNiNumberLength = 9
 
-  inline final val maxEmailLength = 132
-  inline final val maxPhoneLength = 24
+  inline final val maxEmailLength                   = 132
+  inline final val maxPhoneLength                   = 24
+  inline final val maxOrganisationContactNameLength = 35
 
   inline final val notReal0808PhoneNumber = "+448081570192"
 

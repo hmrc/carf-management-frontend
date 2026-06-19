@@ -16,7 +16,6 @@
 
 package forms
 
-import forms.GenericEmailFormProvider
 import forms.behaviours.StringFieldBehaviours
 import org.scalacheck.Gen
 import play.api.data.{Form, FormError}

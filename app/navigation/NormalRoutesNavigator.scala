@@ -16,11 +16,13 @@
 
 package navigation
 
+import controllers.routes
 import models.{NormalMode, OrganisationOrIndividual, UserAnswers}
-import pages.{AddressLookupPage, FindAddressPage, Page}
-import pages.organisation.{HaveTradingNamePage, OrganisationNamePage, RegisteredBusinessIsThisYourBusinessNamePage, ReportForRegisteredBusinessPage, TradingNamePage}
+import pages.Page
+import pages.*
 import pages.combined.OrganisationOrIndividualPage
-import pages.individual.{IndividualEmailPage, IndividualHavePhonePage, IndividualNamePage, IndividualPhonePage, NiNumberPage}
+import pages.individual.*
+import pages.organisation.*
 import play.api.mvc.Call
 
 trait NormalRoutesNavigator {
@@ -57,6 +59,33 @@ trait NormalRoutesNavigator {
     case IndividualHavePhonePage => userAnswers => navigateFromIndividualHavePhonePage(userAnswers)
 
     case IndividualPhonePage =>
+      _ => controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+
+    case OrganisationFirstContactNamePage =>
+      _ => controllers.organisation.routes.OrganisationFirstContactEmailController.onPageLoad(NormalMode)
+
+    case OrganisationFirstContactEmailPage =>
+      _ => controllers.organisation.routes.OrganisationFirstContactHavePhoneController.onPageLoad(NormalMode)
+
+    case OrganisationFirstContactHavePhonePage =>
+      userAnswers => navigateFromOrganisationFirstContactHavePhonePage(userAnswers)
+
+    case OrganisationFirstContactPhoneNumberPage =>
+      _ => controllers.organisation.routes.OrganisationHaveSecondContactController.onPageLoad(NormalMode)
+
+    case OrganisationHaveSecondContactPage =>
+      userAnswers => navigateFromOrganisationHaveSecondContactController(userAnswers)
+
+    case OrganisationSecondContactNamePage =>
+      _ => controllers.organisation.routes.OrganisationSecondContactEmailController.onPageLoad(NormalMode)
+
+    case OrganisationSecondContactEmailPage =>
+      _ => controllers.organisation.routes.OrganisationSecondContactHavePhoneController.onPageLoad(NormalMode)
+
+    case OrganisationSecondContactHavePhonePage =>
+      userAnswers => navigateFromOrganisationSecondContactHavePhonePage(userAnswers)
+
+    case OrganisationSecondContactPhoneNumberPage =>
       _ => controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
 
     case FindAddressPage =>
@@ -100,7 +129,7 @@ trait NormalRoutesNavigator {
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
-  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call =
+  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call            =
     userAnswers.get(OrganisationOrIndividualPage) match {
       case Some(OrganisationOrIndividual.Organisation) =>
         controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
@@ -109,6 +138,34 @@ trait NormalRoutesNavigator {
       case None                                        =>
         controllers.routes.JourneyRecoveryController.onPageLoad()
     }
+  private def navigateFromOrganisationHaveSecondContactController(userAnswers: UserAnswers): Call =
+    userAnswers.get(OrganisationHaveSecondContactPage) match {
+      case Some(true)  =>
+        controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
+      case Some(false) =>
+        controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+      case None        => routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  private def navigateFromOrganisationSecondContactHavePhonePage(userAnswers: UserAnswers): Call =
+    userAnswers.get(OrganisationSecondContactHavePhonePage) match {
+      case Some(true)  =>
+        controllers.organisation.routes.OrganisationSecondContactPhoneNumberController.onPageLoad(NormalMode)
+      case Some(false) =>
+        controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+      case None        =>
+        routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  private def navigateFromOrganisationFirstContactHavePhonePage(userAnswers: UserAnswers): Call =
+    userAnswers.get(OrganisationFirstContactHavePhonePage) match {
+      case Some(true)  =>
+        controllers.organisation.routes.OrganisationFirstContactPhoneNumberController.onPageLoad(NormalMode)
+      case Some(false) =>
+        controllers.organisation.routes.OrganisationHaveSecondContactController.onPageLoad(NormalMode)
+      case None        => routes.JourneyRecoveryController.onPageLoad()
+    }
+
 
   private def navigateFromFindAddressPage(userAnswers: UserAnswers): Call =
     userAnswers.get(AddressLookupPage) match {

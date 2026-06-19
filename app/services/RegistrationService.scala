@@ -22,9 +22,8 @@ import models.responses.AddressRegistrationResponse
 import types.ResultT
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
-class RegistrationService @Inject() ()(implicit ec: ExecutionContext) {
+class RegistrationService @Inject() {
 
   // TODO  link up register-with-id - CARF-519
   def getBusinessWithUtr(utr: String): ResultT[BusinessDetails] =

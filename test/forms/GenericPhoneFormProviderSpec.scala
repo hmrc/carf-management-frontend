@@ -16,7 +16,6 @@
 
 package forms
 
-import forms.GenericPhoneFormProvider
 import forms.behaviours.StringFieldBehaviours
 import play.api.data.FormError
 

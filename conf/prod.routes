@@ -1,3 +1,9 @@
 # Add all the application routes to the app.routes file
-->        /rcasp        app.Routes
-->        /             health.Routes
+# NOTE: HomePageController lives in its own `controllers.home` package on purpose.
+# It needs a different URL prefix (/manage-cryptoasset-reports) from the mounted
+# journey routes (/manage-your-rcasps), so it sits in a separate routes file.
+# Keeping it in a distinct package avoids a reverse-router collision with the bare
+# `controllers` package routes in app.routes. Do not move it back into `controllers`.
+GET        /manage-cryptoasset-reports        controllers.home.HomePageController.onPageLoad()
+->         /manage-your-rcasps                app.Routes
+->         /                                  health.Routes

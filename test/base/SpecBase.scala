@@ -157,6 +157,8 @@ trait SpecBase
   val testOrgName        = "Timmy Ltd"
   val testIndividualName = IndividualName("Timmy", "Jimmison")
   val testNiNumber       = "BA123456A"
+  val testEmail          = "hi@example.com"
+  val testPhone          = "07123456789"
 
   val testAddressDetails = AddressDetails(
     addressLine1 = "123 Test Street",

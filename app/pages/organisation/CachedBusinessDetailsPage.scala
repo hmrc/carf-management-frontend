@@ -16,11 +16,9 @@
 
 package pages.organisation
 
-import models.{BusinessDetails, UserAnswers}
+import models.BusinessDetails
 import pages.QuestionPage
 import play.api.libs.json.JsPath
-
-import scala.util.{Success, Try}
 
 case object CachedBusinessDetailsPage extends QuestionPage[BusinessDetails] {
 
@@ -28,9 +26,4 @@ case object CachedBusinessDetailsPage extends QuestionPage[BusinessDetails] {
 
   override def toString: String = "cachedBusinessDetails"
 
-  override def cleanup(
-      newValue: Option[BusinessDetails],
-      updatedUserAnswers: UserAnswers
-  ): Try[UserAnswers] =
-    Success(updatedUserAnswers)
 }

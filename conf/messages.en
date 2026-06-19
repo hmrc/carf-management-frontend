@@ -160,6 +160,83 @@ individualPhone.error.invalid = Enter a phone number, like 01632 960 001, 07700 
 individualPhone.error.notReal = Enter a real phone number
 individualPhone.change.hidden = Change phone number
 
+organisationHaveSecondContact.title = Is there someone else we can contact if your first contact is not available?
+organisationHaveSecondContact.heading = Is there someone else we can contact if {0} is not available?
+organisationHaveSecondContact.hint = This can be a team mailbox or another contact.
+organisationHaveSecondContact.checkYourAnswersLabel = Do you have a second contact?
+organisationHaveSecondContact.error.required = Select yes if there is someone else we can contact
+organisationHaveSecondContact.change.hidden = Change if you have a second contact
+
+organisationSecondContactName.title = What is the name of the second person or team we should contact at the reporting cryptoasset service provider (RCASP)?
+organisationSecondContactName.heading = What is the name of the second person or team we should contact at {0}?
+organisationSecondContactName.checkYourAnswersLabel = Second contact name
+organisationSecondContactName.hint = For example, ‘Ashley Smith’ or ‘Tax team’.
+organisationSecondContactName.error.required = Enter a name for the second contact
+organisationSecondContactName.error.length = The name must be 35 characters or less
+organisationSecondContactName.error.invalid = The name must only include letters a to z, numbers 0 to 9, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
+organisationSecondContactName.change.hidden = Change second contact name
+
+organisationSecondContactEmail.title = What is the email address for the second contact?
+organisationSecondContactEmail.heading = What is the email address for {0}?
+organisationSecondContactEmail.paragraph = We will use this email address to send confirmation of reports for {0} or if we have any questions about them.
+organisationSecondContactEmail.checkYourAnswersLabel = Second contact email address
+organisationSecondContactEmail.error.required = Enter an email address for the second contact
+organisationSecondContactEmail.error.length = The email address must be 132 characters or less
+organisationSecondContactEmail.error.invalid = Enter an email address in the right format, like yourname@example.com
+organisationSecondContactEmail.change.hidden = Change second contact email address
+
+organisationSecondContactHavePhone.title = Can we contact the second contact by phone?
+organisationSecondContactHavePhone.heading = Can we contact {0} by phone?
+organisationSecondContactHavePhone.p1 = We will call if we have any questions about reports for {0}.
+organisationSecondContactHavePhone.checkYourAnswersLabel = Can we contact the second contact by phone?
+organisationSecondContactHavePhone.error.required = Select yes if the second contact can be contacted by phone
+organisationSecondContactHavePhone.change.hidden = Change if we can contact the second contact by phone
+
+organisationSecondContactPhoneNumber.title = What is the phone number for the second contact?
+organisationSecondContactPhoneNumber.heading = What is the phone number for {0}?
+organisationSecondContactPhoneNumber.checkYourAnswersLabel = Second contact phone number
+organisationSecondContactPhoneNumber.error.required = Enter a phone number for the second contact
+organisationSecondContactPhoneNumber.error.length = The phone number must be 24 characters or less
+organisationSecondContactPhoneNumber.error.notReal = Enter a real phone number
+organisationSecondContactPhoneNumber.error.invalid = Enter a phone number, like 01632 960 001, 07700 900 982 or +44 808 157 0192
+organisationSecondContactPhoneNumber.change.hidden = Change second contact phone number
+organisationSecondContactPhoneNumber.hint = For international numbers, include the country code.
+
+organisationFirstContactName.title = What is the name of the person or team we should contact at the reporting cryptoasset service provider (RCASP)?
+organisationFirstContactName.heading = What is the name of the person or team we should contact at {0}?
+organisationFirstContactName.hint = For example, ‘Ashley Smith’ or ‘Tax team’.
+organisationFirstContactName.checkYourAnswersLabel = First contact name
+organisationFirstContactName.error.required = Enter a name for the first contact
+organisationFirstContactName.error.length = The name must be 35 characters or less
+organisationFirstContactName.error.invalid = The name must only include letters a to z, numbers 0 to 9, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
+organisationFirstContactName.change.hidden = Change first contact name
+
+organisationFirstContactEmail.title = What is the email address for the first contact?
+organisationFirstContactEmail.heading = What is the email address for {0}?
+organisationFirstContactEmail.p1 = We will use this email address to send confirmation of reports for {0} or if we have any questions about them.
+organisationFirstContactEmail.checkYourAnswersLabel = First contact email address
+organisationFirstContactEmail.error.required = Enter an email address for the first contact
+organisationFirstContactEmail.error.length = The email address must be 132 characters or less
+organisationFirstContactEmail.error.invalid = Enter an email address in the right format, like yourname@example.com
+organisationFirstContactEmail.change.hidden = Change first contact email address
+
+organisationFirstContactHavePhone.title = Can we contact the first contact by phone?
+organisationFirstContactHavePhone.heading = Can we contact {0} by phone?
+organisationFirstContactHavePhone.p1 = We will call if we have any questions about reports for {0}.
+organisationFirstContactHavePhone.checkYourAnswersLabel = Can we contact the first contact by phone?
+organisationFirstContactHavePhone.error.required = Select yes if the first contact can be contacted by phone
+organisationFirstContactHavePhone.change.hidden = Change if we can contact the first contact by phone
+
+organisationFirstContactPhoneNumber.title = What is the phone number for the first contact?
+organisationFirstContactPhoneNumber.heading = What is the phone number for {0}?
+organisationFirstContactPhoneNumber.hint = For international numbers, include the country code.
+organisationFirstContactPhoneNumber.checkYourAnswersLabel = First contact phone number
+organisationFirstContactPhoneNumber.error.required = Enter a phone number for the first contact
+organisationFirstContactPhoneNumber.error.length = The phone number must be 24 characters or less
+organisationFirstContactPhoneNumber.error.invalid = Enter a phone number, like 01632 960 001, 07700 900 982 or +44 808 157 0192
+organisationFirstContactPhoneNumber.error.notReal = Enter a real phone number
+organisationFirstContactPhoneNumber.change.hidden = Change first contact phone number
+
 findAddress.title = Find the address for the cryptoasset service provider
 findAddress.heading = Find the address for {0}
 findAddress.postcode.paragraph = UK postcode

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.home
 
 import base.SpecBase
 import config.FrontendAppConfig

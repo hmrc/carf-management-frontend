@@ -44,10 +44,10 @@ Port: 17002
 ### How to test a journey locally and on staging
 
 Local:
-http://localhost:9949/auth-login-stub/gg-sign-in?continue=http://localhost:17002/rcasp/manage-cryptoasset-reports 
+http://localhost:9949/auth-login-stub/gg-sign-in?continue=http://localhost:17002/manage-cryptoasset-reports 
 
 Staging:
-https://www.staging.tax.service.gov.uk/auth-login-stub/gg-sign-in?continue=%2Frcasp%2Fmanage-cryptoasset-reports
+https://www.staging.tax.service.gov.uk/auth-login-stub/gg-sign-in?continue=%2Fmanage-cryptoasset-reports
 
 In both cases, a user must have a carf registration.
 
@@ -57,6 +57,18 @@ Identifier Name: CARFID
 Identifier Value: 1111
 
 To test different starting parameters, please refer to the carf testing area on our confluence page, or our stubs repository
+
+### Running the service in test only mode
+```
+sm2 --start CARF_ALL
+```
+```
+sm2 --stop CARF_MANAGEMENT_FRONTEND
+```
+Starts service locally with test-only routes enabled.
+```
+sbt "run -Dapplication.router=testOnlyDoNotUseInAppConf.routes"
+```
 
 ### License
 
