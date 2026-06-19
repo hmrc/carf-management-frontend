@@ -492,5 +492,83 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
     }
 
   }
+  "validatedUTR" - {
 
+    val testRequiredKey      = "utr.error.required"
+    val testInvalidKey       = "utr.error.invalid"
+    val testInvalidFormatKey = "utr.error.invalidFormat"
+    val testRegex            = """^[0-9]*$"""
+    val testMsgArg           = ""
+
+    val testForm: Form[String] =
+      Form(
+        "value" -> validatedUTR(
+          requiredKey = testRequiredKey,
+          invalidKey = testInvalidKey,
+          invalidFormatKey = testInvalidFormatKey,
+          regex = testRegex,
+          msgArg = testMsgArg
+        )
+      )
+
+    "must bind a valid 10 digit UTR" in {
+      val result = testForm.bind(Map("value" -> "1234567890"))
+      result.get mustEqual "1234567890"
+    }
+
+    "must bind a valid 13 digit UTR" in {
+      val result = testForm.bind(Map("value" -> "1234567890123"))
+      result.get mustEqual "1234567890123"
+    }
+
+    "must bind a valid UTR with spaces" in {
+      val result = testForm.bind(Map("value" -> "123 456 7890"))
+      result.get mustEqual "1234567890"
+    }
+
+    "must bind a valid UTR with K prefix stripped" in {
+      val result = testForm.bind(Map("value" -> "K1234567890"))
+      result.get mustEqual "1234567890"
+    }
+
+    "must bind a valid UTR with K suffix stripped" in {
+      val result = testForm.bind(Map("value" -> "1234567890K"))
+      result.get mustEqual "1234567890"
+    }
+
+    "must not bind an empty string" in {
+      val result = testForm.bind(Map("value" -> ""))
+      result.errors must contain(FormError("value", testRequiredKey))
+    }
+
+    "must not bind a UTR with non-numeric characters (except K, spaces)" in {
+      val result = testForm.bind(Map("value" -> "123456789A"))
+      result.errors must contain(FormError("value", testInvalidKey))
+    }
+
+    "must not bind a UTR that is too short (9 digits)" in {
+      val result = testForm.bind(Map("value" -> "123456789"))
+      result.errors must contain(FormError("value", testInvalidFormatKey))
+    }
+
+    "must not bind a UTR that is too long (14 digits)" in {
+      val result = testForm.bind(Map("value" -> "12345678901234"))
+      result.errors must contain(FormError("value", testInvalidFormatKey))
+    }
+
+    "must not bind a UTR with wrong length (11 digits)" in {
+      val result = testForm.bind(Map("value" -> "12345678901"))
+      result.errors must contain(FormError("value", testInvalidFormatKey))
+    }
+
+    "must not bind an empty map" in {
+      val result = testForm.bind(Map.empty[String, String])
+      result.errors must contain(FormError("value", testRequiredKey))
+    }
+
+    "must unbind a valid value" in {
+      val result = testForm.fill("1234567890")
+      result.apply("value").value.value mustEqual "1234567890"
+    }
+  }
 }

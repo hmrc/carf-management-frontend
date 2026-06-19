@@ -57,26 +57,42 @@ class UtrController @Inject() (
         .get(UtrPage)
         .fold(form)(form.fill)
 
-      Ok(view(preparedForm, mode, rcaspName))
+          Ok(view(preparedForm, mode, rcaspName))
+
+        case None =>
+          logger.warn(
+            "[UtrController][onPageLoad] " +
+              "No RCASP name found in UserAnswers. Redirecting to journey recovery."
+          )
+          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+      }
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
-      val rcaspName = rcaspDisplayName(request.userAnswers).getOrElse("")
-
-      form
-        .bindFromRequest()
-        .fold(
-          formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, rcaspName))),
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(
-                                  request.userAnswers.set(UtrPage, value)
-                                )
-              _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(
-              navigator.nextPage(UtrPage, mode, updatedAnswers)
+      rcaspDisplayName(request.userAnswers) match {
+        case Some(rcaspName) =>
+          form
+            .bindFromRequest()
+            .fold(
+              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, rcaspName))),
+              value =>
+                for {
+                  updatedAnswers <- Future.fromTry(
+                                      request.userAnswers.set(UtrPage, value)
+                                    )
+                  _              <- sessionRepository.set(updatedAnswers)
+                } yield Redirect(
+                  navigator.nextPage(UtrPage, mode, updatedAnswers)
+                )
             )
-        )
+
+        case None =>
+          logger.warn(
+            "[UtrController][onSubmit] " +
+              "No RCASP name found in UserAnswers. Redirecting to journey recovery."
+          )
+          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      }
     }
 }

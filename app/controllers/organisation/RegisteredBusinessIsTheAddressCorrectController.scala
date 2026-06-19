@@ -52,19 +52,23 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>
-      request.userAnswers.get(CachedBusinessDetailsPage) match {
-        case Some(businessDetails) =>
-          val rcaspName    = rcaspDisplayName(request.userAnswers).getOrElse("")
-          val preparedForm = request.userAnswers
-            .get(RegisteredBusinessIsTheAddressCorrectPage)
-            .fold(form)(form.fill)
+      (
+        request.userAnswers.get(CachedBusinessDetailsPage),
+        rcaspDisplayName(request.userAnswers)
+      ) match {
+
+        case (Some(businessDetails), Some(rcaspName)) =>
+          val preparedForm =
+            request.userAnswers
+              .get(RegisteredBusinessIsTheAddressCorrectPage)
+              .fold(form)(form.fill)
 
           Ok(view(preparedForm, mode, rcaspName, businessDetails.address))
 
-        case None =>
+        case _ =>
           logger.warn(
             "[RegisteredBusinessIsTheAddressCorrectController][onPageLoad] " +
-              "No cached business details found. Redirecting to journey recovery."
+              "Required business details not found. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
@@ -72,10 +76,12 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
-      request.userAnswers.get(CachedBusinessDetailsPage) match {
-        case Some(businessDetails) =>
-          val rcaspName = rcaspDisplayName(request.userAnswers).getOrElse("")
+      (
+        request.userAnswers.get(CachedBusinessDetailsPage),
+        rcaspDisplayName(request.userAnswers)
+      ) match {
 
+        case (Some(businessDetails), Some(rcaspName)) =>
           form
             .bindFromRequest()
             .fold(
@@ -101,10 +107,10 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
                 )
             )
 
-        case None =>
+        case _ =>
           logger.warn(
             "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] " +
-              "No cached business details found. Redirecting to journey recovery."
+              "Required business details not found. Redirecting to journey recovery."
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }

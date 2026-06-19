@@ -22,10 +22,22 @@ trait StringFieldBehaviours extends FieldBehaviours {
 
   def fieldWithMaxLength(form: Form[_], fieldName: String, maxLength: Int, lengthError: FormError): Unit =
     s"not bind strings longer than $maxLength characters" in {
-
       forAll(stringsLongerThan(maxLength) -> "longString") { (string: String) =>
         val result = form.bind(Map(fieldName -> string)).apply(fieldName)
         result.errors must contain only lengthError
+      }
+    }
+
+  def fieldWithFixedLengthsNumeric(
+      form: Form[_],
+      fieldName: String,
+      acceptedLengths: Set[Int],
+      lengthError: FormError
+  ): Unit =
+    s"must not bind strings that are not ${acceptedLengths.mkString(" or ")} characters long" in {
+      forAll(stringsNotOfFixedLengthsNumeric(acceptedLengths) -> "invalidString") { string =>
+        val result = form.bind(Map(fieldName -> string)).apply(fieldName)
+        result.errors mustEqual Seq(lengthError)
       }
     }
 }

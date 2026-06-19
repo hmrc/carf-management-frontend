@@ -18,7 +18,7 @@ package controllers.organisation
 
 import config.Constants.ZERO
 import models.{NormalMode, UniqueTaxpayerReference, UserAnswers}
-import pages.organisation.{OrganisationNamePage, ReportForRegisteredBusinessPage, TradingNamePage}
+import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage, TradingNamePage}
 import play.api.mvc.Call
 
 trait RcaspHelper {
@@ -26,7 +26,7 @@ trait RcaspHelper {
   def rcaspDisplayName(userAnswers: UserAnswers): Option[String] =
     userAnswers.get(TradingNamePage) match {
       case Some(tradingName) => Some(tradingName)
-      case None              => userAnswers.get(OrganisationNamePage)
+      case None              => userAnswers.get(OverwritableOrganisationName)
     }
 
   private def rcaspIsUser(

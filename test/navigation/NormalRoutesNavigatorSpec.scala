@@ -17,6 +17,8 @@
 package navigation
 
 import base.SpecBase
+import models.{BusinessDetails, NormalMode, OrganisationOrIndividual}
+import models.responses.AddressRegistrationResponse
 import controllers.routes
 import models.{NormalMode, OrganisationOrIndividual}
 import pages.{AddressLookupResult, AddressPagePrePop, FindAddressPage, Page}
@@ -28,10 +30,36 @@ class NormalRoutesNavigatorSpec extends SpecBase {
 
   val navigator = new Navigator()
 
+  val businessDetails: BusinessDetails =
+    BusinessDetails(
+      name = "Test Business Ltd",
+      address = AddressRegistrationResponse(
+        addressLine1 = "1 Test Street",
+        addressLine2 = Some("Testville"),
+        addressLine3 = None,
+        addressLine4 = None,
+        postalCode = Some("TE1 1ST"),
+        countryCode = "GB"
+      )
+    )
+
+  val businessDetailsNonGb: BusinessDetails =
+    BusinessDetails(
+      name = "Test Business Ltd",
+      address = AddressRegistrationResponse(
+        addressLine1 = "3 Apple Street",
+        addressLine2 = Some("New York"),
+        addressLine3 = None,
+        addressLine4 = None,
+        postalCode = Some("11722"),
+        countryCode = "US"
+      )
+    )
+
   "NormalRoutesNavigator" - {
 
     "When passed OrganisationNamePage" - {
-      "Should redirect to HaveTradingController" in {
+      "Should redirect to HaveTradingNameController" in {
         navigator.nextPage(
           OrganisationNamePage,
           NormalMode,
@@ -51,16 +79,14 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to PlaceholderController if the page answer is false" in {
+      "Should redirect to JourneyRecoveryController if the page answer is false" in {
         val ua = emptyUserAnswers.withPage(HaveTradingNamePage, false)
 
         navigator.nextPage(
           HaveTradingNamePage,
           NormalMode,
           ua
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
-        )
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
       }
 
       "Should redirect to Journey Recovery if the page answer is empty" in {
@@ -72,15 +98,67 @@ class NormalRoutesNavigatorSpec extends SpecBase {
       }
     }
 
-    "When passed TradingNamePage" - {
-      "Should redirect to PlaceholderController" in {
+    "When passed UtrPage" - {
+      "Should redirect to PlaceholderController for /find-address" in {
         navigator.nextPage(
-          TradingNamePage,
+          UtrPage,
           NormalMode,
           emptyUserAnswers
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
-        )
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+      }
+    }
+
+    "When passed RegisteredBusinessIsTheAddressCorrectPage" - {
+      "Should redirect to PlaceholderController for /check-answers when answer is true and country is GB" in {
+        val ua = emptyUserAnswers
+          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+          .withPage(CachedBusinessDetailsPage, businessDetails)
+
+        navigator.nextPage(
+          RegisteredBusinessIsTheAddressCorrectPage,
+          NormalMode,
+          ua
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+      }
+
+      "Should redirect to NotInUkController when answer is true and country is not GB" in {
+        val ua = emptyUserAnswers
+          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+          .withPage(CachedBusinessDetailsPage, businessDetailsNonGb)
+
+        navigator.nextPage(
+          RegisteredBusinessIsTheAddressCorrectPage,
+          NormalMode,
+          ua
+        ) mustBe controllers.organisation.routes.NotInUkController.onPageLoad()
+      }
+
+      "Should redirect to PlaceholderController for /find-address when answer is false" in {
+        val ua = emptyUserAnswers.withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
+
+        navigator.nextPage(
+          RegisteredBusinessIsTheAddressCorrectPage,
+          NormalMode,
+          ua
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+      }
+
+      "Should redirect to Journey Recovery when no answer is present" in {
+        navigator.nextPage(
+          RegisteredBusinessIsTheAddressCorrectPage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
+
+      "Should redirect to Journey Recovery when no cached business details found" in {
+        val ua = emptyUserAnswers.withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+
+        navigator.nextPage(
+          RegisteredBusinessIsTheAddressCorrectPage,
+          NormalMode,
+          ua
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
       }
     }
 
@@ -216,7 +294,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed RegisteredBusinessIsThisYourBusinessNamePage" - {
-      "Should redirect to PlaceholderController when answer is true" in {
+      "Should redirect to HaveTradingNameController when answer is true" in {
         val ua = emptyUserAnswers.withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
 
         navigator.nextPage(
@@ -227,7 +305,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to PlaceholderController when answer is false" in {
+      "Should redirect to OrganisationNameController when answer is false" in {
         val ua = emptyUserAnswers.withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
 
         navigator.nextPage(
