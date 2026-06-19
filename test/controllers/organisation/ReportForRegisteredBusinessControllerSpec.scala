@@ -18,7 +18,7 @@ package controllers.organisation
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
-import models.errors.InternalServerError
+import models.errors.ApiError.InternalServerError
 import models.responses.AddressRegistrationResponse
 import models.{BusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}

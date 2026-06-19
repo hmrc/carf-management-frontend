@@ -17,8 +17,12 @@
 package base
 
 import controllers.actions.*
+import generators.Generators
+import models.countries.CountryUk
 import models.individual.IndividualName
-import models.{RichJsObject, UniqueTaxpayerReference, UserAnswers}
+import models.requests.AddressDetails
+import models.responses.{AddressRecord, AddressRegistrationResponse, AddressResponse, CountryRecord}
+import models.{AddressUk, FindAddress, RichJsObject, UniqueTaxpayerReference, UserAnswers}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -51,12 +55,14 @@ trait SpecBase
     with ScalaFutures
     with IntegrationPatience
     with BeforeAndAfterEach
-    with MockitoSugar {
+    with MockitoSugar
+    with Generators {
 
   val userAnswersId: String            = "id"
   val testUtr: UniqueTaxpayerReference = UniqueTaxpayerReference("1234567890")
   val testInternalId: String           = "12345"
   val testCarfId: String               = "XE0000123456789"
+  val testUPRN: Int                    = 123456789
 
   private val UtcZoneId     = "UTC"
   implicit val clock: Clock = Clock.fixed(Instant.parse("2020-05-20T12:34:56.789012Z"), ZoneId.of(UtcZoneId))
@@ -108,7 +114,65 @@ trait SpecBase
 
   }
 
+  lazy val testIndFindAddress: FindAddress = FindAddress("SW1A 1AA", Some("10"))
+
+  lazy val testPostcode: String = validPostcodes.sample.value
+
+  def oneAddressResponse: AddressResponse =
+    AddressResponse(
+      id = "123",
+      uprn = testUPRN,
+      address = AddressRecord(
+        lines = List("1 Test", "Test Street", "Test Region"),
+        town = "Testingtown",
+        postcode = testPostcode,
+        country = CountryRecord(code = "GB", name = "United Kingdom")
+      )
+    )
+
+  lazy val testAddressUk: AddressUk = AddressUk(
+    addressLine1 = "1 Test",
+    addressLine2 = Some("Test Street"),
+    addressLine3 = Some("Test Region"),
+    townOrCity = "Testingtown",
+    postCode = testPostcode,
+    countryUk = CountryUk("GB", "United Kingdom")
+  )
+
+  lazy val multipleAddressResponses: Seq[AddressResponse] =
+    Seq(oneAddressResponse, oneAddressResponse, oneAddressResponse)
+
+  val testSignOutUrl: String       = "http://localhost:9553/bas-gateway/sign-out-without-state"
+  val testLoginContinueUrl: String = "http://localhost:17000/register-for-cryptoasset-reporting"
+
+  val testAddressRegistrationResponse = AddressRegistrationResponse(
+    addressLine1 = "2 High Street",
+    addressLine2 = Some("Birmingham"),
+    addressLine3 = None,
+    addressLine4 = None,
+    postalCode = Some("B23 2AZ"),
+    countryCode = "GB"
+  )
+
   val testOrgName        = "Timmy Ltd"
   val testIndividualName = IndividualName("Timmy", "Jimmison")
   val testNiNumber       = "BA123456A"
+
+  val testAddressDetails = AddressDetails(
+    addressLine1 = "123 Test Street",
+    addressLine2 = Some("Test Area"),
+    addressLine3 = None,
+    townOrCity = "Test City",
+    postalCode = Some("TE5T 1NG"),
+    countryCode = "GB"
+  )
+
+  val testAddressDetailsUk = AddressDetails(
+    addressLine1 = "1 Test",
+    addressLine2 = Some("Test Street"),
+    addressLine3 = Some("Test Region"),
+    townOrCity = "Testingtown",
+    postalCode = Some(testPostcode),
+    countryCode = "GB"
+  )
 }

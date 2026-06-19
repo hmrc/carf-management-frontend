@@ -19,14 +19,14 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import models.UserAnswers
-import models.errors.InternalServerError
+import models.errors.ApiError.InternalServerError
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
 import play.api.Application
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.{AccountService, UploadInformationService}
+import services.{AccountService, AddressLookupService, UploadInformationService}
 import types.ResultT
 import viewmodels.HomePageViewModel
 import views.html.HomePageView
@@ -249,6 +249,7 @@ class HomePageControllerSpec extends SpecBase {
     val mockAccountService: AccountService                     = mock[AccountService]
     val mockUploadInformationService: UploadInformationService = mock[UploadInformationService]
     val mockAppConfig: FrontendAppConfig                       = mock[FrontendAppConfig]
+    val mockAddressLookupService: AddressLookupService         = mock[AddressLookupService]
 
     val application: Application =
       applicationBuilder(requestUtr = requestUtr, userAnswers = userAnswers)
@@ -256,6 +257,7 @@ class HomePageControllerSpec extends SpecBase {
           bind[AccountService].toInstance(mockAccountService),
           bind[UploadInformationService].toInstance(mockUploadInformationService),
           bind[FrontendAppConfig].toInstance(mockAppConfig),
+          bind[AddressLookupService].toInstance(mockAddressLookupService),
           bind[Clock].toInstance(clock)
         )
         .build()

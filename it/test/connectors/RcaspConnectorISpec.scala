@@ -19,7 +19,7 @@ package connectors
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import itutil.ApplicationWithWiremock
-import models.errors.{InternalServerError, JsonValidationError}
+import models.errors.ApiError.{InternalServerError, JsonValidationError}
 import models.responses.*
 import org.scalactic.Prettifier.default
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}

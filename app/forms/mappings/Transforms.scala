@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-package services
+package forms.mappings
 
-import models.errors.ApiError.InternalServerError
-import play.api.Logging
-import types.ResultT
+trait Transforms {
 
-import javax.inject.{Inject, Singleton}
+  protected def stripSpaces(string: String): String =
+    string.trim.replaceAll(" ", "")
 
-@Singleton
-class UploadInformationService @Inject() extends Logging {
-
-  def hasUserUploadedFilesInLast28Days(carfId: String): ResultT[Boolean] =
-    carfId.dropRight(1).last.toString match {
-      case "9" =>
-        logger.warn("[hasUserUploadedFilesInLast28Days] Error!")
-        ResultT.fromError(InternalServerError)
-      case "1" => ResultT.fromValue(true)
-      case _   => ResultT.fromValue(false)
-    }
+  protected def validPostCodeFormat(validPostCode: String): String =
+    if (!validPostCode.contains(" ")) {
+      val tail = validPostCode.substring(validPostCode.length - 3)
+      val head = validPostCode.substring(0, validPostCode.length - 3)
+      s"$head $tail".toUpperCase
+    } else { validPostCode.toUpperCase }
 
 }

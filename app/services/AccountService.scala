@@ -16,7 +16,7 @@
 
 package services
 
-import models.errors.InternalServerError
+import models.errors.ApiError.InternalServerError
 import play.api.Logging
 import types.ResultT
 

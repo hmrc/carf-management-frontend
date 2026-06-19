@@ -17,7 +17,7 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.errors.{InternalServerError, JsonValidationError}
+import models.errors.ApiError.{InternalServerError, JsonValidationError}
 import models.responses.ViewRcaspResponse
 import play.api.Logging
 import play.api.http.Status.OK

@@ -16,8 +16,10 @@
 
 package generators
 
+import models.{AddressAndUPRN, AddressUk, FindAddress}
+import models.countries.{Country, CountryUk}
 import models.individual.IndividualName
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
 
 trait ModelGenerators {
@@ -28,6 +30,65 @@ trait ModelGenerators {
         firstName <- arbitrary[String]
         lastName  <- arbitrary[String]
       } yield IndividualName(firstName, lastName)
+    }
+
+  val addressStringGen: Gen[String] = Gen.alphaNumStr.suchThat(_.nonEmpty).map(_.take(35))
+
+  val postcodeStringGen: Gen[String] = Gen.alphaNumStr.suchThat(_.nonEmpty).map(_.take(10))
+
+  implicit lazy val arbitraryCountry: Arbitrary[Country] =
+    Arbitrary {
+      for {
+        code        <- Gen.pick(2, 'A' to 'Z').map(_.mkString)
+        description <- Gen.alphaStr.suchThat(_.nonEmpty)
+      } yield Country(code, description)
+    }
+
+  implicit lazy val arbitraryFindAddress: Arbitrary[FindAddress] =
+    Arbitrary {
+      for {
+        postcode             <- arbitrary[String]
+        propertyNameOrNumber <- arbitrary[String]
+      } yield FindAddress(postcode, Some(propertyNameOrNumber))
+    }
+
+  implicit lazy val arbitraryCountryUk: Arbitrary[CountryUk] =
+    Arbitrary {
+      for {
+        code <- arbitrary[String]
+        name <- arbitrary[String]
+      } yield CountryUk(code, name)
+    }
+
+  implicit lazy val arbitraryAddressUk: Arbitrary[AddressUk] =
+    Arbitrary {
+      for {
+        addressLine1 <- addressStringGen
+        addressLine2 <- Gen.option(addressStringGen)
+        addressLine3 <- Gen.option(addressStringGen)
+        townOrCity   <- arbitrary[String]
+        postcode     <- postcodeStringGen
+        countryUk    <- arbitrary[CountryUk]
+      } yield AddressUk(
+        addressLine1 = addressLine1,
+        addressLine2 = addressLine2,
+        addressLine3 = addressLine3,
+        townOrCity = townOrCity,
+        postCode = postcode,
+        countryUk = countryUk
+      )
+    }
+
+  implicit lazy val arbitraryAddressesAndUPRNSeq: Arbitrary[Seq[AddressAndUPRN]] =
+    Arbitrary {
+      for {
+        addressUk <- arbitrary[AddressUk]
+        uprn      <- Gen.long
+      } yield Seq(
+        AddressAndUPRN(addressUk, uprn),
+        AddressAndUPRN(addressUk, uprn),
+        AddressAndUPRN(addressUk, uprn)
+      )
     }
 
 }
