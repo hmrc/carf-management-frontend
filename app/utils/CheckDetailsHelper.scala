@@ -31,7 +31,8 @@ class CheckDetailsHelper @Inject() extends Logging {
     for {
       rcaspName <- IndividualNameSummary.row(userAnswers)
       ni        <- NiNumberSummary.row(userAnswers)
-    } yield Section("", Seq(rcaspName, ni))
+      address   <- IndividualAddressSummary.row(userAnswers)
+    } yield Section("", Seq(rcaspName, ni, address))
 
   def getContactDetails(userAnswers: UserAnswers)(implicit messages: Messages): Option[Section] =
     (for {

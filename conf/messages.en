@@ -246,3 +246,4 @@ checkDetailsAnswers.title = Check the details for {0}?
 checkDetailsAnswers.heading = Check the details for {0}?
 checkDetailsAnswers.declaration.subtitle = Now add this RCASP
 checkDetailsAnswers.declaration.p1 = By adding this RCASP, you are confirming that the information is correct and complete to the best of your knowledge.
+individual.address.checkYourAnswersLabel = Main business address

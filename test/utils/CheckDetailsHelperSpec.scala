@@ -38,7 +38,11 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
 
         val section: Section          = testHelper.getIndividualSectionMaybe(userAnswers).get
         val expectedTitle             = ""
-        val expectedKeys: Seq[String] = Seq("What is the name of the RCASP?", "National Insurance number")
+        val expectedKeys: Seq[String] = Seq(
+          "What is the name of the RCASP?",
+          "National Insurance number",
+          "Main business address"
+        )
 
         compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
       }

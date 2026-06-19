@@ -60,7 +60,6 @@ class CheckDetailsController @Inject() (
             userAnswers.get(IndividualNamePage),
             helper.getIndividualSectionMaybe(userAnswers),
             helper.getContactDetails(userAnswers)
-            // TODO [CARF-???] - Add Main Address section when CARF-200, 201 & 203 are done
           )
             .mapN { (name, individualSection, contactDetailsSection) =>
               Ok(view(Seq(individualSection, contactDetailsSection), name.fullName))
