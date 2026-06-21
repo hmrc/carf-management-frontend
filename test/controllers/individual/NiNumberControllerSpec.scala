@@ -74,9 +74,7 @@ class NiNumberControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result)               mustEqual SEE_OTHER
-        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          .url
+        redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
       }
     }
 
@@ -156,9 +154,7 @@ class NiNumberControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result)               mustEqual SEE_OTHER
-        redirectLocation(result).get mustEqual controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          .url
+        redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
       }
     }
 

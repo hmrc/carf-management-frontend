@@ -61,10 +61,7 @@ class IndividualPhoneController @Inject() (
           logger.warn(
             "[IndividualPhoneController][onPageLoad] Error! Individual name could not be retrieved from user answers"
           )
-          Redirect(
-            controllers.routes.PlaceholderController
-              .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          )
+          Redirect(controllers.routes.InformationMissingController.onPageLoad())
         }(individualName => Ok(view(preparedForm, mode, individualName.fullName)))
   }
 
@@ -81,10 +78,7 @@ class IndividualPhoneController @Inject() (
                   "[IndividualPhoneController][onSubmit] Error! Individual name could not be retrieved from user answers"
                 )
                 Future.successful(
-                  Redirect(
-                    controllers.routes.PlaceholderController
-                      .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-                  )
+                  Redirect(controllers.routes.InformationMissingController.onPageLoad())
                 )
               }(individualName => Future.successful(BadRequest(view(formWithErrors, mode, individualName.fullName)))),
           value =>

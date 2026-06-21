@@ -65,9 +65,7 @@ class OrganisationSecondContactHavePhoneController @Inject() (
             "[OrganisationSecondContactHavePhoneController] Could not retrieve OrganisationSecondContactNamePage and/or OverwritableOrganisationName onPageLoad"
           )
           Redirect(
-            controllers.routes.PlaceholderController.onPageLoad(
-              "Should redirect to Some Information is Missing Page (CARF-293)"
-            )
+            controllers.routes.InformationMissingController.onPageLoad()
           )
       }
   }
@@ -90,9 +88,7 @@ class OrganisationSecondContactHavePhoneController @Inject() (
                 )
                 Future.successful(
                   Redirect(
-                    controllers.routes.PlaceholderController.onPageLoad(
-                      "Should redirect to Some Information is Missing Page (CARF-293)"
-                    )
+                    controllers.routes.InformationMissingController.onPageLoad()
                   )
                 )
             },

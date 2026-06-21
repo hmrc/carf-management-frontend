@@ -61,9 +61,7 @@ class OrganisationFirstContactPhoneNumberController @Inject() (
             "[OrganisationFirstContactPhoneNumberController] Could not retrieve OrganisationFirstContactNamePage onPageLoad"
           )
           Redirect(
-            controllers.routes.PlaceholderController.onPageLoad(
-              "Should redirect to Some Information is Missing Page (CARF-293)"
-            )
+            controllers.routes.InformationMissingController.onPageLoad()
           )
       }
   }
@@ -82,9 +80,7 @@ class OrganisationFirstContactPhoneNumberController @Inject() (
                 )
                 Future.successful(
                   Redirect(
-                    controllers.routes.PlaceholderController.onPageLoad(
-                      "Should redirect to Some Information is Missing Page (CARF-293)"
-                    )
+                    controllers.routes.InformationMissingController.onPageLoad()
                   )
                 )
             },

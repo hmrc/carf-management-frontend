@@ -62,9 +62,7 @@ class OrganisationFirstContactNameController @Inject() (
             "[OrganisationFirstContactNameController] Could not retrieve OverwritableOrganisationName onPageLoad"
           )
           Redirect(
-            controllers.routes.PlaceholderController.onPageLoad(
-              "Should redirect to Some Information is Missing Page (CARF-293)"
-            )
+            controllers.routes.InformationMissingController.onPageLoad()
           )
       }
   }
@@ -83,9 +81,7 @@ class OrganisationFirstContactNameController @Inject() (
                 )
                 Future.successful(
                   Redirect(
-                    controllers.routes.PlaceholderController.onPageLoad(
-                      "Should redirect to Some Information is Missing Page (CARF-293)"
-                    )
+                    controllers.routes.InformationMissingController.onPageLoad()
                   )
                 )
             },

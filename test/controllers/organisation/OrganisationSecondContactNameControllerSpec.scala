@@ -165,11 +165,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
         val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.PlaceholderController
-          .onPageLoad(
-            "Should redirect to Some Information is Missing Page (CARF-293)"
-          )
-          .url
+        redirectLocation(result).value mustEqual routes.InformationMissingController.onPageLoad().url
       }
     }
 
@@ -201,11 +197,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
         val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.PlaceholderController
-          .onPageLoad(
-            "Should redirect to Some Information is Missing Page (CARF-293)"
-          )
-          .url
+        redirectLocation(result).value mustEqual routes.InformationMissingController.onPageLoad().url
       }
     }
   }
