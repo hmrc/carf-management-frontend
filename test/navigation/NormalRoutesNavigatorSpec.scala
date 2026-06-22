@@ -17,7 +17,7 @@
 package navigation
 
 import base.SpecBase
-import models.{BusinessDetails, NormalMode, OrganisationOrIndividual}
+import models.BusinessDetails
 import models.responses.AddressRegistrationResponse
 import controllers.routes
 import models.{NormalMode, OrganisationOrIndividual}

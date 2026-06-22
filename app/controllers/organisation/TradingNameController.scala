@@ -18,8 +18,7 @@ package controllers.organisation
 
 import controllers.actions.*
 import forms.organisation.TradingNameFormProvider
-import models.{Mode, NormalMode}
-import navigation.Navigator
+import models.Mode
 import pages.organisation.{OverwritableOrganisationName, TradingNamePage}
 import play.api.Logging
 import play.api.data.Form
