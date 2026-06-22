@@ -47,13 +47,9 @@ case class HomePageViewModel(
       .onPageLoad("Should redirect to /result-of-automatic-checks (part of file upload journey)")
       .url
 
-  lazy val getAddRcaspLink: String =
-    controllers.routes.RoutingController.onPageLoad(NormalMode).url
+  lazy val getAddRcaspLink: String = controllers.routes.RoutingController.onPageLoad(NormalMode).url
 
-  lazy val getManageRcaspsLink: String =
-    controllers.routes.PlaceholderController
-      .onPageLoad("Should redirect to /manage-your-rcasps/your-rcasps (part of management change journey)")
-      .url
+  lazy val getManageRcaspsLink: String = controllers.routes.YourRcaspsController.onPageLoad().url
 
   def getContactDetailsSectionHeading(implicit messages: Messages): String =
     if (isBusiness) {

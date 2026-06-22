@@ -27,6 +27,7 @@ sealed trait RcaspDetails {
   val TINDetails: Option[List[TinDetails]]
   val AddressDetails: RcaspAddress
   val PrimaryContactDetails: Option[RcaspContactDetails]
+  def getName: String
 }
 
 object RcaspDetails {
@@ -54,7 +55,11 @@ case class IndividualRcaspDetails(
     TINDetails: Option[List[TinDetails]],
     AddressDetails: RcaspAddress,
     PrimaryContactDetails: Option[RcaspContactDetails]
-) extends RcaspDetails
+) extends RcaspDetails {
+
+  def getName: String = s"$FirstName $LastName"
+
+}
 
 object IndividualRcaspDetails {
   implicit val format: OFormat[IndividualRcaspDetails] = Json.format[IndividualRcaspDetails]
@@ -71,7 +76,11 @@ case class OrganisationRcaspDetails(
     AddressDetails: RcaspAddress,
     PrimaryContactDetails: Option[RcaspContactDetails],
     SecondaryContactDetails: Option[RcaspContactDetails]
-) extends RcaspDetails
+) extends RcaspDetails {
+
+  def getName: String = RCASPName
+
+}
 
 object OrganisationRcaspDetails {
   implicit val format: OFormat[OrganisationRcaspDetails] = Json.format[OrganisationRcaspDetails]
