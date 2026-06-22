@@ -18,19 +18,18 @@ package controllers.individual
 
 import controllers.actions.*
 import forms.individual.NiNumberFormProvider
-
-import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
 import pages.individual.{IndividualNamePage, NiNumberPage}
 import play.api.Logging
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.individual.NiNumberView
-import play.api.data.Form
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class NiNumberController @Inject() (
@@ -61,10 +60,7 @@ class NiNumberController @Inject() (
           logger.warn(
             "[NiNumberController][onPageLoad] Error! Individual name could not be retrieved from user answers"
           )
-          Redirect(
-            controllers.routes.PlaceholderController
-              .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          )
+          Redirect(controllers.routes.InformationMissingController.onPageLoad())
         }(individualName => Ok(view(preparedForm, mode, individualName.fullName)))
 
   }
@@ -81,12 +77,7 @@ class NiNumberController @Inject() (
                 logger.warn(
                   "[NiNumberController][onSubmit] Error! Individual name could not be retrieved from user answers"
                 )
-                Future.successful(
-                  Redirect(
-                    controllers.routes.PlaceholderController
-                      .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-                  )
-                )
+                Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
               }(individualName => Future.successful(BadRequest(view(formWithErrors, mode, individualName.fullName)))),
           value =>
             for {

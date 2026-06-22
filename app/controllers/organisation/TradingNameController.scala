@@ -18,19 +18,18 @@ package controllers.organisation
 
 import controllers.actions.*
 import forms.organisation.TradingNameFormProvider
-
-import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{OverwritableOrganisationName, TradingNamePage}
 import play.api.Logging
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.organisation.TradingNameView
-import play.api.data.Form
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class TradingNameController @Inject() (
@@ -61,10 +60,7 @@ class TradingNameController @Inject() (
           logger.warn(
             "[TradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
           )
-          Redirect(
-            controllers.routes.PlaceholderController
-              .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          )
+          Redirect(controllers.routes.InformationMissingController.onPageLoad())
         }(orgName => Ok(view(preparedForm, mode, orgName)))
   }
 
@@ -81,10 +77,7 @@ class TradingNameController @Inject() (
                   "[TradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
                 )
                 Future.successful(
-                  Redirect(
-                    controllers.routes.PlaceholderController
-                      .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-                  )
+                  Redirect(controllers.routes.InformationMissingController.onPageLoad())
                 )
               }(orgName => Future.successful(BadRequest(view(formWithErrors, mode, orgName)))),
           value =>
