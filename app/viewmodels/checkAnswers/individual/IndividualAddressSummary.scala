@@ -36,7 +36,7 @@ object IndividualAddressSummary {
               "site.change",
               controllers.routes.PlaceholderController.onPageLoad("CARF-200 - /find-address").url
             )
-              .withVisuallyHiddenText(messages("niNumber.change.hidden"))
+              .withVisuallyHiddenText(messages("individual.address.hidden"))
           )
         )
     }
