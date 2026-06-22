@@ -45,8 +45,7 @@ class NotInUkController @Inject() (
 
         case None =>
           logger.warn(
-            "[NotInUkController][onPageLoad] " +
-              "No RCASP name found in UserAnswers. Redirecting to journey recovery."
+            "[NotInUkController][onPageLoad] No RCASP name found in UserAnswers. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }

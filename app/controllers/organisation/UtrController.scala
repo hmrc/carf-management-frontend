@@ -62,8 +62,7 @@ class UtrController @Inject() (
 
         case None =>
           logger.warn(
-            "[UtrController][onPageLoad] " +
-              "No RCASP name found in UserAnswers. Redirecting to journey recovery."
+            "[UtrController][onPageLoad] No RCASP name found in UserAnswers. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
@@ -90,8 +89,7 @@ class UtrController @Inject() (
 
         case None =>
           logger.warn(
-            "[UtrController][onSubmit] " +
-              "No RCASP name found in UserAnswers. Redirecting to journey recovery."
+            "[UtrController][onSubmit] No RCASP name found in UserAnswers. Redirecting to journey recovery."
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }

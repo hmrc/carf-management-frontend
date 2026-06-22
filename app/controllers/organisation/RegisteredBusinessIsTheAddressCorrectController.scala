@@ -67,8 +67,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
 
         case _ =>
           logger.warn(
-            "[RegisteredBusinessIsTheAddressCorrectController][onPageLoad] " +
-              "Required business details not found. Redirecting to journey recovery."
+            "[RegisteredBusinessIsTheAddressCorrectController][onPageLoad] Required business details not found. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
@@ -109,8 +108,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
 
         case _ =>
           logger.warn(
-            "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] " +
-              "Required business details not found. Redirecting to journey recovery."
+            "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] Required business details not found. Redirecting to journey recovery."
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
