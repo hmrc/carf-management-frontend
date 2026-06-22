@@ -21,7 +21,7 @@ import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.{HtmlContent, Text}
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.listwithactions.{ListWithActions, ListWithActionsAction, ListWithActionsItem}
 
-object YourRcaspsSummaryListHelper {
+object YourRcaspsListWithActionsHelper {
 
   def getYourRcaspsRows(rcaspList: List[RcaspDetails])(implicit messages: Messages): ListWithActions = {
     val orderedRcasps = orderRcasps(rcaspList)
@@ -30,27 +30,28 @@ object YourRcaspsSummaryListHelper {
         name = getValueContent(rcasp.getName, rcasp.IsRCASPUser),
         actions = Seq(
           ListWithActionsAction(
-            if (rcasp.IsRCASPUser) {
+            href = if (rcasp.IsRCASPUser) {
               controllers.routes.PlaceholderController
                 .onPageLoad("Should nav to /registered-business/change-answers (CARF-350)")
                 .url
             } else {
               controllers.routes.PlaceholderController.onPageLoad("Should nav to /change-answers (CARF-354)").url
             },
-            Text(messages("site.change")),
-            Some(messages("yourRcasps.change.hidden", rcasp.getName))
+            content = Text(messages("site.change")),
+            visuallyHiddenText = Some(messages("yourRcasps.change.hidden", rcasp.getName))
           ),
           // TODO: change stubs so that RCASPIDs aren't 'none'
           ListWithActionsAction(
-            controllers.routes.PlaceholderController
+            href = controllers.routes.PlaceholderController
               .onPageLoad(s"Should nav to /remove/user-access/${rcasp.RCASPID} (CARF-355)")
               .url,
-            Text(messages("site.remove")),
-            Some(messages("yourRcasps.remove.hidden", rcasp.getName))
+            content = Text(messages("site.remove")),
+            visuallyHiddenText = Some(messages("yourRcasps.remove.hidden", rcasp.getName))
           )
         )
       )
     }
+
     ListWithActions(items = items)
   }
 
@@ -58,7 +59,6 @@ object YourRcaspsSummaryListHelper {
     rcaspList.sortBy(rcasp => (!rcasp.IsRCASPUser, rcasp.getName.toUpperCase))
 
   private def getValueContent(name: String, isRcaspUser: Boolean)(implicit messages: Messages): HtmlContent = {
-    // TODO: Is this all the css we want?
     val registeredBusinessTag =
       if (isRcaspUser) {
         s"""<strong class="govuk-tag" style="max-width: 180px !important;">${messages(

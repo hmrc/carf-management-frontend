@@ -16,6 +16,7 @@
 
 package base
 
+import common.TestData
 import controllers.actions.*
 import models.individual.IndividualName
 import models.{RichJsObject, UniqueTaxpayerReference, UserAnswers}
@@ -51,7 +52,8 @@ trait SpecBase
     with ScalaFutures
     with IntegrationPatience
     with BeforeAndAfterEach
-    with MockitoSugar {
+    with MockitoSugar
+    with TestData {
 
   val userAnswersId: String            = "id"
   val testUtr: UniqueTaxpayerReference = UniqueTaxpayerReference("1234567890")

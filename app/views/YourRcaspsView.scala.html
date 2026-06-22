@@ -14,8 +14,6 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
-
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
@@ -27,26 +25,45 @@
 
 @(form: Form[_], listWithActions: ListWithActions)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("yourRcasps.title")), fullWidth = true) {
+@layout(
+    pageTitle = title(
+        form,
+        if(listWithActions.items.isEmpty) messages("yourRcasps.title.zero")
+        else if(listWithActions.items.size == 1) messages("yourRcasps.title.one")
+        else messages("yourRcasps.title.multiple")
+    ),
+    fullWidth = true
+) {
+
+    @if(form.errors.nonEmpty) {
+        @govukErrorSummary(ErrorSummaryViewModel(form))
+    }
+
+    @if(listWithActions.items.isEmpty) {
+        <h1 class="govuk-heading-l long-word">@messages("yourRcasps.heading.zero")</h1>
+    } else if(listWithActions.items.size == 1) {
+        <h1 class="govuk-heading-l long-word">@messages("yourRcasps.heading.one")</h1>
+    } else {
+        <h1 class="govuk-heading-l long-word">@messages("yourRcasps.heading.multiple")</h1>
+    }
+
+    @if(listWithActions.items.nonEmpty) {
+        <div class="govuk-form-group">
+        @hmrcListWithActions(listWithActions)
+        </div>
+    }
 
     @formHelper(action = controllers.routes.YourRcaspsController.onSubmit(), Symbol("autoComplete") -> "off") {
-
-        @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
-        }
-
-        <h1 class="govuk-heading-l long-word">@messages("yourRcasps.heading")</h1>
-
-        @if(listWithActions.items.nonEmpty) {
-            <div class="govuk-form-group">
-            @hmrcListWithActions(listWithActions)
-            </div>
-        }
-
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("yourRcasps.heading")).withCssClass("govuk-visually-hidden govuk-!-display-block")
+                legend = LegendViewModel(
+                    if(listWithActions.items.isEmpty) {
+                        messages("yourRcasps.question.zero")
+                    } else {
+                        messages("yourRcasps.question.non-zero")
+                    }
+                ).withCssClass("govuk-fieldset__legend--m govuk-!-display-block")
             ).copy(classes = "")
         )
 

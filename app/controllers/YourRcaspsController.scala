@@ -25,7 +25,7 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import viewmodels.YourRcaspsSummaryListHelper
+import viewmodels.YourRcaspsListWithActionsHelper
 import views.html.YourRcaspsView
 
 import javax.inject.Inject
@@ -47,12 +47,12 @@ class YourRcaspsController @Inject() (
 
   def onPageLoad(): Action[AnyContent] = identify().async { implicit request =>
     rcaspConnector.viewRcasp(request.carfId).value.map {
-      case Left(value)               =>
+      case Left(value)              =>
         logger.warn("[YourRcaspsController][onPageLoad] Error! Could not view rcasps!")
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-      case Right(viewRcaspsResponse) =>
+      case Right(viewRcaspResponse) =>
         val listWithActions =
-          YourRcaspsSummaryListHelper.getYourRcaspsRows(viewRcaspsResponse.ViewRCASP.ResponseDetails.RCASPList)
+          YourRcaspsListWithActionsHelper.getYourRcaspsRows(viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList)
         Ok(view(form, listWithActions))
     }
   }
@@ -63,13 +63,14 @@ class YourRcaspsController @Inject() (
       .fold(
         formWithErrors =>
           rcaspConnector.viewRcasp(request.carfId).value.map {
-            case Left(value)               =>
+            case Left(value)              =>
               logger.warn("[YourRcaspsController][onSubmit] Error! Could not view rcasps!")
               Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-            case Right(viewRcaspsResponse) =>
+            case Right(viewRcaspResponse) =>
               val listWithActions =
-                YourRcaspsSummaryListHelper.getYourRcaspsRows(viewRcaspsResponse.ViewRCASP.ResponseDetails.RCASPList)
-              BadRequest(view(form, listWithActions))
+                YourRcaspsListWithActionsHelper
+                  .getYourRcaspsRows(viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList)
+              BadRequest(view(formWithErrors, listWithActions))
           },
         value =>
           val redirectCall: Call = if (value) {
