@@ -51,7 +51,7 @@ class CheckDetailsController @Inject() (
       .get(OrganisationOrIndividualPage)
       .fold {
         logger.warn(
-          s"[CheckYourAnswersController] Error! Could not load page OrganisationOrIndividualPage needed"
+          s"[CheckDetailsController] Error! Could not load page OrganisationOrIndividualPage needed"
         )
         ifEmptyProtocol
       } {
@@ -66,7 +66,7 @@ class CheckDetailsController @Inject() (
             }
             .getOrElse {
               logger.warn(
-                s"[CheckYourAnswersController] Error! Could not load page missing answers"
+                s"[CheckDetailsController] Error! Could not load page missing answers"
               )
               ifEmptyProtocol
             }
