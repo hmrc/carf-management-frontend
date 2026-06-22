@@ -69,11 +69,7 @@ class FindAddressController @Inject() (
           logger.warn(
             "[FindAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onPageLoad"
           )
-          Redirect(
-            controllers.routes.PlaceholderController.onPageLoad(
-              "Should redirect to Some Information is Missing Page (CARF-293)"
-            )
-          )
+          Redirect(controllers.routes.InformationMissingController.onPageLoad())
       }
 
   }
@@ -91,13 +87,7 @@ class FindAddressController @Inject() (
                 logger.warn(
                   "[FindAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
                 )
-                Future.successful(
-                  Redirect(
-                    controllers.routes.PlaceholderController.onPageLoad(
-                      "Should redirect to Some Information is Missing Page (CARF-293)"
-                    )
-                  )
-                )
+                Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
             },
           value =>
             addressLookupService
@@ -116,13 +106,7 @@ class FindAddressController @Inject() (
                       logger.warn(
                         "[FindAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
                       )
-                      Future.successful(
-                        Redirect(
-                          controllers.routes.PlaceholderController.onPageLoad(
-                            "Should redirect to Some Information is Missing Page (CARF-293)"
-                          )
-                        )
-                      )
+                      Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
                   }
                 case Right((addressesAndUPRNs, additionalCallMade)) =>
                   for {
