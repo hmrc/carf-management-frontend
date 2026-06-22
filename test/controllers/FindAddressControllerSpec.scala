@@ -62,7 +62,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
       address = AddressRecord(
         lines = List("Address-Line1", "Address-Line2"),
         town = "Bristol",
-        postcode = validPostcodes.sample.value,
+        postcode = validGBOnlyNonCDPostcodes.sample.value,
         country = CountryRecord(code = "UK", name = "United Kingdom")
       )
     )
@@ -467,5 +467,4 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
     }
 
   }
-
 }
