@@ -100,7 +100,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NiNumberPage,
           NormalMode,
           emptyUserAnswers
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+        ) mustBe controllers.routes.FindAddressController.onPageLoad(NormalMode)
       }
     }
 

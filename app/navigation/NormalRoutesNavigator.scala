@@ -52,7 +52,7 @@ trait NormalRoutesNavigator {
     case IndividualNamePage => _ => controllers.individual.routes.NiNumberController.onPageLoad(NormalMode)
 
     case NiNumberPage =>
-      _ => controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+      _ => controllers.routes.FindAddressController.onPageLoad(NormalMode)
 
     case IndividualEmailPage => _ => controllers.individual.routes.IndividualHavePhoneController.onPageLoad(NormalMode)
 
