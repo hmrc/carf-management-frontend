@@ -41,5 +41,9 @@
         <h2 class="govuk-heading-m">@messages("checkDetailsAnswers.declaration.subtitle")</h2>
 
         <p class="govuk-body">@messages("checkDetailsAnswers.declaration.p1")</p>
+
+        @govukButton(
+            ButtonViewModel(messages("site.confirmAndAdd")).withAttribute("id" -> "submit").preventingDoubleClick()
+        )
     }
 }
