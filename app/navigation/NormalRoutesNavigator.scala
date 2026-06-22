@@ -161,7 +161,9 @@ trait NormalRoutesNavigator {
           case Some(businessDetails) =>
             businessDetails.address.countryCode match {
               case "GB" =>
-                controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+                controllers.routes.PlaceholderController.onPageLoad(
+                  "Should nav to /organisation-first-contact-name (CARF-294)"
+                )
               case _    =>
                 controllers.organisation.routes.NotInUkController.onPageLoad()
             }
