@@ -36,6 +36,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.AddressLookupService
+import types.ResultT
 import views.html.FindAddressView
 
 import scala.concurrent.Future
@@ -165,11 +166,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(Some("value 2")))(any(), any()))
-        .thenReturn(
-          Future.successful(
-            Right(Seq(AddressAndUPRN(testAddressUk, testUPRN)), false)
-          )
-        )
+        .thenReturn(ResultT.fromValue(Seq(AddressAndUPRN(testAddressUk, testUPRN)), false))
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers.withPage(OverwritableOrganisationName, testName)))
@@ -202,15 +199,13 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any()))
         .thenReturn(
-          Future.successful(
-            Right(
-              Seq(
-                AddressAndUPRN(testAddressUk, testUPRN),
-                AddressAndUPRN(testAddressUk, testUPRN),
-                AddressAndUPRN(testAddressUk, testUPRN)
-              ),
-              false
-            )
+          ResultT.fromValue(
+            Seq(
+              AddressAndUPRN(testAddressUk, testUPRN),
+              AddressAndUPRN(testAddressUk, testUPRN),
+              AddressAndUPRN(testAddressUk, testUPRN)
+            ),
+            false
           )
         )
 
@@ -242,15 +237,13 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any()))
         .thenReturn(
-          Future.successful(
-            Right(
-              Seq(
-                AddressAndUPRN(testAddressUk, testUPRN),
-                AddressAndUPRN(testAddressUk, testUPRN),
-                AddressAndUPRN(testAddressUk, testUPRN)
-              ),
-              true
-            )
+          ResultT.fromValue(
+            Seq(
+              AddressAndUPRN(testAddressUk, testUPRN),
+              AddressAndUPRN(testAddressUk, testUPRN),
+              AddressAndUPRN(testAddressUk, testUPRN)
+            ),
+            true
           )
         )
 
@@ -348,11 +341,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
     "must redirect to Some Information Is Missing for a POST if no available name is found and address lookup found no addresses" in {
 
       when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any()))
-        .thenReturn(
-          Future.successful(
-            Right((Nil, false))
-          )
-        )
+        .thenReturn(ResultT.fromValue((Nil, false)))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
@@ -393,11 +382,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
     "must return Bad Request with error when postcode search returns no addresses" in {
 
       when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any()))
-        .thenReturn(
-          Future.successful(
-            Right((Nil, false))
-          )
-        )
+        .thenReturn(ResultT.fromValue((Nil, false)))
 
       val userAnswersWithName = emptyUserAnswers.withPage(OverwritableOrganisationName, testName)
 
@@ -433,7 +418,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
     "must redirect to Journey Recovery when address lookup service returns an error" in {
 
       when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any()))
-        .thenReturn(Future.successful(Left(BadRequestError)))
+        .thenReturn(ResultT.fromError(BadRequestError))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(

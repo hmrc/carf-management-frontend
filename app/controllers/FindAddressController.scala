@@ -63,7 +63,7 @@ class FindAddressController @Inject() (
 
       lazy val preparedForm = request.userAnswers.get(FindAddressPage).fold(form)(form.fill)
 
-      retrieveRCASPName(request.userAnswers) match {
+      retrieveRcaspName(request.userAnswers) match {
         case Some(name) => Ok(view(preparedForm, mode, name, manualLink(mode)))
         case None       =>
           logger.warn(
@@ -80,7 +80,7 @@ class FindAddressController @Inject() (
       formReturned
         .fold(
           formWithErrors =>
-            retrieveRCASPName(request.userAnswers) match {
+            retrieveRcaspName(request.userAnswers) match {
               case Some(name) =>
                 Future.successful(BadRequest(view(formWithErrors, mode, name, manualLink(mode))))
               case None       =>
@@ -92,6 +92,7 @@ class FindAddressController @Inject() (
           value =>
             addressLookupService
               .postcodeSearch(value.postcode, value.propertyNameOrNumber)
+              .value
               .flatMap {
                 case Left(error)                                    =>
                   logger.error(s"Address lookup service failed: $error")
@@ -99,7 +100,7 @@ class FindAddressController @Inject() (
                 case Right((Nil, _))                                =>
                   val formError =
                     formReturned.withError(FormError("postcode", List("findAddress.postcode.error.notFound")))
-                  retrieveRCASPName(request.userAnswers) match {
+                  retrieveRcaspName(request.userAnswers) match {
                     case Some(name) =>
                       Future.successful(BadRequest(view(formError, mode, name, manualLink(mode))))
                     case None       =>
@@ -148,7 +149,7 @@ class FindAddressController @Inject() (
       _                         <- sessionRepository.set(resultingUserAnswer)
     } yield resultingUserAnswer
 
-  private def retrieveRCASPName(userAnswers: UserAnswers): Option[String] =
+  private def retrieveRcaspName(userAnswers: UserAnswers): Option[String] =
     (userAnswers.get(IndividualNamePage), userAnswers.get(OverwritableOrganisationName)) match {
       case (Some(indNamePage), None) => Some(indNamePage.fullName)
       case (None, Some(orgNamePage)) => Some(orgNamePage)

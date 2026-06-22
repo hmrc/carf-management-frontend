@@ -33,7 +33,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val carfManagementBaseUrl: String = s"$carfManagementHost/carf-management"
 
   private val addressLookupHost: String = servicesConfig.baseUrl("address-lookup")
-  val addressLookupBaseUrl: String      = s"$addressLookupHost/address-lookup"
+  lazy val addressLookupBaseUrl: String = s"$addressLookupHost/address-lookup"
 
   private val contactHost                  = configuration.get[String]("contact-frontend.host")
   private val contactFormServiceIdentifier = "carf-management-frontend"

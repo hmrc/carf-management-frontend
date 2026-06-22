@@ -23,6 +23,7 @@ import models.AddressAndUPRN
 import models.errors.{ApiError, CarfError}
 import models.requests.SearchByPostcodeRequest
 import models.responses.AddressResponse
+import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.{Inject, Singleton}
@@ -34,7 +35,7 @@ class AddressLookupService @Inject() (addressLookupConnector: AddressLookupConne
   def postcodeSearch(postcode: String, propertyNameOrNumber: Option[String])(implicit
       ec: ExecutionContext,
       hc: HeaderCarrier
-  ): Future[Either[CarfError, (Seq[AddressAndUPRN], Boolean)]] = {
+  ): ResultT[(Seq[AddressAndUPRN], Boolean)] = {
     val initialRequest = SearchByPostcodeRequest(postcode = postcode, filter = propertyNameOrNumber)
     {
       for {
@@ -53,6 +54,6 @@ class AddressLookupService @Inject() (addressLookupConnector: AddressLookupConne
         addressUkAndUPRN: Seq[AddressAndUPRN]                          <-
           EitherT.fromEither[Future](lookupResponse.traverse(AddressResponse.toDomainAddressUk))
       } yield (addressUkAndUPRN, additionalCall)
-    }.value
+    }
   }
 }
