@@ -60,10 +60,7 @@ class HaveTradingNameController @Inject() (
           logger.warn(
             "[HaveTradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
           )
-          Redirect(
-            controllers.routes.PlaceholderController
-              .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-          )
+          Redirect(controllers.routes.InformationMissingController.onPageLoad())
         }(orgName => Ok(view(preparedForm, mode, orgName)))
   }
 
@@ -80,10 +77,7 @@ class HaveTradingNameController @Inject() (
                   "[HaveTradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
                 )
                 Future.successful(
-                  Redirect(
-                    controllers.routes.PlaceholderController
-                      .onPageLoad("Should redirect to Some Information is Missing Page (CARF-293)")
-                  )
+                  Redirect(controllers.routes.InformationMissingController.onPageLoad())
                 )
               }(orgName => Future.successful(BadRequest(view(formWithErrors, mode, orgName)))),
           value =>
