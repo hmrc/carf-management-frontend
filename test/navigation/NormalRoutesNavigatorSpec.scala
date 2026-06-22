@@ -118,7 +118,9 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           RegisteredBusinessIsTheAddressCorrectPage,
           NormalMode,
           ua
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /organisation-first-contact-name (CARF-294)")
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad(
+          "Should nav to /organisation-first-contact-name (CARF-294)"
+        )
       }
 
       "Should redirect to NotInUkController when answer is true and country is not GB" in {
