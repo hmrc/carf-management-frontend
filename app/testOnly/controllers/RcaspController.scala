@@ -16,7 +16,7 @@
 
 package testOnly.controllers
 
-import com.google.inject.Inject
+import javax.inject.Inject
 import connectors.RcaspConnector
 import models.{RcaspAddress, RcaspContactDetails, TinDetails}
 import models.requests.{CreateRcaspRequest, IndividualRcaspDetails, OrganisationRcaspDetails, RCASPManagementRequest, RcaspCreateRequestCommon, RequestParameter}

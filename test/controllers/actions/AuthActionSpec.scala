@@ -17,7 +17,7 @@
 package controllers.actions
 
 import base.SpecBase
-import com.google.inject.Inject
+import javax.inject.Inject
 import config.FrontendAppConfig
 import controllers.routes
 import play.api.mvc.{Action, AnyContent, BodyParsers, Results}
