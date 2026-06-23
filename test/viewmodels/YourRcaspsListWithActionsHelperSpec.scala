@@ -49,8 +49,9 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
         val expectedActionItems: Seq[Seq[ListWithActionsAction]] = Seq(
           Seq(
             ListWithActionsAction(
-              href =
-                controllers.routes.PlaceholderController.onPageLoad("Should nav to /change-answers (CARF-354)").url,
+              href = controllers.routes.PlaceholderController
+                .onPageLoad("Should nav to /change-answers/RCASP2 (CARF-354)")
+                .url,
               content = Text("Change"),
               visuallyHiddenText = Some("Change the details for Mesagoza")
             ),
@@ -64,8 +65,9 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
           ),
           Seq(
             ListWithActionsAction(
-              href =
-                controllers.routes.PlaceholderController.onPageLoad("Should nav to /change-answers (CARF-354)").url,
+              href = controllers.routes.PlaceholderController
+                .onPageLoad("Should nav to /change-answers/RCASP1 (CARF-354)")
+                .url,
               content = Text("Change"),
               visuallyHiddenText = Some("Change the details for Penny Cassiopeia")
             ),
@@ -107,7 +109,7 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
           Seq(
             ListWithActionsAction(
               href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /registered-business/change-answers (CARF-350)")
+                .onPageLoad("Should nav to /registered-business/change-answers/RCASP3 (CARF-350)")
                 .url,
               content = Text("Change"),
               visuallyHiddenText = Some("Change the details for ORG2")
@@ -122,8 +124,9 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
           ),
           Seq(
             ListWithActionsAction(
-              href =
-                controllers.routes.PlaceholderController.onPageLoad("Should nav to /change-answers (CARF-354)").url,
+              href = controllers.routes.PlaceholderController
+                .onPageLoad("Should nav to /change-answers/RCASP4 (CARF-354)")
+                .url,
               content = Text("Change"),
               visuallyHiddenText = Some("Change the details for Ann Smith")
             ),
@@ -137,8 +140,9 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
           ),
           Seq(
             ListWithActionsAction(
-              href =
-                controllers.routes.PlaceholderController.onPageLoad("Should nav to /change-answers (CARF-354)").url,
+              href = controllers.routes.PlaceholderController
+                .onPageLoad("Should nav to /change-answers/RCASP2 (CARF-354)")
+                .url,
               content = Text("Change"),
               visuallyHiddenText = Some("Change the details for John Doe")
             ),
@@ -152,8 +156,9 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
           ),
           Seq(
             ListWithActionsAction(
-              href =
-                controllers.routes.PlaceholderController.onPageLoad("Should nav to /change-answers (CARF-354)").url,
+              href = controllers.routes.PlaceholderController
+                .onPageLoad("Should nav to /change-answers/RCASP1 (CARF-354)")
+                .url,
               content = Text("Change"),
               visuallyHiddenText = Some("Change the details for org1")
             ),
