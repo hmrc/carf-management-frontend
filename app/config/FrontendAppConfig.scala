@@ -67,6 +67,4 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   val enrolmentKey: String   = configuration.get[String]("keys.enrolmentKey.carf")
   val ctEnrolmentKey: String = configuration.get[String]("keys.enrolmentKey.ct")
-
-  val countryCodeJson: String = configuration.get[String]("json.countries")
 }

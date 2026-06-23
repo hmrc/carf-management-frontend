@@ -98,7 +98,7 @@ trait NormalRoutesNavigator {
   private def navigateFromHaveTradingNamePage(userAnswers: UserAnswers): Call =
     userAnswers.get(HaveTradingNamePage) match {
       case Some(true) => controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
-      case _          => controllers.routes.JourneyRecoveryController.onPageLoad() // false/None handled in controller
+      case _          => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
   private def navigateFromIndividualHavePhonePage(userAnswers: UserAnswers): Call =

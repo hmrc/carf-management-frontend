@@ -16,22 +16,16 @@
 
 @import models.responses.AddressRegistrationResponse
 @import controllers.organisation.routes
-@import utils.CountryListFactory
 
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukErrorSummary: GovukErrorSummary,
         govukRadios: GovukRadios,
-        govukButton: GovukButton,
-        countryListFactory: CountryListFactory
+        govukButton: GovukButton
 )
 
 @(form: Form[Boolean], mode: Mode, rcaspName: String, address: AddressRegistrationResponse)(implicit request: Request[_], messages: Messages)
-
-@countryDisplayName = @{
-    countryListFactory.getDescriptionFromCode(address.countryCode).getOrElse(address.countryCode)
-}
 
 @addressLines = @{
     Seq(
@@ -40,7 +34,7 @@
         address.addressLine3,
         address.addressLine4,
         address.postalCode,
-        Some(countryDisplayName)
+        Some(address.countryCode)
     ).flatten
 }
 

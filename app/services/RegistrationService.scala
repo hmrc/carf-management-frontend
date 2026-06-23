@@ -30,7 +30,6 @@ class RegistrationService @Inject() {
     if (utr.startsWith("9")) {
       ResultT.fromError(InternalServerError)
     } else if (utr.startsWith("6")) {
-      // Non-GB address — triggers /problem/not-in-uk
       ResultT.fromValue(
         BusinessDetails(
           name = "Test Business Ltd",
@@ -45,7 +44,6 @@ class RegistrationService @Inject() {
         )
       )
     } else {
-      // GB address
       ResultT.fromValue(
         BusinessDetails(
           name = "Test Business Ltd",

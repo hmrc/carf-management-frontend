@@ -180,7 +180,7 @@ trait Formatters extends Logging {
       invalidKey: String,
       invalidFormatKey: String,
       regex: String,
-      msgArg: String = "",
+      msgArg: String,
       acceptedLengths: Seq[Int] = Seq(10, 13)
   ): Formatter[String] =
     new Formatter[String] {
