@@ -24,8 +24,8 @@ import uk.gov.hmrc.hmrcfrontend.views.viewmodels.listwithactions.{ListWithAction
 object YourRcaspsListWithActionsHelper {
 
   def getYourRcaspsRows(rcaspList: List[RcaspDetails])(implicit messages: Messages): ListWithActions = {
-    val orderedRcasps = orderRcasps(rcaspList)
-    val items         = orderedRcasps.map { rcasp =>
+    val orderedRcasps: Seq[RcaspDetails] = orderRcasps(rcaspList)
+    val items: Seq[ListWithActionsItem]  = orderedRcasps.map { rcasp =>
       ListWithActionsItem(
         name = getValueContent(rcasp.getName, rcasp.IsRCASPUser),
         actions = Seq(
@@ -56,7 +56,7 @@ object YourRcaspsListWithActionsHelper {
     ListWithActions(items = items)
   }
 
-  private def orderRcasps(rcaspList: List[RcaspDetails]): List[RcaspDetails] =
+  private def orderRcasps(rcaspList: Seq[RcaspDetails]): Seq[RcaspDetails] =
     rcaspList.sortBy(rcasp => (!rcasp.IsRCASPUser, rcasp.getName.toUpperCase))
 
   private def getValueContent(name: String, isRcaspUser: Boolean)(implicit messages: Messages): HtmlContent = {
