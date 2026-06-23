@@ -87,16 +87,14 @@ class TradingNameController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
               result         <- accountService
                                   .getNumberOfRcaspsCurrentlyAdded(request.carfId)
-                                  .value
-                                  .map {
-                                    case Right(count) =>
-                                      Redirect(rcaspIsUserRedirect(count, request.utr, updatedAnswers))
-                                    case Left(error)  =>
-                                      logger.warn(
-                                        s"[TradingNameController][onSubmit] Error retrieving RCASP count: $error"
-                                      )
-                                      Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+                                  .map(count => Redirect(rcaspIsUserRedirect(count, request.utr, updatedAnswers)))
+                                  .leftMap { error =>
+                                    logger.warn(
+                                      s"[TradingNameController][onSubmit] Error retrieving RCASP count: $error"
+                                    )
+                                    Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
                                   }
+                                  .merge
             } yield result
         )
     }

@@ -39,15 +39,13 @@ class NotInUkController @Inject() (
 
   def onPageLoad(): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>
-      request.userAnswers.get(CachedBusinessDetailsPage) match {
-        case Some(businessDetails) =>
-          Ok(view(businessDetails.name))
-
-        case None =>
+      request.userAnswers
+        .get(CachedBusinessDetailsPage)
+        .fold {
           logger.warn(
             "[NotInUkController][onPageLoad] No cached business details found. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-      }
+        }(businessDetails => Ok(view(businessDetails.name)))
     }
 }

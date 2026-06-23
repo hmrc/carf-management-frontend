@@ -157,8 +157,11 @@ trait NormalRoutesNavigator {
   private def navigateFromRegisteredBusinessIsTheAddressCorrectPage(userAnswers: UserAnswers): Call =
     userAnswers.get(RegisteredBusinessIsTheAddressCorrectPage) match {
       case Some(true)  =>
-        userAnswers.get(CachedBusinessDetailsPage) match {
-          case Some(businessDetails) =>
+        userAnswers
+          .get(CachedBusinessDetailsPage)
+          .fold(
+            controllers.routes.JourneyRecoveryController.onPageLoad()
+          )(businessDetails =>
             businessDetails.address.countryCode match {
               case "GB" =>
                 controllers.routes.PlaceholderController.onPageLoad(
@@ -167,9 +170,7 @@ trait NormalRoutesNavigator {
               case _    =>
                 controllers.organisation.routes.NotInUkController.onPageLoad()
             }
-          case None                  =>
-            controllers.routes.JourneyRecoveryController.onPageLoad()
-        }
+          )
       case Some(false) =>
         controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
       case None        =>

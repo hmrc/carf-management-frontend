@@ -94,15 +94,14 @@ class HaveTradingNameController @Inject() (
                                 } else {
                                   accountService
                                     .getNumberOfRcaspsCurrentlyAdded(request.carfId)
-                                    .value
-                                    .map {
-                                      case Right(count) =>
-                                        Redirect(rcaspIsUserRedirect(count, request.utr, updatedAnswers))
-                                      case Left(error)  =>
-                                        logger
-                                          .warn(s"[HaveTradingNameController][onSubmit] Error retrieving RCASP count: $error")
-                                        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+                                    .map(count => Redirect(rcaspIsUserRedirect(count, request.utr, updatedAnswers)))
+                                    .leftMap { error =>
+                                      logger.warn(
+                                        s"[HaveTradingNameController][onSubmit] Error retrieving RCASP count: $error"
+                                      )
+                                      Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
                                     }
+                                    .merge
                                 }
             } yield redirect
         )
