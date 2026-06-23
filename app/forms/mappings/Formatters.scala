@@ -20,7 +20,6 @@ import com.google.i18n.phonenumbers.{NumberParseException, PhoneNumberUtil, Phon
 import config.Constants
 import config.Constants.*
 import models.Enumerable
-import models.countries.*
 import play.api.Logging
 import play.api.data.FormError
 import play.api.data.format.Formatter

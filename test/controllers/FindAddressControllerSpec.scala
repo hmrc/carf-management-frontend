@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import forms.FindAddressFormProvider
 import generators.Generators
+import models.OrganisationOrIndividual.*
 import models.errors.ApiError.BadRequestError
 import models.individual.IndividualName
 import models.responses.{AddressRecord, AddressResponse, CountryRecord}
@@ -27,6 +28,7 @@ import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
 import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
 import pages.{AddressUPRNUserAnswers, FindAddressAdditionalCallUa, FindAddressPage}
@@ -88,7 +90,10 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
 
     "must return OK and the correct view for a GET when IndividualNamePage is present" in {
 
-      val userAnswersWithName = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
+      val userAnswersWithName =
+        emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Individual)
+          .withPage(IndividualNamePage, testIndividualName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithName)).build()
 
@@ -111,7 +116,10 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
 
     "must return OK and the correct view for a GET when OverwritableOrganisationName is present" in {
 
-      val userAnswersWithName = emptyUserAnswers.withPage(OverwritableOrganisationName, testName)
+      val userAnswersWithName =
+        emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OverwritableOrganisationName, testName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithName)).build()
 
@@ -134,8 +142,13 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
+      val userAnswersWithName =
+        userAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OverwritableOrganisationName, testName)
+
       val application =
-        applicationBuilder(userAnswers = Some(userAnswers.withPage(OverwritableOrganisationName, testName))).build()
+        applicationBuilder(userAnswers = Some(userAnswersWithName)).build()
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -161,6 +174,11 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
 
     "must redirect to the next page when postcode has returned one address" in {
 
+      val userAnswersWithName =
+        emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OverwritableOrganisationName, testName)
+
       val onwardRouteOneAddress =
         controllers.routes.PlaceholderController.onPageLoad("Should nav to /review-address (CARF-201)")
 
@@ -169,7 +187,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
         .thenReturn(ResultT.fromValue(Seq(AddressAndUPRN(testAddressUk, testUPRN)), false))
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers.withPage(OverwritableOrganisationName, testName)))
+        applicationBuilder(userAnswers = Some(userAnswersWithName))
           .overrides(
             bind[AddressLookupService].toInstance(mockAddressLookupService)
           )
@@ -193,6 +211,11 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
 
     "must redirect to the next page when postcode has returned more than one address" in {
 
+      val userAnswersWithName =
+        emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OverwritableOrganisationName, testName)
+
       val onwardRouteMultipleAddresses =
         controllers.routes.PlaceholderController.onPageLoad("Should nav to /choose-address (CARF-201)")
 
@@ -210,7 +233,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
         )
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers.withPage(OverwritableOrganisationName, testName)))
+        applicationBuilder(userAnswers = Some(userAnswersWithName))
           .overrides(
             bind[AddressLookupService].toInstance(mockAddressLookupService)
           )
@@ -231,6 +254,11 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
 
     "must redirect to the next page when postcode has returned more than one address and retry has happened" in {
 
+      val userAnswersWithName =
+        emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OverwritableOrganisationName, testName)
+
       val onwardRouteMultipleAddresses =
         controllers.routes.PlaceholderController.onPageLoad("Should nav to /choose-address (CARF-201)")
 
@@ -248,7 +276,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
         )
 
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers.withPage(OverwritableOrganisationName, testName)))
+        applicationBuilder(userAnswers = Some(userAnswersWithName))
           .overrides(
             bind[AddressLookupService].toInstance(mockAddressLookupService)
           )
@@ -271,7 +299,10 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val userAnswersWithName = emptyUserAnswers.withPage(OverwritableOrganisationName, testName)
+      val userAnswersWithName =
+        emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OverwritableOrganisationName, testName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithName)).build()
 
@@ -384,7 +415,10 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
       when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any()))
         .thenReturn(ResultT.fromValue((Nil, false)))
 
-      val userAnswersWithName = emptyUserAnswers.withPage(OverwritableOrganisationName, testName)
+      val userAnswersWithName =
+        emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OverwritableOrganisationName, testName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithName))
         .overrides(

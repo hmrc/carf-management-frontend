@@ -17,9 +17,8 @@
 package forms.mappings
 
 import models.Enumerable
-import models.countries.Country
-import play.api.data.{FieldMapping, Mapping}
 import play.api.data.Forms.of
+import play.api.data.{FieldMapping, Mapping}
 import play.api.i18n.Messages
 
 import java.time.LocalDate
@@ -86,25 +85,6 @@ trait Mappings extends Formatters with Constraints {
       args: Seq[Any] = Seq.empty
   ): FieldMapping[String] =
     of(nationalInsuranceNumberFormatter(requiredKey, invalidKey, notRealKey, args))
-
-  protected def postcode(
-      countryList: Seq[Country],
-      lengthKey: String,
-      invalidCharKey: String,
-      requiredCrownKey: String,
-      invalidFormatCrownKey: String,
-      invalidRealCrownKey: String
-  ): FieldMapping[Option[String]] =
-    of(
-      PostcodeFormatter(
-        countryList,
-        lengthKey,
-        invalidCharKey,
-        requiredCrownKey,
-        invalidFormatCrownKey,
-        invalidRealCrownKey
-      )
-    )
 
   protected def phoneNumber(
       requiredKey: String,

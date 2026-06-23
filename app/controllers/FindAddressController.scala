@@ -18,6 +18,7 @@ package controllers
 
 import controllers.actions.*
 import forms.FindAddressFormProvider
+import models.OrganisationOrIndividual.*
 import models.countries.CountryUk
 import models.requests.DataRequest
 import models.{AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers}
@@ -25,6 +26,7 @@ import navigation.Navigator
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
 import pages.*
+import pages.combined.OrganisationOrIndividualPage
 import play.api.Logging
 import play.api.data.{Form, FormError}
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -144,9 +146,9 @@ class FindAddressController @Inject() (
     } yield resultingUserAnswer
 
   private def retrieveRcaspName(userAnswers: UserAnswers): Option[String] =
-    (userAnswers.get(IndividualNamePage), userAnswers.get(OverwritableOrganisationName)) match {
-      case (Some(indNamePage), None) => Some(indNamePage.fullName)
-      case (None, Some(orgNamePage)) => Some(orgNamePage)
-      case _                         => None
+    userAnswers.get(OrganisationOrIndividualPage) match {
+      case Some(Individual)   => userAnswers.get(IndividualNamePage).map(_.fullName)
+      case Some(Organisation) => userAnswers.get(OverwritableOrganisationName)
+      case _                  => None
     }
 }
