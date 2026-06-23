@@ -82,7 +82,7 @@ trait Mappings extends Formatters with Constraints {
       requiredKey: String,
       invalidKey: String,
       invalidFormatKey: String,
-      regex: String,
+      regex: String
   ): FieldMapping[String] =
     of(validatedUtrFormatter(requiredKey, invalidKey, invalidFormatKey, regex, msgArg = ""))
 

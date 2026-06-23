@@ -498,7 +498,6 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
     val testInvalidKey       = "utr.error.invalid"
     val testInvalidFormatKey = "utr.error.invalidFormat"
     val testRegex            = """^[0-9]*$"""
-    val testMsgArg           = ""
 
     val testForm: Form[String] =
       Form(
@@ -506,8 +505,7 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
           requiredKey = testRequiredKey,
           invalidKey = testInvalidKey,
           invalidFormatKey = testInvalidFormatKey,
-          regex = testRegex,
-          msgArg = testMsgArg
+          regex = testRegex
         )
       )
 
