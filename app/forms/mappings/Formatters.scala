@@ -28,7 +28,7 @@ import utils.PostcodeUtil
 import scala.util.control.Exception.nonFatalCatch
 import scala.util.{Failure, Success, Try}
 
-trait Formatters extends Transforms with Logging {
+trait Formatters extends Logging {
 
   private type EitherFormErrorOrValue = Either[Seq[FormError], String]
   private lazy val notRealError: String => EitherFormErrorOrValue = notRealKey =>

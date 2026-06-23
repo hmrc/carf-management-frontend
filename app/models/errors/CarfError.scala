@@ -16,13 +16,10 @@
 
 package models.errors
 
-import play.api.http.Status.SERVICE_UNAVAILABLE
 import uk.gov.hmrc.http.HttpErrorFunctions.{is4xx, is5xx}
 import uk.gov.hmrc.http.HttpReads
 
 sealed trait CarfError
-
-case object DataError extends CarfError
 
 case object ConversionError extends CarfError
 
@@ -33,38 +30,15 @@ object ApiError {
   implicit def readEitherOf[A: HttpReads]: HttpReads[Either[ApiError, A]] =
     HttpReads.ask.flatMap { case (_, _, response) =>
       response.status match {
-        case status if status == 404                 => HttpReads.pure(Left(NotFoundError))
-        case status if status == 422                 => HttpReads.pure(Left(UnprocessableEntityError))
-        case status if is4xx(status)                 => HttpReads.pure(Left(BadRequestError))
-        case status if status == SERVICE_UNAVAILABLE => HttpReads.pure(Left(ServiceUnavailableError))
-        case status if is5xx(status)                 => HttpReads.pure(Left(InternalServerError))
-        case _                                       => HttpReads[A].map(Right.apply)
+        case status if is4xx(status) => HttpReads.pure(Left(BadRequestError))
+        case status if is5xx(status) => HttpReads.pure(Left(InternalServerError))
+        case _                       => HttpReads[A].map(Right.apply)
       }
     }
 
   case object BadRequestError extends ApiError
 
-  case object NotFoundError extends ApiError
-
-  case object UnprocessableEntityError extends ApiError
-
-  case object AlreadyRegisteredError extends ApiError
-
-  case object ServiceUnavailableError extends ApiError
-
   case object InternalServerError extends ApiError
 
-  case class MandatoryInformationMissingError(value: String = "") extends ApiError
-
-  case object DuplicateSubmissionError extends ApiError
-
-  case object UnableToProcessSubscriptionError extends ApiError
-
-  case object UnableToCreateEnrolmentError extends ApiError
-
   case object JsonValidationError extends ApiError
-
-  case object UnexpectedStatusCode extends ApiError
-
-  case object ApplicationError extends CarfError
 }
