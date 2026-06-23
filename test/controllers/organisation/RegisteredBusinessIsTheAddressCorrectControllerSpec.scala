@@ -23,7 +23,7 @@ import models.responses.AddressRegistrationResponse
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsTheAddressCorrectPage, TradingNamePage}
+import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsTheAddressCorrectPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -58,11 +58,10 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
 
   "RegisteredBusinessIsTheAddressCorrect Controller" - {
 
-    "must return OK and the correct view for a GET when business details and RCASP name are present" in {
+    "must return OK and the correct view for a GET when cached business details are present" in {
 
       val userAnswers = emptyUserAnswers
         .withPage(CachedBusinessDetailsPage, businessDetails)
-        .withPage(OverwritableOrganisationName, testOrgName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -72,29 +71,7 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[RegisteredBusinessIsTheAddressCorrectView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, testOrgName, businessDetails.address)(
-          request,
-          messages(application)
-        ).toString
-      }
-    }
-
-    "must prefer trading name over organisation name in the H1" in {
-
-      val userAnswers = emptyUserAnswers
-        .withPage(CachedBusinessDetailsPage, businessDetails)
-        .withPage(OverwritableOrganisationName, testOrgName)
-        .withPage(TradingNamePage, "Test Trading Name")
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
-        val result  = route(application, request).value
-        val view    = application.injector.instanceOf[RegisteredBusinessIsTheAddressCorrectView]
-
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, "Test Trading Name", businessDetails.address)(
+        contentAsString(result) mustEqual view(form, NormalMode, businessDetails.name, businessDetails.address)(
           request,
           messages(application)
         ).toString
@@ -105,7 +82,6 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
 
       val userAnswers = emptyUserAnswers
         .withPage(CachedBusinessDetailsPage, businessDetails)
-        .withPage(OverwritableOrganisationName, testOrgName)
         .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
@@ -116,33 +92,18 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[RegisteredBusinessIsTheAddressCorrectView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, testOrgName, businessDetails.address)(
-          request,
-          messages(application)
-        ).toString
+        contentAsString(result) mustEqual view(
+          form.fill(true),
+          NormalMode,
+          businessDetails.name,
+          businessDetails.address
+        )(request, messages(application)).toString
       }
     }
 
-    "must redirect to Journey Recovery for a GET when business details are not found" in {
+    "must redirect to Journey Recovery for a GET when cached business details are not found" in {
 
-      val userAnswers = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
-        val result  = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a GET when RCASP name is not found" in {
-
-      val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, businessDetails)
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -158,7 +119,6 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
 
       val userAnswers = emptyUserAnswers
         .withPage(CachedBusinessDetailsPage, businessDetails)
-        .withPage(OverwritableOrganisationName, testOrgName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
@@ -182,7 +142,6 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
 
       val userAnswers = emptyUserAnswers
         .withPage(CachedBusinessDetailsPage, businessDetails)
-        .withPage(OverwritableOrganisationName, testOrgName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -196,36 +155,16 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
         val result    = route(application, request).value
 
         status(result)          mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, testOrgName, businessDetails.address)(
+        contentAsString(result) mustEqual view(boundForm, NormalMode, businessDetails.name, businessDetails.address)(
           request,
           messages(application)
         ).toString
       }
     }
 
-    "must redirect to Journey Recovery for a POST when business details are not found" in {
+    "must redirect to Journey Recovery for a POST when cached business details are not found" in {
 
-      val userAnswers = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a POST when RCASP name is not found" in {
-
-      val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, businessDetails)
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
         val request =
@@ -241,7 +180,7 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
 
     "must redirect to Journey Recovery for a GET if no existing data is found" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = None).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)

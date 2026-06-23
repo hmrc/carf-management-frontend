@@ -16,14 +16,15 @@
 
 package controllers.organisation
 
+import config.Constants.ZERO
 import controllers.actions.*
 import forms.organisation.TradingNameFormProvider
-import models.Mode
-import pages.organisation.{OverwritableOrganisationName, TradingNamePage}
+import models.{Mode, NormalMode, UniqueTaxpayerReference, UserAnswers}
+import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage, TradingNamePage}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.AccountService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -46,8 +47,7 @@ class TradingNameController @Inject() (
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
-    with Logging
-    with RcaspHelper {
+    with Logging {
 
   val form: Form[String] = formProvider()
 
@@ -99,5 +99,25 @@ class TradingNameController @Inject() (
                                   }
             } yield result
         )
+    }
+
+  private def rcaspIsUser(
+      rcaspCount: Int,
+      ctUtr: Option[UniqueTaxpayerReference],
+      userAnswers: UserAnswers
+  ): Boolean = {
+    val answeredYes = userAnswers.get(ReportForRegisteredBusinessPage).contains(true)
+    rcaspCount == ZERO && ctUtr.nonEmpty && answeredYes
+  }
+
+  private def rcaspIsUserRedirect(
+      rcaspCount: Int,
+      ctUtr: Option[UniqueTaxpayerReference],
+      userAnswers: UserAnswers
+  ): Call =
+    if (rcaspIsUser(rcaspCount, ctUtr, userAnswers)) {
+      controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(NormalMode)
+    } else {
+      controllers.organisation.routes.UtrController.onPageLoad(NormalMode)
     }
 }

@@ -20,7 +20,7 @@ import controllers.actions._
 import forms.organisation.UtrFormProvider
 import models.Mode
 import navigation.Navigator
-import pages.organisation.UtrPage
+import pages.organisation.{OverwritableOrganisationName, UtrPage}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -45,24 +45,23 @@ class UtrController @Inject() (
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
-    with Logging
-    with RcaspHelper {
+    with Logging {
 
   val form: Form[String] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>
-      rcaspDisplayName(request.userAnswers) match {
-        case Some(rcaspName) =>
+      request.userAnswers.get(OverwritableOrganisationName) match {
+        case Some(orgName) =>
           val preparedForm = request.userAnswers
             .get(UtrPage)
             .fold(form)(form.fill)
 
-          Ok(view(preparedForm, mode, rcaspName))
+          Ok(view(preparedForm, mode, orgName))
 
         case None =>
           logger.warn(
-            "[UtrController][onPageLoad] No RCASP name found in UserAnswers. Redirecting to journey recovery."
+            "[UtrController][onPageLoad] No organisation name found in UserAnswers. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
@@ -70,12 +69,12 @@ class UtrController @Inject() (
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
-      rcaspDisplayName(request.userAnswers) match {
-        case Some(rcaspName) =>
+      request.userAnswers.get(OverwritableOrganisationName) match {
+        case Some(orgName) =>
           form
             .bindFromRequest()
             .fold(
-              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, rcaspName))),
+              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, orgName))),
               value =>
                 for {
                   updatedAnswers <- Future.fromTry(
@@ -89,7 +88,7 @@ class UtrController @Inject() (
 
         case None =>
           logger.warn(
-            "[UtrController][onSubmit] No RCASP name found in UserAnswers. Redirecting to journey recovery."
+            "[UtrController][onSubmit] No organisation name found in UserAnswers. Redirecting to journey recovery."
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }

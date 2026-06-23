@@ -17,6 +17,7 @@
 package controllers.organisation
 
 import controllers.actions._
+import pages.organisation.CachedBusinessDetailsPage
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -34,18 +35,17 @@ class NotInUkController @Inject() (
     view: NotInUkView
 ) extends FrontendBaseController
     with I18nSupport
-    with Logging
-    with RcaspHelper {
+    with Logging {
 
   def onPageLoad(): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>
-      rcaspDisplayName(request.userAnswers) match {
-        case Some(rcaspName) =>
-          Ok(view(rcaspName))
+      request.userAnswers.get(CachedBusinessDetailsPage) match {
+        case Some(businessDetails) =>
+          Ok(view(businessDetails.name))
 
         case None =>
           logger.warn(
-            "[NotInUkController][onPageLoad] No RCASP name found in UserAnswers. Redirecting to journey recovery."
+            "[NotInUkController][onPageLoad] No cached business details found. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }

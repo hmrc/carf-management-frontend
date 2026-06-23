@@ -17,7 +17,9 @@
 package controllers.organisation
 
 import base.SpecBase
-import pages.organisation.{OverwritableOrganisationName, TradingNamePage}
+import models.BusinessDetails
+import models.responses.AddressRegistrationResponse
+import pages.organisation.CachedBusinessDetailsPage
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.organisation.NotInUkView
@@ -27,27 +29,24 @@ class NotInUkControllerSpec extends SpecBase {
   lazy val notInUkRoute: String =
     controllers.organisation.routes.NotInUkController.onPageLoad().url
 
+  val businessDetails: BusinessDetails =
+    BusinessDetails(
+      name = "Test Business Ltd",
+      address = AddressRegistrationResponse(
+        addressLine1 = "1 Test Street",
+        addressLine2 = Some("Testville"),
+        addressLine3 = None,
+        addressLine4 = None,
+        postalCode = Some("TE1 1ST"),
+        countryCode = "US"
+      )
+    )
+
   "NotInUk Controller" - {
 
-    "must return OK and the correct view when trading name is present in user answers" in {
+    "must return OK and the correct view when cached business details are present and have a non-GB country code" in {
 
-      val ua = emptyUserAnswers.withPage(TradingNamePage, "Test Trading Name")
-
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, notInUkRoute)
-        val result  = route(application, request).value
-        val view    = application.injector.instanceOf[NotInUkView]
-
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view("Test Trading Name")(request, messages(application)).toString
-      }
-    }
-
-    "must return OK and the correct view when only organisation name is present in user answers" in {
-
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+      val ua = emptyUserAnswers.withPage(CachedBusinessDetailsPage, businessDetails)
 
       val application = applicationBuilder(userAnswers = Some(ua)).build()
 
@@ -57,29 +56,11 @@ class NotInUkControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[NotInUkView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(testOrgName)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(businessDetails.name)(request, messages(application)).toString
       }
     }
 
-    "must prefer trading name over organisation name when both are present" in {
-
-      val ua = emptyUserAnswers
-        .withPage(TradingNamePage, "Test Trading Name")
-        .withPage(OverwritableOrganisationName, testOrgName)
-
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, notInUkRoute)
-        val result  = route(application, request).value
-        val view    = application.injector.instanceOf[NotInUkView]
-
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view("Test Trading Name")(request, messages(application)).toString
-      }
-    }
-
-    "must redirect to Journey Recovery when no RCASP name is found in user answers" in {
+    "must redirect to Journey Recovery when no cached business details are found" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 

@@ -22,7 +22,7 @@ import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.organisation.{OverwritableOrganisationName, TradingNamePage, UtrPage}
+import pages.organisation.{OverwritableOrganisationName, UtrPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -44,7 +44,7 @@ class UtrControllerSpec extends SpecBase {
 
   "Utr Controller" - {
 
-    "must return OK and the correct view for a GET when RCASP name is present via organisation name" in {
+    "must return OK and the correct view for a GET when organisation name is present in user answers" in {
 
       val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
 
@@ -57,46 +57,6 @@ class UtrControllerSpec extends SpecBase {
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(form, NormalMode, testOrgName)(request, messages(application)).toString
-      }
-    }
-
-    "must return OK and the correct view for a GET when RCASP name is present via trading name" in {
-
-      val ua = emptyUserAnswers.withPage(TradingNamePage, "Test Trading Name")
-
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, utrRoute)
-        val result  = route(application, request).value
-        val view    = application.injector.instanceOf[UtrView]
-
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, "Test Trading Name")(
-          request,
-          messages(application)
-        ).toString
-      }
-    }
-
-    "must prefer trading name over organisation name in the H1" in {
-
-      val ua = emptyUserAnswers
-        .withPage(TradingNamePage, "Test Trading Name")
-        .withPage(OverwritableOrganisationName, testOrgName)
-
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, utrRoute)
-        val result  = route(application, request).value
-        val view    = application.injector.instanceOf[UtrView]
-
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, "Test Trading Name")(
-          request,
-          messages(application)
-        ).toString
       }
     }
 
@@ -121,7 +81,7 @@ class UtrControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to Journey Recovery for a GET when RCASP name is not found" in {
+    "must redirect to Journey Recovery for a GET when organisation name is not found" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
@@ -214,7 +174,7 @@ class UtrControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to Journey Recovery for a POST when RCASP name is not found" in {
+    "must redirect to Journey Recovery for a POST when organisation name is not found" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 

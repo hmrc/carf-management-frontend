@@ -45,29 +45,24 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
-    with Logging
-    with RcaspHelper {
+    with Logging {
 
   val form: Form[Boolean] = formProvider("registeredBusinessIsTheAddressCorrect.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>
-      (
-        request.userAnswers.get(CachedBusinessDetailsPage),
-        rcaspDisplayName(request.userAnswers)
-      ) match {
-
-        case (Some(businessDetails), Some(rcaspName)) =>
+      request.userAnswers.get(CachedBusinessDetailsPage) match {
+        case Some(businessDetails) =>
           val preparedForm =
             request.userAnswers
               .get(RegisteredBusinessIsTheAddressCorrectPage)
               .fold(form)(form.fill)
 
-          Ok(view(preparedForm, mode, rcaspName, businessDetails.address))
+          Ok(view(preparedForm, mode, businessDetails.name, businessDetails.address))
 
-        case _ =>
+        case None =>
           logger.warn(
-            "[RegisteredBusinessIsTheAddressCorrectController][onPageLoad] Required business details not found. Redirecting to journey recovery."
+            "[RegisteredBusinessIsTheAddressCorrectController][onPageLoad] No cached business details found. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
@@ -75,18 +70,14 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
-      (
-        request.userAnswers.get(CachedBusinessDetailsPage),
-        rcaspDisplayName(request.userAnswers)
-      ) match {
-
-        case (Some(businessDetails), Some(rcaspName)) =>
+      request.userAnswers.get(CachedBusinessDetailsPage) match {
+        case Some(businessDetails) =>
           form
             .bindFromRequest()
             .fold(
               formWithErrors =>
                 Future.successful(
-                  BadRequest(view(formWithErrors, mode, rcaspName, businessDetails.address))
+                  BadRequest(view(formWithErrors, mode, businessDetails.name, businessDetails.address))
                 ),
               value =>
                 for {
@@ -106,9 +97,9 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
                 )
             )
 
-        case _ =>
+        case None =>
           logger.warn(
-            "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] Required business details not found. Redirecting to journey recovery."
+            "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] No cached business details found. Redirecting to journey recovery."
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
