@@ -18,7 +18,6 @@ package controllers
 
 import base.SpecBase
 import models.NormalMode
-import org.apache.pekko.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.InformationMissingView

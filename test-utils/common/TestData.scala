@@ -22,8 +22,8 @@ import models.responses._
 
 trait TestData extends ModelGenerators {
 
-  val carfId: String      = "XCCAR0024000102"
-  val rcaspIdNone: String = "none"
+  val carfId: String  = "XCCAR0024000102"
+  val rcaspId: String = "RCASP1"
 
   val rcaspContactDetails: RcaspContactDetails =
     RcaspContactDetails(
@@ -40,7 +40,7 @@ trait TestData extends ModelGenerators {
       ResponseParameters = None
     )
 
-  private def rcaspAddress =
+  private def rcaspAddress: RcaspAddress =
     RcaspAddress(
       AddressLine1 = "64",
       AddressLine2 = Some("Zoo"),
@@ -50,24 +50,40 @@ trait TestData extends ModelGenerators {
       CountryCode = "GB"
     )
 
+  val individualRcaspDetails: IndividualRcaspDetails =
+    IndividualRcaspDetails(
+      SubscriptionID = "XCARF000000001",
+      RCASPID = rcaspId,
+      IsRCASPUser = true,
+      PartyType = "Individual",
+      FirstName = "Penny",
+      LastName = "Cassiopeia",
+      TINDetails = Some(List(TinDetails(TINType = "UTR", TIN = "6893649", IssuedBy = "GB"))),
+      AddressDetails = rcaspAddress,
+      PrimaryContactDetails = Some(rcaspContactDetails)
+    )
+
+  val organisationRcaspDetails: OrganisationRcaspDetails =
+    OrganisationRcaspDetails(
+      SubscriptionID = carfId,
+      RCASPID = rcaspId,
+      IsRCASPUser = true,
+      PartyType = "Organisation",
+      RCASPName = "Mesagoza",
+      TradingName = "Uva Academy",
+      TINDetails = Some(List(TinDetails(TINType = "UTR", TIN = "68936493", IssuedBy = "GB"))),
+      AddressDetails = rcaspAddress,
+      PrimaryContactDetails = Some(rcaspContactDetails),
+      SecondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = "Prof Turo"))
+    )
+
   val testViewRcaspResponse: ViewRcaspResponse =
     ViewRcaspResponse(
       ViewRCASP = ViewRcasp(
         ResponseCommon = rcaspResponseCommon,
         ResponseDetails = RcaspResponseDetails(
           RCASPList = List(
-            OrganisationRcaspDetails(
-              SubscriptionID = carfId,
-              RCASPID = rcaspIdNone,
-              IsRCASPUser = true,
-              PartyType = "Organisation",
-              RCASPName = "Mesagoza",
-              TradingName = "Uva Academy",
-              TINDetails = Some(List(TinDetails(TINType = "UTR", TIN = "68936493", IssuedBy = "GB"))),
-              AddressDetails = rcaspAddress,
-              PrimaryContactDetails = Some(rcaspContactDetails),
-              SecondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = "Prof Turo"))
-            )
+            organisationRcaspDetails
           )
         )
       )

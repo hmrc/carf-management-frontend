@@ -75,11 +75,6 @@ POST        /individual-phone                                             contro
 GET         /change-individual-phone                                      controllers.individual.IndividualPhoneController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-individual-phone                                      controllers.individual.IndividualPhoneController.onSubmit(mode: Mode = ChangeMode)
 
-GET         /organisation-or-individual                                   controllers.combined.OrganisationOrIndividualController.onPageLoad(mode: Mode = NormalMode)
-POST        /organisation-or-individual                                   controllers.combined.OrganisationOrIndividualController.onSubmit(mode: Mode = NormalMode)
-GET         /change-organisation-or-individual                            controllers.combined.OrganisationOrIndividualController.onPageLoad(mode: Mode = ChangeMode)
-POST        /change-organisation-or-individual                            controllers.combined.OrganisationOrIndividualController.onSubmit(mode: Mode = ChangeMode)
-
 GET         /                                                             controllers.RoutingController.onPageLoad(mode: Mode = NormalMode)
 GET         /change                                                       controllers.RoutingController.onPageLoad(mode: Mode = ChangeMode)
 
