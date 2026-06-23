@@ -34,11 +34,9 @@ trait NormalRoutesNavigator {
     case HaveTradingNamePage =>
       userAnswers => navigateFromHaveTradingNamePage(userAnswers)
 
-    case TradingNamePage              =>
-      _ =>
-        controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
-        )
+    case TradingNamePage =>
+      _ => controllers.routes.CheckDetailsRegBusinessController.onPageLoad
+
     case OrganisationOrIndividualPage =>
       userAnswers => navigateFromOrganisationOrIndividualPage(userAnswers)
 
@@ -85,7 +83,7 @@ trait NormalRoutesNavigator {
       userAnswers => navigateFromOrganisationSecondContactHavePhonePage(userAnswers)
 
     case OrganisationSecondContactPhoneNumberPage =>
-      _ => controllers.routes.CheckDetailsController.onPageLoad
+      _ => controllers.routes.CheckDetailsRegBusinessController.onPageLoad
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
@@ -139,7 +137,7 @@ trait NormalRoutesNavigator {
       case Some(true)  =>
         controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
       case Some(false) =>
-        controllers.routes.CheckDetailsController.onPageLoad
+        controllers.routes.CheckDetailsRegBusinessController.onPageLoad
       case None        => routes.JourneyRecoveryController.onPageLoad()
     }
 
@@ -148,7 +146,7 @@ trait NormalRoutesNavigator {
       case Some(true)  =>
         controllers.organisation.routes.OrganisationSecondContactPhoneNumberController.onPageLoad(NormalMode)
       case Some(false) =>
-        controllers.routes.CheckDetailsController.onPageLoad
+        controllers.routes.CheckDetailsRegBusinessController.onPageLoad
       case None        =>
         routes.JourneyRecoveryController.onPageLoad()
     }

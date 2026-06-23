@@ -95,14 +95,14 @@ reportForRegisteredBusiness.p1 = You’ve registered for this service using the 
 reportForRegisteredBusiness.p2 = If {0} is an RCASP, you can add them as one now to send reports for them.
 reportForRegisteredBusiness.legend = Is {0} an RCASP?
 reportForRegisteredBusiness.error.required = Select yes if the registered business is an RCASP
-reportForRegisteredBusiness.checkYourAnswersLabel = Is the registered business an RCASP?
-reportForRegisteredBusiness.change.hidden = Change if the registered business is an RCASP
+reportForRegisteredBusiness.checkYourAnswersLabel = Is the business you registered as a reporting cryptoasset service provider (RCASP)?
+reportForRegisteredBusiness.change.hidden = Change if the business you registered as is a reporting cryptoasset service provider
 
 registeredBusinessIsThisYourBusinessName.title = Is this still the correct name for the business?
 registeredBusinessIsThisYourBusinessName.heading = Is {0} still the correct name for the business?
 registeredBusinessIsThisYourBusinessName.error.required = Select yes if this is still the correct name for the business
-registeredBusinessIsThisYourBusinessName.checkYourAnswersLabel = Is this still the correct name for the business?
-registeredBusinessIsThisYourBusinessName.change.hidden = Change if this is still the correct name for the business
+registeredBusinessIsThisYourBusinessName.checkYourAnswersLabel = What is the name of the organisation?
+registeredBusinessIsThisYourBusinessName.change.hidden = Change organisation name
 
 organisationOrIndividual.title = Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?
 organisationOrIndividual.heading = Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?
@@ -262,3 +262,12 @@ yourRcasps.error.required = Select yes if you need to add an RCASP
 yourRcasps.change.hidden = Change the details for {0}
 yourRcasps.remove.hidden = Remove {0} from the list
 yourRcasps.registeredBusinessTag = Registered&nbsp;business
+
+
+registeredBusiness.address.checkYourAnswersLabel = Main business address
+registeredBusiness.address.change.hidden = Change main business address
+
+registeredBusinessCheckDetails.title = Check the details for the registered business
+registeredBusinessCheckDetails.heading = Check the details for {0}
+registeredBusinessCheckDetails.declaration.subtitle = Now send these details for the registered business
+registeredBusinessCheckDetails.declaration.p1 = By sending these details, you are confirming that the information is correct and complete to the best of your knowledge.
