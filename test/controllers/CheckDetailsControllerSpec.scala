@@ -103,7 +103,7 @@ class CheckDetailsControllerSpec extends SpecBase {
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual
-            controllers.routes.PlaceholderController.onPageLoad("[CARF-293] Some Information is missing page").url
+            controllers.routes.InformationMissingController.onPageLoad().url
         }
 
         "must redirect to information is missing page OK and for GET when OrganisationOrIndividualPage is missing" in new Setup(
@@ -116,7 +116,7 @@ class CheckDetailsControllerSpec extends SpecBase {
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual
-            controllers.routes.PlaceholderController.onPageLoad("[CARF-293] Some Information is missing page").url
+            controllers.routes.InformationMissingController.onPageLoad().url
         }
       }
 

@@ -45,7 +45,7 @@ class CheckDetailsController @Inject() (
     import cats.syntax.all.*
     val userAnswers          = request.userAnswers
     lazy val ifEmptyProtocol =
-      Redirect(controllers.routes.PlaceholderController.onPageLoad("[CARF-293] Some Information is missing page"))
+      Redirect(controllers.routes.InformationMissingController.onPageLoad())
 
     userAnswers
       .get(OrganisationOrIndividualPage)

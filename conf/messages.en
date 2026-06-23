@@ -242,7 +242,7 @@ informationMissing.heading = Some information is missing
 informationMissing.paragraph = You must provide this information to update your reporting cryptoasset service providers (RCASPs).
 
 checkDetailsAnswers.summaryListTitle = Contact details
-checkDetailsAnswers.title = Check the details for the reporting cryptoasset service provider (RCASP) - Send a Cryptoasset Reporting Framework report - GOV.UK
+checkDetailsAnswers.title = Check the details for the reporting cryptoasset service provider (RCASP)
 checkDetailsAnswers.heading = Check the details for {0}
 checkDetailsAnswers.declaration.subtitle = Now add this RCASP
 checkDetailsAnswers.declaration.p1 = By adding this RCASP, you are confirming that the information is correct and complete to the best of your knowledge.
