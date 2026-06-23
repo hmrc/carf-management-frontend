@@ -40,7 +40,6 @@ object YourRcaspsListWithActionsHelper {
             content = Text(messages("site.change")),
             visuallyHiddenText = Some(messages("yourRcasps.change.hidden", rcasp.getName))
           ),
-          // TODO: change stubs so that RCASPIDs aren't 'none'
           ListWithActionsAction(
             href = controllers.routes.PlaceholderController
               .onPageLoad(s"Should nav to /remove/user-access/${rcasp.RCASPID} (CARF-355)")

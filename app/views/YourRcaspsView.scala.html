@@ -30,7 +30,7 @@
         form,
         if(listWithActions.items.isEmpty) messages("yourRcasps.title.zero")
         else if(listWithActions.items.size == 1) messages("yourRcasps.title.one")
-        else messages("yourRcasps.title.multiple")
+        else messages("yourRcasps.title.multiple", listWithActions.items.size)
     ),
     fullWidth = true
 ) {
@@ -44,7 +44,7 @@
     } else if(listWithActions.items.size == 1) {
         <h1 class="govuk-heading-l long-word">@messages("yourRcasps.heading.one")</h1>
     } else {
-        <h1 class="govuk-heading-l long-word">@messages("yourRcasps.heading.multiple")</h1>
+        <h1 class="govuk-heading-l long-word">@messages("yourRcasps.heading.multiple", listWithActions.items.size)</h1>
     }
 
     @if(listWithActions.items.nonEmpty) {
