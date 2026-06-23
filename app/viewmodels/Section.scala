@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package controllers
+package viewmodels
 
-import javax.inject.Inject
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{__, OWrites}
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 
-class PlaceholderController @Inject() (
-    override val messagesApi: MessagesApi,
-    val controllerComponents: MessagesControllerComponents
-) extends FrontendBaseController
-    with I18nSupport {
+final case class Section(sectionName: String, rows: Seq[SummaryListRow])
 
-  def onPageLoad(message: String): Action[AnyContent] = Action {
-    Ok(message)
-  }
+object Section {
+
+  implicit val sectionWrites: OWrites[Section] =
+    (
+      (__ \ "sectionName").write[String] and
+        (__ \ "rows").write[Seq[SummaryListRow]]
+    )((s: Section) => (s.sectionName, s.rows))
 
 }
