@@ -16,7 +16,8 @@
 
 package models
 
-import models.countries.{CountryUk, UnitedKingdom}
+import config.Constants.ukCountryCode
+import models.countries.CountryUk
 import models.requests.AddressDetails
 import play.api.libs.json.{Json, OFormat}
 
@@ -62,7 +63,7 @@ extension (address: AddressUk) {
       Some(address.townOrCity),
       Some(address.postCode)
     ).flatten ++ {
-      if (address.countryUk.code == UnitedKingdom.code) {
+      if (address.countryUk.code == ukCountryCode) {
         Seq.empty
       } else Seq(address.countryUk.name)
     }

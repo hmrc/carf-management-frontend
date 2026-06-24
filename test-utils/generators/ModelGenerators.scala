@@ -17,7 +17,7 @@
 package generators
 
 import models.{AddressAndUPRN, AddressUk, FindAddress}
-import models.countries.{Country, CountryUk}
+import models.countries.CountryUk
 import models.individual.IndividualName
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
@@ -35,14 +35,6 @@ trait ModelGenerators {
   val addressStringGen: Gen[String] = Gen.alphaNumStr.suchThat(_.nonEmpty).map(_.take(35))
 
   val postcodeStringGen: Gen[String] = Gen.alphaNumStr.suchThat(_.nonEmpty).map(_.take(10))
-
-  implicit lazy val arbitraryCountry: Arbitrary[Country] =
-    Arbitrary {
-      for {
-        code        <- Gen.pick(2, 'A' to 'Z').map(_.mkString)
-        description <- Gen.alphaStr.suchThat(_.nonEmpty)
-      } yield Country(code, description)
-    }
 
   implicit lazy val arbitraryFindAddress: Arbitrary[FindAddress] =
     Arbitrary {
