@@ -19,7 +19,7 @@ package navigation
 import base.SpecBase
 import controllers.routes
 import models.{NormalMode, OrganisationOrIndividual}
-import pages.{AddressLookupPage, AddressPagePrePop, FindAddressPage, Page}
+import pages.{AddressLookupResult, AddressPagePrePop, FindAddressPage, Page}
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
@@ -413,7 +413,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
 
     "When passed FindAddressPage" - {
       "Should redirect to ChooseAddressPage when multiple addresses are returned" in {
-        val userAnswers = emptyUserAnswers.withPage(AddressLookupPage, testAddressAndUprns)
+        val userAnswers = emptyUserAnswers.withPage(AddressLookupResult, testAddressAndUprns)
         navigator.nextPage(
           FindAddressPage,
           NormalMode,

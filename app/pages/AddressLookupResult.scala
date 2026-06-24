@@ -20,7 +20,7 @@ import models.{AddressAndUPRN, AddressUk}
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 
-case object AddressLookupPage extends QuestionPage[Seq[AddressAndUPRN]] {
+case object AddressLookupResult extends QuestionPage[Seq[AddressAndUPRN]] {
 
   override def path: JsPath = JsPath \ toString
 

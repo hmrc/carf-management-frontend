@@ -93,10 +93,10 @@ class FindAddressController @Inject() (
               .postcodeSearch(value.postcode, value.propertyNameOrNumber)
               .value
               .flatMap {
-                case Left(error)                                                    =>
+                case Left(error)                                    =>
                   logger.error(s"Address lookup service failed: $error")
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-                case Right((Nil, _))                                                =>
+                case Right((Nil, _))                                =>
                   val formError =
                     formReturned.withError(FormError("postcode", List("findAddress.postcode.error.notFound")))
                   retrieveRcaspName(request.userAnswers).fold {
@@ -105,14 +105,12 @@ class FindAddressController @Inject() (
                     )
                     Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
                   }(name => Future.successful(BadRequest(view(formError, mode, name, manualLink(mode)))))
-                case Right((addressesAndUPRNs, _)) if addressesAndUPRNs.length == 1 =>
+                case Right((addressesAndUPRNs, additionalCallMade)) =>
                   for {
-                    updatedAnswers <- saveSingleAddress(value, addressesAndUPRNs.head)
+                    updatedAnswers <-
+                      if (addressesAndUPRNs.length == 1) { saveSingleAddress(value, addressesAndUPRNs.head) }
+                      else { saveMultipleAddresses(value, addressesAndUPRNs, additionalCallMade) }
                   } yield Redirect(navigator.nextPage(FindAddressPage, mode, updatedAnswers))
-                case Right((addressesAndUPRNs, additionalCallMade))                 =>
-                  for {
-                    updatedAnswersWithFlag <- saveMultipleAddresses(value, addressesAndUPRNs, additionalCallMade)
-                  } yield Redirect(navigator.nextPage(FindAddressPage, mode, updatedAnswersWithFlag))
               }
         )
   }
@@ -128,7 +126,7 @@ class FindAddressController @Inject() (
       updatedAnswers            <-
         Future.fromTry(request.userAnswers.set(FindAddressPage, findAddress))
       updatedAnswersWithAddress <-
-        Future.fromTry(updatedAnswers.set(AddressLookupPage, addressesAndUPRNs))
+        Future.fromTry(updatedAnswers.set(AddressLookupResult, addressesAndUPRNs))
       updatedAnswersWithFlag    <-
         Future.fromTry(updatedAnswersWithAddress.set(FindAddressAdditionalCallUa, additionalCallMade))
       resultingUserAnswer       <-
