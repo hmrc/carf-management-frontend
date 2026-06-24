@@ -297,6 +297,47 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
       }
     }
 
+    "must clear UPRN from user answers when multiple addresses are returned" in {
+      val userAnswersWithNameAndUprn =
+        emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OverwritableOrganisationName, testName)
+          .withPage(AddressUPRNUserAnswers, testUPRN)
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any()))
+        .thenReturn(
+          ResultT.fromValue(
+            Seq(
+              AddressAndUPRN(testAddressUk, testUPRN),
+              AddressAndUPRN(testAddressUk, testUPRN),
+              AddressAndUPRN(testAddressUk, testUPRN)
+            ),
+            true
+          )
+        )
+
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswersWithNameAndUprn))
+          .overrides(
+            bind[AddressLookupService].toInstance(mockAddressLookupService)
+          )
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, findAddressRoute)
+            .withFormUrlEncodedBody(("postcode", "TE1 1ST"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        verify(mockAddressLookupService, times(1)).postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any())
+        verify(mockSessionRepository, times(1)).set(any())
+        verify(mockSessionRepository).set(argThat(_.get(AddressUPRNUserAnswers).isEmpty))
+      }
+    }
+
     "must return a Bad Request and errors when invalid data is submitted" in {
 
       val userAnswersWithName =

@@ -16,9 +16,6 @@
 
 package models.errors
 
-import uk.gov.hmrc.http.HttpErrorFunctions.{is4xx, is5xx}
-import uk.gov.hmrc.http.HttpReads
-
 sealed trait CarfError
 
 case object ConversionError extends CarfError
@@ -26,15 +23,6 @@ case object ConversionError extends CarfError
 sealed trait ApiError extends CarfError
 
 object ApiError {
-
-  implicit def readEitherOf[A: HttpReads]: HttpReads[Either[ApiError, A]] =
-    HttpReads.ask.flatMap { case (_, _, response) =>
-      response.status match {
-        case status if is4xx(status) => HttpReads.pure(Left(BadRequestError))
-        case status if is5xx(status) => HttpReads.pure(Left(InternalServerError))
-        case _                       => HttpReads[A].map(Right.apply)
-      }
-    }
 
   case object BadRequestError extends ApiError
 

@@ -167,12 +167,12 @@ trait NormalRoutesNavigator {
     }
 
   private def navigateFromFindAddressPage(userAnswers: UserAnswers): Call =
-    userAnswers.get(AddressLookupPage) match {
-      case Some(addresses) if addresses.size == 1 =>
-        controllers.routes.PlaceholderController.onPageLoad("Should nav to /review-address (CARF-201)")
-      case Some(addresses) if addresses.size > 1  =>
+    (userAnswers.get(AddressLookupPage), userAnswers.get(AddressPagePrePop)) match {
+      case (Some(addresses), None) =>
         controllers.routes.PlaceholderController.onPageLoad("Should nav to /choose-address (CARF-201)")
-      case _                                      =>
+      case (None, Some(address))   =>
+        controllers.routes.PlaceholderController.onPageLoad("Should nav to /review-address (CARF-201)")
+      case _                       =>
         controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 }

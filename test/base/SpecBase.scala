@@ -22,7 +22,7 @@ import models.countries.CountryUk
 import models.individual.IndividualName
 import models.requests.AddressDetails
 import models.responses.{AddressRecord, AddressRegistrationResponse, AddressResponse, CountryRecord}
-import models.{AddressUk, FindAddress, RichJsObject, UniqueTaxpayerReference, UserAnswers}
+import models.{AddressAndUPRN, AddressUk, FindAddress, RichJsObject, UniqueTaxpayerReference, UserAnswers}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -63,6 +63,7 @@ trait SpecBase
   val testInternalId: String           = "12345"
   val testCarfId: String               = "XE0000123456789"
   val testUPRN: Int                    = 123456789
+  val testUPRNAlt: Int                 = 223456789
 
   private val UtcZoneId     = "UTC"
   implicit val clock: Clock = Clock.fixed(Instant.parse("2020-05-20T12:34:56.789012Z"), ZoneId.of(UtcZoneId))
@@ -114,7 +115,7 @@ trait SpecBase
 
   }
 
-  lazy val testIndFindAddress: FindAddress = FindAddress("SW1A 1AA", Some("10"))
+  lazy val testFindAddress: FindAddress = FindAddress("SW1A 1AA", Some("10"))
 
   lazy val testPostcode: String = validPostcodes.sample.value
 
@@ -137,6 +138,21 @@ trait SpecBase
     townOrCity = "Testingtown",
     postCode = testPostcode,
     countryUk = CountryUk("GB", "United Kingdom")
+  )
+
+  lazy val testAddressUkAlt: AddressUk = AddressUk(
+    addressLine1 = "2 Test",
+    addressLine2 = Some("Test Road"),
+    addressLine3 = Some("Test Area"),
+    townOrCity = "Testingville",
+    postCode = testPostcode,
+    countryUk = CountryUk("GB", "United Kingdom")
+  )
+
+  lazy val testAddressAndUprns: Seq[AddressAndUPRN] = Seq(
+    AddressAndUPRN(testAddressUk, testUPRN),
+    AddressAndUPRN(testAddressUk, testUPRN),
+    AddressAndUPRN(testAddressUk, testUPRN)
   )
 
   lazy val multipleAddressResponses: Seq[AddressResponse] =

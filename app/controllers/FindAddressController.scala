@@ -93,10 +93,10 @@ class FindAddressController @Inject() (
               .postcodeSearch(value.postcode, value.propertyNameOrNumber)
               .value
               .flatMap {
-                case Left(error)                                    =>
+                case Left(error)                                                    =>
                   logger.error(s"Address lookup service failed: $error")
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-                case Right((Nil, _))                                =>
+                case Right((Nil, _))                                                =>
                   val formError =
                     formReturned.withError(FormError("postcode", List("findAddress.postcode.error.notFound")))
                   retrieveRcaspName(request.userAnswers).fold {
@@ -105,15 +105,19 @@ class FindAddressController @Inject() (
                     )
                     Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
                   }(name => Future.successful(BadRequest(view(formError, mode, name, manualLink(mode)))))
-                case Right((addressesAndUPRNs, additionalCallMade)) =>
+                case Right((addressesAndUPRNs, _)) if addressesAndUPRNs.length == 1 =>
                   for {
-                    updatedAnswersWithFlag <- save(value, addressesAndUPRNs, additionalCallMade)
+                    updatedAnswers <- saveSingleAddress(value, addressesAndUPRNs.head)
+                  } yield Redirect(navigator.nextPage(FindAddressPage, mode, updatedAnswers))
+                case Right((addressesAndUPRNs, additionalCallMade))                 =>
+                  for {
+                    updatedAnswersWithFlag <- saveMultipleAddresses(value, addressesAndUPRNs, additionalCallMade)
                   } yield Redirect(navigator.nextPage(FindAddressPage, mode, updatedAnswersWithFlag))
               }
         )
   }
 
-  private def save(
+  private def saveMultipleAddresses(
       findAddress: FindAddress,
       addressesAndUPRNs: Seq[AddressAndUPRN],
       additionalCallMade: Boolean
@@ -121,28 +125,31 @@ class FindAddressController @Inject() (
       request: DataRequest[AnyContent]
   ) =
     for {
-      updatedAnswers            <- Future.fromTry(request.userAnswers.set(FindAddressPage, findAddress))
-      (filledAddress, maybeUPRN) =
-        addressesAndUPRNs.headOption.fold(
-          (AddressUk("", None, None, "", findAddress.postcode, CountryUk("", "")), Option.empty[Long])
-        )(addressAndUPRN => (addressAndUPRN.address, Some(addressAndUPRN.UPRN)))
-
-      updatedAnswersWithPrePop <-
-        Future.fromTry(updatedAnswers.set(AddressPagePrePop, filledAddress))
-
-      updatedAnswersWithAddress <- Future.fromTry(
-                                     updatedAnswersWithPrePop.set(
-                                       AddressLookupPage,
-                                       addressesAndUPRNs
-                                     )
-                                   )
-      updatedAnswersWithFlag    <- Future.fromTry(
-                                     updatedAnswersWithAddress.set(FindAddressAdditionalCallUa, additionalCallMade)
-                                   )
-      resultingUserAnswer       <- maybeUPRN.fold(Future.successful(updatedAnswersWithFlag)) { uprn =>
-                                     Future.fromTry(updatedAnswersWithFlag.set(AddressUPRNUserAnswers, uprn))
-                                   }
+      updatedAnswers            <-
+        Future.fromTry(request.userAnswers.set(FindAddressPage, findAddress))
+      updatedAnswersWithAddress <-
+        Future.fromTry(updatedAnswers.set(AddressLookupPage, addressesAndUPRNs))
+      updatedAnswersWithFlag    <-
+        Future.fromTry(updatedAnswersWithAddress.set(FindAddressAdditionalCallUa, additionalCallMade))
+      resultingUserAnswer       <-
+        Future.fromTry(updatedAnswersWithFlag.remove(AddressUPRNUserAnswers))
       _                         <- sessionRepository.set(resultingUserAnswer)
+    } yield resultingUserAnswer
+
+  private def saveSingleAddress(
+      findAddress: FindAddress,
+      addressAndUPRN: AddressAndUPRN
+  )(implicit
+      request: DataRequest[AnyContent]
+  ) =
+    for {
+      updatedAnswers           <-
+        Future.fromTry(request.userAnswers.set(FindAddressPage, findAddress))
+      updatedAnswersWithPrePop <-
+        Future.fromTry(updatedAnswers.set(AddressPagePrePop, addressAndUPRN.address))
+      resultingUserAnswer      <-
+        Future.fromTry(updatedAnswersWithPrePop.set(AddressUPRNUserAnswers, addressAndUPRN.UPRN))
+      _                        <- sessionRepository.set(resultingUserAnswer)
     } yield resultingUserAnswer
 
   private def retrieveRcaspName(userAnswers: UserAnswers): Option[String] =

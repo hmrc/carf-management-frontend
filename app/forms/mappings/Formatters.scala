@@ -341,7 +341,7 @@ trait Formatters extends Logging {
       postcode: String,
       invalidKey: Option[String]
   ): Either[Seq[FormError], String] =
-    postcode.take(2) match {
+    postcode.take(2).toUpperCase match {
       case "GY" | "JE" | "IM" => Left(Seq(FormError("postcode", invalidKey.get)))
       case _                  => Right(PostcodeUtil.normalise(true, postcode))
     }
