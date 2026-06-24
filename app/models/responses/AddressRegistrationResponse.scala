@@ -24,8 +24,7 @@ case class AddressRegistrationResponse(
     addressLine3: Option[String],
     addressLine4: Option[String],
     postalCode: Option[String],
-    countryCode: String,
-    countryName: Option[String] = None
+    countryCode: String
 )
 
 object AddressRegistrationResponse {

@@ -40,7 +40,8 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         addressLine4 = None,
         postalCode = Some("TE1 1ST"),
         countryCode = "GB"
-      )
+      ),
+      countryName = "United Kingdom"
     )
 
   val businessDetailsNonGb: BusinessDetails =
@@ -53,7 +54,8 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         addressLine4 = None,
         postalCode = Some("11722"),
         countryCode = "US"
-      )
+      ),
+      countryName = "United States"
     )
 
   "NormalRoutesNavigator" - {

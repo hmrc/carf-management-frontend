@@ -21,7 +21,8 @@ import play.api.libs.json.*
 
 case class BusinessDetails(
     name: String,
-    address: AddressRegistrationResponse
+    address: AddressRegistrationResponse,
+    countryName: String
 )
 
 object BusinessDetails {

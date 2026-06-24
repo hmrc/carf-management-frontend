@@ -52,23 +52,9 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
         addressLine3 = None,
         addressLine4 = None,
         postalCode = Some("TE1 1ST"),
-        countryCode = "GB",
-        countryName = Some("United Kingdom")
-      )
-    )
-
-  val businessDetailsNoCountryName: BusinessDetails =
-    BusinessDetails(
-      name = "Test Business Ltd",
-      address = AddressRegistrationResponse(
-        addressLine1 = "1 Test Street",
-        addressLine2 = Some("Testville"),
-        addressLine3 = None,
-        addressLine4 = None,
-        postalCode = Some("TE1 1ST"),
-        countryCode = "GB",
-        countryName = None
-      )
+        countryCode = "GB"
+      ),
+      countryName = "United Kingdom"
     )
 
   "RegisteredBusinessIsTheAddressCorrect Controller" - {

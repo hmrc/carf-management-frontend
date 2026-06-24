@@ -54,7 +54,8 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
         addressLine4 = None,
         postalCode = Some("TE1 1ST"),
         countryCode = "GB"
-      )
+      ),
+      countryName = "United Kingdom"
     )
 
   "RegisteredBusinessIsThisYourBusinessName Controller" - {

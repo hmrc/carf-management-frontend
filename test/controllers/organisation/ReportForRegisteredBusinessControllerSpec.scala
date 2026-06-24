@@ -59,12 +59,12 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         addressLine3 = None,
         addressLine4 = None,
         postalCode = Some("TE1 1ST"),
-        countryCode = "GB",
-        countryName = Some("United Kingdom")
-      )
+        countryCode = "GB"
+      ),
+      countryName = "United Kingdom"
     )
 
-  val businessDetailsWithoutCountryName: BusinessDetails =
+  val businessDetailsFromService: BusinessDetails =
     BusinessDetails(
       name = "Test Business Ltd",
       address = AddressRegistrationResponse(
@@ -73,9 +73,9 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         addressLine3 = None,
         addressLine4 = None,
         postalCode = Some("TE1 1ST"),
-        countryCode = "GB",
-        countryName = None
-      )
+        countryCode = "GB"
+      ),
+      countryName = ""
     )
 
   "ReportForRegisteredBusiness Controller" - {
@@ -83,7 +83,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     "must return OK and the correct view for a GET when a UTR is present" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
-        .thenReturn(ResultT.fromValue(businessDetailsWithoutCountryName))
+        .thenReturn(ResultT.fromValue(businessDetailsFromService))
       when(mockCountryListFactory.getDescriptionFromCode(any()))
         .thenReturn(Some("United Kingdom"))
 
@@ -114,7 +114,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     "must populate the view correctly on a GET when the question has previously been answered" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
-        .thenReturn(ResultT.fromValue(businessDetailsWithoutCountryName))
+        .thenReturn(ResultT.fromValue(businessDetailsFromService))
       when(mockCountryListFactory.getDescriptionFromCode(any()))
         .thenReturn(Some("United Kingdom"))
 
@@ -174,7 +174,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     "must redirect to Journey Recovery on GET when country code is not found in country list" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
-        .thenReturn(ResultT.fromValue(businessDetailsWithoutCountryName))
+        .thenReturn(ResultT.fromValue(businessDetailsFromService))
       when(mockCountryListFactory.getDescriptionFromCode(any()))
         .thenReturn(None)
 

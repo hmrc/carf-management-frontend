@@ -39,7 +39,8 @@ class NotInUkControllerSpec extends SpecBase {
         addressLine4 = None,
         postalCode = Some("TE1 1ST"),
         countryCode = "US"
-      )
+      ),
+      countryName = "United States"
     )
 
   "NotInUk Controller" - {

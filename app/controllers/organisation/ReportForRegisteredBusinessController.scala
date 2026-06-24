@@ -62,9 +62,7 @@ class ReportForRegisteredBusinessController @Inject() (
             case Right(businessDetails) =>
               countryListFactory.getDescriptionFromCode(businessDetails.address.countryCode) match {
                 case Some(countryName) =>
-                  val updatedBusinessDetails = businessDetails.copy(
-                    address = businessDetails.address.copy(countryName = Some(countryName))
-                  )
+                  val updatedBusinessDetails = businessDetails.copy(countryName = countryName)
 
                   for {
                     updatedAnswers <- Future.fromTry(
