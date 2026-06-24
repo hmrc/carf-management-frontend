@@ -59,7 +59,7 @@ trait NormalRoutesNavigator {
     case IndividualHavePhonePage => userAnswers => navigateFromIndividualHavePhonePage(userAnswers)
 
     case IndividualPhonePage =>
-      _ => controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+      _ => controllers.routes.CheckDetailsController.onPageLoad
 
     case OrganisationFirstContactNamePage =>
       _ => controllers.organisation.routes.OrganisationFirstContactEmailController.onPageLoad(NormalMode)
@@ -86,7 +86,7 @@ trait NormalRoutesNavigator {
       userAnswers => navigateFromOrganisationSecondContactHavePhonePage(userAnswers)
 
     case OrganisationSecondContactPhoneNumberPage =>
-      _ => controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+      _ => controllers.routes.CheckDetailsController.onPageLoad
 
     case FindAddressPage =>
       userAnswers => navigateFromFindAddressPage(userAnswers)
@@ -108,7 +108,7 @@ trait NormalRoutesNavigator {
     userAnswers.get(IndividualHavePhonePage) match {
       case Some(true)  => controllers.individual.routes.IndividualPhoneController.onPageLoad(NormalMode)
       case Some(false) =>
-        controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+        controllers.routes.CheckDetailsController.onPageLoad
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
@@ -143,7 +143,7 @@ trait NormalRoutesNavigator {
       case Some(true)  =>
         controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
       case Some(false) =>
-        controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+        controllers.routes.CheckDetailsController.onPageLoad
       case None        => routes.JourneyRecoveryController.onPageLoad()
     }
 
@@ -152,7 +152,7 @@ trait NormalRoutesNavigator {
       case Some(true)  =>
         controllers.organisation.routes.OrganisationSecondContactPhoneNumberController.onPageLoad(NormalMode)
       case Some(false) =>
-        controllers.routes.PlaceholderController.onPageLoad("Should nav to /check-answers (CARF-540)")
+        controllers.routes.CheckDetailsController.onPageLoad
       case None        =>
         routes.JourneyRecoveryController.onPageLoad()
     }

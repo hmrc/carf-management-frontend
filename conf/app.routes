@@ -128,6 +128,9 @@ POST        /phone                                   controllers.organisation.Or
 GET         /change-phone                            controllers.organisation.OrganisationFirstContactPhoneNumberController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-phone                            controllers.organisation.OrganisationFirstContactPhoneNumberController.onSubmit(mode: Mode = ChangeMode)
 
+GET         /check-answers                           controllers.CheckDetailsController.onPageLoad
+POST        /check-answers                           controllers.CheckDetailsController.onSubmit
+
 GET         /find-address                                                 controllers.FindAddressController.onPageLoad(mode: Mode = NormalMode)
 POST        /find-address                                                 controllers.FindAddressController.onSubmit(mode: Mode = NormalMode)
 GET         /change-find-address                                          controllers.FindAddressController.onPageLoad(mode: Mode = ChangeMode)

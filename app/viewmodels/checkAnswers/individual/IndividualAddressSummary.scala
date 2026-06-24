@@ -16,30 +16,28 @@
 
 package viewmodels.checkAnswers.individual
 
-import controllers.individual.routes
-import models.{ChangeMode, UserAnswers}
-import pages.individual.IndividualNamePage
+import models.UserAnswers
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
-import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
-object IndividualNameSummary {
+object IndividualAddressSummary {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(IndividualNamePage).map { answer =>
-
-      val value = HtmlFormat.escape(answer.fullName).toString
-
-      SummaryListRowViewModel(
-        key = "individualName.checkYourAnswersLabel",
-        value = ValueViewModel(HtmlContent(value)),
-        actions = Seq(
-          ActionItemViewModel("site.change", routes.IndividualNameController.onPageLoad(ChangeMode).url)
-            .withVisuallyHiddenText(messages("individualName.change.hidden"))
+    Some("111 Emirates Stadium NE1 4ABJ").map {
+      answer => // TODO [CARF-???] - Add real pagewhen CARF-200, 201 & 203 are done
+        SummaryListRowViewModel(
+          key = "individual.address.checkYourAnswersLabel",
+          value = ValueViewModel(HtmlFormat.escape(answer).toString),
+          actions = Seq(
+            ActionItemViewModel(
+              "site.change",
+              controllers.routes.PlaceholderController.onPageLoad("CARF-200 - /find-address").url
+            )
+              .withVisuallyHiddenText(messages("individual.address.hidden"))
+          )
         )
-      )
     }
 }
