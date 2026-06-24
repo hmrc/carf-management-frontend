@@ -148,7 +148,7 @@ trait Generators extends ModelGenerators {
                         areaLength,
                         Gen.alphaChar.filter(char =>
                           areaLength match {
-                            case 2 => !invalidPostcodes.contains(char.toString)
+                            case 2 => !invalidPostcodes.contains(char.toUpper.toString)
                             case _ => true
                           }
                         )
