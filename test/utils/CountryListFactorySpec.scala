@@ -23,8 +23,8 @@ import play.api.Environment
 
 class CountryListFactorySpec extends SpecBase {
 
-  val mockEnvironment: Environment       = mock[Environment]
-  val mockAppConfig: FrontendAppConfig   = mock[FrontendAppConfig]
+  val mockEnvironment: Environment     = mock[Environment]
+  val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
   "CountryListFactory" - {
 
