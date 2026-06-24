@@ -162,15 +162,14 @@ trait NormalRoutesNavigator {
           .get(CachedBusinessDetailsPage)
           .fold(
             controllers.routes.JourneyRecoveryController.onPageLoad()
-          )(businessDetails =>
-            businessDetails.address.countryCode.toUpperCase match {
-              case Constants.ukCountryCode =>
-                controllers.routes.PlaceholderController
-                  .onPageLoad("Should nav to /registered-business/check-answers (CARF-294)")
-              case _                       =>
-                controllers.organisation.routes.NotInUkController.onPageLoad()
+          ) { businessDetails =>
+            if (businessDetails.address.countryCode.toUpperCase == Constants.ukCountryCode) {
+              controllers.routes.PlaceholderController
+                .onPageLoad("Should nav to /registered-business/check-answers (CARF-294)")
+            } else {
+              controllers.organisation.routes.NotInUkController.onPageLoad()
             }
-          )
+          }
       case Some(false) =>
         controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
       case None        =>
