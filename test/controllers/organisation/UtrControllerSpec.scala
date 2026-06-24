@@ -97,9 +97,7 @@ class UtrControllerSpec extends SpecBase {
     "must redirect to the next page when valid data is submitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
-
-      val application = applicationBuilder(userAnswers = Some(ua))
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
         )
@@ -174,14 +172,14 @@ class UtrControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to Journey Recovery for a POST when organisation name is not found" in {
+    "must redirect to Journey Recovery for a POST when invalid data is submitted and organisation name is not found" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
         val request =
           FakeRequest(POST, utrRoute)
-            .withFormUrlEncodedBody(("value", "1234567890"))
+            .withFormUrlEncodedBody(("value", ""))
 
         val result = route(application, request).value
 

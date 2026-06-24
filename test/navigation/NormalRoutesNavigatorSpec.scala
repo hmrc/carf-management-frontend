@@ -119,7 +119,27 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NormalMode,
           ua
         ) mustBe controllers.routes.PlaceholderController.onPageLoad(
-          "Should nav to /organisation-first-contact-name (CARF-294)"
+          "Should nav to /registered-business/check-answers (CARF-294)"
+        )
+
+      }
+
+      "Should redirect to PlaceholderController for /check-answers when answer is true and country is lowercase gb" in {
+        val ua = emptyUserAnswers
+          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+          .withPage(
+            CachedBusinessDetailsPage,
+            businessDetails.copy(
+              address = businessDetails.address.copy(countryCode = "gb")
+            )
+          )
+
+        navigator.nextPage(
+          RegisteredBusinessIsTheAddressCorrectPage,
+          NormalMode,
+          ua
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad(
+          "Should nav to /registered-business/check-answers (CARF-294)"
         )
       }
 

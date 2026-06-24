@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package models.responses
+package models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class AddressRegistrationResponse(
-    addressLine1: String,
-    addressLine2: Option[String],
-    addressLine3: Option[String],
-    addressLine4: Option[String],
-    postalCode: Option[String],
-    countryCode: String,
-    countryName: Option[String] = None
-)
+case class Country(code: String, description: String)
 
-object AddressRegistrationResponse {
-  implicit val format: OFormat[AddressRegistrationResponse] = Json.format[AddressRegistrationResponse]
+object Country {
+  implicit val format: OFormat[Country] = Json.format[Country]
 }

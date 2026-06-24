@@ -19,7 +19,8 @@
 
 @this(
         layout: templates.Layout,
-        appConfig: FrontendAppConfig
+        appConfig: FrontendAppConfig,
+        link: components.Link
 )
 
 @(rcaspName: String)(implicit request: RequestHeader, messages: Messages)
@@ -33,9 +34,12 @@
     <p class="govuk-body">@messages("notInUk.p1", rcaspName)</p>
 
     <p class="govuk-body">
-    @Html(messages("notInUk.p2",
-        s"""<a class="govuk-link" href="${routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(NormalMode)}">${messages("notInUk.p2.linkText")}</a>"""
-    ))
+        @messages("notInUk.p2")
+        @link(
+            href = routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(NormalMode).url,
+            key = "notInUk.p2.linkText",
+            fullStop = true
+        )
     </p>
 
     <p class="govuk-body">

@@ -24,6 +24,7 @@ import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
 import play.api.mvc.Call
+import config.Constants
 
 trait NormalRoutesNavigator {
 
@@ -162,12 +163,11 @@ trait NormalRoutesNavigator {
           .fold(
             controllers.routes.JourneyRecoveryController.onPageLoad()
           )(businessDetails =>
-            businessDetails.address.countryCode match {
-              case "GB" =>
-                controllers.routes.PlaceholderController.onPageLoad(
-                  "Should nav to /organisation-first-contact-name (CARF-294)"
-                )
-              case _    =>
+            businessDetails.address.countryCode.toUpperCase match {
+              case Constants.ukCountryCode =>
+                controllers.routes.PlaceholderController
+                  .onPageLoad("Should nav to /registered-business/check-answers (CARF-294)")
+              case _                       =>
                 controllers.organisation.routes.NotInUkController.onPageLoad()
             }
           )

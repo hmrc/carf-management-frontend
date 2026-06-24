@@ -16,6 +16,7 @@
 
 package forms.organisation
 
+import config.Constants
 import forms.behaviours.StringFieldBehaviours
 import play.api.data.FormError
 
@@ -25,7 +26,7 @@ class UtrFormProviderSpec extends StringFieldBehaviours {
   val invalidKey       = "utr.error.invalid"
   val invalidFormatKey = "utr.error.invalidFormat"
 
-  val validLengths: Set[Int] = Set(10, 13)
+  val validLengths: Set[Int] = Constants.acceptedUtrLengths
 
   val validUtr = "1234567890"
   val form     = new UtrFormProvider()()

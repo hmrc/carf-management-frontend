@@ -14,20 +14,25 @@
  * limitations under the License.
  */
 
-package models.responses
+package utils
 
-import play.api.libs.json.{Json, OFormat}
+import config.FrontendAppConfig
+import models.Country
+import play.api.Environment
+import play.api.libs.json.Json
 
-case class AddressRegistrationResponse(
-    addressLine1: String,
-    addressLine2: Option[String],
-    addressLine3: Option[String],
-    addressLine4: Option[String],
-    postalCode: Option[String],
-    countryCode: String,
-    countryName: Option[String] = None
-)
+import javax.inject.{Inject, Singleton}
 
-object AddressRegistrationResponse {
-  implicit val format: OFormat[AddressRegistrationResponse] = Json.format[AddressRegistrationResponse]
+@Singleton
+class CountryListFactory @Inject() (environment: Environment, appConfig: FrontendAppConfig) {
+
+  private def countryList: Option[Seq[Country]] =
+    environment.resourceAsStream(appConfig.countryCodeJson).map(Json.parse).map {
+      _.as[Seq[Country]]
+    }
+
+  def getDescriptionFromCode(code: String): Option[String] =
+    countryList.flatMap {
+      _.find(_.code == code).map(_.description)
+    }
 }

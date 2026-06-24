@@ -180,8 +180,7 @@ trait Formatters extends Logging {
       invalidKey: String,
       invalidFormatKey: String,
       regex: String,
-      msgArg: String,
-      acceptedLengths: Seq[Int] = Seq(10, 13)
+      msgArg: String
   ): Formatter[String] =
     new Formatter[String] {
 
@@ -194,10 +193,11 @@ trait Formatters extends Logging {
           .map(_.replaceAll("\\s", "").replaceAll("^[kK]+|[kK]+$", ""))
 
         trimmedUtr match {
-          case None | Some("")                                => Left(Seq(formatError(key, requiredKey, msgArg)))
-          case Some(s) if !s.matches(regex)                   => Left(Seq(formatError(key, invalidKey, msgArg)))
-          case Some(s) if !acceptedLengths.contains(s.length) => Left(Seq(formatError(key, invalidFormatKey, msgArg)))
-          case Some(s)                                        => Right(s)
+          case None | Some("")                                             => Left(Seq(formatError(key, requiredKey, msgArg)))
+          case Some(s) if !s.matches(regex)                                => Left(Seq(formatError(key, invalidKey, msgArg)))
+          case Some(s) if !Constants.acceptedUtrLengths.contains(s.length) =>
+            Left(Seq(formatError(key, invalidFormatKey, msgArg)))
+          case Some(s)                                                     => Right(s)
         }
       }
 

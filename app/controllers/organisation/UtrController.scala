@@ -69,28 +69,28 @@ class UtrController @Inject() (
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
-      request.userAnswers.get(OverwritableOrganisationName) match {
-        case Some(orgName) =>
-          form
-            .bindFromRequest()
-            .fold(
-              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, orgName))),
-              value =>
-                for {
-                  updatedAnswers <- Future.fromTry(
-                                      request.userAnswers.set(UtrPage, value)
-                                    )
-                  _              <- sessionRepository.set(updatedAnswers)
-                } yield Redirect(
-                  navigator.nextPage(UtrPage, mode, updatedAnswers)
+      form
+        .bindFromRequest()
+        .fold(
+          formWithErrors =>
+            request.userAnswers.get(OverwritableOrganisationName) match {
+              case Some(orgName) =>
+                Future.successful(BadRequest(view(formWithErrors, mode, orgName)))
+              case None          =>
+                logger.warn(
+                  "[UtrController][onSubmit] No organisation name found in UserAnswers. Redirecting to journey recovery."
                 )
+                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+            },
+          value =>
+            for {
+              updatedAnswers <- Future.fromTry(
+                                  request.userAnswers.set(UtrPage, value)
+                                )
+              _              <- sessionRepository.set(updatedAnswers)
+            } yield Redirect(
+              navigator.nextPage(UtrPage, mode, updatedAnswers)
             )
-
-        case None =>
-          logger.warn(
-            "[UtrController][onSubmit] No organisation name found in UserAnswers. Redirecting to journey recovery."
-          )
-          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      }
+        )
     }
 }

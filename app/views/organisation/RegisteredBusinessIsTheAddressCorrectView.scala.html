@@ -25,7 +25,7 @@
         govukButton: GovukButton
 )
 
-@(form: Form[Boolean], mode: Mode, rcaspName: String, address: AddressRegistrationResponse)(implicit request: Request[_], messages: Messages)
+@(form: Form[Boolean], mode: Mode, rcaspName: String, address: AddressRegistrationResponse, countryName: String)(implicit request: Request[_], messages: Messages)
 
 @addressLines = @{
     Seq(
@@ -34,7 +34,7 @@
         address.addressLine3,
         address.addressLine4,
         address.postalCode,
-        Some(address.countryCode)
+        Some(countryName)
     ).flatten
 }
 
@@ -48,19 +48,19 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        <h1 class="govuk-heading-l">@messages("registeredBusinessIsTheAddressCorrect.heading", rcaspName)</h1>
+        <h1 class="govuk-heading-l govuk-!-word-break">@messages("registeredBusinessIsTheAddressCorrect.heading", rcaspName)</h1>
 
         <p class="govuk-body">
         @Html(
             addressLines.zipWithIndex.map { case (line, index) =>
-                if (index < addressLines.length - 1)
+                if (index < addressLines.length - 1) {
                     s"""<span class="govuk-!-margin-bottom-0">$line</span><br/>"""
-                else
+                } else {
                     line
+                }
             }.mkString("\n")
         )
         </p>
-
 
         @govukRadios(
             RadiosViewModel.yesNo(

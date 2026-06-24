@@ -52,7 +52,22 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
         addressLine3 = None,
         addressLine4 = None,
         postalCode = Some("TE1 1ST"),
-        countryCode = "GB"
+        countryCode = "GB",
+        countryName = Some("United Kingdom")
+      )
+    )
+
+  val businessDetailsNoCountryName: BusinessDetails =
+    BusinessDetails(
+      name = "Test Business Ltd",
+      address = AddressRegistrationResponse(
+        addressLine1 = "1 Test Street",
+        addressLine2 = Some("Testville"),
+        addressLine3 = None,
+        addressLine4 = None,
+        postalCode = Some("TE1 1ST"),
+        countryCode = "GB",
+        countryName = None
       )
     )
 
@@ -71,7 +86,13 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[RegisteredBusinessIsTheAddressCorrectView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, businessDetails.name, businessDetails.address)(
+        contentAsString(result) mustEqual view(
+          form,
+          NormalMode,
+          businessDetails.name,
+          businessDetails.address,
+          "United Kingdom"
+        )(
           request,
           messages(application)
         ).toString
@@ -96,7 +117,8 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
           form.fill(true),
           NormalMode,
           businessDetails.name,
-          businessDetails.address
+          businessDetails.address,
+          "United Kingdom"
         )(request, messages(application)).toString
       }
     }
@@ -155,7 +177,13 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
         val result    = route(application, request).value
 
         status(result)          mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, businessDetails.name, businessDetails.address)(
+        contentAsString(result) mustEqual view(
+          boundForm,
+          NormalMode,
+          businessDetails.name,
+          businessDetails.address,
+          "United Kingdom"
+        )(
           request,
           messages(application)
         ).toString

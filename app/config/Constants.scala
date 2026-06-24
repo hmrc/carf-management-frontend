@@ -42,6 +42,8 @@ object Constants {
 
   inline final val notReal0808PhoneNumber = "+448081570192"
 
+  val acceptedUtrLengths: Set[Int] = Set(10, 13)
+  val ukCountryCode: String        = "GB"
   inline final val ukCountryCode = "GB"
 
   val acceptedUtrLengths: Seq[Int] = Seq(10, 13)
