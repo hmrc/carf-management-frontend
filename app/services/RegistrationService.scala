@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 class RegistrationService @Inject() {
 
-  // TODO  link up register-with-id - CARF-519
+  // TODO link up register-with-id - CARF-519
   def getBusinessWithUtr(utr: String): ResultT[BusinessDetails] =
     if (utr.startsWith("9")) {
       ResultT.fromError(InternalServerError)
@@ -43,5 +43,13 @@ class RegistrationService @Inject() {
           )
         )
       )
+    }
+
+  // TODO link up backend call for RCASP registration
+  def registerRcasp(utr: String): ResultT[Unit] =
+    if (utr.startsWith("9")) {
+      ResultT.fromError(InternalServerError)
+    } else {
+      ResultT.fromValue(())
     }
 }

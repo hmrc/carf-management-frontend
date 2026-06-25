@@ -32,7 +32,7 @@ class CheckDetailsRegBusinessHelper @Inject() extends Logging {
 
     val rows = Seq(
       ReportForRegisteredBusinessSummary.row(userAnswers),
-      RegisteredBusinessIsThisYourBusinessNameSummary.row(userAnswers),
+      OrganisationNameSummary.row(userAnswers),
       HaveTradingNameSummary.row(userAnswers)
     ).flatten ++ (
       if (haveTrading.contains(true)) {

@@ -83,7 +83,7 @@ haveTradingName.change.hidden = Change if the organisation trades under a differ
 
 tradingName.title = What is the trading name for the reporting cryptoasset service provider (RCASP)?
 tradingName.heading = What is the trading name for {0}?
-tradingName.checkYourAnswersLabel = What is the trading name for the organisation?
+tradingName.checkYourAnswersLabel = Trading name
 tradingName.error.required = Enter the trading name for the RCASP
 tradingName.error.length = RCASP trading name must be 105 characters or less
 tradingName.error.invalid = RCASP trading name must only include letters a to z, numbers 0 to 9, ampersands (&), apostrophes, backslashes, carets (^), grave accents (`), hyphens and spaces
@@ -271,3 +271,4 @@ registeredBusinessCheckDetails.title = Check the details for the registered busi
 registeredBusinessCheckDetails.heading = Check the details for {0}
 registeredBusinessCheckDetails.declaration.subtitle = Now send these details for the registered business
 registeredBusinessCheckDetails.declaration.p1 = By sending these details, you are confirming that the information is correct and complete to the best of your knowledge.
+site.confirmAndSend = Confirm and send

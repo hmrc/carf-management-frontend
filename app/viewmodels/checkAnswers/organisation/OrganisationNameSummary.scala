@@ -24,16 +24,20 @@ import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
+import pages.organisation.OverwritableOrganisationName
 
 object OrganisationNameSummary {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(OrganisationNamePage).map { answer =>
+    answers.get(OverwritableOrganisationName).map { answer =>
       SummaryListRowViewModel(
         key = "organisationName.checkYourAnswersLabel",
         value = ValueViewModel(HtmlFormat.escape(answer).toString),
         actions = Seq(
-          ActionItemViewModel("site.change", routes.OrganisationNameController.onPageLoad(ChangeMode).url)
+          ActionItemViewModel(
+            "site.change",
+            routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(ChangeMode).url
+          )
             .withVisuallyHiddenText(messages("organisationName.change.hidden"))
         )
       )

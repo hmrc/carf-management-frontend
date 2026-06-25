@@ -17,7 +17,6 @@
 package navigation
 
 import base.SpecBase
-import controllers.routes
 import models.{NormalMode, OrganisationOrIndividual}
 import pages.Page
 import pages.combined.OrganisationOrIndividualPage
@@ -73,14 +72,12 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed TradingNamePage" - {
-      "Should redirect to PlaceholderController" in {
+      "Should redirect to CheckDetailsRegBusinessController" in {
         navigator.nextPage(
           TradingNamePage,
           NormalMode,
           emptyUserAnswers
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad(
-          "If is RCASP user = true, nav to /is-the-address-correct, else nav to /utr (CARF-197)"
-        )
+        ) mustBe controllers.routes.CheckDetailsRegBusinessController.onPageLoad
       }
     }
 
@@ -216,18 +213,17 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed RegisteredBusinessIsThisYourBusinessNamePage" - {
-      "Should redirect to PlaceholderController when answer is true" in {
+      "Should redirect to HaveTradingNameController when answer is true" in {
         val ua = emptyUserAnswers.withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
 
         navigator.nextPage(
           RegisteredBusinessIsThisYourBusinessNamePage,
           NormalMode,
           ua
-        ) mustBe
-          controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)
+        ) mustBe controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to PlaceholderController when answer is false" in {
+      "Should redirect to OrganisationNameController when answer is false" in {
         val ua = emptyUserAnswers.withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
 
         navigator.nextPage(
@@ -253,6 +249,16 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NormalMode,
           emptyUserAnswers
         ) mustBe controllers.organisation.routes.OrganisationFirstContactEmailController.onPageLoad(NormalMode)
+      }
+    }
+
+    "When passed OrganisationFirstContactEmailPage" - {
+      "Should redirect to Org first contact have phone" in {
+        navigator.nextPage(
+          OrganisationFirstContactEmailPage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.organisation.routes.OrganisationFirstContactHavePhoneController.onPageLoad(NormalMode)
       }
     }
 
@@ -286,16 +292,6 @@ class NormalRoutesNavigatorSpec extends SpecBase {
       }
     }
 
-    "When passed OrganisationFirstContactEmailPage" - {
-      "Should redirect to Org first contact have phone" in {
-        navigator.nextPage(
-          OrganisationFirstContactEmailPage,
-          NormalMode,
-          emptyUserAnswers
-        ) mustBe controllers.organisation.routes.OrganisationFirstContactHavePhoneController.onPageLoad(NormalMode)
-      }
-    }
-
     "When passed OrganisationFirstContactPhoneNumberPage" - {
       "Should redirect to Org have second contact" in {
         navigator.nextPage(
@@ -308,106 +304,97 @@ class NormalRoutesNavigatorSpec extends SpecBase {
 
     "When passed OrganisationHaveSecondContactPage" - {
       "Should redirect to OrganisationSecondContactNamePage when the provided answer is Yes" in {
-        val updatedAnswers =
-          emptyUserAnswers
-            .withPage(OrganisationHaveSecondContactPage, true)
+        val ua = emptyUserAnswers.withPage(OrganisationHaveSecondContactPage, true)
 
         navigator.nextPage(
           OrganisationHaveSecondContactPage,
           NormalMode,
-          updatedAnswers
+          ua
         ) mustBe controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to CheckYourAnswersPage when the provided answer is No" in {
-        val updatedAnswers =
-          emptyUserAnswers
-            .withPage(OrganisationHaveSecondContactPage, false)
+      "Should redirect to CheckDetailsRegBusinessController when the provided answer is No" in {
+        val ua = emptyUserAnswers.withPage(OrganisationHaveSecondContactPage, false)
 
         navigator.nextPage(
           OrganisationHaveSecondContactPage,
           NormalMode,
-          updatedAnswers
-        ) mustBe controllers.routes.CheckDetailsController.onPageLoad
+          ua
+        ) mustBe controllers.routes.CheckDetailsRegBusinessController.onPageLoad
       }
 
       "Should redirect to JourneyRecovery when no answer is provided" in {
-        val userAnswers = emptyUserAnswers
-
         navigator.nextPage(
           OrganisationHaveSecondContactPage,
           NormalMode,
-          userAnswers
-        ) mustBe routes.JourneyRecoveryController.onPageLoad()
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
       }
     }
 
     "When passed OrganisationSecondContactNamePage" - {
-      "Should to OrganisationSecondContactEmailPage" in {
-        val updatedAnswers =
-          emptyUserAnswers
-            .withPage(OrganisationSecondContactNamePage, "name")
+      "Should redirect to OrganisationSecondContactEmailPage" in {
+        val ua = emptyUserAnswers.withPage(OrganisationSecondContactNamePage, "name")
 
         navigator.nextPage(
           OrganisationSecondContactNamePage,
           NormalMode,
-          updatedAnswers
+          ua
         ) mustBe controllers.organisation.routes.OrganisationSecondContactEmailController.onPageLoad(NormalMode)
       }
     }
 
     "When passed OrganisationSecondContactEmailPage" - {
       "Should redirect to OrganisationSecondContactHavePhonePage" in {
-        val updatedAnswers =
-          emptyUserAnswers
-            .withPage(OrganisationSecondContactEmailPage, "email@email.com")
+        val ua = emptyUserAnswers.withPage(OrganisationSecondContactEmailPage, "email@email.com")
 
         navigator.nextPage(
           OrganisationSecondContactEmailPage,
           NormalMode,
-          updatedAnswers
+          ua
         ) mustBe controllers.organisation.routes.OrganisationSecondContactHavePhoneController.onPageLoad(NormalMode)
       }
     }
 
     "When passed OrganisationSecondContactHavePhonePage" - {
       "Should redirect to OrganisationSecondContactPhoneNumberPage when the provided answer is Yes" in {
-        val userAnswers = emptyUserAnswers.withPage(OrganisationSecondContactHavePhonePage, true)
+        val ua = emptyUserAnswers.withPage(OrganisationSecondContactHavePhonePage, true)
+
         navigator.nextPage(
           OrganisationSecondContactHavePhonePage,
           NormalMode,
-          userAnswers
+          ua
         ) mustBe controllers.organisation.routes.OrganisationSecondContactPhoneNumberController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to CheckYourAnswersPage when the provided answer is No" in {
-        val userAnswers = emptyUserAnswers.withPage(OrganisationSecondContactHavePhonePage, false)
+      "Should redirect to CheckDetailsRegBusinessController when the provided answer is No" in {
+        val ua = emptyUserAnswers.withPage(OrganisationSecondContactHavePhonePage, false)
+
         navigator.nextPage(
           OrganisationSecondContactHavePhonePage,
           NormalMode,
-          userAnswers
-        ) mustBe controllers.routes.CheckDetailsController.onPageLoad
+          ua
+        ) mustBe controllers.routes.CheckDetailsRegBusinessController.onPageLoad
       }
 
       "Should redirect to JourneyRecovery when no answer is provided" in {
-        val userAnswers = emptyUserAnswers
-
         navigator.nextPage(
           OrganisationSecondContactHavePhonePage,
           NormalMode,
-          userAnswers
-        ) mustBe routes.JourneyRecoveryController.onPageLoad()
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
       }
     }
 
     "When passed OrganisationSecondContactPhoneNumberPage" - {
-      "Should redirect to CheckYourAnswersPage" in {
-        val userAnswers = emptyUserAnswers.withPage(OrganisationSecondContactPhoneNumberPage, "07123412345")
+      "Should redirect to CheckDetailsRegBusinessController" in {
+        val ua = emptyUserAnswers.withPage(OrganisationSecondContactPhoneNumberPage, "07123412345")
+
         navigator.nextPage(
           OrganisationSecondContactPhoneNumberPage,
           NormalMode,
-          userAnswers
-        ) mustBe controllers.routes.CheckDetailsController.onPageLoad
+          ua
+        ) mustBe controllers.routes.CheckDetailsRegBusinessController.onPageLoad
       }
     }
 

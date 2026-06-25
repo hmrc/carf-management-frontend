@@ -24,9 +24,10 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckDetailsRegBusinessHelper
 import views.html.organisation.CheckDetailsRegBusinessView
+import services.RegistrationService
+import scala.concurrent.ExecutionContext
 
 import javax.inject.Inject
-import scala.concurrent.Future
 
 class CheckDetailsRegBusinessController @Inject() (
     override val messagesApi: MessagesApi,
@@ -35,8 +36,10 @@ class CheckDetailsRegBusinessController @Inject() (
     requireData: DataRequiredAction,
     view: CheckDetailsRegBusinessView,
     val controllerComponents: MessagesControllerComponents,
-    helper: CheckDetailsRegBusinessHelper
-) extends FrontendBaseController
+    helper: CheckDetailsRegBusinessHelper,
+    registrationService: RegistrationService
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
     with I18nSupport
     with Logging {
 
@@ -63,8 +66,12 @@ class CheckDetailsRegBusinessController @Inject() (
   }
 
   def onSubmit: Action[AnyContent] = (identify() andThen getData() andThen requireData).async { implicit request =>
-    Future.successful(
-      Redirect(controllers.routes.PlaceholderController.onPageLoad("[CARF-296] RCASP added page - /rcasp-added"))
-    )
+    registrationService.registerRcasp("stub").value.map {
+      case Right(_)    =>
+        Redirect(controllers.routes.PlaceholderController.onPageLoad("[CARF-296] RCASP added page - /rcasp-added"))
+      case Left(error) =>
+        logger.warn(s"[CheckDetailsRegBusinessController][onSubmit] Failed to register RCASP: $error")
+        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+    }
   }
 }
