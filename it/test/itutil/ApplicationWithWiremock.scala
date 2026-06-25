@@ -16,15 +16,20 @@
 
 package itutil
 
+import common.TestData
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
+import uk.gov.hmrc.http.HeaderCarrier
+
+import scala.concurrent.ExecutionContext
 
 trait ApplicationWithWiremock
     extends AnyWordSpec
+    with TestData
     with GuiceOneServerPerSuite
     with BeforeAndAfterAll
     with BeforeAndAfterEach:
@@ -44,6 +49,9 @@ trait ApplicationWithWiremock
   override lazy val app: Application = new GuiceApplicationBuilder()
     .configure(extraConfig)
     .build()
+
+  implicit val hc: HeaderCarrier    = HeaderCarrier()
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
   lazy val wsClient: WSClient = app.injector.instanceOf[WSClient]
 

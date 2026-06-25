@@ -16,6 +16,7 @@
 
 package base
 
+import common.TestData
 import controllers.actions.*
 import generators.Generators
 import models.countries.CountryUk
@@ -55,6 +56,8 @@ trait SpecBase
     with ScalaFutures
     with IntegrationPatience
     with BeforeAndAfterEach
+    with MockitoSugar
+    with TestData {
     with MockitoSugar
     with Generators {
 

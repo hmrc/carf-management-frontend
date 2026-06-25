@@ -1,0 +1,74 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@this(
+        layout: templates.Layout,
+        formHelper: FormWithCSRF,
+        govukErrorSummary: GovukErrorSummary,
+        govukRadios: GovukRadios,
+        govukButton: GovukButton,
+        hmrcListWithActions: HmrcListWithActions
+)
+
+@(form: Form[_], listWithActions: ListWithActions)(implicit request: Request[_], messages: Messages)
+
+@layout(
+    pageTitle = title(
+        form,
+        if(listWithActions.items.isEmpty) messages("yourRcasps.title.zero")
+        else if(listWithActions.items.size == 1) messages("yourRcasps.title.one")
+        else messages("yourRcasps.title.multiple", listWithActions.items.size)
+    ),
+    fullWidth = true
+) {
+
+    @if(form.errors.nonEmpty) {
+        @govukErrorSummary(ErrorSummaryViewModel(form))
+    }
+
+    @if(listWithActions.items.isEmpty) {
+        <h1 class="govuk-heading-l long-word">@messages("yourRcasps.heading.zero")</h1>
+    } else if(listWithActions.items.size == 1) {
+        <h1 class="govuk-heading-l long-word">@messages("yourRcasps.heading.one")</h1>
+    } else {
+        <h1 class="govuk-heading-l long-word">@messages("yourRcasps.heading.multiple", listWithActions.items.size)</h1>
+    }
+
+    @if(listWithActions.items.nonEmpty) {
+        <div class="govuk-form-group">
+        @hmrcListWithActions(listWithActions)
+        </div>
+    }
+
+    @formHelper(action = controllers.routes.YourRcaspsController.onSubmit(), Symbol("autoComplete") -> "off") {
+        @govukRadios(
+            RadiosViewModel.yesNo(
+                field = form("value"),
+                legend = LegendViewModel(
+                    if(listWithActions.items.isEmpty) {
+                        messages("yourRcasps.question.zero")
+                    } else {
+                        messages("yourRcasps.question.non-zero")
+                    }
+                ).withCssClass("govuk-fieldset__legend--m govuk-!-display-block")
+            ).copy(classes = "")
+        )
+
+        @govukButton(
+            ButtonViewModel(messages("site.continue")).withAttribute("id" -> "continue")
+        )
+    }
+}

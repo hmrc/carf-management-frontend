@@ -31,61 +31,12 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import play.api.http.Status.*
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.HeaderCarrier
-
-import scala.concurrent.ExecutionContext
 
 class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with ScalaFutures with IntegrationPatience {
-
-  implicit val hc: HeaderCarrier    = HeaderCarrier()
-  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
   val connector: RcaspConnector = app.injector.instanceOf[RcaspConnector]
 
   val testCarfId: String = "CARF0000000001"
-
-  val exampleContact        =
-    RcaspContactDetails(ContactName = "Prof Sada", EmailAddress = "test@example.com", PhoneNumber = Some("07123412345"))
-  val exampleCarfId         = "XCCAR0024000102"
-  val exampleRcaspId        = "none"
-  val exampleResponseCommon = responses.RcaspResponseCommon(
-    OriginatingSystem = "CADX",
-    TransmittingSystem = "EIS",
-    RequestType = "VIEW",
-    Regime = "CARF",
-    ResponseParameters = None
-  )
-
-  val testViewRcaspResponse = ViewRcaspResponse(
-    ViewRCASP = ViewRcasp(
-      ResponseCommon = exampleResponseCommon,
-      ResponseDetails = RcaspResponseDetails(
-        RCASPList = List(
-          responses.OrganisationRcaspDetails(
-            SubscriptionID = exampleCarfId,
-            RCASPID = exampleRcaspId,
-            IsRCASPUser = true,
-            PartyType = "Organisation",
-            RCASPName = "Mesagoza",
-            TradingName = "Uva Academy",
-            TINDetails = Some(List(TinDetails(TINType = "UTR", TIN = "68936493", IssuedBy = "GB"))),
-            AddressDetails = testAddressResponse,
-            PrimaryContactDetails = Some(exampleContact),
-            SecondaryContactDetails = Some(exampleContact.copy(ContactName = "Prof Turo"))
-          )
-        )
-      )
-    )
-  )
-
-  private def testAddressResponse = RcaspAddress(
-    AddressLine1 = "64",
-    AddressLine2 = Some("Zoo"),
-    AddressLine3 = Some("Lane"),
-    AddressLine4 = Some("Sixty Four"),
-    PostalCode = "G66 2AZ",
-    CountryCode = "GB"
-  )
 
   val testViewRcaspResponseJson: String =
     """{
@@ -100,7 +51,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
       |      "RCASPList": [
       |        {
       |          "SubscriptionID": "XCCAR0024000102",
-      |          "RCASPID": "none",
+      |          "RCASPID": "RCASP1",
       |          "IsRCASPUser": true,
       |          "PartyType": "Organisation",
       |          "RCASPName": "Mesagoza",
@@ -138,7 +89,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
   "viewRcasp" should {
 
-    val baseUrlPattern = s"/carf-management/view-rcasp/.*"
+    val baseUrlPattern = "/carf-management/view-rcasp/.*"
 
     "successfully retrieve a ViewRcaspResponse" in {
       stubFor(
@@ -189,7 +140,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
     "return InternalServerError when backend returns 422" in {
       val errorResponse = Json.obj(
-        "status"  -> "Unrpocessable Entity",
+        "status"  -> "Unprocessable Entity",
         "message" -> "Invalid ID"
       )
 
@@ -299,7 +250,8 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
     val expectedResponse = SubmitRcaspResponse(
       SubmitResponseDetails(
         SubmitReturnParameters(
-          "RCASPID", "RCASP12345"
+          "RCASPID",
+          "RCASP12345"
         )
       )
     )
@@ -336,7 +288,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
     "return InternalServerError when backend returns 400" in {
 
       val errorResponse = Json.obj(
-        "status" -> "Unrpocessable Entity",
+        "status"  -> "Unprocessable Entity",
         "message" -> "Invalid ID"
       )
 
