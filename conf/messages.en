@@ -249,3 +249,16 @@ checkDetailsAnswers.declaration.p1 = By adding this RCASP, you are confirming th
 individual.address.checkYourAnswersLabel = Main business address
 individual.address.hidden = Change main business address
 site.confirmAndAdd = Confirm and add
+
+yourRcasps.title.zero = You have not added any reporting cryptoasset service providers (RCASPs)
+yourRcasps.heading.zero = You have not added any reporting cryptoasset service providers (RCASPs)
+yourRcasps.question.zero = Do you need to add an RCASP?
+yourRcasps.title.one = You have added 1 reporting cryptoasset service provider (RCASP)
+yourRcasps.heading.one = You have added 1 reporting cryptoasset service provider (RCASP)
+yourRcasps.title.multiple = You have added {0} reporting cryptoasset service providers (RCASPs)
+yourRcasps.heading.multiple = You have added {0} reporting cryptoasset service providers (RCASPs)
+yourRcasps.question.non-zero = Do you need to add another RCASP?
+yourRcasps.error.required = Select yes if you need to add an RCASP
+yourRcasps.change.hidden = Change the details for {0}
+yourRcasps.remove.hidden = Remove {0} from the list
+yourRcasps.registeredBusinessTag = Registered&nbsp;business

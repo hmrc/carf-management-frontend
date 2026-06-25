@@ -23,13 +23,13 @@
 @import views.html.helper.CSPNonce
 
 @this(
-    appConfig: FrontendAppConfig,
-    hmrcTimeoutDialog: HmrcTimeoutDialog,
-    hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
-    alphaBanner: StandardAlphaBanner,
-    autocompleteCss: HmrcAccessibleAutocompleteCss,
-    autocompleteJavascript: HmrcAccessibleAutocompleteJavascript,
-    hmrcStandardPage: HmrcStandardPage
+        appConfig: FrontendAppConfig,
+        hmrcTimeoutDialog: HmrcTimeoutDialog,
+        hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
+        alphaBanner: StandardAlphaBanner,
+        autocompleteCss: HmrcAccessibleAutocompleteCss,
+        autocompleteJavascript: HmrcAccessibleAutocompleteJavascript,
+        hmrcStandardPage: HmrcStandardPage
 )
 
 @(
@@ -38,24 +38,25 @@
         timeout: Boolean = true,
         showSignOut: Boolean = true,
         showAutoComplete: Boolean = false,
-        showHmrcBanner: Boolean = false
+        showHmrcBanner: Boolean = false,
+        fullWidth: Boolean = false
 )(contentBlock: Html)(implicit rh: RequestHeader, messages: Messages)
 
 @head = {
 
-    @if(timeout) {
-        @hmrcTimeoutDialog(TimeoutDialog(
-            timeout             = Some(appConfig.timeout),
-            countdown           = Some(appConfig.countdown),
-            keepAliveUrl        = Some(routes.KeepAliveController.keepAlive().url),
-            keepAliveButtonText = Some(messages("timeout.keepAlive")),
-            signOutUrl          = Some(controllers.auth.routes.AuthController.signOut().url),
-            signOutButtonText   = Some(messages("timeout.signOut")),
-            title               = Some(messages("timeout.title")),
-            message             = Some(messages("timeout.message")),
-            language            = Some(messages.lang.code)
-        ))
-    }
+@if(timeout) {
+    @hmrcTimeoutDialog(TimeoutDialog(
+        timeout = Some(appConfig.timeout),
+        countdown = Some(appConfig.countdown),
+        keepAliveUrl = Some(routes.KeepAliveController.keepAlive().url),
+        keepAliveButtonText = Some(messages("timeout.keepAlive")),
+        signOutUrl = Some(controllers.auth.routes.AuthController.signOut().url),
+        signOutButtonText = Some(messages("timeout.signOut")),
+        title = Some(messages("timeout.title")),
+        message = Some(messages("timeout.message")),
+        language = Some(messages.lang.code)
+    ))
+}
 }
 
 @additionalScripts = {
@@ -67,18 +68,40 @@
     <link href='@controllers.routes.Assets.versioned("stylesheets/application.css")' media="all" rel="stylesheet" type="text/css">
 }
 
-@content = {
-    @contentBlock
-    <br>
-    <br>
+@fullWidthContent(contentBlock: Html) = {
+    <div class="govuk-grid-row wrappable">
+        <div class="govuk-grid-column-full">
+        @contentBlock
+        </div>
+    </div>
+}
+
+@twoThirdsWidthContent(contentBlock: Html) = {
+    <div class="govuk-grid-row wrappable">
+        <div class="govuk-grid-column-two-thirds">
+        @contentBlock
+        </div>
+    </div>
+}
+
+@variableWidthContent(contentBlock: Html) = {
+    @if(fullWidth) {
+        @fullWidthContent(contentBlock)
+    } else {
+        @twoThirdsWidthContent(contentBlock)
+    }
+
+    <div class="govuk-!-margin-top-8">
     @hmrcReportTechnicalIssueHelper()
+    </div>
 }
 
 @hmrcStandardPage(HmrcStandardPageParams(
     pageTitle = Some(pageTitle),
     templateOverrides = TemplateOverrides(
         additionalHeadBlock = Some(head),
-        additionalScriptsBlock = Some(additionalScripts)
+        additionalScriptsBlock = Some(additionalScripts),
+        mainContentLayout = Some(variableWidthContent)
     ),
     serviceURLs = ServiceURLs(
         serviceUrl = Some(controllers.home.routes.HomePageController.onPageLoad().url),
@@ -89,5 +112,5 @@
         phaseBanner = Some(alphaBanner(appConfig.feedbackUrl))
     ),
     isWelshTranslationAvailable = appConfig.languageTranslationEnabled,
-    backLink = if (showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None
-))(content)
+    backLink = if(showBackLink) Some(BackLink.mimicsBrowserBackButtonViaJavaScript) else None
+))(contentBlock)

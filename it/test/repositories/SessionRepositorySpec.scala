@@ -27,13 +27,13 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import org.slf4j.MDC
-import uk.gov.hmrc.mdc.MdcExecutionContext
 import play.api.libs.json.Json
+import uk.gov.hmrc.mdc.MdcExecutionContext
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
-import java.time.{Clock, Instant, ZoneId}
 import java.time.temporal.ChronoUnit
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService, Future}
+import java.time.{Clock, Instant, ZoneId}
+import scala.concurrent.{ExecutionContext, Future}
 
 class SessionRepositorySpec
     extends AnyFreeSpec
@@ -69,6 +69,7 @@ class SessionRepositorySpec
       val setResult     = repository.set(userAnswers).futureValue
       val updatedRecord = find(Filters.equal("_id", userAnswers.id)).futureValue.headOption.value
 
+      setResult     mustEqual true
       updatedRecord mustEqual expectedResult
     }
 
@@ -109,6 +110,8 @@ class SessionRepositorySpec
 
       val result = repository.clear(userAnswers.id).futureValue
 
+      result mustEqual true
+
       repository.get(userAnswers.id).futureValue must not be defined
     }
 
@@ -134,6 +137,8 @@ class SessionRepositorySpec
         val expectedUpdatedAnswers = userAnswers copy (lastUpdated = instant)
 
         val updatedAnswers = find(Filters.equal("_id", userAnswers.id)).futureValue.headOption.value
+
+        result         mustEqual true
         updatedAnswers mustEqual expectedUpdatedAnswers
       }
     }
