@@ -18,7 +18,7 @@ package controllers.organisation
 
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import models.Mode
+import models.{CachedBusinessDetails, Mode}
 import navigation.Navigator
 import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
 import play.api.Logging
@@ -62,18 +62,22 @@ class ReportForRegisteredBusinessController @Inject() (
             case Right(businessDetails) =>
               countryListFactory.getDescriptionFromCode(businessDetails.address.countryCode) match {
                 case Some(countryName) =>
-                  val updatedBusinessDetails = businessDetails.copy(countryName = countryName)
+                  val cached = CachedBusinessDetails(
+                    name = businessDetails.name,
+                    address = businessDetails.address,
+                    countryName = countryName
+                  )
 
                   for {
                     updatedAnswers <- Future.fromTry(
-                                        request.userAnswers.set(CachedBusinessDetailsPage, updatedBusinessDetails)
+                                        request.userAnswers.set(CachedBusinessDetailsPage, cached)
                                       )
                     _              <- sessionRepository.set(updatedAnswers)
                   } yield {
                     val preparedForm =
                       updatedAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
 
-                    Ok(view(preparedForm, mode, updatedBusinessDetails.name))
+                    Ok(view(preparedForm, mode, cached.name))
                   }
 
                 case None =>
@@ -97,30 +101,26 @@ class ReportForRegisteredBusinessController @Inject() (
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      request.utr match {
-        case Some(_) =>
-          request.userAnswers.get(CachedBusinessDetailsPage) match {
-            case Some(businessDetails) =>
-              form
-                .bindFromRequest()
-                .fold(
-                  formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, businessDetails.name))),
-                  value =>
-                    for {
-                      updatedAnswers <- Future.fromTry(
-                                          request.userAnswers.set(ReportForRegisteredBusinessPage, value)
-                                        )
-                      _              <- sessionRepository.set(updatedAnswers)
-                    } yield Redirect(navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers))
-                )
+      request.userAnswers.get(CachedBusinessDetailsPage) match {
 
-            case None =>
-              logger.warn("[ReportForRegisteredBusinessController][onSubmit] No cached business details found")
-              Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-          }
+        case Some(cached) =>
+          form
+            .bindFromRequest()
+            .fold(
+              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, cached.name))),
+              value =>
+                for {
+                  updatedAnswers <- Future.fromTry(
+                                      request.userAnswers.set(ReportForRegisteredBusinessPage, value)
+                                    )
+                  _              <- sessionRepository.set(updatedAnswers)
+                } yield Redirect(
+                  navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers)
+                )
+            )
 
         case None =>
-          logger.warn("[ReportForRegisteredBusinessController][onSubmit] CT UTR not found in request")
+          logger.warn("[ReportForRegisteredBusinessController][onSubmit] No cached business details found")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
     }

@@ -52,13 +52,22 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>
       request.userAnswers.get(CachedBusinessDetailsPage) match {
-        case Some(businessDetails) =>
+
+        case Some(cached) =>
           val preparedForm =
             request.userAnswers
               .get(RegisteredBusinessIsTheAddressCorrectPage)
               .fold(form)(form.fill)
 
-          Ok(view(preparedForm, mode, businessDetails.name, businessDetails.address, businessDetails.countryName))
+          Ok(
+            view(
+              preparedForm,
+              mode,
+              cached.name,
+              cached.address,
+              cached.countryName
+            )
+          )
 
         case None =>
           logger.warn(
@@ -71,7 +80,8 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
       request.userAnswers.get(CachedBusinessDetailsPage) match {
-        case Some(businessDetails) =>
+
+        case Some(cached) =>
           form
             .bindFromRequest()
             .fold(
@@ -81,9 +91,9 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
                     view(
                       formWithErrors,
                       mode,
-                      businessDetails.name,
-                      businessDetails.address,
-                      businessDetails.countryName
+                      cached.name,
+                      cached.address,
+                      cached.countryName
                     )
                   )
                 ),

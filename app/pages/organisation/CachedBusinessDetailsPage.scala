@@ -16,11 +16,11 @@
 
 package pages.organisation
 
-import models.BusinessDetails
+import models.CachedBusinessDetails
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 
-case object CachedBusinessDetailsPage extends QuestionPage[BusinessDetails] {
+case object CachedBusinessDetailsPage extends QuestionPage[CachedBusinessDetails] {
 
   override def path: JsPath = JsPath \ toString
 

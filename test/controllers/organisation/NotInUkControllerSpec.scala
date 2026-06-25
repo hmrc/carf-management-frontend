@@ -17,8 +17,8 @@
 package controllers.organisation
 
 import base.SpecBase
-import models.BusinessDetails
 import models.responses.AddressRegistrationResponse
+import models.CachedBusinessDetails
 import pages.organisation.CachedBusinessDetailsPage
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
@@ -29,8 +29,8 @@ class NotInUkControllerSpec extends SpecBase {
   lazy val notInUkRoute: String =
     controllers.organisation.routes.NotInUkController.onPageLoad().url
 
-  val businessDetails: BusinessDetails =
-    BusinessDetails(
+  val cachedBusinessDetails: CachedBusinessDetails =
+    CachedBusinessDetails(
       name = "Test Business Ltd",
       address = AddressRegistrationResponse(
         addressLine1 = "1 Test Street",
@@ -45,9 +45,9 @@ class NotInUkControllerSpec extends SpecBase {
 
   "NotInUk Controller" - {
 
-    "must return OK and the correct view when cached business details are present and have a non-GB country code" in {
+    "must return OK and correct view when cached business details exist" in {
 
-      val ua = emptyUserAnswers.withPage(CachedBusinessDetailsPage, businessDetails)
+      val ua = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
       val application = applicationBuilder(userAnswers = Some(ua)).build()
 
@@ -57,7 +57,7 @@ class NotInUkControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[NotInUkView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(businessDetails.name)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(cachedBusinessDetails.name)(request, messages(application)).toString
       }
     }
 

@@ -18,8 +18,8 @@ package controllers.organisation
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
-import models.{BusinessDetails, NormalMode}
 import models.responses.AddressRegistrationResponse
+import models.{CachedBusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -43,8 +43,8 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
   lazy val routeUnderTest: String =
     controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(NormalMode).url
 
-  val businessDetails: BusinessDetails =
-    BusinessDetails(
+  val cachedBusinessDetails: CachedBusinessDetails =
+    CachedBusinessDetails(
       name = "Test Business Ltd",
       address = AddressRegistrationResponse(
         addressLine1 = "1 Test Street",
@@ -61,50 +61,52 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET when cached business details are present" in {
 
-      val userAnswers = emptyUserAnswers
-        .withPage(CachedBusinessDetailsPage, businessDetails)
+      val userAnswers =
+        emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
         val result  = route(application, request).value
         val view    = application.injector.instanceOf[RegisteredBusinessIsTheAddressCorrectView]
 
-        status(result)          mustEqual OK
+        status(result) mustEqual OK
+
         contentAsString(result) mustEqual view(
           form,
           NormalMode,
-          businessDetails.name,
-          businessDetails.address,
-          "United Kingdom"
-        )(
-          request,
-          messages(application)
-        ).toString
+          cachedBusinessDetails.name,
+          cachedBusinessDetails.address,
+          cachedBusinessDetails.countryName
+        )(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers
-        .withPage(CachedBusinessDetailsPage, businessDetails)
-        .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+      val userAnswers =
+        emptyUserAnswers
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
         val result  = route(application, request).value
         val view    = application.injector.instanceOf[RegisteredBusinessIsTheAddressCorrectView]
 
-        status(result)          mustEqual OK
+        status(result) mustEqual OK
+
         contentAsString(result) mustEqual view(
           form.fill(true),
           NormalMode,
-          businessDetails.name,
-          businessDetails.address,
-          "United Kingdom"
+          cachedBusinessDetails.name,
+          cachedBusinessDetails.address,
+          cachedBusinessDetails.countryName
         )(request, messages(application)).toString
       }
     }
@@ -126,7 +128,7 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val userAnswers = emptyUserAnswers
-        .withPage(CachedBusinessDetailsPage, businessDetails)
+        .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
@@ -149,7 +151,7 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
     "must return a Bad Request and errors when invalid data is submitted" in {
 
       val userAnswers = emptyUserAnswers
-        .withPage(CachedBusinessDetailsPage, businessDetails)
+        .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -158,21 +160,20 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
           FakeRequest(POST, routeUnderTest)
             .withFormUrlEncodedBody(("value", ""))
 
-        val boundForm = form.bind(Map("value" -> ""))
-        val view      = application.injector.instanceOf[RegisteredBusinessIsTheAddressCorrectView]
-        val result    = route(application, request).value
+        val result = route(application, request).value
+        val view   = application.injector.instanceOf[RegisteredBusinessIsTheAddressCorrectView]
 
-        status(result)          mustEqual BAD_REQUEST
+        val boundForm = form.bind(Map("value" -> ""))
+
+        status(result) mustEqual BAD_REQUEST
+
         contentAsString(result) mustEqual view(
           boundForm,
           NormalMode,
-          businessDetails.name,
-          businessDetails.address,
-          "United Kingdom"
-        )(
-          request,
-          messages(application)
-        ).toString
+          cachedBusinessDetails.name,
+          cachedBusinessDetails.address,
+          cachedBusinessDetails.countryName
+        )(request, messages(application)).toString
       }
     }
 

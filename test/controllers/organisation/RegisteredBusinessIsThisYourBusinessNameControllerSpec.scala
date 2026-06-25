@@ -19,11 +19,11 @@ package controllers.organisation
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
 import models.responses.AddressRegistrationResponse
-import models.{BusinessDetails, NormalMode}
+import models.{CachedBusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsThisYourBusinessNamePage}
+import pages.organisation.*
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -44,8 +44,8 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
   lazy val routeUnderTest: String =
     controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode).url
 
-  val businessDetails: BusinessDetails =
-    BusinessDetails(
+  val cachedBusinessDetails: CachedBusinessDetails =
+    CachedBusinessDetails(
       name = "Test Business Ltd",
       address = AddressRegistrationResponse(
         addressLine1 = "1 Test Street",
@@ -61,37 +61,37 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
   "RegisteredBusinessIsThisYourBusinessName Controller" - {
 
     "must return OK and the correct view for a GET when cached business details are present" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val userAnswers =
-        emptyUserAnswers
-          .withPage(CachedBusinessDetailsPage, businessDetails)
+        emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
       val application =
         applicationBuilder(
           userAnswers = Some(userAnswers),
           affinityGroup = AffinityGroup.Organisation,
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .build()
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
         val result  = route(application, request).value
         val view    = application.injector.instanceOf[RegisteredBusinessIsThisYourBusinessNameView]
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, businessDetails.name)(
-          request,
-          messages(application)
-        ).toString
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual view(
+          form,
+          NormalMode,
+          cachedBusinessDetails.name
+        )(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
+
       val userAnswers =
         emptyUserAnswers
-          .withPage(CachedBusinessDetailsPage, businessDetails)
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
           .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
 
       val application =
@@ -99,37 +99,34 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
           userAnswers = Some(userAnswers),
           affinityGroup = AffinityGroup.Organisation,
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .build()
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
         val result  = route(application, request).value
         val view    = application.injector.instanceOf[RegisteredBusinessIsThisYourBusinessNameView]
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, businessDetails.name)(
-          request,
-          messages(application)
-        ).toString
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual view(
+          form.fill(true),
+          NormalMode,
+          cachedBusinessDetails.name
+        )(request, messages(application)).toString
       }
     }
 
     "must redirect to Journey Recovery on GET when no cached business details found" in {
-      val userAnswers = emptyUserAnswers
 
       val application =
         applicationBuilder(
-          userAnswers = Some(userAnswers),
+          userAnswers = Some(emptyUserAnswers),
           affinityGroup = AffinityGroup.Organisation,
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .build()
+        ).build()
 
       running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
-
-        val result = route(application, request).value
+        val result = route(application, FakeRequest(GET, routeUnderTest)).value
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
@@ -140,8 +137,7 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val userAnswers =
-        emptyUserAnswers
-          .withPage(CachedBusinessDetailsPage, businessDetails)
+        emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
       val application =
         applicationBuilder(
@@ -170,8 +166,7 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val userAnswers =
-        emptyUserAnswers
-          .withPage(CachedBusinessDetailsPage, businessDetails)
+        emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
       val application =
         applicationBuilder(
@@ -199,15 +194,14 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
     "must return a Bad Request and errors when invalid data is submitted" in {
       val userAnswers =
         emptyUserAnswers
-          .withPage(CachedBusinessDetailsPage, businessDetails)
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
       val application =
         applicationBuilder(
           userAnswers = Some(userAnswers),
           affinityGroup = AffinityGroup.Organisation,
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .build()
+        ).build()
 
       running(application) {
         val request =
@@ -219,97 +213,27 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        status(result)          mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, businessDetails.name)(
-          request,
-          messages(application)
-        ).toString
+        status(result) mustEqual BAD_REQUEST
+
+        contentAsString(result) mustEqual view(
+          boundForm,
+          NormalMode,
+          cachedBusinessDetails.name
+        )(request, messages(application)).toString
       }
     }
 
-    "must redirect to Journey Recovery on POST when no cached business details found" in {
-      val userAnswers = emptyUserAnswers
+    "POST must redirect when cached business details are missing" in {
 
       val application =
         applicationBuilder(
-          userAnswers = Some(userAnswers),
+          userAnswers = Some(emptyUserAnswers),
           affinityGroup = AffinityGroup.Organisation,
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .build()
+        ).build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery when UTR is not present on GET" in {
-      val application =
-        applicationBuilder(
-          userAnswers = Some(emptyUserAnswers),
-          affinityGroup = AffinityGroup.Organisation,
-          requestUtr = None
-        )
-          .build()
-
-      running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery when UTR is not present on POST" in {
-      val application =
-        applicationBuilder(
-          userAnswers = Some(emptyUserAnswers),
-          affinityGroup = AffinityGroup.Organisation,
-          requestUtr = None
-        )
-          .build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a POST if no existing data is found" in {
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", "true"))
+        val request = FakeRequest(POST, routeUnderTest)
 
         val result = route(application, request).value
 

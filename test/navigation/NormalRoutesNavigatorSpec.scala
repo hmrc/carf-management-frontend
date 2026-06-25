@@ -17,9 +17,10 @@
 package navigation
 
 import base.SpecBase
-import models.BusinessDetails
+import models.{CachedBusinessDetails, NormalMode, OrganisationOrIndividual}
 import models.responses.AddressRegistrationResponse
 import controllers.routes
+import pages.Page
 import models.{NormalMode, OrganisationOrIndividual}
 import pages.{AddressLookupResult, AddressPagePrePop, FindAddressPage, Page}
 import pages.combined.OrganisationOrIndividualPage
@@ -30,8 +31,8 @@ class NormalRoutesNavigatorSpec extends SpecBase {
 
   val navigator = new Navigator()
 
-  val businessDetails: BusinessDetails =
-    BusinessDetails(
+  val cachedBusinessDetailsGb: CachedBusinessDetails =
+    CachedBusinessDetails(
       name = "Test Business Ltd",
       address = AddressRegistrationResponse(
         addressLine1 = "1 Test Street",
@@ -44,8 +45,8 @@ class NormalRoutesNavigatorSpec extends SpecBase {
       countryName = "United Kingdom"
     )
 
-  val businessDetailsNonGb: BusinessDetails =
-    BusinessDetails(
+  val cachedBusinessDetailsNonGb: CachedBusinessDetails =
+    CachedBusinessDetails(
       name = "Test Business Ltd",
       address = AddressRegistrationResponse(
         addressLine1 = "3 Apple Street",
@@ -114,7 +115,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
       "Should redirect to PlaceholderController for /check-answers when answer is true and country is GB" in {
         val ua = emptyUserAnswers
           .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
-          .withPage(CachedBusinessDetailsPage, businessDetails)
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetailsGb)
 
         navigator.nextPage(
           RegisteredBusinessIsTheAddressCorrectPage,
@@ -131,8 +132,8 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
           .withPage(
             CachedBusinessDetailsPage,
-            businessDetails.copy(
-              address = businessDetails.address.copy(countryCode = "gb")
+            cachedBusinessDetailsGb.copy(
+              address = cachedBusinessDetailsGb.address.copy(countryCode = "gb")
             )
           )
 
@@ -148,7 +149,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
       "Should redirect to NotInUkController when answer is true and country is not GB" in {
         val ua = emptyUserAnswers
           .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
-          .withPage(CachedBusinessDetailsPage, businessDetailsNonGb)
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetailsNonGb)
 
         navigator.nextPage(
           RegisteredBusinessIsTheAddressCorrectPage,

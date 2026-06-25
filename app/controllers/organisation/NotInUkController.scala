@@ -46,6 +46,8 @@ class NotInUkController @Inject() (
             "[NotInUkController][onPageLoad] No cached business details found. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-        }(businessDetails => Ok(view(businessDetails.name)))
+        } { cached =>
+          Ok(view(cached.name))
+        }
     }
 }

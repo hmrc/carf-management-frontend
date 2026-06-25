@@ -17,13 +17,14 @@
 package models
 
 import models.responses.AddressRegistrationResponse
-import play.api.libs.json.*
+import play.api.libs.json.{Json, OFormat}
 
-case class BusinessDetails(
+case class CachedBusinessDetails(
     name: String,
-    address: AddressRegistrationResponse
+    address: AddressRegistrationResponse,
+    countryName: String
 )
 
-object BusinessDetails {
-  implicit val format: OFormat[BusinessDetails] = Json.format[BusinessDetails]
+object CachedBusinessDetails {
+  implicit val format: OFormat[CachedBusinessDetails] = Json.format[CachedBusinessDetails]
 }

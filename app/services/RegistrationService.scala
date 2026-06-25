@@ -40,8 +40,7 @@ class RegistrationService @Inject() {
             addressLine4 = None,
             postalCode = Some("11722"),
             countryCode = "US"
-          ),
-          countryName = "United States"
+          )
         )
       )
     } else {
@@ -55,8 +54,7 @@ class RegistrationService @Inject() {
             addressLine4 = None,
             postalCode = Some("TE1 1ST"),
             countryCode = "GB"
-          ),
-          countryName = "United Kingdom"
+          )
         )
       )
     }
