@@ -70,7 +70,7 @@ object YourRcaspsListWithActionsHelper {
       }
 
     HtmlContent(s"""
-         |<span class="govuk-!-margin-right-2" style="max-width: 180px">$name</span>
+         |<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">$name</span>
          |$registeredBusinessTag
     """.stripMargin.trim)
   }

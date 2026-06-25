@@ -42,8 +42,12 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
         val listWithActions = YourRcaspsListWithActionsHelper.getYourRcaspsRows(rcaspDetailsList)
 
         val expectedValueContent: Seq[HtmlContent] = Seq(
-          HtmlContent("""<span class="govuk-!-margin-right-2" style="max-width: 180px">Mesagoza</span>"""),
-          HtmlContent("""<span class="govuk-!-margin-right-2" style="max-width: 180px">Penny Cassiopeia</span>""")
+          HtmlContent(
+            """<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">Mesagoza</span>"""
+          ),
+          HtmlContent(
+            """<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">Penny Cassiopeia</span>"""
+          )
         )
 
         val expectedActionItems: Seq[Seq[ListWithActionsAction]] = Seq(
@@ -97,12 +101,16 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
 
         val expectedValueContent: Seq[HtmlContent] = Seq(
           HtmlContent("""
-            |<span class="govuk-!-margin-right-2" style="max-width: 180px">ORG2</span>
+            |<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">ORG2</span>
             |<strong class="govuk-tag" style="max-width: 180px !important;">Registered&nbsp;business</strong>
           """.stripMargin.trim),
-          HtmlContent("""<span class="govuk-!-margin-right-2" style="max-width: 180px">Ann Smith</span>"""),
-          HtmlContent("""<span class="govuk-!-margin-right-2" style="max-width: 180px">John Doe</span>"""),
-          HtmlContent("""<span class="govuk-!-margin-right-2" style="max-width: 180px">org1</span>""")
+          HtmlContent(
+            """<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">Ann Smith</span>"""
+          ),
+          HtmlContent(
+            """<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">John Doe</span>"""
+          ),
+          HtmlContent("""<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">org1</span>""")
         )
 
         val expectedActionItems: Seq[Seq[ListWithActionsAction]] = Seq(
