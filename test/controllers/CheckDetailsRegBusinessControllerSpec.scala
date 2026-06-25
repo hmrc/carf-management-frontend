@@ -21,7 +21,7 @@ import models.UserAnswers
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
-import pages.organisation.OverwritableOrganisationName
+import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import play.api.Application
 import play.api.inject.bind
 import play.api.mvc.{Call, Result}
@@ -120,6 +120,16 @@ class CheckDetailsRegBusinessControllerSpec extends SpecBase {
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
         }
+      }
+
+      "must redirect to InformationMissing when ReportForRegisteredBusiness is false" in new Setup(
+        emptyUserAnswers.withPage(ReportForRegisteredBusinessPage, false)
+      ) {
+        val request                = FakeRequest(GET, cdRoute)
+        val result: Future[Result] = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.InformationMissingController.onPageLoad().url
       }
     }
 

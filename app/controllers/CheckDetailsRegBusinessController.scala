@@ -26,6 +26,7 @@ import utils.CheckDetailsRegBusinessHelper
 import views.html.organisation.CheckDetailsRegBusinessView
 import services.RegistrationService
 import scala.concurrent.ExecutionContext
+import pages.organisation.ReportForRegisteredBusinessPage
 
 import javax.inject.Inject
 
@@ -47,22 +48,30 @@ class CheckDetailsRegBusinessController @Inject() (
     import cats.syntax.all.*
 
     val userAnswers          = request.userAnswers
-    lazy val ifEmptyProtocol =
-      Redirect(controllers.routes.InformationMissingController.onPageLoad())
+    lazy val ifEmptyProtocol = Redirect(controllers.routes.InformationMissingController.onPageLoad())
 
-    (
-      userAnswers.get(OverwritableOrganisationName),
-      helper.getRegisteredBusinessSection(userAnswers)
-    )
-      .mapN { (name, section) =>
-        Ok(view(Seq(section), name))
-      }
-      .getOrElse {
-        logger.warn(
-          "[CheckDetailsRegBusinessController][onPageLoad] Error! Could not load page missing answers"
-        )
-        ifEmptyProtocol
-      }
+    val reportForRegisteredBusiness = userAnswers.get(ReportForRegisteredBusinessPage)
+
+    if (reportForRegisteredBusiness.contains(false)) {
+      logger.warn(
+        "[CheckDetailsRegBusinessController][onPageLoad] ReportForRegisteredBusiness is false. Redirecting to SIIM."
+      )
+      ifEmptyProtocol
+    } else {
+      (
+        userAnswers.get(OverwritableOrganisationName),
+        helper.getRegisteredBusinessSection(userAnswers)
+      )
+        .mapN { (name, section) =>
+          Ok(view(Seq(section), name))
+        }
+        .getOrElse {
+          logger.warn(
+            "[CheckDetailsRegBusinessController][onPageLoad] Error! Could not load page missing answers"
+          )
+          ifEmptyProtocol
+        }
+    }
   }
 
   def onSubmit: Action[AnyContent] = (identify() andThen getData() andThen requireData).async { implicit request =>
