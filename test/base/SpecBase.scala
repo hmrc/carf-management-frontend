@@ -57,8 +57,7 @@ trait SpecBase
     with IntegrationPatience
     with BeforeAndAfterEach
     with MockitoSugar
-    with TestData {
-    with MockitoSugar
+    with TestData
     with Generators {
 
   val userAnswersId: String            = "id"

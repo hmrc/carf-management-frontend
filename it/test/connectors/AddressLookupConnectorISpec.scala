@@ -33,8 +33,6 @@ class AddressLookupConnectorISpec
     with ScalaFutures
     with IntegrationPatience {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-
   val connector: AddressLookupConnector = app.injector.instanceOf[AddressLookupConnector]
 
   val searchByPostcodeValidResponse: Seq[AddressResponse] = Seq(
