@@ -140,6 +140,31 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
       }
     }
 
+    "must return OK and the correct view for a GET when OverwritableOrganisationName is present but OrganisationOrIndividualPage is not" in {
+
+      val userAnswersWithName =
+        emptyUserAnswers
+          .withPage(OverwritableOrganisationName, testName)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithName)).build()
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      running(application) {
+        val request = FakeRequest(GET, findAddressRoute)
+
+        val view = application.injector.instanceOf[FindAddressView]
+
+        val result = route(application, request).value
+
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(form, NormalMode, testName, expectedManualUrl)(
+          request,
+          messages(application)
+        ).toString
+      }
+    }
+
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val userAnswersWithName =

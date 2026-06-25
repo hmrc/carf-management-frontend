@@ -152,8 +152,7 @@ class FindAddressController @Inject() (
 
   private def retrieveRcaspName(userAnswers: UserAnswers): Option[String] =
     userAnswers.get(OrganisationOrIndividualPage) match {
-      case Some(Individual)   => userAnswers.get(IndividualNamePage).map(_.fullName)
-      case Some(Organisation) => userAnswers.get(OverwritableOrganisationName)
-      case _                  => None
+      case Some(Individual) => userAnswers.get(IndividualNamePage).map(_.fullName)
+      case _                => userAnswers.get(OverwritableOrganisationName)
     }
 }
