@@ -17,18 +17,17 @@
 package controllers
 
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
-import pages.organisation.OverwritableOrganisationName
+import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.RegistrationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckDetailsRegBusinessHelper
 import views.html.organisation.CheckDetailsRegBusinessView
-import services.RegistrationService
-import scala.concurrent.ExecutionContext
-import pages.organisation.ReportForRegisteredBusinessPage
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class CheckDetailsRegBusinessController @Inject() (
     override val messagesApi: MessagesApi,
@@ -50,27 +49,27 @@ class CheckDetailsRegBusinessController @Inject() (
     val userAnswers          = request.userAnswers
     lazy val ifEmptyProtocol = Redirect(controllers.routes.InformationMissingController.onPageLoad())
 
-    val reportForRegisteredBusiness = userAnswers.get(ReportForRegisteredBusinessPage)
+    userAnswers.get(ReportForRegisteredBusinessPage) match {
+      case Some(true) =>
+        (
+          userAnswers.get(OverwritableOrganisationName),
+          helper.getRegisteredBusinessSection(userAnswers)
+        )
+          .mapN { (name, section) =>
+            Ok(view(section, name))
+          }
+          .getOrElse {
+            logger.warn(
+              "[CheckDetailsRegBusinessController][onPageLoad] Error! Could not load page missing answers"
+            )
+            ifEmptyProtocol
+          }
 
-    if (reportForRegisteredBusiness.contains(false)) {
-      logger.warn(
-        "[CheckDetailsRegBusinessController][onPageLoad] ReportForRegisteredBusiness is false. Redirecting to SIIM."
-      )
-      ifEmptyProtocol
-    } else {
-      (
-        userAnswers.get(OverwritableOrganisationName),
-        helper.getRegisteredBusinessSection(userAnswers)
-      )
-        .mapN { (name, section) =>
-          Ok(view(section, name))
-        }
-        .getOrElse {
-          logger.warn(
-            "[CheckDetailsRegBusinessController][onPageLoad] Error! Could not load page missing answers"
-          )
-          ifEmptyProtocol
-        }
+      case _ =>
+        logger.warn(
+          "[CheckDetailsRegBusinessController][onPageLoad] ReportForRegisteredBusiness is false or missing. Redirecting to SIIM."
+        )
+        ifEmptyProtocol
     }
   }
 

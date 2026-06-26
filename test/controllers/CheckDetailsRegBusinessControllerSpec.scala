@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.UserAnswers
+import models.errors.InternalServerError
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
@@ -27,15 +28,14 @@ import play.api.inject.bind
 import play.api.mvc.{Call, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.RegistrationService
+import types.ResultT
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
 import utils.CheckDetailsRegBusinessHelper
 import viewmodels.Section
 import viewmodels.govuk.all.{ActionItemViewModel, FluentActionItem, SummaryListRowViewModel, ValueViewModel}
 import views.html.organisation.CheckDetailsRegBusinessView
-import models.errors.InternalServerError
-import services.RegistrationService
-import types.ResultT
 
 import java.time.Clock
 import scala.concurrent.Future
@@ -67,11 +67,17 @@ class CheckDetailsRegBusinessControllerSpec extends SpecBase {
     "onPageLoad" - {
 
       "must return OK and the correct view for a GET when all answers are present" in new Setup(
-        emptyUserAnswers.withPage(OverwritableOrganisationName, "Test Business Ltd")
+        emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, true)
+          .withPage(OverwritableOrganisationName, "Test Business Ltd")
       ) {
         when(
           mockHelper.getRegisteredBusinessSection(
-            eqTo(emptyUserAnswers.withPage(OverwritableOrganisationName, "Test Business Ltd"))
+            eqTo(
+              emptyUserAnswers
+                .withPage(ReportForRegisteredBusinessPage, true)
+                .withPage(OverwritableOrganisationName, "Test Business Ltd")
+            )
           )(any())
         )
           .thenReturn(Some(testSection))
@@ -88,7 +94,9 @@ class CheckDetailsRegBusinessControllerSpec extends SpecBase {
       }
 
       "must redirect to InformationMissing when section is None" in new Setup(
-        emptyUserAnswers.withPage(OverwritableOrganisationName, "Test Business Ltd")
+        emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, true)
+          .withPage(OverwritableOrganisationName, "Test Business Ltd")
       ) {
         when(mockHelper.getRegisteredBusinessSection(any())(any()))
           .thenReturn(None)
@@ -101,7 +109,27 @@ class CheckDetailsRegBusinessControllerSpec extends SpecBase {
       }
 
       "must redirect to InformationMissing when OverwritableOrganisationName is missing" in new Setup(
-        emptyUserAnswers
+        emptyUserAnswers.withPage(ReportForRegisteredBusinessPage, true)
+      ) {
+        val request                = FakeRequest(GET, cdRoute)
+        val result: Future[Result] = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+      }
+
+      "must redirect to InformationMissing when ReportForRegisteredBusiness is false" in new Setup(
+        emptyUserAnswers.withPage(ReportForRegisteredBusinessPage, false)
+      ) {
+        val request                = FakeRequest(GET, cdRoute)
+        val result: Future[Result] = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+      }
+
+      "must redirect to InformationMissing when ReportForRegisteredBusiness is None" in new Setup(
+        emptyUserAnswers.withPage(OverwritableOrganisationName, "Test Business Ltd")
       ) {
         val request                = FakeRequest(GET, cdRoute)
         val result: Future[Result] = route(application, request).value
@@ -120,16 +148,6 @@ class CheckDetailsRegBusinessControllerSpec extends SpecBase {
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
         }
-      }
-
-      "must redirect to InformationMissing when ReportForRegisteredBusiness is false" in new Setup(
-        emptyUserAnswers.withPage(ReportForRegisteredBusinessPage, false)
-      ) {
-        val request                = FakeRequest(GET, cdRoute)
-        val result: Future[Result] = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.InformationMissingController.onPageLoad().url
       }
     }
 
