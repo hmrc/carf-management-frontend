@@ -20,7 +20,7 @@ import cats.data.EitherT
 import cats.syntax.all.*
 import connectors.AddressLookupConnector
 import models.AddressAndUPRN
-import models.errors.{ApiError, CarfError}
+import models.errors.ApiError
 import models.requests.SearchByPostcodeRequest
 import models.responses.AddressResponse
 import types.ResultT

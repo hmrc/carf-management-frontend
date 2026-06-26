@@ -31,7 +31,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
-import pages.{AddressUPRNUserAnswers, FindAddressAdditionalCallUa, FindAddressPage}
+import pages.*
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.libs.json.Json
@@ -197,12 +197,14 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
       }
     }
 
-    "must redirect to the next page when postcode has returned one address" in {
+    "must redirect to the next page and clear FindAddressAdditionalCallUa and AddressLookupResult when postcode has returned one address" in {
 
       val userAnswersWithName =
         emptyUserAnswers
           .withPage(OrganisationOrIndividualPage, Organisation)
           .withPage(OverwritableOrganisationName, testName)
+          .withPage(FindAddressAdditionalCallUa, true)
+          .withPage(AddressLookupResult, testAddressAndUprns)
 
       val onwardRouteOneAddress =
         controllers.routes.PlaceholderController.onPageLoad("Should nav to /review-address (CARF-201)")
@@ -229,7 +231,10 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
         redirectLocation(result).value mustEqual onwardRouteOneAddress.url
         verify(mockAddressLookupService, times(1)).postcodeSearch(eqTo("TE1 1ST"), eqTo(Some("value 2")))(any(), any())
         verify(mockSessionRepository, times(1)).set(
-          argThat(_.get(AddressUPRNUserAnswers).get == testUPRN)
+          argThat(ua =>
+            ua.get(AddressUPRNUserAnswers).get == testUPRN && ua.get(FindAddressAdditionalCallUa).isEmpty
+              && ua.get(AddressLookupResult).isEmpty
+          )
         )
       }
     }
@@ -322,12 +327,13 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
       }
     }
 
-    "must clear UPRN from user answers when multiple addresses are returned" in {
+    "must clear UPRN and AddressPagePrePop from user answers when multiple addresses are returned" in {
       val userAnswersWithNameAndUprn =
         emptyUserAnswers
           .withPage(OrganisationOrIndividualPage, Organisation)
           .withPage(OverwritableOrganisationName, testName)
           .withPage(AddressUPRNUserAnswers, testUPRN)
+          .withPage(AddressPagePrePop, testAddressUk)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any()))
@@ -359,7 +365,9 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
         status(result) mustEqual SEE_OTHER
         verify(mockAddressLookupService, times(1)).postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any())
         verify(mockSessionRepository, times(1)).set(any())
-        verify(mockSessionRepository).set(argThat(_.get(AddressUPRNUserAnswers).isEmpty))
+        verify(mockSessionRepository).set(
+          argThat(ua => ua.get(AddressUPRNUserAnswers).isEmpty && ua.get(AddressPagePrePop).isEmpty)
+        )
       }
     }
 
@@ -447,11 +455,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
         .build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, findAddressRoute)
-            .withFormUrlEncodedBody(("postcode", "TE1 1ST"))
-
-        val view = application.injector.instanceOf[FindAddressView]
+        val request = FakeRequest(POST, findAddressRoute).withFormUrlEncodedBody(("postcode", "TE1 1ST"))
 
         val result = route(application, request).value
 

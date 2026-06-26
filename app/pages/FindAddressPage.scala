@@ -17,7 +17,6 @@
 package pages
 
 import models.FindAddress
-import pages.QuestionPage
 import play.api.libs.json.JsPath
 
 case object FindAddressPage extends QuestionPage[FindAddress] {

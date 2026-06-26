@@ -17,7 +17,6 @@
 package pages
 
 import models.AddressUk
-import pages.QuestionPage
 import play.api.libs.json.JsPath
 
 case object AddressPagePrePop extends QuestionPage[AddressUk] {

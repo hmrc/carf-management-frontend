@@ -16,8 +16,7 @@
 
 package pages
 
-import models.{AddressAndUPRN, AddressUk}
-import pages.QuestionPage
+import models.AddressAndUPRN
 import play.api.libs.json.JsPath
 
 case object AddressLookupResult extends QuestionPage[Seq[AddressAndUPRN]] {
