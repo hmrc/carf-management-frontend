@@ -20,7 +20,7 @@ import base.SpecBase
 import cats.data.EitherT
 import forms.organisation.TradingNameFormProvider
 import models.NormalMode
-import models.errors.InternalServerError
+import models.errors.ApiError.InternalServerError
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage, TradingNamePage}

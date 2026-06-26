@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.individual
 
-import models.UserAnswers
+import models.{NormalMode, UserAnswers}
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -34,7 +34,7 @@ object IndividualAddressSummary {
           actions = Seq(
             ActionItemViewModel(
               "site.change",
-              controllers.routes.PlaceholderController.onPageLoad("CARF-200 - /find-address").url
+              controllers.routes.FindAddressController.onPageLoad(NormalMode).url
             )
               .withVisuallyHiddenText(messages("individual.address.hidden"))
           )

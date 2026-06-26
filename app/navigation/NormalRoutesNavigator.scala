@@ -37,7 +37,7 @@ trait NormalRoutesNavigator {
       userAnswers => navigateFromHaveTradingNamePage(userAnswers)
 
     case UtrPage =>
-      _ => controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+      _ => controllers.routes.FindAddressController.onPageLoad(NormalMode)
 
     case RegisteredBusinessIsTheAddressCorrectPage =>
       userAnswers => navigateFromRegisteredBusinessIsTheAddressCorrectPage(userAnswers)
@@ -171,7 +171,7 @@ trait NormalRoutesNavigator {
             }
           }
       case Some(false) =>
-        controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+        controllers.routes.FindAddressController.onPageLoad(NormalMode)
       case None        =>
         controllers.routes.JourneyRecoveryController.onPageLoad()
     }

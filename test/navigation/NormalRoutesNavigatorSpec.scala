@@ -107,7 +107,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           UtrPage,
           NormalMode,
           emptyUserAnswers
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+        ) mustBe controllers.routes.FindAddressController.onPageLoad(NormalMode)
       }
     }
 
@@ -165,7 +165,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           RegisteredBusinessIsTheAddressCorrectPage,
           NormalMode,
           ua
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+        ) mustBe controllers.routes.FindAddressController.onPageLoad(NormalMode)
       }
 
       "Should redirect to Journey Recovery when no answer is present" in {
