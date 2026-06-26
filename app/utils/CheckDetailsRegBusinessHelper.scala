@@ -27,27 +27,26 @@ import javax.inject.Inject
 
 class CheckDetailsRegBusinessHelper @Inject() extends Logging {
 
-  def getRegisteredBusinessSection(userAnswers: UserAnswers)(implicit messages: Messages): Option[Section] = {
-    val haveTrading = userAnswers.get(HaveTradingNamePage)
+  def getRegisteredBusinessSection(userAnswers: UserAnswers)(implicit messages: Messages): Option[Section] =
+    for {
+      reportForRegisteredBusiness <- ReportForRegisteredBusinessSummary.row(userAnswers)
+      organisationName            <- OverwritableOrganisationNameSummary.row(userAnswers)
+      haveTradingRow              <- HaveTradingNameSummary.row(userAnswers)
+      haveTrading                 <- userAnswers.get(HaveTradingNamePage)
+      address                     <- RegisteredBusinessAddressSummary.row(userAnswers)
 
-    val rows = Seq(
-      ReportForRegisteredBusinessSummary.row(userAnswers),
-      OverwritableOrganisationNameSummary.row(userAnswers),
-      HaveTradingNameSummary.row(userAnswers)
-    ).flatten ++ (
-      if (haveTrading.contains(true)) {
-        Seq(TradingNameSummary.row(userAnswers)).flatten
-      } else {
-        Seq.empty
+      rows <- {
+        val baseRows = Seq(
+          reportForRegisteredBusiness,
+          organisationName,
+          haveTradingRow
+        )
+
+        if (haveTrading) {
+          TradingNameSummary.row(userAnswers).map(tradingRow => baseRows :+ tradingRow :+ address)
+        } else {
+          Some(baseRows :+ address)
+        }
       }
-    ) ++ Seq(
-      RegisteredBusinessAddressSummary.row(userAnswers)
-    ).flatten
-
-    if (rows.nonEmpty) {
-      Some(Section("", rows))
-    } else {
-      None
-    }
-  }
+    } yield Section("", rows)
 }

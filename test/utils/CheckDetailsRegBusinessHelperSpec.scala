@@ -17,7 +17,7 @@
 package utils
 
 import base.SpecBase
-import models.BusinessDetails
+import models.{BusinessDetails, UserAnswers}
 import models.responses.AddressRegistrationResponse
 import pages.organisation.*
 import play.api.i18n.Messages
@@ -40,6 +40,12 @@ class CheckDetailsRegBusinessHelperSpec extends SpecBase {
     )
   )
 
+  val completeUserAnswers: UserAnswers = emptyUserAnswers
+    .withPage(ReportForRegisteredBusinessPage, true)
+    .withPage(OverwritableOrganisationName, "Test Business Ltd")
+    .withPage(HaveTradingNamePage, false)
+    .withPage(CachedBusinessDetailsPage, businessDetails)
+
   "CheckDetailsRegBusinessHelper" - {
 
     "getRegisteredBusinessSection" - {
@@ -48,14 +54,17 @@ class CheckDetailsRegBusinessHelperSpec extends SpecBase {
         helper.getRegisteredBusinessSection(emptyUserAnswers) mustBe None
       }
 
-      "must return a section with all rows when have trading name is true" in {
+      "must return None when any mandatory page is missing" in {
         val userAnswers = emptyUserAnswers
           .withPage(ReportForRegisteredBusinessPage, true)
-          .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
           .withPage(OverwritableOrganisationName, "Test Business Ltd")
+        helper.getRegisteredBusinessSection(userAnswers) mustBe None
+      }
+
+      "must return a section with all rows when have trading name is true" in {
+        val userAnswers = completeUserAnswers
           .withPage(HaveTradingNamePage, true)
           .withPage(TradingNamePage, "Trading Co")
-          .withPage(CachedBusinessDetailsPage, businessDetails)
 
         val result = helper.getRegisteredBusinessSection(userAnswers)
 
@@ -63,45 +72,25 @@ class CheckDetailsRegBusinessHelperSpec extends SpecBase {
         result.value.rows must have length 5
       }
 
-      "must return a section without trading name row when have trading name is false" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(ReportForRegisteredBusinessPage, true)
-          .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
-          .withPage(OverwritableOrganisationName, "Test Business Ltd")
-          .withPage(HaveTradingNamePage, false)
-          .withPage(CachedBusinessDetailsPage, businessDetails)
+      "must return None when have trading name is true but trading name is missing" in {
+        val userAnswers = completeUserAnswers
+          .withPage(HaveTradingNamePage, true)
+        helper.getRegisteredBusinessSection(userAnswers) mustBe None
+      }
 
-        val result = helper.getRegisteredBusinessSection(userAnswers)
+      "must return a section without trading name row when have trading name is false" in {
+        val result = helper.getRegisteredBusinessSection(completeUserAnswers)
 
         result          mustBe defined
         result.value.rows must have length 4
       }
 
-      "must return a section without trading name row when have trading name is not answered" in {
+      "must return None when address is missing" in {
         val userAnswers = emptyUserAnswers
           .withPage(ReportForRegisteredBusinessPage, true)
-          .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
           .withPage(OverwritableOrganisationName, "Test Business Ltd")
-          .withPage(CachedBusinessDetailsPage, businessDetails)
-
-        val result = helper.getRegisteredBusinessSection(userAnswers)
-
-        result          mustBe defined
-        result.value.rows must have length 3
-      }
-
-      "must return a section with only rows that have answers" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(ReportForRegisteredBusinessPage, true)
-
-        val result = helper.getRegisteredBusinessSection(userAnswers)
-
-        result          mustBe defined
-        result.value.rows must have length 1
-      }
-
-      "must return None when rows are empty" in {
-        helper.getRegisteredBusinessSection(emptyUserAnswers) mustBe None
+          .withPage(HaveTradingNamePage, false)
+        helper.getRegisteredBusinessSection(userAnswers) mustBe None
       }
     }
   }

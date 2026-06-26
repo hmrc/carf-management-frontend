@@ -81,7 +81,7 @@ class CheckDetailsRegBusinessControllerSpec extends SpecBase {
         val result: Future[Result] = route(application, request).value
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(Seq(testSection), "Test Business Ltd")(
+        contentAsString(result) mustEqual view(testSection, "Test Business Ltd")(
           request,
           messages(application)
         ).toString
