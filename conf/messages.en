@@ -264,7 +264,7 @@ yourRcasps.remove.hidden = Remove {0} from the list
 yourRcasps.registeredBusinessTag = Registered&nbsp;business
 
 
-findAddress.title = Find the address for the cryptoasset service provider
+findAddress.title = Find the address for the reporting cryptoasset service provider (RCASP)
 findAddress.heading = Find the address for {0}
 findAddress.postcode.paragraph = UK postcode
 findAddress.property.paragraph = Property name or number (optional)
