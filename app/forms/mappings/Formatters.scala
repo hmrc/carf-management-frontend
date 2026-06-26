@@ -31,8 +31,6 @@ import scala.util.{Failure, Success, Try}
 trait Formatters extends Logging {
 
   private type EitherFormErrorOrValue = Either[Seq[FormError], String]
-  private lazy val notRealError: String => EitherFormErrorOrValue = notRealKey =>
-    Left(Seq(FormError("postcode", notRealKey)))
 
   private[mappings] def stringFormatter(errorKey: String, args: Seq[String] = Seq.empty): Formatter[String] =
     new Formatter[String] {

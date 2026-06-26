@@ -18,7 +18,6 @@ package navigation
 
 import controllers.routes
 import models.{NormalMode, OrganisationOrIndividual, UserAnswers}
-import pages.Page
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*

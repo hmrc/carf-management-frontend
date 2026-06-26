@@ -16,8 +16,6 @@
 
 package config
 
-import models.countries.*
-
 object Constants {
 
   inline val ZERO = 0

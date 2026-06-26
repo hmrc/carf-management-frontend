@@ -19,14 +19,13 @@ package controllers
 import controllers.actions.*
 import forms.FindAddressFormProvider
 import models.OrganisationOrIndividual.*
-import models.countries.CountryUk
 import models.requests.DataRequest
 import models.{AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers}
 import navigation.Navigator
-import pages.individual.IndividualNamePage
-import pages.organisation.OverwritableOrganisationName
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
+import pages.individual.IndividualNamePage
+import pages.organisation.OverwritableOrganisationName
 import play.api.Logging
 import play.api.data.{Form, FormError}
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -119,36 +118,34 @@ class FindAddressController @Inject() (
       findAddress: FindAddress,
       addressesAndUPRNs: Seq[AddressAndUPRN],
       additionalCallMade: Boolean
-  )(implicit
-      request: DataRequest[AnyContent]
-  ) =
+  )(implicit request: DataRequest[AnyContent]) =
     for {
-      updatedAnswers            <-
-        Future.fromTry(request.userAnswers.set(FindAddressPage, findAddress))
-      updatedAnswersWithAddress <-
-        Future.fromTry(updatedAnswers.set(AddressLookupResult, addressesAndUPRNs))
-      updatedAnswersWithFlag    <-
-        Future.fromTry(updatedAnswersWithAddress.set(FindAddressAdditionalCallUa, additionalCallMade))
-      resultingUserAnswer       <-
-        Future.fromTry(updatedAnswersWithFlag.remove(AddressUPRNUserAnswers))
-      _                         <- sessionRepository.set(resultingUserAnswer)
-    } yield resultingUserAnswer
+      uaWithSingleAddressDataCleared <-
+        Future.fromTry(request.userAnswers.remove(List(AddressUPRNUserAnswers, AddressPagePrePop)))
+      uaWithPageAnswer               <-
+        Future.fromTry(uaWithSingleAddressDataCleared.set(FindAddressPage, findAddress))
+      uaWithAddresses                <-
+        Future.fromTry(uaWithPageAnswer.set(AddressLookupResult, addressesAndUPRNs))
+      uaWithAdditionalCallFlag       <-
+        Future.fromTry(uaWithAddresses.set(FindAddressAdditionalCallUa, additionalCallMade))
+      _                              <- sessionRepository.set(uaWithAdditionalCallFlag)
+    } yield uaWithAdditionalCallFlag
 
   private def saveSingleAddress(
       findAddress: FindAddress,
       addressAndUPRN: AddressAndUPRN
-  )(implicit
-      request: DataRequest[AnyContent]
-  ) =
+  )(implicit request: DataRequest[AnyContent]) =
     for {
-      updatedAnswers           <-
-        Future.fromTry(request.userAnswers.set(FindAddressPage, findAddress))
-      updatedAnswersWithPrePop <-
-        Future.fromTry(updatedAnswers.set(AddressPagePrePop, addressAndUPRN.address))
-      resultingUserAnswer      <-
-        Future.fromTry(updatedAnswersWithPrePop.set(AddressUPRNUserAnswers, addressAndUPRN.UPRN))
-      _                        <- sessionRepository.set(resultingUserAnswer)
-    } yield resultingUserAnswer
+      uaWithMultipleAddressDataCleared <-
+        Future.fromTry(request.userAnswers.remove(List(FindAddressAdditionalCallUa, AddressLookupResult)))
+      uaWithPageAnswer                 <-
+        Future.fromTry(uaWithMultipleAddressDataCleared.set(FindAddressPage, findAddress))
+      uaWithPrePop                     <-
+        Future.fromTry(uaWithPageAnswer.set(AddressPagePrePop, addressAndUPRN.address))
+      uaWithUprn                       <-
+        Future.fromTry(uaWithPrePop.set(AddressUPRNUserAnswers, addressAndUPRN.UPRN))
+      _                                <- sessionRepository.set(uaWithUprn)
+    } yield uaWithUprn
 
   private def retrieveRcaspName(userAnswers: UserAnswers): Option[String] =
     userAnswers.get(OrganisationOrIndividualPage) match {
