@@ -27,7 +27,7 @@
 @layout(pageTitle = titleNoForm(messages("registeredBusinessCheckDetails.title"))) {
     @formHelper(action = controllers.routes.CheckDetailsRegBusinessController.onSubmit, Symbol("autoComplete") -> "on") {
 
-        <h1 class="govuk-heading-l">@messages("registeredBusinessCheckDetails.heading", name)</h1>
+        <h1 class="govuk-heading-l long-word">@messages("registeredBusinessCheckDetails.heading", name)</h1>
 
         @sections.map { section =>
             @if(section.sectionName.nonEmpty) {

@@ -36,7 +36,7 @@ object RegisteredBusinessAddressSummary {
         address.addressLine2,
         address.addressLine3,
         address.addressLine4,
-        address.postalCode,
+        address.postalCode
         // TODO: Add country name here - once CARF-197 is merged
       ).flatten
 
