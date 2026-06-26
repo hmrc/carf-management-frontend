@@ -19,6 +19,7 @@ package navigation
 import controllers.routes
 import models.{NormalMode, OrganisationOrIndividual, UserAnswers}
 import pages.Page
+import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
@@ -51,7 +52,7 @@ trait NormalRoutesNavigator {
     case IndividualNamePage => _ => controllers.individual.routes.NiNumberController.onPageLoad(NormalMode)
 
     case NiNumberPage =>
-      _ => controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+      _ => controllers.routes.FindAddressController.onPageLoad(NormalMode)
 
     case IndividualEmailPage => _ => controllers.individual.routes.IndividualHavePhoneController.onPageLoad(NormalMode)
 
@@ -86,6 +87,9 @@ trait NormalRoutesNavigator {
 
     case OrganisationSecondContactPhoneNumberPage =>
       _ => controllers.routes.CheckDetailsController.onPageLoad
+
+    case FindAddressPage =>
+      userAnswers => navigateFromFindAddressPage(userAnswers)
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
@@ -162,4 +166,13 @@ trait NormalRoutesNavigator {
       case None        => routes.JourneyRecoveryController.onPageLoad()
     }
 
+  private def navigateFromFindAddressPage(userAnswers: UserAnswers): Call =
+    (userAnswers.get(AddressLookupResult), userAnswers.get(AddressPagePrePop)) match {
+      case (Some(addresses), None) =>
+        controllers.routes.PlaceholderController.onPageLoad("Should nav to /choose-address (CARF-201)")
+      case (None, Some(address))   =>
+        controllers.routes.PlaceholderController.onPageLoad("Should nav to /review-address (CARF-201)")
+      case _                       =>
+        controllers.routes.JourneyRecoveryController.onPageLoad()
+    }
 }

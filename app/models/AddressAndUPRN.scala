@@ -14,24 +14,12 @@
  * limitations under the License.
  */
 
-package services
+package models
 
-import models.errors.ApiError.InternalServerError
-import play.api.Logging
-import types.ResultT
+import play.api.libs.json.{Json, OFormat}
 
-import javax.inject.{Inject, Singleton}
+case class AddressAndUPRN(address: AddressUk, UPRN: Long)
 
-@Singleton
-class UploadInformationService @Inject() extends Logging {
-
-  def hasUserUploadedFilesInLast28Days(carfId: String): ResultT[Boolean] =
-    carfId.dropRight(1).last.toString match {
-      case "9" =>
-        logger.warn("[hasUserUploadedFilesInLast28Days] Error!")
-        ResultT.fromError(InternalServerError)
-      case "1" => ResultT.fromValue(true)
-      case _   => ResultT.fromValue(false)
-    }
-
+object AddressAndUPRN {
+  implicit val format: OFormat[AddressAndUPRN] = Json.format[AddressAndUPRN]
 }

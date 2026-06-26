@@ -18,8 +18,8 @@ package generators
 
 import java.time.{Instant, LocalDate, ZoneOffset}
 
-import org.scalacheck.Arbitrary._
-import org.scalacheck.Gen._
+import org.scalacheck.Arbitrary.*
+import org.scalacheck.Gen.*
 import org.scalacheck.{Gen, Shrink}
 
 trait Generators extends ModelGenerators {
@@ -53,7 +53,7 @@ trait Generators extends ModelGenerators {
     arbitrary[BigInt] suchThat (x => x < Int.MinValue)
 
   def nonNumerics: Gen[String] =
-    alphaStr suchThat (_.size > 0)
+    alphaStr suchThat (_.nonEmpty)
 
   def decimals: Gen[String] =
     arbitrary[BigDecimal]
@@ -123,4 +123,52 @@ trait Generators extends ModelGenerators {
     length    <- Gen.chooseNum(minLength + 1, maxLength)
     chars     <- listOfN(length, Gen.alphaChar)
   } yield chars.mkString
+
+  def validPostcodes: Gen[String] =
+    for {
+      areaLength <- Gen.choose(1, 2)
+      area       <- Gen.listOfN(areaLength, Gen.alphaChar).map(_.mkString)
+
+      districtLength <- Gen.choose(1, 2)
+      district       <- Gen.listOfN(districtLength, Gen.choose(0, 9)).map(_.mkString)
+
+      subDistrict <- if (districtLength == 1) Gen.oneOf(Gen.const(""), Gen.alphaChar.map(_.toString)) else Gen.const("")
+
+      space <- Gen.oneOf("", " ")
+
+      sector <- Gen.choose(0, 9)
+      unit   <- Gen.listOfN(2, Gen.alphaChar).map(_.mkString)
+    } yield s"$area$district$subDistrict$space$sector$unit"
+
+  def validGBOnlyNonCDPostcodes: Gen[String] =
+    for {
+      areaLength <- Gen.choose(1, 2)
+      area       <- Gen
+                      .listOfN(
+                        areaLength,
+                        Gen.alphaChar.filter(char =>
+                          areaLength match {
+                            case 2 => !invalidPostcodes.contains(char.toUpper.toString)
+                            case _ => true
+                          }
+                        )
+                      )
+                      .map(_.mkString)
+
+      districtLength <- Gen.choose(1, 2)
+      district       <- Gen.listOfN(districtLength, Gen.choose(0, 9)).map(_.mkString)
+
+      subDistrict <- if (districtLength == 1) Gen.oneOf(Gen.const(""), Gen.alphaChar.map(_.toString)) else Gen.const("")
+
+      space <- Gen.oneOf("", " ")
+
+      sector <- Gen.choose(0, 9)
+      unit   <- Gen.listOfN(2, Gen.alphaChar).map(_.mkString)
+    } yield s"$area$district$subDistrict$space$sector$unit"
+
+  def invalidPostcodes: List[String] = List(
+    "GY",
+    "JE",
+    "IM"
+  )
 }

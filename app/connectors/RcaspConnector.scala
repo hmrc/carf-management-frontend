@@ -17,9 +17,10 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.errors.{CarfError, InternalServerError, JsonValidationError}
+import models.errors.ApiError.{InternalServerError, JsonValidationError}
+import models.errors.CarfError
+import models.responses.*
 import models.requests.CreateRcaspRequest
-import models.responses.{SubmitRcaspResponse, ViewRcaspResponse}
 import play.api.Logging
 import play.api.http.Status.*
 import play.api.libs.json.*

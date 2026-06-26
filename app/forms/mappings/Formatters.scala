@@ -17,11 +17,13 @@
 package forms.mappings
 
 import com.google.i18n.phonenumbers.{NumberParseException, PhoneNumberUtil, Phonenumber}
+import config.Constants
 import config.Constants.*
 import models.Enumerable
 import play.api.Logging
 import play.api.data.FormError
 import play.api.data.format.Formatter
+import utils.PostcodeUtil
 
 import scala.util.control.Exception.nonFatalCatch
 import scala.util.{Failure, Success, Try}
@@ -29,6 +31,8 @@ import scala.util.{Failure, Success, Try}
 trait Formatters extends Logging {
 
   private type EitherFormErrorOrValue = Either[Seq[FormError], String]
+  private lazy val notRealError: String => EitherFormErrorOrValue = notRealKey =>
+    Left(Seq(FormError("postcode", notRealKey)))
 
   private[mappings] def stringFormatter(errorKey: String, args: Seq[String] = Seq.empty): Formatter[String] =
     new Formatter[String] {
@@ -298,5 +302,48 @@ trait Formatters extends Logging {
       Right(value)
     }
   }
+
+  private[mappings] def mandatoryPostcodeFormatter(
+      requiredKey: String,
+      lengthKey: String,
+      invalidKey: String,
+      regex: String,
+      invalidCharKey: String,
+      validCharRegex: String,
+      notRealKey: Option[String]
+  ): Formatter[String] =
+    new Formatter[String] {
+      override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], String] = {
+        val postCode          = data.get(key).map(_.trim)
+        val maxLengthPostcode = 10
+
+        postCode match {
+          case Some(postCode) if postCode.isEmpty => Left(Seq(FormError(key, requiredKey)))
+          case Some(postCode)                     =>
+            val sanitisedPostcode = postCode.replaceAll("\\s+", "")
+            sanitisedPostcode match {
+              case s if s.length > maxLengthPostcode => Left(Seq(FormError(key, lengthKey)))
+              case s if !s.matches(validCharRegex)   => Left(Seq(FormError(key, invalidCharKey)))
+              case s if !s.matches(regex)            => Left(Seq(FormError(key, invalidKey)))
+              case s                                 =>
+                filterCDPostcodes(postCode, notRealKey)
+            }
+          case _                                  => Left(Seq(FormError(key, requiredKey)))
+        }
+      }
+
+      override def unbind(key: String, value: String): Map[String, String] =
+        Map(key -> value)
+
+    }
+
+  private def filterCDPostcodes(
+      postcode: String,
+      invalidKey: Option[String]
+  ): Either[Seq[FormError], String] =
+    postcode.take(2).toUpperCase match {
+      case "GY" | "JE" | "IM" => Left(Seq(FormError("postcode", invalidKey.get)))
+      case _                  => Right(PostcodeUtil.normalise(true, postcode))
+    }
 
 }

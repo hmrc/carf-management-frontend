@@ -17,7 +17,7 @@
 package services
 
 import models.BusinessDetails
-import models.errors.InternalServerError
+import models.errors.ApiError.InternalServerError
 import models.responses.AddressRegistrationResponse
 import types.ResultT
 
