@@ -63,7 +63,7 @@ class CheckDetailsRegBusinessController @Inject() (
         helper.getRegisteredBusinessSection(userAnswers)
       )
         .mapN { (name, section) =>
-          Ok(view(Seq(section), name))
+          Ok(view(section, name))
         }
         .getOrElse {
           logger.warn(
