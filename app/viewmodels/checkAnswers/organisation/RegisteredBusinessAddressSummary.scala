@@ -37,7 +37,6 @@ object RegisteredBusinessAddressSummary {
         address.addressLine3,
         address.addressLine4,
         address.postalCode
-        // TODO: Add country name here - once CARF-197 is merged
       ).flatten
 
       val addressHtml = Html(
