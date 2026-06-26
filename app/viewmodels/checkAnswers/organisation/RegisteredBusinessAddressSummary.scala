@@ -36,7 +36,8 @@ object RegisteredBusinessAddressSummary {
         address.addressLine2,
         address.addressLine3,
         address.addressLine4,
-        address.postalCode
+        address.postalCode,
+        // TODO: Add country name here - once CARF-197 is merged
       ).flatten
 
       val addressHtml = Html(
@@ -58,7 +59,7 @@ object RegisteredBusinessAddressSummary {
             "site.change",
             controllers.routes.PlaceholderController
               .onPageLoad(
-                "Should nav to /registered-business/is-the-address-correct (CARF-294)" +
+                "Should nav to /registered-business/is-the-address-correct (CARF-197)" +
                   "routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(ChangeMode).url"
               )
               .url

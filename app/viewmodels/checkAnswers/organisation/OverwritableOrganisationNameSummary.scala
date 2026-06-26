@@ -26,7 +26,7 @@ import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 import pages.organisation.OverwritableOrganisationName
 
-object OrganisationNameSummary {
+object OverwritableOrganisationNameSummary {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(OverwritableOrganisationName).map { answer =>
