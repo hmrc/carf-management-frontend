@@ -83,7 +83,7 @@ class FindAddressFormProviderSpec extends StringFieldBehaviours {
     val maxLength = 35
 
     "must bind valid data" in {
-      forAll(stringsWithMaxLength(maxLength) -> "validString") { string =>
+      forAll(nonEmptyStringsWithMaxLength(maxLength) -> "validString") { string =>
         val result = form.bind(Map("postcode" -> "SW1A 1AA", fieldName -> string))
         result.errors.filter(_.key == fieldName) mustBe empty
       }
@@ -109,7 +109,7 @@ class FindAddressFormProviderSpec extends StringFieldBehaviours {
     behave like fieldThatBindsValidData(
       form,
       fieldName,
-      stringsWithMaxLength(maxLength)
+      nonEmptyStringsWithMaxLength(maxLength)
     )
 
     behave like fieldWithMaxLength(
