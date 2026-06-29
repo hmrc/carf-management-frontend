@@ -18,8 +18,15 @@ package models.errors
 
 sealed trait CarfError
 
-case object DataError extends CarfError
+case object ConversionError extends CarfError
 
-case object InternalServerError extends CarfError
+sealed trait ApiError extends CarfError
 
-case object JsonValidationError extends CarfError
+object ApiError {
+
+  case object BadRequestError extends ApiError
+
+  case object InternalServerError extends ApiError
+
+  case object JsonValidationError extends ApiError
+}

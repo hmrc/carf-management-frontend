@@ -131,3 +131,8 @@ POST        /registered-business/check-answers                            contro
 
 GET         /your-rcasps                                                  controllers.YourRcaspsController.onPageLoad()
 POST        /your-rcasps                                                  controllers.YourRcaspsController.onSubmit()
+
+GET         /find-address                                                 controllers.FindAddressController.onPageLoad(mode: Mode = NormalMode)
+POST        /find-address                                                 controllers.FindAddressController.onSubmit(mode: Mode = NormalMode)
+GET         /change-find-address                                          controllers.FindAddressController.onPageLoad(mode: Mode = ChangeMode)
+POST        /change-find-address                                          controllers.FindAddressController.onSubmit(mode: Mode = ChangeMode)

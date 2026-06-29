@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.RcaspConnector
 import forms.GenericYesNoPageFormProvider
 import models.NormalMode
-import models.errors.JsonValidationError
+import models.errors.ApiError.JsonValidationError
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, times, verify, when}
 import play.api.data.Form

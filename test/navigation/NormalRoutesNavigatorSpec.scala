@@ -18,7 +18,7 @@ package navigation
 
 import base.SpecBase
 import models.{NormalMode, OrganisationOrIndividual}
-import pages.Page
+import pages.{AddressLookupResult, AddressPagePrePop, FindAddressPage, Page}
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
@@ -97,7 +97,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NiNumberPage,
           NormalMode,
           emptyUserAnswers
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should redirect to /find-address (CARF-200)")
+        ) mustBe controllers.routes.FindAddressController.onPageLoad(NormalMode)
       }
     }
 
@@ -395,6 +395,34 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NormalMode,
           ua
         ) mustBe controllers.routes.CheckDetailsRegBusinessController.onPageLoad
+      }
+    }
+
+    "When passed FindAddressPage" - {
+      "Should redirect to ChooseAddressPage when multiple addresses are returned" in {
+        val userAnswers = emptyUserAnswers.withPage(AddressLookupResult, testAddressAndUprns)
+        navigator.nextPage(
+          FindAddressPage,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /choose-address (CARF-201)")
+      }
+
+      "Should redirect to ReviewAddressPage when one address is returned" in {
+        val userAnswers = emptyUserAnswers.withPage(AddressPagePrePop, testAddressUk)
+        navigator.nextPage(
+          FindAddressPage,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /review-address (CARF-201)")
+      }
+
+      "Should redirect to JourneyRecovery when no address is returned and navigation has occurred" in {
+        navigator.nextPage(
+          FindAddressPage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe routes.JourneyRecoveryController.onPageLoad()
       }
     }
 

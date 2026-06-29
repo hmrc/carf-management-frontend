@@ -19,10 +19,13 @@ package connectors
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import itutil.ApplicationWithWiremock
-import models.errors.{InternalServerError, JsonValidationError}
-import models.requests.{CreateRcaspRequest, RCASPManagementRequest, RcaspCreateRequestCommon, RequestParameter}
-import models.responses.{SubmitRcaspResponse, SubmitResponseDetails, SubmitReturnParameters, ViewRcaspResponse}
-import models.{RcaspAddress, RcaspContactDetails, TinDetails, requests, responses}
+import models.errors.ApiError.{InternalServerError, JsonValidationError}
+import models.responses.*
+import models.{RcaspAddress, RcaspContactDetails, TinDetails}
+import models.requests.*
+import models.responses
+import models.requests
+import models.responses.*
 import org.scalactic.Prettifier.default
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers

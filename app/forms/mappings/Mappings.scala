@@ -17,8 +17,8 @@
 package forms.mappings
 
 import models.Enumerable
-import play.api.data.FieldMapping
 import play.api.data.Forms.of
+import play.api.data.{FieldMapping, Mapping}
 import play.api.i18n.Messages
 
 import java.time.LocalDate
@@ -94,4 +94,25 @@ trait Mappings extends Formatters with Constraints {
       args: Seq[Any] = Seq.empty
   ): FieldMapping[String] =
     of(phoneNumberFormatter(requiredKey, invalidKey, lengthKey, notRealPhoneNumberKey, args))
+
+  protected def mandatoryPostcode(
+      requiredKey: String,
+      lengthKey: String,
+      invalidKey: String,
+      regex: String,
+      invalidCharKey: String,
+      InvalidCharRegex: String,
+      notRealKey: Option[String]
+  ): Mapping[String] =
+    of(
+      mandatoryPostcodeFormatter(
+        requiredKey,
+        lengthKey,
+        invalidKey,
+        regex,
+        invalidCharKey,
+        InvalidCharRegex,
+        notRealKey
+      )
+    )
 }

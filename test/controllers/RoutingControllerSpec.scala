@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.NormalMode
-import models.errors.InternalServerError
+import models.errors.ApiError.InternalServerError
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.inject.bind

@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-package services
+package utils
 
-import models.errors.ApiError.InternalServerError
-import play.api.Logging
-import types.ResultT
-
-import javax.inject.{Inject, Singleton}
-
-@Singleton
-class UploadInformationService @Inject() extends Logging {
-
-  def hasUserUploadedFilesInLast28Days(carfId: String): ResultT[Boolean] =
-    carfId.dropRight(1).last.toString match {
-      case "9" =>
-        logger.warn("[hasUserUploadedFilesInLast28Days] Error!")
-        ResultT.fromError(InternalServerError)
-      case "1" => ResultT.fromValue(true)
-      case _   => ResultT.fromValue(false)
+object PostcodeUtil {
+  def normalise(isCrownDependency: Boolean, postcode: String): String =
+    if (isCrownDependency) {
+      val noSpaces = postcode.replaceAll("\\s", "").toUpperCase
+      if (noSpaces.length > 3) {
+        val (start, end) = noSpaces.splitAt(noSpaces.length - 3)
+        s"$start $end"
+      } else {
+        noSpaces
+      }
+    } else {
+      postcode.trim
     }
-
 }

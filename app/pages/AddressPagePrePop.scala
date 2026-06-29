@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 
-package services
+package pages
 
-import models.errors.ApiError.InternalServerError
-import play.api.Logging
-import types.ResultT
+import models.AddressUk
+import play.api.libs.json.JsPath
 
-import javax.inject.{Inject, Singleton}
+case object AddressPagePrePop extends QuestionPage[AddressUk] {
 
-@Singleton
-class UploadInformationService @Inject() extends Logging {
+  override def path: JsPath = JsPath \ toString
 
-  def hasUserUploadedFilesInLast28Days(carfId: String): ResultT[Boolean] =
-    carfId.dropRight(1).last.toString match {
-      case "9" =>
-        logger.warn("[hasUserUploadedFilesInLast28Days] Error!")
-        ResultT.fromError(InternalServerError)
-      case "1" => ResultT.fromValue(true)
-      case _   => ResultT.fromValue(false)
-    }
-
+  override def toString: String = "addressPagePrePop"
 }
