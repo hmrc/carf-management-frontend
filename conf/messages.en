@@ -263,7 +263,6 @@ yourRcasps.change.hidden = Change the details for {0}
 yourRcasps.remove.hidden = Remove {0} from the list
 yourRcasps.registeredBusinessTag = Registered&nbsp;business
 
-
 registeredBusiness.address.checkYourAnswersLabel = Main business address
 registeredBusiness.address.change.hidden = Change main business address
 

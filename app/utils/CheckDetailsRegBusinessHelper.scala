@@ -17,7 +17,7 @@
 package utils
 
 import models.UserAnswers
-import pages.organisation.HaveTradingNamePage
+import pages.organisation.{HaveTradingNamePage, ReportForRegisteredBusinessPage}
 import play.api.Logging
 import play.api.i18n.Messages
 import viewmodels.Section
@@ -28,25 +28,26 @@ import javax.inject.Inject
 class CheckDetailsRegBusinessHelper @Inject() extends Logging {
 
   def getRegisteredBusinessSection(userAnswers: UserAnswers)(implicit messages: Messages): Option[Section] =
-    for {
-      reportForRegisteredBusiness <- ReportForRegisteredBusinessSummary.row(userAnswers)
-      organisationName            <- OverwritableOrganisationNameSummary.row(userAnswers)
-      haveTradingRow              <- HaveTradingNameSummary.row(userAnswers)
-      haveTrading                 <- userAnswers.get(HaveTradingNamePage)
-      address                     <- RegisteredBusinessAddressSummary.row(userAnswers)
-
-      rows <- {
-        val baseRows = Seq(
-          reportForRegisteredBusiness,
-          organisationName,
-          haveTradingRow
-        )
-
-        if (haveTrading) {
-          TradingNameSummary.row(userAnswers).map(tradingRow => baseRows :+ tradingRow :+ address)
-        } else {
-          Some(baseRows :+ address)
+    (for {
+      reportForRegisteredBusinessAnswer <- userAnswers.get(ReportForRegisteredBusinessPage)
+      if reportForRegisteredBusinessAnswer
+      reportForRegisteredBusiness       <- ReportForRegisteredBusinessSummary.row(userAnswers)
+      organisationName                  <- OverwritableOrganisationNameSummary.row(userAnswers)
+      haveTradingRow                    <- HaveTradingNameSummary.row(userAnswers)
+      haveTrading                       <- userAnswers.get(HaveTradingNamePage)
+      address                           <- RegisteredBusinessAddressSummary.row(userAnswers)
+    } yield {
+      val topBaseRows = Seq(
+        reportForRegisteredBusiness,
+        organisationName,
+        haveTradingRow
+      )
+      if (haveTrading) {
+        TradingNameSummary.row(userAnswers).map { tradingRow =>
+          topBaseRows :+ tradingRow :+ address
         }
+      } else {
+        Some(topBaseRows :+ address)
       }
-    } yield Section("", rows)
+    }).flatten.map(Section(messages(""), _))
 }

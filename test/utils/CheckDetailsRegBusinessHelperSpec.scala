@@ -40,6 +40,8 @@ class CheckDetailsRegBusinessHelperSpec extends SpecBase {
     )
   )
 
+  // TODO test RegisteredBusinessAddressSummary logic here
+
   val completeUserAnswers: UserAnswers = emptyUserAnswers
     .withPage(ReportForRegisteredBusinessPage, true)
     .withPage(OverwritableOrganisationName, "Test Business Ltd")
@@ -73,8 +75,14 @@ class CheckDetailsRegBusinessHelperSpec extends SpecBase {
       }
 
       "must return None when have trading name is true but trading name is missing" in {
-        val userAnswers = completeUserAnswers
-          .withPage(HaveTradingNamePage, true)
+        val userAnswers = completeUserAnswers.withPage(HaveTradingNamePage, true)
+
+        helper.getRegisteredBusinessSection(userAnswers) mustBe None
+      }
+
+      "must return None when all answers are present but ReportForRegisteredBusinessPage is false" in {
+        val userAnswers = completeUserAnswers.withPage(ReportForRegisteredBusinessPage, false)
+
         helper.getRegisteredBusinessSection(userAnswers) mustBe None
       }
 
