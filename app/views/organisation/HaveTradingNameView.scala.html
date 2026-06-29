@@ -32,12 +32,10 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        <h1 class="govuk-heading-l long-word">@messages("haveTradingName.heading", organisationName)</h1>
-
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("haveTradingName.heading", organisationName)).withCssClass("govuk-visually-hidden govuk-!-display-block")
+                legend = LegendViewModel(messages("haveTradingName.heading", organisationName)).asPageHeading()
             ).copy(classes = "")
         )
 

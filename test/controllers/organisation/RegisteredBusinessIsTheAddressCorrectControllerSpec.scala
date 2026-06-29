@@ -23,7 +23,7 @@ import models.{CachedBusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsTheAddressCorrectPage}
+import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsTheAddressCorrectPage, RegisteredBusinessIsThisYourBusinessNamePage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -61,8 +61,9 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET when cached business details are present" in {
 
-      val userAnswers =
-        emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+      val userAnswers = emptyUserAnswers
+        .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+        .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers)).build()
@@ -84,11 +85,39 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
       }
     }
 
+    "must return OK and the correct view for a GET when cached business details are present but a different business name was declared" in {
+
+      val userAnswers = emptyUserAnswers
+        .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+        .withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
+        .withPage(OverwritableOrganisationName, testOrgName)
+
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+        val view    = application.injector.instanceOf[RegisteredBusinessIsTheAddressCorrectView]
+
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual view(
+          form,
+          NormalMode,
+          testOrgName,
+          cachedBusinessDetails.address,
+          cachedBusinessDetails.countryName
+        )(request, messages(application)).toString
+      }
+    }
+
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val userAnswers =
         emptyUserAnswers
           .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+          .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
           .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
 
       val application =
@@ -105,6 +134,35 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
           form.fill(true),
           NormalMode,
           cachedBusinessDetails.name,
+          cachedBusinessDetails.address,
+          cachedBusinessDetails.countryName
+        )(request, messages(application)).toString
+      }
+    }
+
+    "must populate the view correctly on a GET when the question has previously been answered but a different business name was declared" in {
+
+      val userAnswers =
+        emptyUserAnswers
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+          .withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
+          .withPage(OverwritableOrganisationName, testOrgName)
+          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+        val view    = application.injector.instanceOf[RegisteredBusinessIsTheAddressCorrectView]
+
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual view(
+          form.fill(true),
+          NormalMode,
+          testOrgName,
           cachedBusinessDetails.address,
           cachedBusinessDetails.countryName
         )(request, messages(application)).toString
@@ -152,6 +210,7 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
 
       val userAnswers = emptyUserAnswers
         .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+        .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -171,6 +230,37 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
           boundForm,
           NormalMode,
           cachedBusinessDetails.name,
+          cachedBusinessDetails.address,
+          cachedBusinessDetails.countryName
+        )(request, messages(application)).toString
+      }
+    }
+
+    "must return a Bad Request and errors when invalid data is submitted but a different business name was declared" in {
+
+      val userAnswers = emptyUserAnswers
+        .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+        .withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
+        .withPage(OverwritableOrganisationName, testOrgName)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, routeUnderTest)
+            .withFormUrlEncodedBody(("value", ""))
+
+        val result = route(application, request).value
+        val view   = application.injector.instanceOf[RegisteredBusinessIsTheAddressCorrectView]
+
+        val boundForm = form.bind(Map("value" -> ""))
+
+        status(result) mustEqual BAD_REQUEST
+
+        contentAsString(result) mustEqual view(
+          boundForm,
+          NormalMode,
+          testOrgName,
           cachedBusinessDetails.address,
           cachedBusinessDetails.countryName
         )(request, messages(application)).toString

@@ -37,14 +37,13 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        <h1 class="govuk-heading-l long-word">@messages("utr.heading", rcaspName)</h1>
-
         @govukInput(
             InputViewModel(
                 field = form("value"),
                 label = LabelViewModel(
                     messages("utr.heading", rcaspName)
-                ).withCssClass("govuk-visually-hidden")
+                )
+                .asPageHeading()
             )
             .withHint(HintViewModel(messages("utr.hint")))
             .withWidth(ThreeQuarters)

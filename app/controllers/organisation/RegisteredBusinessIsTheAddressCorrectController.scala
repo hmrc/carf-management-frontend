@@ -16,11 +16,11 @@
 
 package controllers.organisation
 
-import controllers.actions._
+import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import models.Mode
+import models.{CachedBusinessDetails, Mode, UserAnswers}
 import navigation.Navigator
-import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsTheAddressCorrectPage}
+import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsTheAddressCorrectPage, RegisteredBusinessIsThisYourBusinessNamePage}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -49,77 +49,76 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
 
   val form: Form[Boolean] = formProvider("registeredBusinessIsTheAddressCorrect.error.required")
 
+  private def getNameAndDetailsMaybe(userAnswers: UserAnswers): Option[(String, CachedBusinessDetails)] = {
+    val maybeName = if (userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).contains(true)) {
+      userAnswers.get(CachedBusinessDetailsPage).map(_.name)
+    } else {
+      userAnswers.get(OverwritableOrganisationName)
+    }
+
+    for {
+      name          <- maybeName
+      cachedDetails <- userAnswers.get(CachedBusinessDetailsPage)
+    } yield (name, cachedDetails)
+  }
+
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>
-      request.userAnswers.get(CachedBusinessDetailsPage) match {
+      getNameAndDetailsMaybe(userAnswers = request.userAnswers).fold {
+        logger.warn(
+          "[RegisteredBusinessIsTheAddressCorrectController][onPageLoad] No cached business details found. Redirecting to journey recovery."
+        )
+        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+      } { (businessName, cachedDetails) =>
+        val preparedForm =
+          request.userAnswers
+            .get(RegisteredBusinessIsTheAddressCorrectPage)
+            .fold(form)(form.fill)
 
-        case Some(cached) =>
-          val preparedForm =
-            request.userAnswers
-              .get(RegisteredBusinessIsTheAddressCorrectPage)
-              .fold(form)(form.fill)
-
-          Ok(
-            view(
-              preparedForm,
-              mode,
-              cached.name,
-              cached.address,
-              cached.countryName
-            )
+        Ok(
+          view(
+            preparedForm,
+            mode,
+            businessName,
+            cachedDetails.address,
+            cachedDetails.countryName
           )
-
-        case None =>
-          logger.warn(
-            "[RegisteredBusinessIsTheAddressCorrectController][onPageLoad] No cached business details found. Redirecting to journey recovery."
-          )
-          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+        )
       }
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
-      request.userAnswers.get(CachedBusinessDetailsPage) match {
-
-        case Some(cached) =>
-          form
-            .bindFromRequest()
-            .fold(
-              formWithErrors =>
-                Future.successful(
-                  BadRequest(
-                    view(
-                      formWithErrors,
-                      mode,
-                      cached.name,
-                      cached.address,
-                      cached.countryName
-                    )
-                  )
-                ),
-              value =>
-                for {
-                  updatedAnswers <- Future.fromTry(
-                                      request.userAnswers.set(
-                                        RegisteredBusinessIsTheAddressCorrectPage,
-                                        value
-                                      )
-                                    )
-                  _              <- sessionRepository.set(updatedAnswers)
-                } yield Redirect(
-                  navigator.nextPage(
-                    RegisteredBusinessIsTheAddressCorrectPage,
-                    mode,
-                    updatedAnswers
-                  )
-                )
+      form
+        .bindFromRequest()
+        .fold(
+          formWithErrors =>
+            getNameAndDetailsMaybe(userAnswers = request.userAnswers).fold {
+              logger.warn(
+                "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] No name or cached business details found. Redirecting to journey recovery."
+              )
+              Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+            } { (businessName, cachedDetails) =>
+              Future.successful(
+                BadRequest(view(formWithErrors, mode, businessName, cachedDetails.address, cachedDetails.countryName))
+              )
+            },
+          value =>
+            for {
+              updatedAnswers <- Future.fromTry(
+                                  request.userAnswers.set(
+                                    RegisteredBusinessIsTheAddressCorrectPage,
+                                    value
+                                  )
+                                )
+              _              <- sessionRepository.set(updatedAnswers)
+            } yield Redirect(
+              navigator.nextPage(
+                RegisteredBusinessIsTheAddressCorrectPage,
+                mode,
+                updatedAnswers
+              )
             )
-
-        case None =>
-          logger.warn(
-            "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] No cached business details found. Redirecting to journey recovery."
-          )
-          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      }
+        )
     }
 }
