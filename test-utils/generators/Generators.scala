@@ -115,7 +115,6 @@ trait Generators extends ModelGenerators {
   def validEmailAddressTooLong(maxLength: Int): Gen[String] =
     for {
       part <- listOfN(maxLength, Gen.alphaChar).map(_.mkString)
-
     } yield s"$part.$part@$part.$part"
 
   def stringsLongerThanAlphaNumeric(minLength: Int): Gen[String] = for {
@@ -123,6 +122,9 @@ trait Generators extends ModelGenerators {
     length    <- Gen.chooseNum(minLength + 1, maxLength)
     chars     <- listOfN(length, Gen.alphaChar)
   } yield chars.mkString
+
+  def nonEmptyStringsWithMaxLength(maxLength: Int): Gen[String] =
+    stringsWithMaxLength(maxLength).retryUntil(_.trim.nonEmpty)
 
   def validPostcodes: Gen[String] =
     for {
@@ -143,17 +145,9 @@ trait Generators extends ModelGenerators {
   def validGBOnlyNonCDPostcodes: Gen[String] =
     for {
       areaLength <- Gen.choose(1, 2)
-      area       <- Gen
-                      .listOfN(
-                        areaLength,
-                        Gen.alphaChar.filter(char =>
-                          areaLength match {
-                            case 2 => !invalidPostcodes.contains(char.toUpper.toString)
-                            case _ => true
-                          }
-                        )
-                      )
-                      .map(_.mkString)
+      area       <- Gen.listOfN(areaLength, Gen.alphaChar).map(_.mkString).retryUntil { areaLetters =>
+                      !invalidPostcodes.contains(areaLetters.toUpperCase)
+                    }
 
       districtLength <- Gen.choose(1, 2)
       district       <- Gen.listOfN(districtLength, Gen.choose(0, 9)).map(_.mkString)
