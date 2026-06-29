@@ -26,7 +26,6 @@ import models.{format, AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserA
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
@@ -43,7 +42,7 @@ import views.html.ChooseAddressView
 
 import scala.concurrent.Future
 
-class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
+class ChooseAddressControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
@@ -66,9 +65,6 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
     "BB00 0BB",
     CountryUk("GB", "United Kingdom")
   )
-
-  private lazy val expectedHtml =
-    s"We could not find a match for ‘property 1’ — showing all results for B23 1AZ instead."
 
   "ChooseAddress Controller" - {
 
@@ -240,8 +236,6 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[ChooseAddressView]
-
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController
           .onPageLoad()
@@ -249,7 +243,7 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must return redirect to journey recovery when AddressLookupResult not present for a GET" in {
+    "must redirect to journey recovery when AddressLookupResult not present for a GET" in {
 
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
@@ -266,7 +260,7 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must return redirect to address page when no address is found but AddressLookup is present for a GET" in {
+    "must redirect to address page when no address is found but AddressLookup is present for a GET" in {
 
       val userAnswers =
         UserAnswers(userAnswersId)
@@ -287,7 +281,7 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
+    "must redirect to the next page when valid data is submitted and is not rcasp user" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
         .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))

@@ -21,6 +21,7 @@ import cats.data.EitherT
 import models.NormalMode
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.errors.ApiError.InternalServerError
+import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
@@ -137,7 +138,7 @@ class ReviewAddressControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must redirect to Journey Recovery when an address is not found in userAnswers" in {
+    "must redirect to Journey Recovery when an address is not found in userAnswers on page load" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
@@ -154,7 +155,7 @@ class ReviewAddressControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must redirect to Journey Recovery when no userAnswers exist" in {
+    "must redirect to Journey Recovery when no userAnswers exist on page load" in {
 
       val application = applicationBuilder(userAnswers = None).build()
 
@@ -171,7 +172,7 @@ class ReviewAddressControllerSpec extends SpecBase with MockitoSugar {
       }
     }
 
-    "must redirect to the next page when user clicks the Continue button" in {
+    "must redirect to the next page when user clicks the Continue button and is not rcasp user" in {
       val userAnswers =
         emptyUserAnswers.withPage(AddressPagePrePop, testAddressUk)
 
@@ -182,6 +183,7 @@ class ReviewAddressControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
             bind[AccountService].toInstance(mockAccountService)
           )
           .build()
@@ -192,7 +194,8 @@ class ReviewAddressControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual onwardRoute.url
         verify(mockSessionRepository, times(1)).set(any())
       }
     }

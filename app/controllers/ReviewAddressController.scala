@@ -87,7 +87,7 @@ class ReviewAddressController @Inject() (
                 }
                 .merge
           } yield result
-        case _             =>
+        case None          =>
           logger.error("No address found in user answers")
           Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       }

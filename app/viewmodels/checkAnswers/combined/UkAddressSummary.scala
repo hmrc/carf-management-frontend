@@ -14,30 +14,30 @@
  * limitations under the License.
  */
 
-package viewmodels.checkAnswers.individual
+package viewmodels.checkAnswers.combined
 
-import models.UserAnswers
+import models.{format, ChangeMode, UserAnswers}
+import pages.UkAddressInUserAnswers
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*
 import viewmodels.implicits.*
 
-object IndividualAddressSummary {
+object UkAddressSummary {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    Some("111 Emirates Stadium NE1 4ABJ").map {
-      answer => // TODO [CARF-???] - Add real pagewhen CARF-200, 201 & 203 are done
-        SummaryListRowViewModel(
-          key = "individual.address.checkYourAnswersLabel",
-          value = ValueViewModel(HtmlFormat.escape(answer).toString),
-          actions = Seq(
-            ActionItemViewModel(
-              "site.change",
-              controllers.routes.PlaceholderController.onPageLoad("CARF-200 - /find-address").url
-            )
-              .withVisuallyHiddenText(messages("individual.address.hidden"))
+    answers.get(UkAddressInUserAnswers).map { answer =>
+      SummaryListRowViewModel(
+        key = "individual.address.checkYourAnswersLabel",
+        value = ValueViewModel(HtmlFormat.escape(answer.format).toString),
+        actions = Seq(
+          ActionItemViewModel(
+            "site.change",
+            controllers.routes.FindAddressController.onPageLoad(ChangeMode).url
           )
+            .withVisuallyHiddenText(messages("individual.address.hidden"))
         )
+      )
     }
 }

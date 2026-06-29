@@ -17,7 +17,7 @@
 package utils
 
 import config.Constants.ZERO
-import models.OrganisationOrIndividual.{Individual, Organisation}
+import models.OrganisationOrIndividual.Individual
 import models.{UniqueTaxpayerReference, UserAnswers}
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage

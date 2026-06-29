@@ -18,14 +18,10 @@ package controllers
 
 import controllers.actions.*
 import forms.FindAddressFormProvider
-import models.OrganisationOrIndividual.*
 import models.requests.DataRequest
-import models.{AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers}
+import models.{AddressAndUPRN, AddressUk, FindAddress, Mode}
 import navigation.Navigator
 import pages.*
-import pages.combined.OrganisationOrIndividualPage
-import pages.individual.IndividualNamePage
-import pages.organisation.OverwritableOrganisationName
 import play.api.Logging
 import play.api.data.{Form, FormError}
 import play.api.i18n.{I18nSupport, MessagesApi}

@@ -19,6 +19,7 @@ package utils
 import base.SpecBase
 import generators.Generators
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import pages.UkAddressInUserAnswers
 import pages.individual.{IndividualEmailPage, IndividualHavePhonePage, IndividualNamePage, IndividualPhonePage, NiNumberPage}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
@@ -35,6 +36,7 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
         val userAnswers = emptyUserAnswers
           .withPage(IndividualNamePage, testIndividualName)
           .withPage(NiNumberPage, testNiNumber)
+          .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val section: Section          = testHelper.getIndividualSectionMaybe(userAnswers).get
         val expectedTitle             = ""

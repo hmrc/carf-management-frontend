@@ -22,12 +22,11 @@ import forms.ChooseAddressFormProvider
 import models.requests.DataRequest
 import models.{format, AddressAndUPRN, AddressUk, FindAddress, Mode, UniqueTaxpayerReference, UserAnswers}
 import navigation.Navigator
-import org.checkerframework.common.aliasing.qual.Unique
 import pages.*
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Result}
+import play.api.mvc.*
 import repositories.SessionRepository
 import services.AccountService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
@@ -83,11 +82,8 @@ class ChooseAddressController @Inject() (
       lazy val preparedForm: Form[String] = request.userAnswers.get(ChooseAddressPage).fold(form)(form.fill)
 
       val WithRadiosResult(result, _) = resultWithRadios(mode) { (radios, maybeFindAddress) =>
-
-        val maybeHtml: Option[String] = generateHtml(maybeFindAddress)
-
         RcaspHelper.retrieveRcaspName(request.userAnswers) match {
-          case Some(name) => Ok(view(preparedForm, mode, radios, maybeHtml, name))
+          case Some(name) => Ok(view(preparedForm, mode, radios, generateHtml(maybeFindAddress), name))
           case None       =>
             logger.warn(
               "[ChooseAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onPageLoad"
@@ -106,11 +102,8 @@ class ChooseAddressController @Inject() (
         .fold(
           formWithErrors => {
             val WithRadiosResult(result, _) = resultWithRadios(mode) { (radios, maybeFindAddress) =>
-
-              val maybeHtml: Option[String] = generateHtml(maybeFindAddress)
-
               RcaspHelper.retrieveRcaspName(request.userAnswers) match {
-                case Some(name) => BadRequest(view(formWithErrors, mode, radios, maybeHtml, name))
+                case Some(name) => BadRequest(view(formWithErrors, mode, radios, generateHtml(maybeFindAddress), name))
                 case None       =>
                   logger.warn(
                     "[ChooseAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
