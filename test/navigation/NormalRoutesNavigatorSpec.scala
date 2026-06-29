@@ -477,7 +477,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
       }
 
-      "Should redirect to JourneyRecovery when address is selected, but no name is present" in {
+      "Should redirect to JourneyRecovery when address is selected but OrganisationOrIndividual is missing" in {
         val userAnswers = emptyUserAnswers
           .withPage(ChooseAddressPage, testAddressUk.format)
 
@@ -520,7 +520,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to JourneyRecovery when no name is present" in {
+      "Should redirect to JourneyRecovery when OrganisationOrIndividual is missing" in {
         navigator.nextPage(
           ReviewAddressPageForNavigatorOnly,
           NormalMode,
