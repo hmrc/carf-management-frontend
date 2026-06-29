@@ -51,7 +51,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
 
   private def getNameAndDetailsMaybe(userAnswers: UserAnswers): Option[(String, CachedBusinessDetails)] =
     for {
-      name          <- userAnswers.getRegisteredBusinessOrganisationNameMaybe()
+      name          <- userAnswers.getRegisteredBusinessOrganisationNameMaybe
       cachedDetails <- userAnswers.get(CachedBusinessDetailsPage)
     } yield (name, cachedDetails)
 
