@@ -17,20 +17,26 @@
 package controllers
 
 import base.SpecBase
+import cats.data.EitherT
 import forms.ChooseAddressFormProvider
+import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.countries.CountryUk
+import models.errors.ApiError.InternalServerError
 import models.{format, AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.*
-import pages.organisation.OverwritableOrganisationName
+import pages.combined.OrganisationOrIndividualPage
+import pages.individual.IndividualNamePage
+import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
-import play.api.test.Helpers.*
+import play.api.test.Helpers.{redirectLocation, *}
+import services.AccountService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import views.html.ChooseAddressView
@@ -44,8 +50,13 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
   private val chooseAddressRoute =
     controllers.routes.ChooseAddressController.onPageLoad(NormalMode).url
 
+  private val isRcaspUserRoute =
+    routes.PlaceholderController.onPageLoad("Should nav to /registered-business/check-answers (CARF-294)").url
+
   val formProvider       = new ChooseAddressFormProvider()
   val form: Form[String] = formProvider()
+
+  val mockAccountService: AccountService = mock[AccountService]
 
   val address = AddressUk(
     "1 Test Street",
@@ -61,7 +72,7 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
 
   "ChooseAddress Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "must return OK and the correct view for a GET when OverwriteableOrganisationName is present" in {
 
       val userAnswers =
         UserAnswers(userAnswersId)
@@ -69,6 +80,67 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
           .withPage(FindAddressPage, FindAddress(address.postCode, None))
           .withPage(FindAddressAdditionalCallUa, false)
           .withPage(OverwritableOrganisationName, testOrgName)
+          .withPage(OrganisationOrIndividualPage, Organisation)
+
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, chooseAddressRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[ChooseAddressView]
+
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(form, NormalMode, createAddressRadios(Seq(address)), None, testOrgName)(
+          request,
+          messages(application)
+        ).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when IndividualNamePage is present" in {
+
+      val userAnswers =
+        UserAnswers(userAnswersId)
+          .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
+          .withPage(FindAddressPage, FindAddress(address.postCode, None))
+          .withPage(FindAddressAdditionalCallUa, false)
+          .withPage(IndividualNamePage, testIndividualName)
+          .withPage(OrganisationOrIndividualPage, Individual)
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, chooseAddressRoute)
+
+        val result = route(application, request).value
+
+        val view = application.injector.instanceOf[ChooseAddressView]
+
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(
+          form,
+          NormalMode,
+          createAddressRadios(Seq(address)),
+          None,
+          testIndividualName.fullName
+        )(
+          request,
+          messages(application)
+        ).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when OverwriteableOrganisationName is present but OrganisationOrIndividualPage is not" in {
+      val userAnswers =
+        UserAnswers(userAnswersId)
+          .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
+          .withPage(FindAddressPage, FindAddress(address.postCode, None))
+          .withPage(FindAddressAdditionalCallUa, false)
+          .withPage(OverwritableOrganisationName, testOrgName)
+
       val application =
         applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -217,6 +289,8 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to the next page when valid data is submitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+        .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val userAnswers =
         UserAnswers(userAnswersId)
@@ -228,7 +302,8 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[AccountService].toInstance(mockAccountService)
           )
           .build()
 
@@ -249,6 +324,8 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to the next page when none of these is submitted and does not store an address" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+        .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val userAnswers =
         UserAnswers(userAnswersId)
@@ -260,7 +337,8 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[AccountService].toInstance(mockAccountService)
           )
           .build()
 
@@ -275,6 +353,39 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
         redirectLocation(result).value mustEqual onwardRoute.url
 
         verify(mockSessionRepository).set(argThat(_.get(SelectedChooseAddressPage).isEmpty))
+      }
+    }
+
+    "must redirect to the next page when valid data is submitted and is rcasp user" in {
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+        .thenReturn(EitherT.rightT[Future, InternalServerError.type](0))
+
+      val userAnswers =
+        UserAnswers(userAnswersId)
+          .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
+          .withPage(FindAddressPage, FindAddress(address.postCode, None))
+          .withPage(FindAddressAdditionalCallUa, false)
+          .withPage(OverwritableOrganisationName, testOrgName)
+          .withPage(ReportForRegisteredBusinessPage, true)
+
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers), requestUtr = Some(testUtr.uniqueTaxPayerReference))
+          .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[AccountService].toInstance(mockAccountService)
+          )
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, chooseAddressRoute)
+            .withFormUrlEncodedBody(("value", address.format))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual isRcaspUserRoute
       }
     }
 
@@ -377,7 +488,8 @@ class ChooseAddressControllerSpec extends SpecBase with MockitoSugar {
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[AccountService].toInstance(mockAccountService)
           )
           .build()
 

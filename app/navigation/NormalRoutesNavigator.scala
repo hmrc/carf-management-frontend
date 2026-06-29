@@ -25,6 +25,7 @@ import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
 import play.api.mvc.Call
+import utils.RcaspHelper
 
 trait NormalRoutesNavigator {
 
@@ -94,6 +95,9 @@ trait NormalRoutesNavigator {
 
     case ChooseAddressPage =>
       userAnswers => navigateFromChooseAddressPage(userAnswers)
+
+    case ReviewAddressPageForNavigatorOnly =>
+      userAnswers => navigateFromReviewAddressPage(userAnswers)
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
@@ -173,9 +177,9 @@ trait NormalRoutesNavigator {
   private def navigateFromFindAddressPage(userAnswers: UserAnswers): Call =
     (userAnswers.get(AddressLookupResult), userAnswers.get(AddressPagePrePop)) match {
       case (Some(addresses), None) =>
-        controllers.routes.PlaceholderController.onPageLoad("Should nav to /choose-address (CARF-201)")
+        controllers.routes.ChooseAddressController.onPageLoad(NormalMode)
       case (None, Some(address))   =>
-        controllers.routes.PlaceholderController.onPageLoad("Should nav to /review-address (CARF-201)")
+        controllers.routes.ReviewAddressController.onPageLoad(NormalMode)
       case _                       =>
         controllers.routes.JourneyRecoveryController.onPageLoad()
     }
@@ -196,4 +200,12 @@ trait NormalRoutesNavigator {
               controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
           }
       }
+
+  private def navigateFromReviewAddressPage(userAnswers: UserAnswers): Call =
+    userAnswers.get(OrganisationOrIndividualPage) match {
+      case Some(Individual) =>
+        controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
+      case _                =>
+        controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+    }
 }

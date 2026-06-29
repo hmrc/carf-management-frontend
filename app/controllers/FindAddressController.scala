@@ -33,7 +33,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.AddressLookupService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.RcaspNameHelper
+import utils.RcaspHelper
 import views.html.FindAddressView
 
 import javax.inject.Inject
@@ -65,7 +65,7 @@ class FindAddressController @Inject() (
 
       lazy val preparedForm = request.userAnswers.get(FindAddressPage).fold(form)(form.fill)
 
-      RcaspNameHelper.retrieveRcaspName(request.userAnswers) match {
+      RcaspHelper.retrieveRcaspName(request.userAnswers) match {
         case Some(name) => Ok(view(preparedForm, mode, name, manualLink(mode)))
         case None       =>
           logger.warn(
@@ -82,7 +82,7 @@ class FindAddressController @Inject() (
       formReturned
         .fold(
           formWithErrors =>
-            RcaspNameHelper
+            RcaspHelper
               .retrieveRcaspName(request.userAnswers)
               .fold {
                 logger.warn(
@@ -101,7 +101,7 @@ class FindAddressController @Inject() (
                 case Right((Nil, _))                                =>
                   val formError =
                     formReturned.withError(FormError("postcode", List("findAddress.postcode.error.notFound")))
-                  RcaspNameHelper
+                  RcaspHelper
                     .retrieveRcaspName(request.userAnswers)
                     .fold {
                       logger.warn(

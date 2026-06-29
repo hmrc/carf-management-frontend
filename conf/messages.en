@@ -286,3 +286,8 @@ chooseAddress.optionsDivider = or
 chooseAddress.noneOfThese = None of these
 chooseAddress.showing.results = We could not find a match for ‘{0}’ — showing all results for {1} instead.
 chooseAddress.error.required = Select the address for the reporting cryptoasset service provider (RCASP) or ‘None of these’
+
+reviewAddress.title = Review and confirm the address for the reporting cryptoasset service provider (RCASP)
+reviewAddress.heading = Review and confirm the address for {0}
+reviewAddress.editAddress = Edit address
+reviewAddress.confirmAddress = Confirm address

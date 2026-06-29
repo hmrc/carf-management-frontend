@@ -420,7 +420,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           FindAddressPage,
           NormalMode,
           userAnswers
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /choose-address (CARF-201)")
+        ) mustBe controllers.routes.ChooseAddressController.onPageLoad(NormalMode)
       }
 
       "Should redirect to ReviewAddressPage when one address is returned" in {
@@ -429,7 +429,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           FindAddressPage,
           NormalMode,
           userAnswers
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /review-address (CARF-201)")
+        ) mustBe controllers.routes.ReviewAddressController.onPageLoad(NormalMode)
       }
 
       "Should redirect to JourneyRecovery when no address is returned and navigation has occurred" in {
@@ -483,6 +483,30 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NormalMode,
           emptyUserAnswers
         ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
+    }
+
+    "When passed ReviewAddressPage" - {
+      "Should redirect to IndividualEmailPage when address is selected on individual journey" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Individual)
+
+        navigator.nextPage(
+          ReviewAddressPageForNavigatorOnly,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to OrganisationFirstContactNamePage when address is selected on organisation journey" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+
+        navigator.nextPage(
+          ReviewAddressPageForNavigatorOnly,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
       }
     }
 

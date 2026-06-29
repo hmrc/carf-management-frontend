@@ -16,16 +16,26 @@
 
 package utils
 
+import config.Constants.ZERO
 import models.OrganisationOrIndividual.{Individual, Organisation}
-import models.UserAnswers
+import models.{UniqueTaxpayerReference, UserAnswers}
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
-import pages.organisation.OverwritableOrganisationName
+import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 
-object RcaspNameHelper {
+object RcaspHelper {
   def retrieveRcaspName(userAnswers: UserAnswers): Option[String] =
     userAnswers.get(OrganisationOrIndividualPage) match {
       case Some(Individual) => userAnswers.get(IndividualNamePage).map(_.fullName)
       case _                => userAnswers.get(OverwritableOrganisationName)
     }
+
+  def isRcaspUser(
+      rcaspCount: Int,
+      ctUtr: Option[UniqueTaxpayerReference],
+      userAnswers: UserAnswers
+  ): Boolean = {
+    val answeredYes = userAnswers.get(ReportForRegisteredBusinessPage).contains(true)
+    rcaspCount == ZERO && ctUtr.nonEmpty && answeredYes
+  }
 }

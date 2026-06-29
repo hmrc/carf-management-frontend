@@ -20,18 +20,20 @@ import config.Constants.noneOfTheseValue
 import controllers.actions.*
 import forms.ChooseAddressFormProvider
 import models.requests.DataRequest
-import models.{format, AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers}
+import models.{format, AddressAndUPRN, AddressUk, FindAddress, Mode, UniqueTaxpayerReference, UserAnswers}
 import navigation.Navigator
+import org.checkerframework.common.aliasing.qual.Unique
 import pages.*
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Result}
 import repositories.SessionRepository
+import services.AccountService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.RcaspNameHelper
+import utils.RcaspHelper
 import views.html.ChooseAddressView
 
 import javax.inject.Inject
@@ -46,6 +48,7 @@ class ChooseAddressController @Inject() (
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: ChooseAddressFormProvider,
+    accountService: AccountService,
     val controllerComponents: MessagesControllerComponents,
     view: ChooseAddressView
 )(implicit ec: ExecutionContext)
@@ -83,7 +86,7 @@ class ChooseAddressController @Inject() (
 
         val maybeHtml: Option[String] = generateHtml(maybeFindAddress)
 
-        RcaspNameHelper.retrieveRcaspName(request.userAnswers) match {
+        RcaspHelper.retrieveRcaspName(request.userAnswers) match {
           case Some(name) => Ok(view(preparedForm, mode, radios, maybeHtml, name))
           case None       =>
             logger.warn(
@@ -106,7 +109,7 @@ class ChooseAddressController @Inject() (
 
               val maybeHtml: Option[String] = generateHtml(maybeFindAddress)
 
-              RcaspNameHelper.retrieveRcaspName(request.userAnswers) match {
+              RcaspHelper.retrieveRcaspName(request.userAnswers) match {
                 case Some(name) => BadRequest(view(formWithErrors, mode, radios, maybeHtml, name))
                 case None       =>
                   logger.warn(
@@ -128,7 +131,16 @@ class ChooseAddressController @Inject() (
               updatedAnswersWithEmptyPrePop <-
                 Future.fromTry(updatedAnswersAsAddressMaybe.remove(AddressPagePrePop))
               _                             <- sessionRepository.set(updatedAnswersWithEmptyPrePop)
-            } yield Redirect(navigator.nextPage(ChooseAddressPage, mode, updatedAnswersWithEmptyPrePop))
+              result                        <-
+                accountService
+                  .getNumberOfRcaspsCurrentlyAdded(request.carfId)
+                  .map(count => Redirect(isRcaspUserRedirect(count, request.utr, updatedAnswersWithEmptyPrePop, mode)))
+                  .leftMap { error =>
+                    logger.warn(s"[ChooseAddressController] Error retrieving RCASP count: $error")
+                    Redirect(routes.JourneyRecoveryController.onPageLoad())
+                  }
+                  .merge
+            } yield result
         )
   }
 
@@ -196,4 +208,17 @@ class ChooseAddressController @Inject() (
           )(identity)
         }
       }
+
+  private def isRcaspUserRedirect(
+      rcaspCount: Int,
+      ctUtr: Option[UniqueTaxpayerReference],
+      userAnswers: UserAnswers,
+      mode: Mode
+  ): Call =
+    if (RcaspHelper.isRcaspUser(rcaspCount, ctUtr, userAnswers)) {
+      routes.PlaceholderController.onPageLoad("Should nav to /registered-business/check-answers (CARF-294)")
+    } else {
+      navigator.nextPage(ChooseAddressPage, mode, userAnswers)
+    }
+
 }
