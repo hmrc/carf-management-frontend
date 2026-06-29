@@ -14,29 +14,40 @@
  * limitations under the License.
  *@
 
+@import controllers.organisation.routes
+@import viewmodels.InputWidth._
+
 @this(
         layout: templates.Layout,
         formHelper: FormWithCSRF,
         govukErrorSummary: GovukErrorSummary,
-        govukRadios: GovukRadios,
+        govukInput: GovukInput,
         govukButton: GovukButton
 )
 
-@(form: Form[_], mode: Mode, organisationName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[String], mode: Mode, rcaspName: String)(implicit request: RequestHeader, messages: Messages)
 
-@layout(pageTitle = title(form, messages("haveTradingName.title"))) {
+@layout(
+    pageTitle = title(form, messages("utr.title"))
+) {
 
-    @formHelper(action = controllers.organisation.routes.HaveTradingNameController.onSubmit(mode), Symbol("autoComplete") -> "off") {
+    @formHelper(action = routes.UtrController.onSubmit(mode)) {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        @govukRadios(
-            RadiosViewModel.yesNo(
+        @govukInput(
+            InputViewModel(
                 field = form("value"),
-                legend = LegendViewModel(messages("haveTradingName.heading", organisationName)).asPageHeading()
-            ).copy(classes = "")
+                label = LabelViewModel(
+                    messages("utr.heading", rcaspName)
+                )
+                .asPageHeading()
+            )
+            .withHint(HintViewModel(messages("utr.hint")))
+            .withWidth(ThreeQuarters)
+            .withSpellcheck(on = false)
         )
 
         @govukButton(

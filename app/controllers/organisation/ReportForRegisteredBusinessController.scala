@@ -18,7 +18,7 @@ package controllers.organisation
 
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import models.Mode
+import models.{CachedBusinessDetails, Mode}
 import navigation.Navigator
 import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
 import play.api.Logging
@@ -28,6 +28,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.RegistrationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CountryListFactory
 import views.html.organisation.ReportForRegisteredBusinessView
 
 import javax.inject.Inject
@@ -43,6 +44,7 @@ class ReportForRegisteredBusinessController @Inject() (
     requireData: DataRequiredAction,
     formProvider: GenericYesNoPageFormProvider,
     registrationService: RegistrationService,
+    countryListFactory: CountryListFactory,
     val controllerComponents: MessagesControllerComponents,
     view: ReportForRegisteredBusinessView
 )(implicit ec: ExecutionContext)
@@ -58,16 +60,32 @@ class ReportForRegisteredBusinessController @Inject() (
         case Some(utr) =>
           registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).value.flatMap {
             case Right(businessDetails) =>
-              for {
-                updatedAnswers <- Future.fromTry(
-                                    request.userAnswers.set(CachedBusinessDetailsPage, businessDetails)
-                                  )
-                _              <- sessionRepository.set(updatedAnswers)
-              } yield {
-                val preparedForm =
-                  updatedAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
+              countryListFactory.getDescriptionFromCode(businessDetails.address.countryCode) match {
+                case Some(countryName) =>
+                  val cached = CachedBusinessDetails(
+                    name = businessDetails.name,
+                    address = businessDetails.address,
+                    countryName = countryName
+                  )
 
-                Ok(view(preparedForm, mode, businessDetails.name))
+                  for {
+                    updatedAnswers <- Future.fromTry(
+                                        request.userAnswers.set(CachedBusinessDetailsPage, cached)
+                                      )
+                    _              <- sessionRepository.set(updatedAnswers)
+                  } yield {
+                    val preparedForm =
+                      updatedAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
+
+                    Ok(view(preparedForm, mode, cached.name))
+                  }
+
+                case None =>
+                  logger.error(
+                    s"[ReportForRegisteredBusinessController][onPageLoad] " +
+                      s"Country with code ${businessDetails.address.countryCode} not found in list of countries"
+                  )
+                  Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
               }
 
             case Left(error) =>
@@ -83,32 +101,27 @@ class ReportForRegisteredBusinessController @Inject() (
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      request.utr match {
-        case Some(_) =>
-          request.userAnswers.get(CachedBusinessDetailsPage) match {
-            case Some(businessDetails) =>
-              form
-                .bindFromRequest()
-                .fold(
-                  formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, businessDetails.name))),
-                  value =>
-                    for {
-                      updatedAnswers <- Future.fromTry(
-                                          request.userAnswers.set(ReportForRegisteredBusinessPage, value)
-                                        )
-                      _              <- sessionRepository.set(updatedAnswers)
-                    } yield Redirect(navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers))
-                )
+      request.userAnswers.get(CachedBusinessDetailsPage) match {
 
-            case None =>
-              logger.warn("[ReportForRegisteredBusinessController][onSubmit] No cached business details found")
-              Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-          }
+        case Some(cached) =>
+          form
+            .bindFromRequest()
+            .fold(
+              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, cached.name))),
+              value =>
+                for {
+                  updatedAnswers <- Future.fromTry(
+                                      request.userAnswers.set(ReportForRegisteredBusinessPage, value)
+                                    )
+                  _              <- sessionRepository.set(updatedAnswers)
+                } yield Redirect(
+                  navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers)
+                )
+            )
 
         case None =>
-          logger.warn("[ReportForRegisteredBusinessController][onSubmit] CT UTR not found in request")
+          logger.warn("[ReportForRegisteredBusinessController][onSubmit] No cached business details found")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
     }
-
 }

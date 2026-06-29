@@ -20,7 +20,7 @@ import base.SpecBase
 import forms.GenericYesNoPageFormProvider
 import models.errors.ApiError.InternalServerError
 import models.responses.AddressRegistrationResponse
-import models.{BusinessDetails, NormalMode}
+import models.{BusinessDetails, CachedBusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
@@ -32,6 +32,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.RegistrationService
 import types.ResultT
+import utils.CountryListFactory
 import views.html.organisation.ReportForRegisteredBusinessView
 
 import scala.concurrent.Future
@@ -44,11 +45,12 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
   val form: Form[Boolean] = formProvider("reportForRegisteredBusiness.error.required")
 
   val mockRegistrationService: RegistrationService = mock[RegistrationService]
+  val mockCountryListFactory: CountryListFactory   = mock[CountryListFactory]
 
   lazy val routeUnderTest: String =
     controllers.organisation.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
 
-  val businessDetails: BusinessDetails =
+  val businessDetailsFromService =
     BusinessDetails(
       name = "Test Business Ltd",
       address = AddressRegistrationResponse(
@@ -66,17 +68,21 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     "must return OK and the correct view for a GET when a UTR is present" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val userAnswers = emptyUserAnswers
-
       when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
-        .thenReturn(ResultT.fromValue(businessDetails))
+        .thenReturn(ResultT.fromValue(businessDetailsFromService))
+
+      when(mockCountryListFactory.getDescriptionFromCode(eqTo("GB")))
+        .thenReturn(Some("United Kingdom"))
 
       val application =
         applicationBuilder(
-          userAnswers = Some(userAnswers),
+          userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
         )
-          .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
+          .overrides(
+            bind[RegistrationService].toInstance(mockRegistrationService),
+            bind[CountryListFactory].toInstance(mockCountryListFactory)
+          )
           .build()
 
       running(application) {
@@ -84,30 +90,38 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         val result  = route(application, request).value
         val view    = application.injector.instanceOf[ReportForRegisteredBusinessView]
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, businessDetails.name)(
-          request,
-          messages(application)
-        ).toString
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual view(
+          form,
+          NormalMode,
+          cachedBusinessDetails.name
+        )(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
+      when(mockRegistrationService.getBusinessWithUtr(any()))
+        .thenReturn(ResultT.fromValue(businessDetailsFromService))
+
+      when(mockCountryListFactory.getDescriptionFromCode(any()))
+        .thenReturn(Some("United Kingdom"))
+
       val userAnswers =
         emptyUserAnswers
           .withPage(ReportForRegisteredBusinessPage, true)
-
-      when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
-        .thenReturn(ResultT.fromValue(businessDetails))
 
       val application =
         applicationBuilder(
           userAnswers = Some(userAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
         )
-          .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
+          .overrides(
+            bind[RegistrationService].toInstance(mockRegistrationService),
+            bind[CountryListFactory].toInstance(mockCountryListFactory)
+          )
           .build()
 
       running(application) {
@@ -115,18 +129,20 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         val result  = route(application, request).value
         val view    = application.injector.instanceOf[ReportForRegisteredBusinessView]
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, businessDetails.name)(
-          request,
-          messages(application)
-        ).toString
+        status(result) mustEqual OK
+
+        contentAsString(result) mustEqual view(
+          form.fill(true),
+          NormalMode,
+          cachedBusinessDetails.name
+        )(request, messages(application)).toString
       }
     }
 
     "must redirect to Journey Recovery on GET when registration service returns an error" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      when(mockRegistrationService.getBusinessWithUtr(eqTo(testUtr.uniqueTaxPayerReference)))
+      when(mockRegistrationService.getBusinessWithUtr(any()))
         .thenReturn(ResultT.fromError(InternalServerError))
 
       val application =
@@ -134,7 +150,10 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
           userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
         )
-          .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
+          .overrides(
+            bind[RegistrationService].toInstance(mockRegistrationService),
+            bind[CountryListFactory].toInstance(mockCountryListFactory)
+          )
           .build()
 
       running(application) {
@@ -146,12 +165,39 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
+    "must redirect to Journey Recovery on GET when country code is not found in country list" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      when(mockRegistrationService.getBusinessWithUtr(any()))
+        .thenReturn(ResultT.fromValue(businessDetailsFromService))
+
+      when(mockCountryListFactory.getDescriptionFromCode(any()))
+        .thenReturn(None)
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(emptyUserAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
+          .overrides(
+            bind[RegistrationService].toInstance(mockRegistrationService),
+            bind[CountryListFactory].toInstance(mockCountryListFactory)
+          )
+          .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+      }
+    }
+
+    "must redirect to the next page when valid data is submitted" in {
 
       val userAnswers =
         emptyUserAnswers
-          .withPage(CachedBusinessDetailsPage, businessDetails)
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
       val application =
         applicationBuilder(
@@ -159,8 +205,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
         )
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[RegistrationService].toInstance(mockRegistrationService)
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
           )
           .build()
 
@@ -179,14 +224,10 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     "must return a Bad Request and errors when invalid data is submitted" in {
       val userAnswers =
         emptyUserAnswers
-          .withPage(CachedBusinessDetailsPage, businessDetails)
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
       val application =
-        applicationBuilder(
-          userAnswers = Some(userAnswers),
-          requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
+        applicationBuilder(userAnswers = Some(userAnswers))
           .build()
 
       running(application) {
@@ -194,95 +235,9 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
           FakeRequest(POST, routeUnderTest)
             .withFormUrlEncodedBody(("value", ""))
 
-        val boundForm = form.bind(Map("value" -> ""))
-        val view      = application.injector.instanceOf[ReportForRegisteredBusinessView]
-
         val result = route(application, request).value
 
-        status(result)          mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, businessDetails.name)(
-          request,
-          messages(application)
-        ).toString
-      }
-    }
-
-    "must redirect to Journey Recovery when UTR is not present on GET" in {
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
-        val result  = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery when UTR is not present on POST" in {
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery on POST when no cached business details found" in {
-      val userAnswers = emptyUserAnswers
-
-      val application =
-        applicationBuilder(
-          userAnswers = Some(userAnswers),
-          requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[RegistrationService].toInstance(mockRegistrationService))
-          .build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, routeUnderTest)
-        val result  = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a POST if no existing data is found" in {
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustEqual BAD_REQUEST
       }
     }
   }

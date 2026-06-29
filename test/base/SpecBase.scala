@@ -23,7 +23,7 @@ import models.countries.CountryUk
 import models.individual.IndividualName
 import models.requests.AddressDetails
 import models.responses.{AddressRecord, AddressRegistrationResponse, AddressResponse, CountryRecord}
-import models.{AddressAndUPRN, AddressUk, FindAddress, RichJsObject, UniqueTaxpayerReference, UserAnswers}
+import models.{AddressAndUPRN, AddressUk, CachedBusinessDetails, FindAddress, RichJsObject, UniqueTaxpayerReference, UserAnswers}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -195,4 +195,19 @@ trait SpecBase
     postalCode = Some(testPostcode),
     countryCode = "GB"
   )
+
+  val cachedBusinessDetails: CachedBusinessDetails =
+    CachedBusinessDetails(
+      name = "Test Business Ltd",
+      address = AddressRegistrationResponse(
+        addressLine1 = "1 Test Street",
+        addressLine2 = Some("Testville"),
+        addressLine3 = None,
+        addressLine4 = None,
+        postalCode = Some("TE1 1ST"),
+        countryCode = "US"
+      ),
+      countryName = "United States"
+    )
+
 }

@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package pages.organisation
+package models
 
-import models.CachedBusinessDetails
-import pages.QuestionPage
-import play.api.libs.json.JsPath
+import models.responses.AddressRegistrationResponse
+import play.api.libs.json.{Json, OFormat}
 
-case object CachedBusinessDetailsPage extends QuestionPage[CachedBusinessDetails] {
+case class CachedBusinessDetails(
+    name: String,
+    address: AddressRegistrationResponse,
+    countryName: String
+)
 
-  override def path: JsPath = JsPath \ toString
-
-  override def toString: String = "cachedBusinessDetails"
-
+object CachedBusinessDetails {
+  implicit val format: OFormat[CachedBusinessDetails] = Json.format[CachedBusinessDetails]
 }
