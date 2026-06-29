@@ -44,20 +44,6 @@ class RegisteredBusinessIsThisYourBusinessNameControllerSpec extends SpecBase {
   lazy val routeUnderTest: String =
     controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode).url
 
-  val cachedBusinessDetails: CachedBusinessDetails =
-    CachedBusinessDetails(
-      name = "Test Business Ltd",
-      address = AddressRegistrationResponse(
-        addressLine1 = "1 Test Street",
-        addressLine2 = Some("Testville"),
-        addressLine3 = None,
-        addressLine4 = None,
-        postalCode = Some("TE1 1ST"),
-        countryCode = "GB"
-      ),
-      countryName = "United Kingdom"
-    )
-
   "RegisteredBusinessIsThisYourBusinessName Controller" - {
 
     "must return OK and the correct view for a GET when cached business details are present" in {

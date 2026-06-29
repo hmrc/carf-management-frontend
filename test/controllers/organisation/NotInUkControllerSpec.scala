@@ -19,7 +19,7 @@ package controllers.organisation
 import base.SpecBase
 import models.responses.AddressRegistrationResponse
 import models.CachedBusinessDetails
-import pages.organisation.CachedBusinessDetailsPage
+import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsTheAddressCorrectPage, RegisteredBusinessIsThisYourBusinessNamePage}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.organisation.NotInUkView
@@ -29,25 +29,12 @@ class NotInUkControllerSpec extends SpecBase {
   lazy val notInUkRoute: String =
     controllers.organisation.routes.NotInUkController.onPageLoad().url
 
-  val cachedBusinessDetails: CachedBusinessDetails =
-    CachedBusinessDetails(
-      name = "Test Business Ltd",
-      address = AddressRegistrationResponse(
-        addressLine1 = "1 Test Street",
-        addressLine2 = Some("Testville"),
-        addressLine3 = None,
-        addressLine4 = None,
-        postalCode = Some("TE1 1ST"),
-        countryCode = "US"
-      ),
-      countryName = "United States"
-    )
-
   "NotInUk Controller" - {
-
     "must return OK and correct view when cached business details exist" in {
 
-      val ua = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+      val ua = emptyUserAnswers
+        .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+        .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
 
       val application = applicationBuilder(userAnswers = Some(ua)).build()
 
@@ -58,6 +45,25 @@ class NotInUkControllerSpec extends SpecBase {
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(cachedBusinessDetails.name)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and correct view when cached business details exist but a different org name is declared" in {
+
+      val ua = emptyUserAnswers
+        .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+        .withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
+        .withPage(OverwritableOrganisationName, testOrgName)
+
+      val application = applicationBuilder(userAnswers = Some(ua)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, notInUkRoute)
+        val result  = route(application, request).value
+        val view    = application.injector.instanceOf[NotInUkView]
+
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(testOrgName)(request, messages(application)).toString
       }
     }
 

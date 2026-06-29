@@ -49,18 +49,11 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
 
   val form: Form[Boolean] = formProvider("registeredBusinessIsTheAddressCorrect.error.required")
 
-  private def getNameAndDetailsMaybe(userAnswers: UserAnswers): Option[(String, CachedBusinessDetails)] = {
-    val maybeName = if (userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).contains(true)) {
-      userAnswers.get(CachedBusinessDetailsPage).map(_.name)
-    } else {
-      userAnswers.get(OverwritableOrganisationName)
-    }
-
+  private def getNameAndDetailsMaybe(userAnswers: UserAnswers): Option[(String, CachedBusinessDetails)] =
     for {
-      name          <- maybeName
+      name          <- UserAnswers.getRegisteredBusinessOrganisationNameMaybe(userAnswers)
       cachedDetails <- userAnswers.get(CachedBusinessDetailsPage)
     } yield (name, cachedDetails)
-  }
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>

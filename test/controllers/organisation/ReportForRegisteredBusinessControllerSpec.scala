@@ -20,7 +20,7 @@ import base.SpecBase
 import forms.GenericYesNoPageFormProvider
 import models.errors.ApiError.InternalServerError
 import models.responses.AddressRegistrationResponse
-import models.{CachedBusinessDetails, NormalMode}
+import models.{BusinessDetails, CachedBusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.when
@@ -50,22 +50,8 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
   lazy val routeUnderTest: String =
     controllers.organisation.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
 
-  val cachedBusinessDetails: CachedBusinessDetails =
-    CachedBusinessDetails(
-      name = "Test Business Ltd",
-      address = AddressRegistrationResponse(
-        addressLine1 = "1 Test Street",
-        addressLine2 = Some("Testville"),
-        addressLine3 = None,
-        addressLine4 = None,
-        postalCode = Some("TE1 1ST"),
-        countryCode = "GB"
-      ),
-      countryName = "United Kingdom"
-    )
-
   val businessDetailsFromService =
-    models.BusinessDetails(
+    BusinessDetails(
       name = "Test Business Ltd",
       address = AddressRegistrationResponse(
         addressLine1 = "1 Test Street",

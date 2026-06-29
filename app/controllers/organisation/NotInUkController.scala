@@ -16,8 +16,9 @@
 
 package controllers.organisation
 
-import controllers.actions._
-import pages.organisation.CachedBusinessDetailsPage
+import controllers.actions.*
+import models.{CachedBusinessDetails, UserAnswers}
+import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsThisYourBusinessNamePage}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -39,15 +40,15 @@ class NotInUkController @Inject() (
 
   def onPageLoad(): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>
-      request.userAnswers
-        .get(CachedBusinessDetailsPage)
+      UserAnswers
+        .getRegisteredBusinessOrganisationNameMaybe(request.userAnswers)
         .fold {
           logger.warn(
-            "[NotInUkController][onPageLoad] No cached business details found. Redirecting to journey recovery."
+            "[NotInUkController][onPageLoad] No name or cached business details found. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-        } { cached =>
-          Ok(view(cached.name))
+        } { businessName =>
+          Ok(view(businessName))
         }
     }
 }
