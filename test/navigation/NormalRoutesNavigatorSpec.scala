@@ -422,7 +422,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           FindAddressPage,
           NormalMode,
           emptyUserAnswers
-        ) mustBe routes.JourneyRecoveryController.onPageLoad()
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
       }
     }
 

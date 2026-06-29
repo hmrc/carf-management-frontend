@@ -16,10 +16,10 @@
 
 package viewmodels.checkAnswers.organisation
 
-import models.UserAnswers
+import models.countries.CountryUk
+import models.{AddressUk, UserAnswers}
 import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
 import play.api.i18n.Messages
-import play.twirl.api.Html
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*
@@ -28,38 +28,30 @@ import viewmodels.implicits.*
 object RegisteredBusinessAddressSummary {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] = {
-    // TODO need to check for is the address correct page
-    val address = if (answers.get(ReportForRegisteredBusinessPage).contains(true)) {
-      answers.get(CachedBusinessDetailsPage)
+    // TODO need to check for: Is the address correct? page
+    val address: Option[String] = if (answers.get(ReportForRegisteredBusinessPage).contains(true)) {
+      import models.responses.renderHtml
+      answers.get(CachedBusinessDetailsPage).map(_.address.renderHtml)
     } else {
-      // TODO Replace with manual address
-      answers.get(CachedBusinessDetailsPage)
+//      TODO Replace with manual address
+//      answers.get(UkAddressInUserAnswers).map(_.renderHtml)
+      import models.renderHtml
+      Some(
+        AddressUk(
+          addressLine1 = "Stamford Bridge",
+          addressLine2 = Some("Fulham Road"),
+          addressLine3 = Some("Chelsea"),
+          townOrCity = "London",
+          postCode = "SW6 1HS",
+          countryUk = CountryUk(code = "GB", name = "United Kingdom")
+        ).renderHtml
+      )
     }
 
-    address.map { businessDetails =>
-      val address      = businessDetails.address
-      val addressLines = Seq(
-        Some(address.addressLine1),
-        address.addressLine2,
-        address.addressLine3,
-        address.addressLine4,
-        address.postalCode
-      ).flatten
-
-      val addressHtml = Html(
-        addressLines.zipWithIndex
-          .map { case (line, index) =>
-            if (index < addressLines.length - 1)
-              s"""<span class="govuk-!-margin-bottom-0">$line</span><br/>"""
-            else
-              line
-          }
-          .mkString("\n")
-      )
-
+    address.map { address =>
       SummaryListRowViewModel(
         key = "registeredBusiness.address.checkYourAnswersLabel",
-        value = ValueViewModel(HtmlContent(addressHtml)),
+        value = ValueViewModel(HtmlContent(address)),
         actions = Seq(
           ActionItemViewModel(
             "site.change",

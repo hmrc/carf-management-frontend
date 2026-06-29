@@ -63,7 +63,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
   "AddressUk" - {
     "renderHTML" - {
       "must render UK address correctly" in {
-        val result = ukAddressFull.renderHTML
+        val result = ukAddressFull.renderHtml
 
         result must include("123 Main Street")
         result must include("Birmingham")
@@ -76,13 +76,13 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
       }
 
       "must handle minimal address with only required fields" in {
-        val result = ukAddressMinimal.renderHTML
+        val result = ukAddressMinimal.renderHtml
 
         result mustEqual """<span class="govuk-!-margin-bottom-0">123 Main Street</span><br><span class="govuk-!-margin-bottom-0">Townington</span><br><span class="govuk-!-margin-bottom-0">B23 2AZ</span><br>United Kingdom"""
       }
 
       "must filter out empty optional fields" in {
-        val result = ukAddressEmptyStrings.renderHTML
+        val result = ukAddressEmptyStrings.renderHtml
 
         result must include("123 Main Street")
         result must not include """<span class="govuk-!-margin-bottom-0"></span>"""
