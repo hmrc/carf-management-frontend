@@ -28,32 +28,32 @@ class UserAnswersSpec extends SpecBase {
           .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
           .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
 
-        UserAnswers.getRegisteredBusinessOrganisationNameMaybe(ua) mustBe Some("Test Business Ltd")
+        ua.getRegisteredBusinessOrganisationNameMaybe mustBe Some("Test Business Ltd")
       }
       "must return the declared business name when the user said the cached one was incorrect" in {
         val ua = emptyUserAnswers
           .withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
           .withPage(OverwritableOrganisationName, testOrgName)
 
-        UserAnswers.getRegisteredBusinessOrganisationNameMaybe(ua) mustBe Some(testOrgName)
+        ua.getRegisteredBusinessOrganisationNameMaybe mustBe Some(testOrgName)
       }
       "must return the declared business name when the user did not answer if the cached one was correct" in {
         val ua = emptyUserAnswers
           .withPage(OverwritableOrganisationName, testOrgName)
 
-        UserAnswers.getRegisteredBusinessOrganisationNameMaybe(ua) mustBe Some(testOrgName)
+        ua.getRegisteredBusinessOrganisationNameMaybe mustBe Some(testOrgName)
       }
       "must return None when no cached details exist but the user said it was correct" in {
         val ua = emptyUserAnswers
           .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
 
-        UserAnswers.getRegisteredBusinessOrganisationNameMaybe(ua) mustBe None
+        ua.getRegisteredBusinessOrganisationNameMaybe mustBe None
       }
       "must return None when no other business name exists but the user said the cached version was incorrect" in {
         val ua = emptyUserAnswers
           .withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
 
-        UserAnswers.getRegisteredBusinessOrganisationNameMaybe(ua) mustBe None
+        ua.getRegisteredBusinessOrganisationNameMaybe mustBe None
       }
     }
   }

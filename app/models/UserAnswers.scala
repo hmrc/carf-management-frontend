@@ -72,6 +72,13 @@ final case class UserAnswers(
     pages.foldLeft(Try(this)) { (oldAnswerList, page) =>
       oldAnswerList.flatMap(_.remove(page))
     }
+
+  def getRegisteredBusinessOrganisationNameMaybe: Option[String] =
+    if (this.get(RegisteredBusinessIsThisYourBusinessNamePage).contains(true)) {
+      this.get(CachedBusinessDetailsPage).map(_.name)
+    } else {
+      this.get(OverwritableOrganisationName)
+    }
 }
 
 object UserAnswers {
@@ -100,10 +107,4 @@ object UserAnswers {
 
   implicit val format: OFormat[UserAnswers] = OFormat(reads, writes)
 
-  def getRegisteredBusinessOrganisationNameMaybe(userAnswers: UserAnswers): Option[String] =
-    if (userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).contains(true)) {
-      userAnswers.get(CachedBusinessDetailsPage).map(_.name)
-    } else {
-      userAnswers.get(OverwritableOrganisationName)
-    }
 }
