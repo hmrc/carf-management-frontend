@@ -17,9 +17,11 @@
 package navigation
 
 import base.SpecBase
+import config.Constants.noneOfTheseValue
 import controllers.routes
-import models.{NormalMode, OrganisationOrIndividual}
-import pages.{AddressLookupResult, AddressPagePrePop, FindAddressPage, Page}
+import models.OrganisationOrIndividual.{Individual, Organisation}
+import models.{format, NormalMode, OrganisationOrIndividual}
+import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
@@ -436,6 +438,51 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NormalMode,
           emptyUserAnswers
         ) mustBe routes.JourneyRecoveryController.onPageLoad()
+      }
+    }
+
+    "When passed ChooseAddressPage" - {
+      "Should redirect to IndividualEmailPage when address is selected on individual journey" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ChooseAddressPage, testAddressUk.format)
+          .withPage(OrganisationOrIndividualPage, Individual)
+
+        navigator.nextPage(
+          ChooseAddressPage,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to OrganisationFirstContactNamePage when address is selected on organisation journey" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ChooseAddressPage, testAddressUk.format)
+          .withPage(OrganisationOrIndividualPage, Organisation)
+
+        navigator.nextPage(
+          ChooseAddressPage,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to ReviewAddressPage when none of these is selected" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ChooseAddressPage, noneOfTheseValue)
+
+        navigator.nextPage(
+          ChooseAddressPage,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
+      }
+
+      "Should redirect to JourneyRecovery when no value is selected" in {
+        navigator.nextPage(
+          ChooseAddressPage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
       }
     }
 

@@ -133,3 +133,8 @@ GET         /find-address                                                 contro
 POST        /find-address                                                 controllers.FindAddressController.onSubmit(mode: Mode = NormalMode)
 GET         /change-find-address                                          controllers.FindAddressController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-find-address                                          controllers.FindAddressController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /choose-address                                               controllers.ChooseAddressController.onPageLoad(mode: Mode = NormalMode)
+POST        /choose-address                                               controllers.ChooseAddressController.onSubmit(mode: Mode = NormalMode)
+GET         /change-choose-address                                        controllers.ChooseAddressController.onPageLoad(mode: Mode = ChangeMode)
+POST        /change-choose-address                                        controllers.ChooseAddressController.onSubmit(mode: Mode = ChangeMode)

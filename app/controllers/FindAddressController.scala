@@ -33,6 +33,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.AddressLookupService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.RcaspNameHelper
 import views.html.FindAddressView
 
 import javax.inject.Inject
@@ -64,7 +65,7 @@ class FindAddressController @Inject() (
 
       lazy val preparedForm = request.userAnswers.get(FindAddressPage).fold(form)(form.fill)
 
-      retrieveRcaspName(request.userAnswers) match {
+      RcaspNameHelper.retrieveRcaspName(request.userAnswers) match {
         case Some(name) => Ok(view(preparedForm, mode, name, manualLink(mode)))
         case None       =>
           logger.warn(
@@ -81,12 +82,14 @@ class FindAddressController @Inject() (
       formReturned
         .fold(
           formWithErrors =>
-            retrieveRcaspName(request.userAnswers).fold {
-              logger.warn(
-                "[FindAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
-              )
-              Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
-            }(name => Future.successful(BadRequest(view(formWithErrors, mode, name, manualLink(mode))))),
+            RcaspNameHelper
+              .retrieveRcaspName(request.userAnswers)
+              .fold {
+                logger.warn(
+                  "[FindAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
+                )
+                Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
+              }(name => Future.successful(BadRequest(view(formWithErrors, mode, name, manualLink(mode))))),
           value =>
             addressLookupService
               .postcodeSearch(value.postcode, value.propertyNameOrNumber)
@@ -98,12 +101,14 @@ class FindAddressController @Inject() (
                 case Right((Nil, _))                                =>
                   val formError =
                     formReturned.withError(FormError("postcode", List("findAddress.postcode.error.notFound")))
-                  retrieveRcaspName(request.userAnswers).fold {
-                    logger.warn(
-                      "[FindAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
-                    )
-                    Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
-                  }(name => Future.successful(BadRequest(view(formError, mode, name, manualLink(mode)))))
+                  RcaspNameHelper
+                    .retrieveRcaspName(request.userAnswers)
+                    .fold {
+                      logger.warn(
+                        "[FindAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
+                      )
+                      Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
+                    }(name => Future.successful(BadRequest(view(formError, mode, name, manualLink(mode)))))
                 case Right((addressesAndUPRNs, additionalCallMade)) =>
                   for {
                     updatedAnswers <-
@@ -147,9 +152,4 @@ class FindAddressController @Inject() (
       _                                <- sessionRepository.set(uaWithUprn)
     } yield uaWithUprn
 
-  private def retrieveRcaspName(userAnswers: UserAnswers): Option[String] =
-    userAnswers.get(OrganisationOrIndividualPage) match {
-      case Some(Individual) => userAnswers.get(IndividualNamePage).map(_.fullName)
-      case _                => userAnswers.get(OverwritableOrganisationName)
-    }
 }

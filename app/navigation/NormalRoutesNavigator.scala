@@ -16,7 +16,9 @@
 
 package navigation
 
+import config.Constants.noneOfTheseValue
 import controllers.routes
+import models.OrganisationOrIndividual.Individual
 import models.{NormalMode, OrganisationOrIndividual, UserAnswers}
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
@@ -89,6 +91,9 @@ trait NormalRoutesNavigator {
 
     case FindAddressPage =>
       userAnswers => navigateFromFindAddressPage(userAnswers)
+
+    case ChooseAddressPage =>
+      userAnswers => navigateFromChooseAddressPage(userAnswers)
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
@@ -174,4 +179,21 @@ trait NormalRoutesNavigator {
       case _                       =>
         controllers.routes.JourneyRecoveryController.onPageLoad()
     }
+
+  private def navigateFromChooseAddressPage(userAnswers: UserAnswers): Call =
+    userAnswers
+      .get(ChooseAddressPage)
+      .fold {
+        routes.JourneyRecoveryController.onPageLoad()
+      } { answer =>
+        if (answer == noneOfTheseValue) {
+          controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
+        } else
+          userAnswers.get(OrganisationOrIndividualPage) match {
+            case Some(Individual) =>
+              controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
+            case _                =>
+              controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+          }
+      }
 }

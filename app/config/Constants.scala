@@ -41,4 +41,5 @@ object Constants {
   inline final val notReal0808PhoneNumber = "+448081570192"
 
   inline final val ukCountryCode = "GB"
+  val noneOfTheseValue           = "none"
 }
