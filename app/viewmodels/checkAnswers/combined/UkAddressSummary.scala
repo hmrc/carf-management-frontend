@@ -16,10 +16,10 @@
 
 package viewmodels.checkAnswers.combined
 
-import models.{format, ChangeMode, UserAnswers}
+import models.{renderHTML, ChangeMode, UserAnswers}
 import pages.UkAddressInUserAnswers
 import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*
 import viewmodels.implicits.*
@@ -30,7 +30,7 @@ object UkAddressSummary {
     answers.get(UkAddressInUserAnswers).map { answer =>
       SummaryListRowViewModel(
         key = "individual.address.checkYourAnswersLabel",
-        value = ValueViewModel(HtmlFormat.escape(answer.format).toString),
+        value = ValueViewModel(HtmlContent(answer.renderHTML).toString),
         actions = Seq(
           ActionItemViewModel(
             "site.change",

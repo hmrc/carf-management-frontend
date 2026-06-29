@@ -18,7 +18,7 @@ package navigation
 
 import config.Constants.noneOfTheseValue
 import controllers.routes
-import models.OrganisationOrIndividual.Individual
+import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.{NormalMode, OrganisationOrIndividual, UserAnswers}
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
@@ -96,7 +96,7 @@ trait NormalRoutesNavigator {
       userAnswers => navigateFromChooseAddressPage(userAnswers)
 
     case ReviewAddressPageForNavigatorOnly =>
-      userAnswers => navigateFromReviewAddressPage(userAnswers)
+      userAnswers => navigateFromFinalAddressPages(userAnswers)
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
@@ -191,20 +191,17 @@ trait NormalRoutesNavigator {
       } { answer =>
         if (answer == noneOfTheseValue) {
           controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
-        } else
-          userAnswers.get(OrganisationOrIndividualPage) match {
-            case Some(Individual) =>
-              controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
-            case _                =>
-              controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
-          }
+        } else navigateFromFinalAddressPages(userAnswers)
       }
 
-  private def navigateFromReviewAddressPage(userAnswers: UserAnswers): Call =
+  private def navigateFromFinalAddressPages(userAnswers: UserAnswers): Call =
     userAnswers.get(OrganisationOrIndividualPage) match {
-      case Some(Individual) =>
+      case Some(Individual)   =>
         controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
-      case _                =>
+      case Some(Organisation) =>
         controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+      case None               =>
+        controllers.routes.JourneyRecoveryController.onPageLoad()
     }
+
 }
