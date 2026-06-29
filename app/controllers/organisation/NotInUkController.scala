@@ -40,8 +40,7 @@ class NotInUkController @Inject() (
 
   def onPageLoad(): Action[AnyContent] =
     (identify() andThen getData() andThen requireData) { implicit request =>
-      request.userAnswers
-        .getRegisteredBusinessOrganisationNameMaybe
+      request.userAnswers.getRegisteredBusinessOrganisationNameMaybe
         .fold {
           logger.warn(
             "[NotInUkController][onPageLoad] No name or cached business details found. Redirecting to journey recovery."
