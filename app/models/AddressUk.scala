@@ -39,8 +39,7 @@ extension (address: AddressUk) {
       address.addressLine2,
       address.addressLine3,
       Some(address.townOrCity),
-      Some(address.postCode),
-      Some(address.countryUk.name)
+      Some(address.postCode)
     ).flatten.filter(_.nonEmpty)
 
     val htmlLines = addressLines.zipWithIndex.map { case (line, index) =>
