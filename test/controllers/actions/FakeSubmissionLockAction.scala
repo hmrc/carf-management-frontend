@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this(
-layout: templates.Layout,
-govukSummaryList: GovukSummaryList
-)
+package controllers.actions
 
-@(list: SummaryList)(implicit request: Request[_], messages: Messages)
+import models.requests.OptionalDataRequest
+import play.api.mvc.BodyParsers
 
-@layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
-<h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
+class FakeSubmissionLockAction @Inject() (parsers: BodyParsers.Default)(implicit ec: ExecutionContext)
+    extends SubmissionLockAction(parsers) {
 
-@govukSummaryList(list)
+  override protected def executionContext: ExecutionContext = ec
+
+  override protected def filter[A](request: OptionalDataRequest[A]): Future[Option[play.api.mvc.Result]] =
+    Future.successful(None)
 }

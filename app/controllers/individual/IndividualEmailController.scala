@@ -40,6 +40,7 @@ class IndividualEmailController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: GenericEmailFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: IndividualEmailView
@@ -50,8 +51,8 @@ class IndividualEmailController @Inject() (
 
   val form: Form[String] = formProvider(messageKey = "individualEmail")
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(IndividualEmailPage).fold(form)(form.fill)
 
@@ -65,10 +66,10 @@ class IndividualEmailController @Inject() (
             controllers.routes.InformationMissingController.onPageLoad()
           )
         }(individualName => Ok(view(preparedForm, mode, individualName.fullName)))
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -91,5 +92,5 @@ class IndividualEmailController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(IndividualEmailPage, mode, updatedAnswers))
         )
-  }
+    }
 }

@@ -39,6 +39,7 @@ class NiNumberController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: NiNumberFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: NiNumberView
@@ -49,8 +50,8 @@ class NiNumberController @Inject() (
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(NiNumberPage).fold(form)(form.fill)
 
@@ -63,10 +64,10 @@ class NiNumberController @Inject() (
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
         }(individualName => Ok(view(preparedForm, mode, individualName.fullName)))
 
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -85,5 +86,5 @@ class NiNumberController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(NiNumberPage, mode, updatedAnswers))
         )
-  }
+    }
 }

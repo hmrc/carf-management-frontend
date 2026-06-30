@@ -6,6 +6,7 @@ site.change = Change
 site.no = No
 site.yes = Yes
 site.continue = Continue
+site.confirmAndSend = Confirm and Send
 site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
@@ -201,6 +202,14 @@ organisationSecondContactPhoneNumber.error.notReal = Enter a real phone number
 organisationSecondContactPhoneNumber.error.invalid = Enter a phone number, like 01632 960 001, 07700 900 982 or +44 808 157 0192
 organisationSecondContactPhoneNumber.change.hidden = Change second contact phone number
 organisationSecondContactPhoneNumber.hint = For international numbers, include the country code.
+
+rcaspAddedConfirmation.title = Reporting cryptoasset service provider (RCASP) added
+rcaspAddedConfirmation.label.heading = Reporting cryptoasset service provider (RCASP) added
+rcaspAddedConfirmation.rcaspId.label = RCASP ID for {0}
+rcaspAddedConfirmation.support.text = You will need to provide the RCASP ID in every file you send to HMRC for {0}.
+
+rcaspAddedConfirmation.next.link1 = Back to manage your RCASPs
+rcaspAddedConfirmation.next.link2 = Back to manage your cryptoasset reports
 
 organisationFirstContactName.title = What is the name of the person or team we should contact at the reporting cryptoasset service provider (RCASP)?
 organisationFirstContactName.heading = What is the name of the person or team we should contact at {0}?

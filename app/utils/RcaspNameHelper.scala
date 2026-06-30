@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this(
-layout: templates.Layout,
-govukSummaryList: GovukSummaryList
-)
+package utils
 
-@(list: SummaryList)(implicit request: Request[_], messages: Messages)
+import models.OrganisationOrIndividual.Individual
+import models.UserAnswers
+import pages.combined.OrganisationOrIndividualPage
+import pages.individual.IndividualNamePage
+import pages.organisation.OverwritableOrganisationName
 
-@layout(pageTitle = titleNoForm(messages("checkYourAnswers.title"))) {
+object RcaspNameHelper {
 
-<h1 class="govuk-heading-l">@messages("checkYourAnswers.heading")</h1>
-
-@govukSummaryList(list)
+  def from(userAnswers: UserAnswers): Option[String] =
+    userAnswers.get(OrganisationOrIndividualPage) match {
+      case Some(Individual) => userAnswers.get(IndividualNamePage).map(_.fullName)
+      case _                => userAnswers.get(OverwritableOrganisationName)
+    }
 }

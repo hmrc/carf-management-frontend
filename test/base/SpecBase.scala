@@ -21,6 +21,8 @@ import controllers.actions.*
 import generators.Generators
 import models.countries.CountryUk
 import models.individual.IndividualName
+import models.{RichJsObject, UniqueTaxpayerReference, UserAnswers}
+import org.mockito.Mockito.reset
 import models.requests.AddressDetails
 import models.responses.{AddressRecord, AddressRegistrationResponse, AddressResponse, CountryRecord}
 import models.{AddressAndUPRN, AddressUk, CachedBusinessDetails, FindAddress, RichJsObject, UniqueTaxpayerReference, UserAnswers}
@@ -64,6 +66,7 @@ trait SpecBase
   val testUtr: UniqueTaxpayerReference = UniqueTaxpayerReference("1234567890")
   val testInternalId: String           = "12345"
   val testCarfId: String               = "XE0000123456789"
+  val testRcaspId                      = "XACARF0000123456"
   val testUPRN: Int                    = 123456789
   val testUPRNAlt: Int                 = 223456789
 
@@ -81,6 +84,11 @@ trait SpecBase
   final val mockDataRetrievalAction: DataRetrievalAction   = mock[DataRetrievalAction]
   final val mockCtUtrRetrievalAction: CtUtrRetrievalAction = mock[CtUtrRetrievalAction]
 
+  override def beforeEach(): Unit = {
+    reset(mockSessionRepository, mockDataRetrievalAction, mockCtUtrRetrievalAction)
+    super.beforeEach()
+  }
+
   protected def applicationBuilder(
       userAnswers: Option[UserAnswers] = None,
       affinityGroup: AffinityGroup = AffinityGroup.Individual,
@@ -91,6 +99,7 @@ trait SpecBase
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[IdentifierAction].toInstance(new FakeIdentifierAction(injectedParsers, affinityGroup, requestUtr)),
         bind[DataRetrievalAction].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
+        bind[SubmissionLockAction].to[FakeSubmissionLockAction],
         bind[SessionRepository].toInstance(mockSessionRepository)
       )
 

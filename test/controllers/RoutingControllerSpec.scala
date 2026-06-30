@@ -17,10 +17,13 @@
 package controllers
 
 import base.SpecBase
+import models.{ChangeMode, NormalMode, UserAnswers}
 import models.NormalMode
 import models.errors.ApiError.InternalServerError
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{verify, when}
+import pages.{RcaspIdPage, SubmissionSucceededPage}
+import pages.organisation.OverwritableOrganisationName
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
@@ -35,6 +38,9 @@ class RoutingControllerSpec extends SpecBase {
 
   lazy val routeUnderTest: String =
     controllers.routes.RoutingController.onPageLoad(NormalMode).url
+
+  lazy val changeRouteUnderTest: String =
+    controllers.routes.RoutingController.onPageLoad(ChangeMode).url
 
   "RoutingController" - {
 
@@ -129,14 +135,47 @@ class RoutingControllerSpec extends SpecBase {
       }
     }
 
-    "must create new UserAnswers and save to session when no existing answers found" in {
+    "must redirect to the next page in NormalMode when submission has already succeeded" in {
+      val staleUserAnswers = emptyUserAnswers
+        .withPage(SubmissionSucceededPage, true)
+        .withPage(RcaspIdPage, testRcaspId)
+        .withPage(OverwritableOrganisationName, testOrgName)
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+        .thenReturn(ResultT.fromValue(1))
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(staleUserAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
+          .overrides(bind[AccountService].toInstance(mockAccountService))
+          .build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual
+          controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
+      }
+    }
+
+    "must save fresh UserAnswers in NormalMode even when stale session data exists" in {
+      val staleUserAnswers = emptyUserAnswers
+        .withPage(SubmissionSucceededPage, true)
+        .withPage(RcaspIdPage, testRcaspId)
+        .withPage(OverwritableOrganisationName, testOrgName)
+
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
         .thenReturn(ResultT.fromValue(0))
 
       val application =
         applicationBuilder(
-          userAnswers = Some(emptyUserAnswers),
+          userAnswers = Some(staleUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
         )
           .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -147,6 +186,73 @@ class RoutingControllerSpec extends SpecBase {
         val result  = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
+
+        verify(mockSessionRepository).set(
+          org.mockito.ArgumentMatchers.argThat((answers: UserAnswers) =>
+            answers.get(SubmissionSucceededPage).isEmpty &&
+              answers.get(RcaspIdPage).isEmpty &&
+              answers.get(OverwritableOrganisationName).isEmpty
+          )
+        )
+      }
+    }
+
+    "must preserve existing UserAnswers in ChangeMode" in {
+      val existingUserAnswers = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+        .thenReturn(ResultT.fromValue(1))
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(existingUserAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
+          .overrides(bind[AccountService].toInstance(mockAccountService))
+          .build()
+
+      running(application) {
+        val request = FakeRequest(GET, changeRouteUnderTest)
+        val result  = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual
+          controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(ChangeMode).url
+
+        verify(mockSessionRepository).set(
+          org.mockito.ArgumentMatchers.argThat((answers: UserAnswers) =>
+            answers.get(OverwritableOrganisationName).contains(testOrgName)
+          )
+        )
+      }
+    }
+
+    "must create new UserAnswers in ChangeMode when no existing answers are found" in {
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+        .thenReturn(ResultT.fromValue(0))
+
+      val application =
+        applicationBuilder(
+          userAnswers = None,
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        )
+          .overrides(bind[AccountService].toInstance(mockAccountService))
+          .build()
+
+      running(application) {
+        val request = FakeRequest(GET, changeRouteUnderTest)
+        val result  = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
+        verify(mockSessionRepository).set(
+          org.mockito.ArgumentMatchers.argThat((answers: UserAnswers) =>
+            answers.id == userAnswersId &&
+              answers.get(OverwritableOrganisationName).isEmpty
+          )
+        )
       }
     }
   }

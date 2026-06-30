@@ -40,6 +40,7 @@ class IndividualPhoneController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: GenericPhoneFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: IndividualPhoneView
@@ -50,8 +51,8 @@ class IndividualPhoneController @Inject() (
 
   val form: Form[String] = formProvider("individualPhone")
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(IndividualPhonePage).fold(form)(form.fill)
 
@@ -63,10 +64,10 @@ class IndividualPhoneController @Inject() (
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
         }(individualName => Ok(view(preparedForm, mode, individualName.fullName)))
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -87,5 +88,5 @@ class IndividualPhoneController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(IndividualPhonePage, mode, updatedAnswers))
         )
-  }
+    }
 }

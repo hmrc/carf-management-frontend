@@ -16,65 +16,92 @@
 
 package controllers
 
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
 import models.OrganisationOrIndividual.*
+import pages.RcaspIdPage
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import repositories.SessionRepository
+import services.SubmitRcaspService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckDetailsHelper
 import views.html.CheckDetailsView
 
 import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
 class CheckDetailsController @Inject() (
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
+    submitRcaspService: SubmitRcaspService,
+    sessionRepository: SessionRepository,
     view: CheckDetailsView,
     val controllerComponents: MessagesControllerComponents,
     helper: CheckDetailsHelper
-) extends FrontendBaseController
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
-    import cats.syntax.all.*
-    val userAnswers          = request.userAnswers
-    lazy val ifEmptyProtocol =
-      Redirect(controllers.routes.InformationMissingController.onPageLoad())
+  def onPageLoad: Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+      import cats.syntax.all.*
+      val userAnswers          = request.userAnswers
+      lazy val ifEmptyProtocol =
+        Redirect(controllers.routes.InformationMissingController.onPageLoad())
 
-    userAnswers
-      .get(OrganisationOrIndividualPage)
-      .fold {
-        logger.warn(
-          s"[CheckDetailsController] Error! Could not load page OrganisationOrIndividualPage needed"
-        )
-        ifEmptyProtocol
-      } {
-        case Individual   =>
-          (
-            userAnswers.get(IndividualNamePage),
-            helper.getIndividualSectionMaybe(userAnswers),
-            helper.getContactDetails(userAnswers)
+      userAnswers
+        .get(OrganisationOrIndividualPage)
+        .fold {
+          logger.warn(
+            s"[CheckDetailsController] Error! Could not load page OrganisationOrIndividualPage needed"
           )
-            .mapN { (name, individualSection, contactDetailsSection) =>
-              Ok(view(Seq(individualSection, contactDetailsSection), name.fullName))
-            }
-            .getOrElse {
-              logger.warn(
-                s"[CheckDetailsController] Error! Could not load page missing answers"
-              )
-              ifEmptyProtocol
-            }
-        case Organisation => Ok(view(Seq.empty, "Organisation Name")) // TODO [CARF-295] - Replace with real org name
-      }
-  }
+          ifEmptyProtocol
+        } {
+          case Individual   =>
+            (
+              userAnswers.get(IndividualNamePage),
+              helper.getIndividualSectionMaybe(userAnswers),
+              helper.getContactDetails(userAnswers)
+            )
+              .mapN { (name, individualSection, contactDetailsSection) =>
+                Ok(view(Seq(individualSection, contactDetailsSection), name.fullName))
+              }
+              .getOrElse {
+                logger.warn(
+                  s"[CheckDetailsController] Error! Could not load page missing answers"
+                )
+                ifEmptyProtocol
+              }
+          case Organisation => Ok(view(Seq.empty, "Organisation Name")) // TODO [CARF-295] - Replace with real org name
+        }
+    }
 
-  def onSubmit: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
-    Redirect(controllers.routes.PlaceholderController.onPageLoad("[CARF-296] RCASP added page - /rcasp-added"))
-  }
+  def onSubmit: Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+      // TODO - Current impl is to allow RcaspAddedConfirmationController to retrieve stubbed rcaspId, this will change in CARF-294/CARF-295
+
+      submitRcaspService.submitRcasp().value.flatMap {
+        case Right(response) =>
+          response.ResponseDetails.flatMap(_.ReturnParameters).map(_.Value) match {
+            case Some(rcaspId) =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
+                _              <- sessionRepository.set(updatedAnswers)
+              } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
+            case None          =>
+              logger.warn("[CheckDetailsController][onSubmit] Data retrieval from response failed")
+              Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+          }
+        case Left(_)         =>
+          logger.warn("[CheckDetailsController][onSubmit] Submit RCASP call failed")
+          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      }
+    }
 }
