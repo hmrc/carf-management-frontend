@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package pages.organisation
+package models
 
-import models.CachedBusinessDetails
-import pages.QuestionPage
-import play.api.libs.json.JsPath
+import play.api.libs.json.{Json, OFormat}
 
-case object CachedBusinessDetailsPage extends QuestionPage[CachedBusinessDetails] {
+case class Country(code: String, description: String)
 
-  override def path: JsPath = JsPath \ toString
-
-  override def toString: String = "cachedBusinessDetails"
-
+object Country {
+  implicit val format: OFormat[Country] = Json.format[Country]
 }
