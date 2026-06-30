@@ -41,6 +41,7 @@ class HaveTradingNameController @Inject() (
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: GenericYesNoPageFormProvider,
+    submissionLock: SubmissionLockAction,
     accountService: AccountService,
     val controllerComponents: MessagesControllerComponents,
     view: HaveTradingNameView
@@ -52,59 +53,61 @@ class HaveTradingNameController @Inject() (
   val form: Form[Boolean] = formProvider("haveTradingName.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData) { implicit request =>
-      val preparedForm = request.userAnswers.get(HaveTradingNamePage).fold(form)(form.fill)
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData) {
+      implicit request =>
+        val preparedForm = request.userAnswers.get(HaveTradingNamePage).fold(form)(form.fill)
 
-      request.userAnswers
-        .get(OverwritableOrganisationName)
-        .fold {
-          logger.warn(
-            "[HaveTradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
-          )
-          Redirect(controllers.routes.InformationMissingController.onPageLoad())
-        }(orgName => Ok(view(preparedForm, mode, orgName)))
+        request.userAnswers
+          .get(OverwritableOrganisationName)
+          .fold {
+            logger.warn(
+              "[HaveTradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
+            )
+            Redirect(controllers.routes.InformationMissingController.onPageLoad())
+          }(orgName => Ok(view(preparedForm, mode, orgName)))
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      form
-        .bindFromRequest()
-        .fold(
-          formWithErrors =>
-            request.userAnswers
-              .get(OverwritableOrganisationName)
-              .fold {
-                logger.warn(
-                  "[HaveTradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
-                )
-                Future.successful(
-                  Redirect(controllers.routes.InformationMissingController.onPageLoad())
-                )
-              }(orgName => Future.successful(BadRequest(view(formWithErrors, mode, orgName)))),
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveTradingNamePage, value))
-              _              <- sessionRepository.set(updatedAnswers)
-              redirect       <- if (value) {
-                                  Future.successful(
-                                    Redirect(
-                                      controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
-                                    )
-                                  )
-                                } else {
-                                  accountService
-                                    .getNumberOfRcaspsCurrentlyAdded(request.carfId)
-                                    .map(count => Redirect(rcaspIsUserRedirect(count, request.utr, updatedAnswers)))
-                                    .leftMap { error =>
-                                      logger.warn(
-                                        s"[HaveTradingNameController][onSubmit] Error retrieving RCASP count: $error"
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+      implicit request =>
+        form
+          .bindFromRequest()
+          .fold(
+            formWithErrors =>
+              request.userAnswers
+                .get(OverwritableOrganisationName)
+                .fold {
+                  logger.warn(
+                    "[HaveTradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
+                  )
+                  Future.successful(
+                    Redirect(controllers.routes.InformationMissingController.onPageLoad())
+                  )
+                }(orgName => Future.successful(BadRequest(view(formWithErrors, mode, orgName)))),
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveTradingNamePage, value))
+                _              <- sessionRepository.set(updatedAnswers)
+                redirect       <- if (value) {
+                                    Future.successful(
+                                      Redirect(
+                                        controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
                                       )
-                                      Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-                                    }
-                                    .merge
-                                }
-            } yield redirect
-        )
+                                    )
+                                  } else {
+                                    accountService
+                                      .getNumberOfRcaspsCurrentlyAdded(request.carfId)
+                                      .map(count => Redirect(rcaspIsUserRedirect(count, request.utr, updatedAnswers)))
+                                      .leftMap { error =>
+                                        logger.warn(
+                                          s"[HaveTradingNameController][onSubmit] Error retrieving RCASP count: $error"
+                                        )
+                                        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+                                      }
+                                      .merge
+                                  }
+              } yield redirect
+          )
     }
 
   private def rcaspIsUser(

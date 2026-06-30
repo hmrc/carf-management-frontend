@@ -21,11 +21,10 @@ import controllers.actions.*
 import generators.Generators
 import models.countries.CountryUk
 import models.individual.IndividualName
-import models.{RichJsObject, UniqueTaxpayerReference, UserAnswers}
-import org.mockito.Mockito.reset
 import models.requests.AddressDetails
 import models.responses.{AddressRecord, AddressRegistrationResponse, AddressResponse, CountryRecord}
 import models.{AddressAndUPRN, AddressUk, CachedBusinessDetails, FindAddress, RichJsObject, UniqueTaxpayerReference, UserAnswers}
+import org.mockito.Mockito.reset
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers

@@ -17,13 +17,12 @@
 package controllers
 
 import base.SpecBase
-import models.{ChangeMode, NormalMode, UserAnswers}
-import models.NormalMode
 import models.errors.ApiError.InternalServerError
+import models.{ChangeMode, NormalMode, UserAnswers}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
-import pages.{RcaspIdPage, SubmissionSucceededPage}
 import pages.organisation.OverwritableOrganisationName
+import pages.{RcaspIdPage, SubmissionSucceededPage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*

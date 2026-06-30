@@ -42,6 +42,7 @@ class FindAddressController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: FindAddressFormProvider,
     addressLookupService: AddressLookupService,
     val controllerComponents: MessagesControllerComponents,
@@ -56,8 +57,8 @@ class FindAddressController @Inject() (
   lazy val manualLink: Mode => String =
     mode => controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)").url
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       lazy val preparedForm = request.userAnswers.get(FindAddressPage).fold(form)(form.fill)
 
@@ -70,10 +71,10 @@ class FindAddressController @Inject() (
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
       }
 
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       val formReturned = form.bindFromRequest()
       formReturned
         .fold(
@@ -113,7 +114,7 @@ class FindAddressController @Inject() (
                   } yield Redirect(navigator.nextPage(FindAddressPage, mode, updatedAnswers))
               }
         )
-  }
+    }
 
   private def saveMultipleAddresses(
       findAddress: FindAddress,

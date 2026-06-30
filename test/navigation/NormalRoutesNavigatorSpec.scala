@@ -17,15 +17,13 @@
 package navigation
 
 import base.SpecBase
-import models.{CachedBusinessDetails, NormalMode, OrganisationOrIndividual}
-import models.responses.AddressRegistrationResponse
 import controllers.routes
-import pages.Page
-import models.{NormalMode, OrganisationOrIndividual}
-import pages.{AddressLookupResult, AddressPagePrePop, FindAddressPage, Page}
+import models.responses.AddressRegistrationResponse
+import models.{CachedBusinessDetails, NormalMode, OrganisationOrIndividual}
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
+import pages.{AddressLookupResult, AddressPagePrePop, FindAddressPage, Page}
 
 class NormalRoutesNavigatorSpec extends SpecBase {
 
