@@ -31,7 +31,7 @@ class ChooseAddressFormProviderSpec extends OptionFieldBehaviours {
       length <- Gen.choose(1, addressMaxLength)
       chars  <- Gen.listOfN(length, Gen.oneOf(allowedChars))
     } yield chars.mkString
-  }.suchThat(_ != " ")
+  }.suchThat(_.trim.nonEmpty)
 
   ".value" - {
 
