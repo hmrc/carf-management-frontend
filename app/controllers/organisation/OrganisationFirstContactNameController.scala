@@ -40,6 +40,7 @@ class OrganisationFirstContactNameController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: GenericOrganisationContactNameFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: OrganisationFirstContactNameView
@@ -50,8 +51,8 @@ class OrganisationFirstContactNameController @Inject() (
 
   val form: Form[String] = formProvider("organisationFirstContactName")
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(OrganisationFirstContactNamePage).fold(form)(form.fill)
 
@@ -65,10 +66,10 @@ class OrganisationFirstContactNameController @Inject() (
             controllers.routes.InformationMissingController.onPageLoad()
           )
       }
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -91,5 +92,5 @@ class OrganisationFirstContactNameController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(OrganisationFirstContactNamePage, mode, updatedAnswers))
         )
-  }
+    }
 }

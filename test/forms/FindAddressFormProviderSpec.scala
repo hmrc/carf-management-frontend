@@ -31,7 +31,6 @@ class FindAddressFormProviderSpec extends StringFieldBehaviours {
     val invalidKey    = "findAddress.postcode.error.invalid.characters"
     val invalidFormat = "findAddress.postcode.error.invalid.format"
     val notUK         = "findAddress.postcode.error.notUK"
-    val maxLength     = 10
 
     behave like fieldThatBindsValidData(
       form,
