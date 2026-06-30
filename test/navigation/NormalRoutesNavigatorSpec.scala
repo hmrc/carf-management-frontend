@@ -26,7 +26,6 @@ import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
-
 class NormalRoutesNavigatorSpec extends SpecBase {
 
   val navigator = new Navigator()

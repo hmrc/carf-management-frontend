@@ -40,6 +40,7 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
     ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: GenericYesNoPageFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: RegisteredBusinessIsThisYourBusinessNameView
@@ -51,59 +52,63 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
   val form: Form[Boolean] = formProvider("registeredBusinessIsThisYourBusinessName.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      request.userAnswers.get(CachedBusinessDetailsPage) match {
-        case Some(businessDetails) =>
-          val preparedForm =
-            request.userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).fold(form)(form.fill)
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+      implicit request =>
+        request.userAnswers.get(CachedBusinessDetailsPage) match {
+          case Some(businessDetails) =>
+            val preparedForm =
+              request.userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).fold(form)(form.fill)
 
-          Future.successful(Ok(view(preparedForm, mode, businessDetails.name)))
+            Future.successful(Ok(view(preparedForm, mode, businessDetails.name)))
 
-        case None =>
-          logger.warn(
-            "[RegisteredBusinessIsThisYourBusinessNameController][onPageLoad] No cached business details found"
-          )
-          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      }
+          case None =>
+            logger.warn(
+              "[RegisteredBusinessIsThisYourBusinessNameController][onPageLoad] No cached business details found"
+            )
+            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+        }
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      request.userAnswers.get(CachedBusinessDetailsPage) match {
-        case Some(businessDetails) =>
-          form
-            .bindFromRequest()
-            .fold(
-              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, businessDetails.name))),
-              value =>
-                if (value) {
-                  for {
-                    updatedAnswers     <- Future.fromTry(
-                                            request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
-                                          )
-                    answersWithOrgName <- Future.fromTry(
-                                            updatedAnswers.set(OverwritableOrganisationName, businessDetails.name)
-                                          )
-                    _                  <- sessionRepository.set(answersWithOrgName)
-                  } yield Redirect(
-                    navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, answersWithOrgName)
-                  )
-                } else {
-                  for {
-                    updatedAnswers <- Future.fromTry(
-                                        request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
-                                      )
-                    _              <- sessionRepository.set(updatedAnswers)
-                  } yield Redirect(
-                    navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, updatedAnswers)
-                  )
-                }
-            )
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+      implicit request =>
+        request.userAnswers.get(CachedBusinessDetailsPage) match {
+          case Some(businessDetails) =>
+            form
+              .bindFromRequest()
+              .fold(
+                formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, businessDetails.name))),
+                value =>
+                  if (value) {
+                    for {
+                      updatedAnswers     <- Future.fromTry(
+                                              request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
+                                            )
+                      answersWithOrgName <- Future.fromTry(
+                                              updatedAnswers.set(OverwritableOrganisationName, businessDetails.name)
+                                            )
+                      _                  <- sessionRepository.set(answersWithOrgName)
+                    } yield Redirect(
+                      navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, answersWithOrgName)
+                    )
+                  } else {
+                    for {
+                      updatedAnswers <- Future.fromTry(
+                                          request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
+                                        )
+                      _              <- sessionRepository.set(updatedAnswers)
+                    } yield Redirect(
+                      navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, updatedAnswers)
+                    )
+                  }
+              )
 
-        case None =>
-          logger.warn("[RegisteredBusinessIsThisYourBusinessNameController][onSubmit] No cached business details found")
-          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      }
+          case None =>
+            logger.warn(
+              "[RegisteredBusinessIsThisYourBusinessNameController][onSubmit] No cached business details found"
+            )
+            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+        }
     }
 
 }

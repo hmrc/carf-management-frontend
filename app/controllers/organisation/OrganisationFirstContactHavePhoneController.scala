@@ -39,6 +39,7 @@ class OrganisationFirstContactHavePhoneController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: GenericYesNoPageFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: OrganisationFirstContactHavePhoneView
@@ -49,8 +50,8 @@ class OrganisationFirstContactHavePhoneController @Inject() (
 
   val form: Form[Boolean] = formProvider("organisationFirstContactHavePhone.error.required")
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(OrganisationFirstContactHavePhonePage).fold(form)(form.fill)
 
@@ -68,10 +69,10 @@ class OrganisationFirstContactHavePhoneController @Inject() (
             controllers.routes.InformationMissingController.onPageLoad()
           )
       }
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -98,5 +99,5 @@ class OrganisationFirstContactHavePhoneController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(OrganisationFirstContactHavePhonePage, mode, updatedAnswers))
         )
-  }
+    }
 }

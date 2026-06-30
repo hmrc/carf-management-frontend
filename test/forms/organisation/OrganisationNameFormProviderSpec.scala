@@ -33,11 +33,12 @@ class OrganisationNameFormProviderSpec extends StringFieldBehaviours {
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 &'\\`^-".toSeq
   )
 
-  val organisationNameGen: Gen[String] =
+  val organisationNameGen: Gen[String] = {
     for {
       length <- Gen.choose(1, maxLength)
       chars  <- Gen.listOfN(length, validOrganisationNameChars)
     } yield chars.mkString
+  }.suchThat(_.trim.nonEmpty)
 
   ".value" - {
 

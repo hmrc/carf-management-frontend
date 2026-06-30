@@ -24,6 +24,7 @@ import models.individual.IndividualName
 import models.requests.AddressDetails
 import models.responses.{AddressRecord, AddressRegistrationResponse, AddressResponse, CountryRecord}
 import models.{AddressAndUPRN, AddressUk, CachedBusinessDetails, FindAddress, RichJsObject, UniqueTaxpayerReference, UserAnswers}
+import org.mockito.Mockito.reset
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -81,6 +82,11 @@ trait SpecBase
   final val mockDataRetrievalAction: DataRetrievalAction   = mock[DataRetrievalAction]
   final val mockCtUtrRetrievalAction: CtUtrRetrievalAction = mock[CtUtrRetrievalAction]
 
+  override def beforeEach(): Unit = {
+    reset(mockSessionRepository, mockDataRetrievalAction, mockCtUtrRetrievalAction)
+    super.beforeEach()
+  }
+
   protected def applicationBuilder(
       userAnswers: Option[UserAnswers] = None,
       affinityGroup: AffinityGroup = AffinityGroup.Individual,
@@ -91,6 +97,7 @@ trait SpecBase
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[IdentifierAction].toInstance(new FakeIdentifierAction(injectedParsers, affinityGroup, requestUtr)),
         bind[DataRetrievalAction].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
+        bind[SubmissionLockAction].to[FakeSubmissionLockAction],
         bind[SessionRepository].toInstance(mockSessionRepository)
       )
 

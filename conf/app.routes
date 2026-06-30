@@ -12,8 +12,6 @@ GET         /placeholder                                                  contro
 
 GET         /problem/some-information-is-missing                          controllers.InformationMissingController.onPageLoad()
 
-GET         /check-your-answers                                           controllers.CheckYourAnswersController.onPageLoad()
-
 GET         /account/sign-out-survey                                      controllers.auth.AuthController.signOut()
 GET         /account/sign-out                                             controllers.auth.AuthController.signOutNoSurvey()
 GET         /account/signed-out                                           controllers.auth.SignedOutController.onPageLoad()
@@ -102,6 +100,8 @@ GET         /second-contact-phone                                         contro
 POST        /second-contact-phone                                         controllers.organisation.OrganisationSecondContactPhoneNumberController.onSubmit(mode: Mode = NormalMode)
 GET         /change-second-contact-phone                                  controllers.organisation.OrganisationSecondContactPhoneNumberController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-second-contact-phone                                  controllers.organisation.OrganisationSecondContactPhoneNumberController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /rcasp-added                                                  controllers.RcaspAddedConfirmationController.onPageLoad()
 
 GET         /contact-name                                                 controllers.organisation.OrganisationFirstContactNameController.onPageLoad(mode: Mode = NormalMode)
 POST        /contact-name                                                 controllers.organisation.OrganisationFirstContactNameController.onSubmit(mode: Mode = NormalMode)

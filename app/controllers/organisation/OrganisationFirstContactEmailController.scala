@@ -40,6 +40,7 @@ class OrganisationFirstContactEmailController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: GenericEmailFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: OrganisationFirstContactEmailView
@@ -50,8 +51,8 @@ class OrganisationFirstContactEmailController @Inject() (
 
   val form: Form[String] = formProvider("organisationFirstContactEmail")
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(OrganisationFirstContactEmailPage).fold(form)(form.fill)
 
@@ -69,10 +70,10 @@ class OrganisationFirstContactEmailController @Inject() (
             controllers.routes.InformationMissingController.onPageLoad()
           )
       }
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -99,5 +100,5 @@ class OrganisationFirstContactEmailController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(OrganisationFirstContactEmailPage, mode, updatedAnswers))
         )
-  }
+    }
 }

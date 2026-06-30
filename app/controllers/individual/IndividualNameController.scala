@@ -40,6 +40,7 @@ class IndividualNameController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: IndividualNameFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: IndividualNameView
@@ -49,16 +50,16 @@ class IndividualNameController @Inject() (
 
   val form: Form[IndividualName] = formProvider()
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(IndividualNamePage).fold(form)(form.fill)
 
       Ok(view(preparedForm, mode))
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -69,5 +70,5 @@ class IndividualNameController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(IndividualNamePage, mode, updatedAnswers))
         )
-  }
+    }
 }

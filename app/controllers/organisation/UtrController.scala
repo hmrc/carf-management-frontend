@@ -38,6 +38,7 @@ class UtrController @Inject() (
     navigator: Navigator,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
+    submissionLock: SubmissionLockAction,
     requireData: DataRequiredAction,
     formProvider: UtrFormProvider,
     val controllerComponents: MessagesControllerComponents,
@@ -50,7 +51,7 @@ class UtrController @Inject() (
   val form: Form[String] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen requireData) { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       request.userAnswers.get(OverwritableOrganisationName) match {
         case Some(orgName) =>
           val preparedForm = request.userAnswers
@@ -68,7 +69,7 @@ class UtrController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen requireData).async { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(

@@ -18,7 +18,6 @@ package controllers.organisation
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
-import models.responses.AddressRegistrationResponse
 import models.{CachedBusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
@@ -171,10 +170,7 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
     "must redirect to the next page when valid data is submitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val userAnswers = emptyUserAnswers
-        .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
-
-      val application = applicationBuilder(userAnswers = Some(userAnswers))
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
           bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
         )
@@ -258,9 +254,7 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request =
-          FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", "true"))
+        val request = FakeRequest(POST, routeUnderTest).withFormUrlEncodedBody(("value", ""))
 
         val result = route(application, request).value
 

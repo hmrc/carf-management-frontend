@@ -39,6 +39,7 @@ class OrganisationFirstContactPhoneNumberController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: GenericPhoneFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: OrganisationFirstContactPhoneNumberView
@@ -49,8 +50,8 @@ class OrganisationFirstContactPhoneNumberController @Inject() (
 
   val form: Form[String] = formProvider("organisationFirstContactPhoneNumber")
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(OrganisationFirstContactPhoneNumberPage).fold(form)(form.fill)
 
@@ -64,10 +65,10 @@ class OrganisationFirstContactPhoneNumberController @Inject() (
             controllers.routes.InformationMissingController.onPageLoad()
           )
       }
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -90,5 +91,5 @@ class OrganisationFirstContactPhoneNumberController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(OrganisationFirstContactPhoneNumberPage, mode, updatedAnswers))
         )
-  }
+    }
 }
