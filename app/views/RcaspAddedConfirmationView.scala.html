@@ -28,7 +28,7 @@
 
     @govukPanel(Panel(
         title = Text(messages("rcaspAddedConfirmation.label.heading")),
-        content = HtmlContent(s"${messages("rcaspAddedConfirmation.rcaspId.label", rcaspName)}<br><strong>$rcaspId</strong>")
+        content = HtmlContent(s"<span class='long-word'>${messages("rcaspAddedConfirmation.rcaspId.label", rcaspName)}</span><br><strong class='long-word'>$rcaspId</strong>")
     ))
 
     <p class="govuk-body long-word">
