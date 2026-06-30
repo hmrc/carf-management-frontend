@@ -21,6 +21,7 @@ import config.Constants.noneOfTheseValue
 import controllers.routes
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.*
+import models.responses.AddressRegistrationResponse
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
