@@ -43,10 +43,10 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
 
         val expectedValueContent: Seq[HtmlContent] = Seq(
           HtmlContent(
-            """<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">Mesagoza</span>"""
+            """<span class="govuk-!-margin-right-2" style="line-height:1.4">Mesagoza</span>"""
           ),
           HtmlContent(
-            """<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">Penny Cassiopeia</span>"""
+            """<span class="govuk-!-margin-right-2" style="line-height:1.4">Penny Cassiopeia</span>"""
           )
         )
 
@@ -101,16 +101,16 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
 
         val expectedValueContent: Seq[HtmlContent] = Seq(
           HtmlContent("""
-            |<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">ORG2</span>
-            |<strong class="govuk-tag" style="max-width: 180px !important;">Registered&nbsp;business</strong>
+            |<span class="govuk-!-margin-right-2" style="line-height:1.4">ORG2</span>
+            |<strong class="govuk-tag" style="max-width: 230px !important;">Registered&nbsp;business</strong>
           """.stripMargin.trim),
           HtmlContent(
-            """<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">Ann Smith</span>"""
+            """<span class="govuk-!-margin-right-2" style="line-height:1.4">Ann Smith</span>"""
           ),
           HtmlContent(
-            """<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">John Doe</span>"""
+            """<span class="govuk-!-margin-right-2" style="line-height:1.4">John Doe</span>"""
           ),
-          HtmlContent("""<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">org1</span>""")
+          HtmlContent("""<span class="govuk-!-margin-right-2" style="line-height:1.4">org1</span>""")
         )
 
         val expectedActionItems: Seq[Seq[ListWithActionsAction]] = Seq(
