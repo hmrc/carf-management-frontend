@@ -62,7 +62,7 @@ object YourRcaspsListWithActionsHelper {
   private def getValueContent(name: String, isRcaspUser: Boolean)(implicit messages: Messages): HtmlContent = {
     val registeredBusinessTag =
       if (isRcaspUser) {
-        s"""<strong class="govuk-tag" style="max-width: 180px !important;">${messages(
+        s"""<strong class="govuk-tag" style="max-width: 230px !important;">${messages(
             "yourRcasps.registeredBusinessTag"
           )}</strong>"""
       } else {
@@ -70,7 +70,7 @@ object YourRcaspsListWithActionsHelper {
       }
 
     HtmlContent(s"""
-         |<span class="govuk-!-margin-right-2" style="max-width: 180px; line-height:1.4">$name</span>
+         |<span class="govuk-!-margin-right-2" style="line-height:1.4">$name</span>
          |$registeredBusinessTag
     """.stripMargin.trim)
   }
