@@ -18,8 +18,7 @@ package controllers.organisation
 
 import base.SpecBase
 import models.CachedBusinessDetails
-import models.responses.AddressRegistrationResponse
-import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsTheAddressCorrectPage, RegisteredBusinessIsThisYourBusinessNamePage}
+import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsThisYourBusinessNamePage}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.organisation.NotInUkView

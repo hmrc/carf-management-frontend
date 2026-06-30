@@ -16,7 +16,7 @@
 
 package services
 
-import models.responses.{ReturnParameters, SubmitRcaspDataResponse, SubmitRcaspDataResponseDetails}
+import models.responses.{SubmitRcaspResponse, SubmitResponseDetails, SubmitReturnParameters}
 import play.api.Logging
 import types.ResultT
 
@@ -27,13 +27,11 @@ import scala.concurrent.ExecutionContext
 class SubmitRcaspService @Inject() ()(implicit ec: ExecutionContext) extends Logging {
 
   // TODO - Current impl is to allow RcaspAddedConfirmationController to retrieve stubbed rcaspId, this will change in CARF-294/CARF-295
-  def submitRcasp(): ResultT[SubmitRcaspDataResponse] =
+  def submitRcasp(): ResultT[SubmitRcaspResponse] =
     ResultT.fromValue(
-      SubmitRcaspDataResponse(
-        ResponseDetails = Some(
-          SubmitRcaspDataResponseDetails(
-            ReturnParameters = Some(ReturnParameters(Key = "RCASPID", Value = "XACARF0000123456"))
-          )
+      SubmitRcaspResponse(
+        ResponseDetails = SubmitResponseDetails(
+          ReturnParameters = SubmitReturnParameters(Key = "RCASPID", Value = "XACARF0000123456")
         )
       )
     )

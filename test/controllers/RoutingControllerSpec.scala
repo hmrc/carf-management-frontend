@@ -137,7 +137,7 @@ class RoutingControllerSpec extends SpecBase {
     "must redirect to the next page in NormalMode when submission has already succeeded" in {
       val staleUserAnswers = emptyUserAnswers
         .withPage(SubmissionSucceededPage, true)
-        .withPage(RcaspIdPage, testRcaspId)
+        .withPage(RcaspIdPage, rcaspId)
         .withPage(OverwritableOrganisationName, testOrgName)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
@@ -165,7 +165,7 @@ class RoutingControllerSpec extends SpecBase {
     "must save fresh UserAnswers in NormalMode even when stale session data exists" in {
       val staleUserAnswers = emptyUserAnswers
         .withPage(SubmissionSucceededPage, true)
-        .withPage(RcaspIdPage, testRcaspId)
+        .withPage(RcaspIdPage, rcaspId)
         .withPage(OverwritableOrganisationName, testOrgName)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)

@@ -89,16 +89,11 @@ class CheckDetailsController @Inject() (
 
       submitRcaspService.submitRcasp().value.flatMap {
         case Right(response) =>
-          response.ResponseDetails.flatMap(_.ReturnParameters).map(_.Value) match {
-            case Some(rcaspId) =>
-              for {
-                updatedAnswers <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
-                _              <- sessionRepository.set(updatedAnswers)
-              } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
-            case None          =>
-              logger.warn("[CheckDetailsController][onSubmit] Data retrieval from response failed")
-              Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-          }
+          val rcaspId = response.ResponseDetails.ReturnParameters.Value
+          for {
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
+            _              <- sessionRepository.set(updatedAnswers)
+          } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
         case Left(_)         =>
           logger.warn("[CheckDetailsController][onSubmit] Submit RCASP call failed")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))

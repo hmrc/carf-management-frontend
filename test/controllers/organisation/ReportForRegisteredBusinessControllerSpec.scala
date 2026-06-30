@@ -187,7 +187,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
-        
+
       val application = applicationBuilder(
         userAnswers = Some(userAnswers),
         requestUtr = Some(testUtr.uniqueTaxPayerReference)

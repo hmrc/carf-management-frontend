@@ -65,7 +65,6 @@ trait SpecBase
   val testUtr: UniqueTaxpayerReference = UniqueTaxpayerReference("1234567890")
   val testInternalId: String           = "12345"
   val testCarfId: String               = "XE0000123456789"
-  val testRcaspId                      = "XACARF0000123456"
   val testUPRN: Int                    = 123456789
   val testUPRNAlt: Int                 = 223456789
 

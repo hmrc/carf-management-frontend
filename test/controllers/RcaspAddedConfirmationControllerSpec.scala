@@ -41,7 +41,7 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
 
       val userAnswers = emptyUserAnswers
         .withPage(OverwritableOrganisationName, testOrgName)
-        .withPage(RcaspIdPage, testRcaspId)
+        .withPage(RcaspIdPage, rcaspId)
 
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
@@ -55,7 +55,7 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[RcaspAddedConfirmationView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(testRcaspId, testOrgName)(
+        contentAsString(result) mustEqual view(rcaspId, testOrgName)(
           request,
           messages(application)
         ).toString
@@ -73,7 +73,7 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
       val userAnswers = emptyUserAnswers
         .withPage(OrganisationOrIndividualPage, Individual)
         .withPage(IndividualNamePage, testIndividualName)
-        .withPage(RcaspIdPage, testRcaspId)
+        .withPage(RcaspIdPage, rcaspId)
 
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
@@ -87,7 +87,7 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[RcaspAddedConfirmationView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(testRcaspId, testIndividualName.fullName)(
+        contentAsString(result) mustEqual view(rcaspId, testIndividualName.fullName)(
           request,
           messages(application)
         ).toString
@@ -104,7 +104,7 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
 
       val userAnswers = emptyUserAnswers
         .withPage(OverwritableOrganisationName, testOrgName)
-        .withPage(RcaspIdPage, testRcaspId)
+        .withPage(RcaspIdPage, rcaspId)
 
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
@@ -124,7 +124,7 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
 
       val userAnswers = emptyUserAnswers
         .withPage(OverwritableOrganisationName, testOrgName)
-        .withPage(RcaspIdPage, testRcaspId)
+        .withPage(RcaspIdPage, rcaspId)
 
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
@@ -158,7 +158,7 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
 
     "must redirect to Journey Recovery for a GET when an rcaspId is present but no name is in user answers" in {
 
-      val userAnswers = emptyUserAnswers.withPage(RcaspIdPage, testRcaspId)
+      val userAnswers = emptyUserAnswers.withPage(RcaspIdPage, rcaspId)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
