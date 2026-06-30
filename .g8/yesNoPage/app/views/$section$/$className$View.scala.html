@@ -16,12 +16,10 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        <h1 class="govuk-heading-l long-word">@messages("$className;format="decap"$.heading")</h1>
-
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("$className;format="decap"$.heading")).withCssClass("govuk-visually-hidden govuk-!-display-block")
+                legend = LegendViewModel(messages("$className;format="decap"$.heading")).asPageHeading()
         ).copy(classes = "")
         )
 

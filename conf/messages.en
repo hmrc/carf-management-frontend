@@ -241,6 +241,29 @@ informationMissing.title = Some information is missing
 informationMissing.heading = Some information is missing
 informationMissing.paragraph = You must provide this information to update your reporting cryptoasset service providers (RCASPs).
 
+utr.title = What is the Unique Taxpayer Reference (UTR) for the reporting cryptoasset service provider (RCASP)?
+utr.heading = What is the Unique Taxpayer Reference (UTR) for {0}?
+utr.hint = The UTR can be 10 or 13 digits long.
+utr.checkYourAnswersLabel = Unique Taxpayer Reference (UTR)
+utr.change.hidden = Change Unique Taxpayer Reference (UTR)
+utr.error.required = Enter the Unique Taxpayer Reference for the reporting cryptoasset service provider (RCASP)
+utr.error.invalid = Unique Taxpayer Reference must only include numbers 0 to 9
+utr.error.invalidFormat = Enter the Unique Taxpayer Reference in the right format
+utr.error.notReal = Enter a real Unique Taxpayer Reference
+
+registeredBusinessIsTheAddressCorrect.title = Is this the registered address for the reporting cryptoasset service provider (RCASP)?
+registeredBusinessIsTheAddressCorrect.heading = Is this the registered address for {0}?
+registeredBusinessIsTheAddressCorrect.checkYourAnswersLabel = Registered address
+registeredBusinessIsTheAddressCorrect.change.hidden = Change registered address
+registeredBusinessIsTheAddressCorrect.error.required = Select yes if the registered address for the RCASP is correct
+
+notInUk.title = This service is only for reporting cryptoasset service providers (RCASPs) based in the UK
+notInUk.heading = This service is only for reporting cryptoasset service providers (RCASPs) based in the UK
+notInUk.p1 = You have confirmed that the registered business address for {0} is not in the UK.
+notInUk.p2 = If you confirmed this by mistake, then you can
+notInUk.p2.linkText = review and change the address to the right one
+notInUk.p3 = Email {0} if you need help with this service.
+
 checkDetailsAnswers.summaryListTitle = Contact details
 checkDetailsAnswers.title = Check the details for the reporting cryptoasset service provider (RCASP)
 checkDetailsAnswers.heading = Check the details for {0}

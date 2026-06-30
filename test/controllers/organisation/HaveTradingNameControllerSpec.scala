@@ -17,30 +17,32 @@
 package controllers.organisation
 
 import base.SpecBase
+import cats.data.EitherT
 import forms.GenericYesNoPageFormProvider
 import models.NormalMode
-import navigation.{FakeNavigator, Navigator}
+import models.errors.ApiError.InternalServerError
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.organisation.{HaveTradingNamePage, OverwritableOrganisationName}
+import pages.organisation.{HaveTradingNamePage, OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import play.api.data.Form
 import play.api.inject.bind
-import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.AccountService
+import uk.gov.hmrc.auth.core.AffinityGroup
 import views.html.organisation.HaveTradingNameView
 
 import scala.concurrent.Future
 
 class HaveTradingNameControllerSpec extends SpecBase {
 
-  def onwardRoute = Call("GET", "/foo")
-
   val formProvider        = new GenericYesNoPageFormProvider()
   val form: Form[Boolean] = formProvider("haveTradingName.error.required")
 
   lazy val haveTradingNameRoute: String =
     controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode).url
+
+  val mockAccountService: AccountService = mock[AccountService]
 
   "HaveTradingName Controller" - {
 
@@ -52,10 +54,8 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
       running(application) {
         val request = FakeRequest(GET, haveTradingNameRoute)
-
-        val result = route(application, request).value
-
-        val view = application.injector.instanceOf[HaveTradingNameView]
+        val result  = route(application, request).value
+        val view    = application.injector.instanceOf[HaveTradingNameView]
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(form, NormalMode, testOrgName)(request, messages(application)).toString
@@ -68,8 +68,7 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
       running(application) {
         val request = FakeRequest(GET, haveTradingNameRoute)
-
-        val result = route(application, request).value
+        val result  = route(application, request).value
 
         status(result)               mustEqual SEE_OTHER
         redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
@@ -86,10 +85,8 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
       running(application) {
         val request = FakeRequest(GET, haveTradingNameRoute)
-
-        val view = application.injector.instanceOf[HaveTradingNameView]
-
-        val result = route(application, request).value
+        val view    = application.injector.instanceOf[HaveTradingNameView]
+        val result  = route(application, request).value
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(form.fill(true), NormalMode, testOrgName)(
@@ -99,15 +96,16 @@ class HaveTradingNameControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
+    "must redirect to TradingNameController when valid data is submitted with value true" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
-          )
-          .build()
+      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+
+      val application = applicationBuilder(userAnswers = Some(ua))
+        .overrides(
+          bind[AccountService].toInstance(mockAccountService)
+        )
+        .build()
 
       running(application) {
         val request =
@@ -117,7 +115,96 @@ class HaveTradingNameControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual onwardRoute.url
+        redirectLocation(result).value mustEqual controllers.organisation.routes.TradingNameController
+          .onPageLoad(NormalMode)
+          .url
+      }
+    }
+
+    "must redirect to RegisteredBusinessIsTheAddressCorrectController when value is false and rcaspIsUser is true" in {
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+        .thenReturn(EitherT.rightT[Future, InternalServerError.type](0))
+
+      val ua = emptyUserAnswers
+        .withPage(OverwritableOrganisationName, testOrgName)
+        .withPage(ReportForRegisteredBusinessPage, true)
+
+      val application = applicationBuilder(
+        userAnswers = Some(ua),
+        affinityGroup = AffinityGroup.Organisation,
+        requestUtr = Some(testUtr.uniqueTaxPayerReference)
+      )
+        .overrides(
+          bind[AccountService].toInstance(mockAccountService)
+        )
+        .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, haveTradingNameRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(
+          result
+        ).value        mustEqual controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController
+          .onPageLoad(NormalMode)
+          .url
+      }
+    }
+
+    "must redirect to UtrController when value is false and rcaspIsUser is false" in {
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+        .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
+
+      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+
+      val application = applicationBuilder(userAnswers = Some(ua))
+        .overrides(
+          bind[AccountService].toInstance(mockAccountService)
+        )
+        .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, haveTradingNameRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.organisation.routes.UtrController
+          .onPageLoad(NormalMode)
+          .url
+      }
+    }
+
+    "must redirect to Journey Recovery when value is false and AccountService returns an error" in {
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+        .thenReturn(EitherT.leftT[Future, Int](InternalServerError))
+
+      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+
+      val application = applicationBuilder(userAnswers = Some(ua))
+        .overrides(
+          bind[AccountService].toInstance(mockAccountService)
+        )
+        .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, haveTradingNameRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 
@@ -133,10 +220,8 @@ class HaveTradingNameControllerSpec extends SpecBase {
             .withFormUrlEncodedBody(("value", ""))
 
         val boundForm = form.bind(Map("value" -> ""))
-
-        val view = application.injector.instanceOf[HaveTradingNameView]
-
-        val result = route(application, request).value
+        val view      = application.injector.instanceOf[HaveTradingNameView]
+        val result    = route(application, request).value
 
         status(result)          mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(boundForm, NormalMode, testOrgName)(
@@ -168,8 +253,7 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
       running(application) {
         val request = FakeRequest(GET, haveTradingNameRoute)
-
-        val result = route(application, request).value
+        val result  = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url

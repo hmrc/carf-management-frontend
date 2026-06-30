@@ -123,6 +123,18 @@ POST        /phone                                                        contro
 GET         /change-phone                                                 controllers.organisation.OrganisationFirstContactPhoneNumberController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-phone                                                 controllers.organisation.OrganisationFirstContactPhoneNumberController.onSubmit(mode: Mode = ChangeMode)
 
+GET         /utr                                                          controllers.organisation.UtrController.onPageLoad(mode: Mode = NormalMode)
+POST        /utr                                                          controllers.organisation.UtrController.onSubmit(mode: Mode = NormalMode)
+GET         /change-utr                                                   controllers.organisation.UtrController.onPageLoad(mode: Mode = ChangeMode)
+POST        /change-utr                                                   controllers.organisation.UtrController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /registered-business/is-the-address-correct                   controllers.organisation.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(mode: Mode = NormalMode)
+POST        /registered-business/is-the-address-correct                   controllers.organisation.RegisteredBusinessIsTheAddressCorrectController.onSubmit(mode: Mode = NormalMode)
+GET         /registered-business/change-is-the-address-correct            controllers.organisation.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(mode: Mode = ChangeMode)
+POST        /registered-business/change-is-the-address-correct            controllers.organisation.RegisteredBusinessIsTheAddressCorrectController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /problem/not-in-uk                                            controllers.organisation.NotInUkController.onPageLoad()
+
 GET         /check-answers                                                controllers.CheckDetailsController.onPageLoad
 POST        /check-answers                                                controllers.CheckDetailsController.onSubmit
 

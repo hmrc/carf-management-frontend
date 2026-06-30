@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package pages.organisation
+package utils
 
-import models.CachedBusinessDetails
-import pages.QuestionPage
-import play.api.libs.json.JsPath
+import config.FrontendAppConfig
+import models.Country
+import play.api.Environment
+import play.api.libs.json.Json
 
-case object CachedBusinessDetailsPage extends QuestionPage[CachedBusinessDetails] {
+import javax.inject.{Inject, Singleton}
 
-  override def path: JsPath = JsPath \ toString
+@Singleton
+class CountryListFactory @Inject() (environment: Environment, appConfig: FrontendAppConfig) {
 
-  override def toString: String = "cachedBusinessDetails"
+  private def countryList: Option[Seq[Country]] =
+    environment.resourceAsStream(appConfig.countryCodeJson).map(Json.parse).map {
+      _.as[Seq[Country]]
+    }
 
+  def getDescriptionFromCode(code: String): Option[String] =
+    countryList.flatMap {
+      _.find(_.code == code).map(_.description)
+    }
 }

@@ -40,5 +40,8 @@ object Constants {
 
   inline final val notReal0808PhoneNumber = "+448081570192"
 
+  val acceptedUtrLengths: Set[Int] = Set(10, 13)
+
   inline final val ukCountryCode = "GB"
+
 }

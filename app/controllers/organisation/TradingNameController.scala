@@ -16,16 +16,17 @@
 
 package controllers.organisation
 
+import config.Constants.ZERO
 import controllers.actions.*
 import forms.organisation.TradingNameFormProvider
-import models.Mode
-import navigation.Navigator
-import pages.organisation.{OverwritableOrganisationName, TradingNamePage}
+import models.{Mode, NormalMode, UniqueTaxpayerReference, UserAnswers}
+import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage, TradingNamePage}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
+import services.AccountService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.organisation.TradingNameView
 
@@ -35,11 +36,12 @@ import scala.concurrent.{ExecutionContext, Future}
 class TradingNameController @Inject() (
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
-    navigator: Navigator,
     identify: IdentifierAction,
+    ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: TradingNameFormProvider,
+    accountService: AccountService,
     val controllerComponents: MessagesControllerComponents,
     view: TradingNameView
 )(implicit ec: ExecutionContext)
@@ -49,9 +51,8 @@ class TradingNameController @Inject() (
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
-
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData) { implicit request =>
       val preparedForm = request.userAnswers.get(TradingNamePage).fold(form)(form.fill)
 
       request.userAnswers
@@ -62,10 +63,10 @@ class TradingNameController @Inject() (
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
         }(orgName => Ok(view(preparedForm, mode, orgName)))
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -84,7 +85,37 @@ class TradingNameController @Inject() (
             for {
               updatedAnswers <- Future.fromTry(request.userAnswers.set(TradingNamePage, value))
               _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(TradingNamePage, mode, updatedAnswers))
+              result         <- accountService
+                                  .getNumberOfRcaspsCurrentlyAdded(request.carfId)
+                                  .map(count => Redirect(rcaspIsUserRedirect(count, request.utr, updatedAnswers)))
+                                  .leftMap { error =>
+                                    logger.warn(
+                                      s"[TradingNameController][onSubmit] Error retrieving RCASP count: $error"
+                                    )
+                                    Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+                                  }
+                                  .merge
+            } yield result
         )
+    }
+
+  private def rcaspIsUser(
+      rcaspCount: Int,
+      ctUtr: Option[UniqueTaxpayerReference],
+      userAnswers: UserAnswers
+  ): Boolean = {
+    val answeredYes = userAnswers.get(ReportForRegisteredBusinessPage).contains(true)
+    rcaspCount == ZERO && ctUtr.nonEmpty && answeredYes
   }
+
+  private def rcaspIsUserRedirect(
+      rcaspCount: Int,
+      ctUtr: Option[UniqueTaxpayerReference],
+      userAnswers: UserAnswers
+  ): Call =
+    if (rcaspIsUser(rcaspCount, ctUtr, userAnswers)) {
+      controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(NormalMode)
+    } else {
+      controllers.organisation.routes.UtrController.onPageLoad(NormalMode)
+    }
 }

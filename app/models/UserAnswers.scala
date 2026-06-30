@@ -16,6 +16,7 @@
 
 package models
 
+import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsThisYourBusinessNamePage}
 import play.api.libs.json.*
 import queries.{Gettable, Settable}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
@@ -71,13 +72,20 @@ final case class UserAnswers(
     pages.foldLeft(Try(this)) { (oldAnswerList, page) =>
       oldAnswerList.flatMap(_.remove(page))
     }
+
+  def getRegisteredBusinessOrganisationNameMaybe: Option[String] =
+    if (this.get(RegisteredBusinessIsThisYourBusinessNamePage).contains(true)) {
+      this.get(CachedBusinessDetailsPage).map(_.name)
+    } else {
+      this.get(OverwritableOrganisationName)
+    }
 }
 
 object UserAnswers {
 
   val reads: Reads[UserAnswers] = {
 
-    import play.api.libs.functional.syntax._
+    import play.api.libs.functional.syntax.*
 
     (
       (__ \ "_id").read[String] and
@@ -88,7 +96,7 @@ object UserAnswers {
 
   val writes: OWrites[UserAnswers] = {
 
-    import play.api.libs.functional.syntax._
+    import play.api.libs.functional.syntax.*
 
     (
       (__ \ "_id").write[String] and
@@ -98,4 +106,5 @@ object UserAnswers {
   }
 
   implicit val format: OFormat[UserAnswers] = OFormat(reads, writes)
+
 }

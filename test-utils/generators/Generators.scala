@@ -91,6 +91,12 @@ trait Generators extends ModelGenerators {
     chars     <- listOfN(length, arbitrary[Char])
   } yield chars.mkString
 
+  def stringsNotOfFixedLengthsNumeric(validLengths: Set[Int]): Gen[String] =
+    Gen
+      .choose(1, 50)
+      .suchThat(len => !validLengths.contains(len))
+      .flatMap(len => Gen.listOfN(len, Gen.numChar).map(_.mkString))
+
   def stringsExceptSpecificValues(excluded: Seq[String]): Gen[String] =
     nonEmptyString suchThat (!excluded.contains(_))
 
