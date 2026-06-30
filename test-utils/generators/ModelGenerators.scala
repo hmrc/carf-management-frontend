@@ -32,9 +32,9 @@ trait ModelGenerators {
       } yield IndividualName(firstName, lastName)
     }
 
-  val addressStringGen: Gen[String] = Gen.alphaNumStr.suchThat(_.nonEmpty).map(_.take(35))
+  val addressStringGen: Gen[String] = Gen.alphaNumStr.suchThat(_.trim.nonEmpty).map(_.take(35))
 
-  val postcodeStringGen: Gen[String] = Gen.alphaNumStr.suchThat(_.nonEmpty).map(_.take(10))
+  val postcodeStringGen: Gen[String] = Gen.alphaNumStr.suchThat(_.trim.nonEmpty).map(_.take(10))
 
   implicit lazy val arbitraryFindAddress: Arbitrary[FindAddress] =
     Arbitrary {
