@@ -35,11 +35,12 @@ class GenericOrganisationContactNameFormProviderSpec extends StringFieldBehaviou
       ('0' to '9') ++
       Seq(' ', '&', '\'', '\\', '`', '^', '-')
 
-  val organisationContactNameGen: Gen[String] =
+  val organisationContactNameGen: Gen[String] = {
     for {
       length <- Gen.choose(1, maxLength)
       chars  <- Gen.listOfN(length, Gen.oneOf(validOrganisationContactNameChars))
     } yield chars.mkString
+  }.suchThat(_.trim.nonEmpty)
 
   ".value" - {
 

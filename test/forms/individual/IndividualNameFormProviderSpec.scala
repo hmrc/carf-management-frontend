@@ -30,11 +30,12 @@ class IndividualNameFormProviderSpec extends StringFieldBehaviours {
 
   val maxNameLength = 35
 
-  val individualNameGen: Gen[String] =
+  val individualNameGen: Gen[String] = {
     for {
       length <- Gen.choose(1, maxNameLength)
       chars  <- Gen.listOfN(length, validIndividualNameChars)
     } yield chars.mkString
+  }.suchThat(_.trim.nonEmpty)
 
   ".firstName" - {
 
