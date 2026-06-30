@@ -91,8 +91,7 @@ trait NormalRoutesNavigator {
       userAnswers => navigateFromOrganisationSecondContactHavePhonePage(userAnswers)
 
     case OrganisationSecondContactPhoneNumberPage =>
-      // TODO remove
-      _ => controllers.routes.CheckDetailsRegBusinessController.onPageLoad
+      _ => controllers.routes.CheckDetailsController.onPageLoad
 
     case FindAddressPage =>
       userAnswers => navigateFromFindAddressPage(userAnswers)
@@ -145,8 +144,7 @@ trait NormalRoutesNavigator {
       case Some(true)  =>
         controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
       case Some(false) =>
-        // TODO remove
-        controllers.routes.CheckDetailsRegBusinessController.onPageLoad
+        controllers.routes.CheckDetailsController.onPageLoad
       case None        => routes.JourneyRecoveryController.onPageLoad()
     }
 
@@ -155,8 +153,7 @@ trait NormalRoutesNavigator {
       case Some(true)  =>
         controllers.organisation.routes.OrganisationSecondContactPhoneNumberController.onPageLoad(NormalMode)
       case Some(false) =>
-        // TODO remove
-        controllers.routes.CheckDetailsRegBusinessController.onPageLoad
+        controllers.routes.CheckDetailsController.onPageLoad
       case None        =>
         routes.JourneyRecoveryController.onPageLoad()
     }
