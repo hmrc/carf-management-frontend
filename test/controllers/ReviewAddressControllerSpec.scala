@@ -228,7 +228,7 @@ class ReviewAddressControllerSpec extends SpecBase with MockitoSugar {
               "Should nav to /registered-business/check-answers (CARF-294)"
             )
             .url
-        verify(mockSessionRepository, times(2)).set(any())
+        verify(mockSessionRepository, times(1)).set(any())
       }
     }
 
