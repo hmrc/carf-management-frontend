@@ -44,6 +44,7 @@ class ChooseAddressController @Inject() (
     sessionRepository: SessionRepository,
     navigator: Navigator,
     identify: IdentifierAction,
+    ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: ChooseAddressFormProvider,
@@ -95,8 +96,8 @@ class ChooseAddressController @Inject() (
       Future.successful(result)
   }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -135,7 +136,7 @@ class ChooseAddressController @Inject() (
                   .merge
             } yield result
         )
-  }
+    }
 
   private def storeAddress(addressToStore: AddressAndUPRN, userAnswer: UserAnswers): Future[UserAnswers] =
     for {

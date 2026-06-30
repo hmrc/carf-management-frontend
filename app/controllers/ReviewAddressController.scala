@@ -35,6 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class ReviewAddressController @Inject() (
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
+    ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     navigator: Navigator,
@@ -69,8 +70,8 @@ class ReviewAddressController @Inject() (
       }
   }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
       request.userAnswers.get(AddressPagePrePop) match {
         case Some(address) =>
           for {
@@ -91,7 +92,7 @@ class ReviewAddressController @Inject() (
           logger.error("No address found in user answers")
           Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       }
-  }
+    }
 
   private def isRcaspUserRedirect(
       rcaspCount: Int,

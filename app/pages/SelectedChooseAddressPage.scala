@@ -17,9 +17,7 @@
 package pages
 
 import models.AddressUk
-import pages.QuestionPage
 import play.api.libs.json.JsPath
-import models.responses.{AddressRecord, AddressResponse}
 
 case object SelectedChooseAddressPage extends QuestionPage[AddressUk] {
 

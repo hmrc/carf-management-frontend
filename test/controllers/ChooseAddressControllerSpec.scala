@@ -46,10 +46,10 @@ class ChooseAddressControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  private val chooseAddressRoute =
+  private lazy val chooseAddressRoute =
     controllers.routes.ChooseAddressController.onPageLoad(NormalMode).url
 
-  private val isRcaspUserRoute =
+  private lazy val isRcaspUserRoute =
     routes.PlaceholderController.onPageLoad("Should nav to /registered-business/check-answers (CARF-294)").url
 
   val formProvider       = new ChooseAddressFormProvider()

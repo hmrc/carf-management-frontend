@@ -30,7 +30,7 @@ object UkAddressSummary {
     answers.get(UkAddressInUserAnswers).map { answer =>
       SummaryListRowViewModel(
         key = "individual.address.checkYourAnswersLabel",
-        value = ValueViewModel(HtmlContent(answer.renderHTML).toString),
+        value = ValueViewModel(HtmlContent(answer.renderHTML)),
         actions = Seq(
           ActionItemViewModel(
             "site.change",

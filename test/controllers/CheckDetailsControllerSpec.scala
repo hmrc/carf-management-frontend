@@ -25,7 +25,6 @@ import org.mockito.Mockito.when
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import play.api.Application
-import play.api.http.*
 import play.api.inject.bind
 import play.api.mvc.{Call, Result}
 import play.api.test.FakeRequest
