@@ -42,8 +42,7 @@ trait NormalRoutesNavigator {
       userAnswers => navigateFromRegisteredBusinessIsTheAddressCorrectPage(userAnswers)
 
     case TradingNamePage =>
-      // TODO remove
-      _ => controllers.routes.CheckDetailsRegBusinessController.onPageLoad
+      userAnswers => navigateFromTradingNamePage(userAnswers)
 
     case OrganisationOrIndividualPage =>
       userAnswers => navigateFromOrganisationOrIndividualPage(userAnswers)
@@ -102,7 +101,19 @@ trait NormalRoutesNavigator {
   private def navigateFromHaveTradingNamePage(userAnswers: UserAnswers): Call =
     userAnswers.get(HaveTradingNamePage) match {
       case Some(true) => controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
-      case _          => controllers.routes.JourneyRecoveryController.onPageLoad()
+      case _          =>
+        if (userAnswers.rcaspIsRegisteredBusiness) {
+          controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(NormalMode)
+        } else {
+          controllers.organisation.routes.UtrController.onPageLoad(NormalMode)
+        }
+    }
+
+  private def navigateFromTradingNamePage(userAnswers: UserAnswers): Call =
+    if (userAnswers.rcaspIsRegisteredBusiness) {
+      controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(NormalMode)
+    } else {
+      controllers.organisation.routes.UtrController.onPageLoad(NormalMode)
     }
 
   private def navigateFromIndividualHavePhonePage(userAnswers: UserAnswers): Call =
@@ -167,8 +178,7 @@ trait NormalRoutesNavigator {
             controllers.routes.JourneyRecoveryController.onPageLoad()
           ) { businessDetails =>
             if (businessDetails.address.countryCode.toUpperCase == Constants.ukCountryCode) {
-              controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /registered-business/check-answers (CARF-294)")
+              controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
             } else {
               controllers.organisation.routes.NotInUkController.onPageLoad()
             }

@@ -17,19 +17,17 @@
 package controllers.organisation
 
 import base.SpecBase
-import cats.data.EitherT
 import forms.organisation.TradingNameFormProvider
 import models.NormalMode
-import models.errors.ApiError.InternalServerError
+import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage, TradingNamePage}
+import pages.organisation.{OverwritableOrganisationName, TradingNamePage}
 import play.api.data.Form
 import play.api.inject.bind
+import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.AccountService
-import uk.gov.hmrc.auth.core.AffinityGroup
 import views.html.organisation.TradingNameView
 
 import scala.concurrent.Future
@@ -42,7 +40,7 @@ class TradingNameControllerSpec extends SpecBase {
   lazy val tradingNameRoute: String =
     controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode).url
 
-  val mockAccountService: AccountService = mock[AccountService]
+  def onwardRoute = Call("GET", "/foo")
 
   "TradingName Controller" - {
 
@@ -96,52 +94,13 @@ class TradingNameControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to RegisteredBusinessIsTheAddressCorrectController when rcaspIsUser is true" in {
+    "must redirect via Navigator when valid data is sumbitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](0))
-
-      val ua = emptyUserAnswers
-        .withPage(OverwritableOrganisationName, testOrgName)
-        .withPage(ReportForRegisteredBusinessPage, true)
-
-      val application = applicationBuilder(
-        userAnswers = Some(ua),
-        affinityGroup = AffinityGroup.Organisation,
-        requestUtr = Some(testUtr.uniqueTaxPayerReference)
-      )
-        .overrides(
-          bind[AccountService].toInstance(mockAccountService)
-        )
-        .build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, tradingNameRoute)
-            .withFormUrlEncodedBody(("value", "answer"))
-
-        val result = route(application, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(
-          result
-        ).value        mustEqual controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController
-          .onPageLoad(NormalMode)
-          .url
-      }
-    }
-
-    "must redirect to UtrController when rcaspIsUser is false" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
 
       val application = applicationBuilder(userAnswers = Some(ua))
-        .overrides(
-          bind[AccountService].toInstance(mockAccountService)
-        )
+        .overrides(bind[Navigator].toInstance(new FakeNavigator(onwardRoute)))
         .build()
 
       running(application) {
@@ -152,34 +111,7 @@ class TradingNameControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.organisation.routes.UtrController
-          .onPageLoad(NormalMode)
-          .url
-      }
-    }
-
-    "must redirect to Journey Recovery when AccountService returns an error" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
-        .thenReturn(EitherT.leftT[Future, Int](InternalServerError))
-
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
-
-      val application = applicationBuilder(userAnswers = Some(ua))
-        .overrides(
-          bind[AccountService].toInstance(mockAccountService)
-        )
-        .build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, tradingNameRoute)
-            .withFormUrlEncodedBody(("value", "answer"))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        redirectLocation(result).value mustEqual onwardRoute.url
       }
     }
 
@@ -216,19 +148,6 @@ class TradingNameControllerSpec extends SpecBase {
 
         status(result)               mustEqual SEE_OTHER
         redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, tradingNameRoute)
-        val result  = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 

@@ -16,9 +16,10 @@
 
 package controllers.organisation
 
+import config.Constants.ZERO
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import models.{CachedBusinessDetails, Mode}
+import models.{CachedBusinessDetails, Mode, UserAnswers}
 import navigation.Navigator
 import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
 import play.api.Logging
@@ -26,7 +27,8 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
-import services.RegistrationService
+import services.{AccountService, RegistrationService}
+import types.ResultT
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CountryListFactory
 import views.html.organisation.ReportForRegisteredBusinessView
@@ -44,6 +46,7 @@ class ReportForRegisteredBusinessController @Inject() (
     requireData: DataRequiredAction,
     formProvider: GenericYesNoPageFormProvider,
     registrationService: RegistrationService,
+    accountService: AccountService,
     countryListFactory: CountryListFactory,
     val controllerComponents: MessagesControllerComponents,
     view: ReportForRegisteredBusinessView
@@ -101,27 +104,50 @@ class ReportForRegisteredBusinessController @Inject() (
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      request.userAnswers.get(CachedBusinessDetailsPage) match {
-
-        case Some(cached) =>
-          form
-            .bindFromRequest()
-            .fold(
-              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, cached.name))),
-              value =>
+      form
+        .bindFromRequest()
+        .fold(
+          formWithErrors =>
+            request.userAnswers.get(CachedBusinessDetailsPage) match {
+              case Some(cached) => Future.successful(BadRequest(view(formWithErrors, mode, cached.name)))
+              case None         =>
+                logger.warn("[ReportForRegisteredBusinessController][onSubmit] No cached business details found")
+                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+            },
+          value =>
+            setRcaspIsRegisteredBusinessFlag(
+              userAnswers = request.userAnswers,
+              pageAnswer = value,
+              carfId = request.carfId,
+              ctUtr = request.utr.map(_.uniqueTaxPayerReference)
+            ).value.flatMap {
+              case Right(userAnswers) =>
                 for {
-                  updatedAnswers <- Future.fromTry(
-                                      request.userAnswers.set(ReportForRegisteredBusinessPage, value)
-                                    )
+                  updatedAnswers <- Future.fromTry(userAnswers.set(ReportForRegisteredBusinessPage, value))
                   _              <- sessionRepository.set(updatedAnswers)
                 } yield Redirect(
                   navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers)
                 )
-            )
+              case Left(error)        =>
+                logger.error(
+                  s"[ReportForRegisteredBusinessController][onSubmit] Error getting how many Rcasps user has: $error"
+                )
+                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+            }
+        )
+    }
 
-        case None =>
-          logger.warn("[ReportForRegisteredBusinessController][onSubmit] No cached business details found")
-          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+  private def setRcaspIsRegisteredBusinessFlag(
+      userAnswers: UserAnswers,
+      pageAnswer: Boolean,
+      carfId: String,
+      ctUtr: Option[String]
+  ): ResultT[UserAnswers] =
+    accountService.getNumberOfRcaspsCurrentlyAdded(carfId = carfId).map { numberOfRcasps =>
+      if (numberOfRcasps == ZERO && pageAnswer && ctUtr.nonEmpty) {
+        userAnswers.copy(rcaspIsRegisteredBusiness = true)
+      } else {
+        userAnswers
       }
     }
 }

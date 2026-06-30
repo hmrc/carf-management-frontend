@@ -25,7 +25,7 @@ import viewmodels.checkAnswers.organisation.*
 
 import javax.inject.Inject
 
-class CheckDetailsRegBusinessHelper @Inject() extends Logging {
+class CheckDetailsRegisteredBusinessHelper @Inject() extends Logging {
 
   def getRegisteredBusinessSection(userAnswers: UserAnswers)(implicit messages: Messages): Option[Section] =
     (for {

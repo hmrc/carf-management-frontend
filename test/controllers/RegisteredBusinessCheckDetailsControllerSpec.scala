@@ -32,7 +32,7 @@ import services.RegistrationService
 import types.ResultT
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
-import utils.CheckDetailsRegBusinessHelper
+import utils.CheckDetailsRegisteredBusinessHelper
 import viewmodels.Section
 import viewmodels.govuk.all.{ActionItemViewModel, FluentActionItem, SummaryListRowViewModel, ValueViewModel}
 import views.html.organisation.CheckDetailsRegBusinessView
@@ -40,7 +40,7 @@ import views.html.organisation.CheckDetailsRegBusinessView
 import java.time.Clock
 import scala.concurrent.Future
 
-class CheckDetailsRegBusinessControllerSpec extends SpecBase {
+class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
 
   private val testRow: SummaryListRow =
     SummaryListRowViewModel(
@@ -59,7 +59,7 @@ class CheckDetailsRegBusinessControllerSpec extends SpecBase {
 
   private val testSection: Section = Section("TEST SECTION NAME", Seq(testRow))
 
-  lazy val cdRoute: String = controllers.routes.CheckDetailsRegBusinessController.onPageLoad.url
+  lazy val cdRoute: String = controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad.url
   def onwardRoute: Call    = Call("GET", "/foo")
 
   "CheckDetailsRegBusiness Controller" - {
@@ -197,13 +197,13 @@ class CheckDetailsRegBusinessControllerSpec extends SpecBase {
   }
 
   class Setup(userAnswers: UserAnswers) {
-    final val mockHelper: CheckDetailsRegBusinessHelper    = mock[CheckDetailsRegBusinessHelper]
-    final val mockRegistrationService: RegistrationService = mock[RegistrationService]
+    final val mockHelper: CheckDetailsRegisteredBusinessHelper = mock[CheckDetailsRegisteredBusinessHelper]
+    final val mockRegistrationService: RegistrationService     = mock[RegistrationService]
 
     val application: Application =
       applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
-          bind[CheckDetailsRegBusinessHelper].toInstance(mockHelper),
+          bind[CheckDetailsRegisteredBusinessHelper].toInstance(mockHelper),
           bind[RegistrationService].toInstance(mockRegistrationService),
           bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
           bind[Clock].toInstance(clock)

@@ -28,13 +28,12 @@ import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
 import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
-import pages.*
 import play.api.data.Form
 import play.api.inject.bind
-import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.AddressLookupService
@@ -70,18 +69,6 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
       )
     )
   )
-
-  val userAnswers = UserAnswers(
-    id = userAnswersId,
-    data = Json.obj(
-      FindAddressPage.toString -> Json.obj(
-        "postcode"             -> "AA1 1AA",
-        "propertyNameOrNumber" -> "value 2"
-      )
-    )
-  )
-
-  val testName = "james"
 
   private def expectedManualUrl: String =
     controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)").url
@@ -168,7 +155,8 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val userAnswersWithName =
-        userAnswers
+        emptyUserAnswers
+          .withPage(FindAddressPage, FindAddress(postcode = "AA1 1AA", propertyNameOrNumber = Some("value 2")))
           .withPage(OrganisationOrIndividualPage, Organisation)
           .withPage(OverwritableOrganisationName, testName)
 

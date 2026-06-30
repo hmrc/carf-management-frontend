@@ -138,8 +138,8 @@ GET         /problem/not-in-uk                                            contro
 GET         /check-answers                                                controllers.CheckDetailsController.onPageLoad
 POST        /check-answers                                                controllers.CheckDetailsController.onSubmit
 
-GET         /registered-business/check-answers                            controllers.CheckDetailsRegBusinessController.onPageLoad
-POST        /registered-business/check-answers                            controllers.CheckDetailsRegBusinessController.onSubmit
+GET         /registered-business/check-answers                            controllers.organisation.RegisteredBusinessCheckDetailsController.onPageLoad
+POST        /registered-business/check-answers                            controllers.organisation.RegisteredBusinessCheckDetailsController.onSubmit
 
 GET         /your-rcasps                                                  controllers.YourRcaspsController.onPageLoad()
 POST        /your-rcasps                                                  controllers.YourRcaspsController.onSubmit()

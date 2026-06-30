@@ -51,7 +51,7 @@ class RoutingController @Inject() (
 
         case Right(numberOfRcasps) =>
           val updatedAnswers =
-            request.userAnswers.getOrElse(UserAnswers(id = request.userId))
+            request.userAnswers.getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
 
           val redirectUrl =
             if (numberOfRcasps == ZERO && request.utr.isDefined) {

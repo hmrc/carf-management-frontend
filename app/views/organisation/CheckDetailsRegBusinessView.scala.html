@@ -25,7 +25,7 @@
 @(section: Section, name: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("registeredBusinessCheckDetails.title"))) {
-    @formHelper(action = controllers.routes.CheckDetailsRegBusinessController.onSubmit, Symbol("autoComplete") -> "on") {
+    @formHelper(action = controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onSubmit, Symbol("autoComplete") -> "on") {
 
         <h1 class="govuk-heading-l long-word">@messages("registeredBusinessCheckDetails.heading", name)</h1>
 

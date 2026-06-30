@@ -18,7 +18,7 @@ package viewmodels.checkAnswers.organisation
 
 import models.countries.CountryUk
 import models.{AddressUk, UserAnswers}
-import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
+import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsTheAddressCorrectPage}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -28,8 +28,8 @@ import viewmodels.implicits.*
 object RegisteredBusinessAddressSummary {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] = {
-    // TODO need to check for: Is the address correct? page
-    val address: Option[String] = if (answers.get(ReportForRegisteredBusinessPage).contains(true)) {
+
+    val address: Option[String] = if (answers.get(RegisteredBusinessIsTheAddressCorrectPage).contains(true)) {
       import models.responses.renderHtml
       answers.get(CachedBusinessDetailsPage).map(_.address.renderHtml)
     } else {

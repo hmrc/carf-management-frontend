@@ -55,7 +55,9 @@ class DataRetrievalActionSpec extends SpecBase {
 
       "must build a userAnswers object and add it to the request" in {
 
-        when(mockSessionRepository.get("id")) thenReturn Future(Some(UserAnswers("id")))
+        when(mockSessionRepository.get("id")) thenReturn Future(
+          Some(UserAnswers("id", rcaspIsRegisteredBusiness = true))
+        )
         val action = new Harness(mockSessionRepository)
 
         val result =

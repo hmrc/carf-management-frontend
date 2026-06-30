@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.organisation
 
+import cats.syntax.all.*
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import play.api.Logging
@@ -23,20 +24,20 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.RegistrationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.CheckDetailsRegBusinessHelper
+import utils.CheckDetailsRegisteredBusinessHelper
 import views.html.organisation.CheckDetailsRegBusinessView
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class CheckDetailsRegBusinessController @Inject() (
+class RegisteredBusinessCheckDetailsController @Inject() (
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     view: CheckDetailsRegBusinessView,
     val controllerComponents: MessagesControllerComponents,
-    helper: CheckDetailsRegBusinessHelper,
+    helper: CheckDetailsRegisteredBusinessHelper,
     registrationService: RegistrationService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -44,8 +45,6 @@ class CheckDetailsRegBusinessController @Inject() (
     with Logging {
 
   def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
-    import cats.syntax.all.*
-
     val userAnswers          = request.userAnswers
     lazy val ifEmptyProtocol = Redirect(controllers.routes.InformationMissingController.onPageLoad())
 

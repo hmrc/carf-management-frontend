@@ -19,7 +19,7 @@ package controllers.organisation
 import base.SpecBase
 import controllers.routes
 import forms.organisation.GenericOrganisationContactNameFormProvider
-import models.{NormalMode, UserAnswers}
+import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -50,8 +50,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
     "must return OK and the correct view for a GET" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
-        .withPage(OverwritableOrganisationName, organisationName)
+      val userAnswers = emptyUserAnswers.withPage(OverwritableOrganisationName, organisationName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -72,7 +71,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
+      val userAnswers = emptyUserAnswers
         .withPage(OverwritableOrganisationName, organisationName)
         .withPage(OrganisationSecondContactNamePage, "answer")
 
@@ -117,8 +116,7 @@ class OrganisationSecondContactNameControllerSpec extends SpecBase with MockitoS
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
-        .withPage(OverwritableOrganisationName, organisationName)
+      val userAnswers = emptyUserAnswers.withPage(OverwritableOrganisationName, organisationName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 

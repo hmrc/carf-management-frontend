@@ -17,8 +17,9 @@
 package controllers.organisation
 
 import base.SpecBase
+import controllers.routes
 import forms.organisation.GenericOrganisationContactNameFormProvider
-import models.{NormalMode, UserAnswers}
+import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -29,7 +30,6 @@ import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.organisation.OrganisationFirstContactNameView
-import controllers.routes
 
 import scala.concurrent.Future
 
@@ -49,8 +49,7 @@ class OrganisationFirstContactNameControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
-        .withPage(OverwritableOrganisationName, organisationName)
+      val userAnswers = emptyUserAnswers.withPage(OverwritableOrganisationName, organisationName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -71,7 +70,7 @@ class OrganisationFirstContactNameControllerSpec extends SpecBase {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
+      val userAnswers = emptyUserAnswers
         .withPage(OverwritableOrganisationName, organisationName)
         .withPage(OrganisationFirstContactNamePage, "answer")
 
@@ -116,8 +115,7 @@ class OrganisationFirstContactNameControllerSpec extends SpecBase {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
-        .withPage(OverwritableOrganisationName, organisationName)
+      val userAnswers = emptyUserAnswers.withPage(OverwritableOrganisationName, organisationName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 

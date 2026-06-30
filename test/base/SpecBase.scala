@@ -24,6 +24,7 @@ import models.individual.IndividualName
 import models.requests.AddressDetails
 import models.responses.{AddressRecord, AddressRegistrationResponse, AddressResponse, CountryRecord}
 import models.{AddressAndUPRN, AddressUk, CachedBusinessDetails, FindAddress, RichJsObject, UniqueTaxpayerReference, UserAnswers}
+import org.mockito.Mockito.reset
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -71,7 +72,7 @@ trait SpecBase
   implicit val clock: Clock = Clock.fixed(Instant.parse("2020-05-20T12:34:56.789012Z"), ZoneId.of(UtcZoneId))
 
   def emptyUserAnswers: UserAnswers =
-    UserAnswers(id = userAnswersId, lastUpdated = Instant.now(clock))
+    UserAnswers(id = userAnswersId, lastUpdated = Instant.now(clock), rcaspIsRegisteredBusiness = false)
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
@@ -96,6 +97,11 @@ trait SpecBase
 
   implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+
+  override def beforeEach(): Unit = {
+    reset(mockSessionRepository, mockDataRetrievalAction, mockCtUtrRetrievalAction)
+    super.beforeEach()
+  }
 
   extension (userAnswers: UserAnswers) {
 
@@ -174,6 +180,7 @@ trait SpecBase
 
   val testOrgName        = "Timmy Ltd"
   val testIndividualName = IndividualName("Timmy", "Jimmison")
+  val testName           = "Timmy"
   val testNiNumber       = "BA123456A"
   val testEmail          = "hi@example.com"
   val testPhone          = "07123456789"

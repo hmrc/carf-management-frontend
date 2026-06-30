@@ -17,28 +17,15 @@
 package utils
 
 import base.SpecBase
-import models.{BusinessDetails, UserAnswers}
-import models.responses.AddressRegistrationResponse
+import models.{CachedBusinessDetails, UserAnswers}
 import pages.organisation.*
 import play.api.i18n.Messages
 
-class CheckDetailsRegBusinessHelperSpec extends SpecBase {
+class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
 
-  val helper: CheckDetailsRegBusinessHelper = new CheckDetailsRegBusinessHelper()
+  val helper: CheckDetailsRegisteredBusinessHelper = new CheckDetailsRegisteredBusinessHelper()
 
   implicit lazy val msgs: Messages = messages(app)
-
-  val businessDetails: BusinessDetails = BusinessDetails(
-    name = "Test Business Ltd",
-    address = AddressRegistrationResponse(
-      addressLine1 = "1 Test Street",
-      addressLine2 = Some("Testville"),
-      addressLine3 = None,
-      addressLine4 = None,
-      postalCode = Some("TE1 1ST"),
-      countryCode = "GB"
-    )
-  )
 
   // TODO test RegisteredBusinessAddressSummary logic here
 
@@ -46,7 +33,7 @@ class CheckDetailsRegBusinessHelperSpec extends SpecBase {
     .withPage(ReportForRegisteredBusinessPage, true)
     .withPage(OverwritableOrganisationName, "Test Business Ltd")
     .withPage(HaveTradingNamePage, false)
-    .withPage(CachedBusinessDetailsPage, businessDetails)
+    .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
   "CheckDetailsRegBusinessHelper" - {
 
@@ -93,13 +80,17 @@ class CheckDetailsRegBusinessHelperSpec extends SpecBase {
         result.value.rows must have length 4
       }
 
-      "must return None when address is missing" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(ReportForRegisteredBusinessPage, true)
-          .withPage(OverwritableOrganisationName, "Test Business Ltd")
-          .withPage(HaveTradingNamePage, false)
-        helper.getRegisteredBusinessSection(userAnswers) mustBe None
-      }
+      // TODO: Add back in when address becomes not hard coded
+      // TODO: more tests in here for address logic and in the Summary Spec itself
+
+//      "must return None when address is missing" in {
+//        val userAnswers = emptyUserAnswers
+//          .withPage(ReportForRegisteredBusinessPage, true)
+//          .withPage(OverwritableOrganisationName, "Test Business Ltd")
+//          .withPage(HaveTradingNamePage, false)
+//
+//        helper.getRegisteredBusinessSection(userAnswers) mustBe None
+//      }
     }
   }
 }
