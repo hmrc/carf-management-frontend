@@ -42,7 +42,9 @@ import play.api.test.FakeRequest
 import queries.{Gettable, Settable}
 import repositories.SessionRepository
 import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.http.HeaderCarrier
+import viewmodels.Section
 
 import java.time.{Clock, Instant, ZoneId}
 import scala.concurrent.ExecutionContext
@@ -121,6 +123,28 @@ trait SpecBase
     def withoutPage[T](page: Settable[T])(implicit writes: Writes[T]): UserAnswers =
       userAnswers.remove(page).success.value
 
+  }
+
+  def compareRowsAndTitleToExpected(
+      expectedTitle: String,
+      expectedKeys: Seq[String],
+      section: Section
+  ): Unit = {
+
+    val actualKeys            = section.rows.map(_.key.content)
+    val formattedExpectedKeys = expectedKeys.map(key => Text(key))
+
+    withClue(s"""
+         |Expected table keys to match in order
+         |Expected: $formattedExpectedKeys
+         |Actual:   $actualKeys
+         |
+         |""".stripMargin) {
+
+      expectedTitle mustEqual section.sectionName
+      actualKeys         must have size formattedExpectedKeys.size
+      actualKeys         must contain theSameElementsInOrderAs formattedExpectedKeys
+    }
   }
 
   lazy val testFindAddress: FindAddress = FindAddress("SW1A 1AA", Some("10"))

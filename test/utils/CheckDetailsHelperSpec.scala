@@ -104,26 +104,4 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
       }
     }
   }
-
-  def compareRowsAndTitleToExpected(
-      expectedTitle: String,
-      expectedKeys: Seq[String],
-      section: Section
-  ): Unit = {
-
-    val actualKeys            = section.rows.map(_.key.content)
-    val formattedExpectedKeys = expectedKeys.map(key => Text(key))
-
-    withClue(s"""
-         |Expected table keys to match in order
-         |Expected: $formattedExpectedKeys
-         |Actual:   $actualKeys
-         |
-         |""".stripMargin) {
-
-      expectedTitle mustEqual section.sectionName
-      actualKeys         must have size formattedExpectedKeys.size
-      actualKeys         must contain theSameElementsInOrderAs formattedExpectedKeys
-    }
-  }
 }

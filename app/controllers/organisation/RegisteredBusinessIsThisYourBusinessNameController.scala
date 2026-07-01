@@ -76,28 +76,19 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
             .fold(
               formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, businessDetails.name))),
               value =>
-                if (value) {
-                  for {
-                    updatedAnswers     <- Future.fromTry(
-                                            request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
-                                          )
-                    answersWithOrgName <- Future.fromTry(
+                for {
+                  updatedAnswers     <- Future.fromTry(
+                                          request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
+                                        )
+                  uaWithOrgNameIfYes <- Future.fromTry(
+                                          if (value) {
                                             updatedAnswers.set(OverwritableOrganisationName, businessDetails.name)
-                                          )
-                    _                  <- sessionRepository.set(answersWithOrgName)
-                  } yield Redirect(
-                    navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, answersWithOrgName)
-                  )
-                } else {
-                  for {
-                    updatedAnswers <- Future.fromTry(
-                                        request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
-                                      )
-                    _              <- sessionRepository.set(updatedAnswers)
-                  } yield Redirect(
-                    navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, updatedAnswers)
-                  )
-                }
+                                          } else { Try(updatedAnswers) }
+                                        )
+                  _                  <- sessionRepository.set(answersWithOrgNameIfYes)
+                } yield Redirect(
+                  navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, answersWithOrgName)
+                )
             )
 
         case None =>

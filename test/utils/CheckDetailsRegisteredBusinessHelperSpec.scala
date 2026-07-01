@@ -27,38 +27,66 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
 
   implicit lazy val msgs: Messages = messages(app)
 
-  // TODO test RegisteredBusinessAddressSummary logic here
-
   val completeUserAnswers: UserAnswers = emptyUserAnswers
     .withPage(ReportForRegisteredBusinessPage, true)
+    .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+    .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
     .withPage(OverwritableOrganisationName, "Test Business Ltd")
     .withPage(HaveTradingNamePage, false)
     .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
   "CheckDetailsRegBusinessHelper" - {
-
     "getRegisteredBusinessSection" - {
+      "must return a section with all rows when have trading name is true" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, true)
+          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+          .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
+          .withPage(OverwritableOrganisationName, testOrgName)
+          .withPage(HaveTradingNamePage, true)
+          .withPage(TradingNamePage, "Trading Co")
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+
+        val section = helper.getRegisteredBusinessSection(userAnswers).get
+
+        val expectedTitle             = ""
+        val expectedKeys: Seq[String] = Seq(
+          "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
+          "What is the name of the organisation?",
+          "Does the organisation trade under a different name?",
+          "Trading name",
+          "Main business address"
+        )
+
+        compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+      }
+
+      "must return an alternative section with no trading name, non cached address or business name" - {
+        "when user indicates that the do not trade under a different name, and the address from the api is not correct" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, true)
+            .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
+            .withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
+            .withPage(OverwritableOrganisationName, testOrgName)
+            .withPage(CachedBusinessDetailsPage, cachedBusinessDetails) // TODO: Replace with UkAddressInUserAnswers
+            .withPage(HaveTradingNamePage, false)
+
+          val section = helper.getRegisteredBusinessSection(userAnswers).get
+
+          val expectedTitle             = ""
+          val expectedKeys: Seq[String] = Seq(
+            "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
+            "What is the name of the organisation?",
+            "Does the organisation trade under a different name?",
+            "Trading name"
+          )
+
+          compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+        }
+      }
 
       "must return None when no answers are present" in {
         helper.getRegisteredBusinessSection(emptyUserAnswers) mustBe None
-      }
-
-      "must return None when any mandatory page is missing" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(ReportForRegisteredBusinessPage, true)
-          .withPage(OverwritableOrganisationName, "Test Business Ltd")
-        helper.getRegisteredBusinessSection(userAnswers) mustBe None
-      }
-
-      "must return a section with all rows when have trading name is true" in {
-        val userAnswers = completeUserAnswers
-          .withPage(HaveTradingNamePage, true)
-          .withPage(TradingNamePage, "Trading Co")
-
-        val result = helper.getRegisteredBusinessSection(userAnswers)
-
-        result          mustBe defined
-        result.value.rows must have length 5
       }
 
       "must return None when have trading name is true but trading name is missing" in {
@@ -73,24 +101,19 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
         helper.getRegisteredBusinessSection(userAnswers) mustBe None
       }
 
-      "must return a section without trading name row when have trading name is false" in {
-        val result = helper.getRegisteredBusinessSection(completeUserAnswers)
+      "must return None when cached business details are missing but the user indicated that the address there was correct" in {
+        val userAnswers = completeUserAnswers
+          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+          .withoutPage(CachedBusinessDetailsPage)
 
-        result          mustBe defined
-        result.value.rows must have length 4
+        helper.getRegisteredBusinessSection(userAnswers) mustBe None
       }
 
-      // TODO: Add back in when address becomes not hard coded
-      // TODO: more tests in here for address logic and in the Summary Spec itself
+      "must return None when UkAddressInUserAnswers is missing but the user indicated that the address from the api was incorrect" in {
+        val userAnswers = completeUserAnswers.withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
 
-//      "must return None when address is missing" in {
-//        val userAnswers = emptyUserAnswers
-//          .withPage(ReportForRegisteredBusinessPage, true)
-//          .withPage(OverwritableOrganisationName, "Test Business Ltd")
-//          .withPage(HaveTradingNamePage, false)
-//
-//        helper.getRegisteredBusinessSection(userAnswers) mustBe None
-//      }
+        helper.getRegisteredBusinessSection(userAnswers) mustBe None
+      }
     }
   }
 }
