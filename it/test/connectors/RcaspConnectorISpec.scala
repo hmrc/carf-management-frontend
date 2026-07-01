@@ -190,7 +190,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
         |  "ResponseDetails": {
         |    "ReturnParameters": {
         |      "Key": "RCASPID",
-        |      "Value": "RCASP12345"
+        |      "Value": "RCASP1"
         |    }
         |  }
         |}

@@ -36,9 +36,9 @@ class RcaspSubmissionService @Inject (
       userAnswers: UserAnswers
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
     // TODO: Create actual request and send to stubs [CARF-572]
-    carfId.takeRight(1) match {
-      case "0" => ResultT.fromError(InternalServerError)
-      case _   =>
+    carfId.take(2) match {
+      case "EE" => ResultT.fromError(InternalServerError)
+      case _    =>
         ResultT.fromValue(
           SubmitRcaspResponse(
             ResponseDetails = SubmitResponseDetails(
