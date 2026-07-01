@@ -26,10 +26,12 @@ import viewmodels.implicits.*
 
 object OrganisationOrIndividualSummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, showAcronymOnly: Boolean)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(OrganisationOrIndividualPage).map { answer =>
       SummaryListRowViewModel(
-        key = "organisationOrIndividual.checkYourAnswersLabel",
+        key =
+          if (showAcronymOnly) "organisationOrIndividual.checkYourAnswersLabel.acronymOnly"
+          else "organisationOrIndividual.checkYourAnswersLabel.full",
         value = ValueViewModel(messages(s"organisationOrIndividual.${answer.toString.toLowerCase}")),
         actions = Seq(
           ActionItemViewModel("site.change", routes.OrganisationOrIndividualController.onPageLoad(ChangeMode).url)

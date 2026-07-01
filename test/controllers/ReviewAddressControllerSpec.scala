@@ -24,7 +24,6 @@ import models.errors.ApiError.InternalServerError
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
@@ -38,7 +37,7 @@ import views.html.ReviewAddressView
 
 import scala.concurrent.Future
 
-class ReviewAddressControllerSpec extends SpecBase with MockitoSugar {
+class ReviewAddressControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 

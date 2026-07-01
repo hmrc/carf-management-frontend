@@ -80,6 +80,18 @@ extension (address: AddressUk) {
       countryCode = address.countryUk.code
     )
   }
+
+  def toRcaspAddress: RcaspAddress = {
+    val addressSubsequentLines = Seq(address.addressLine2, address.addressLine3, Some(address.townOrCity)).flatten
+    RcaspAddress(
+      AddressLine1 = address.addressLine1,
+      AddressLine2 = addressSubsequentLines.headOption,
+      AddressLine3 = addressSubsequentLines.lift(1),
+      AddressLine4 = addressSubsequentLines.lift(2),
+      PostalCode = address.postCode,
+      CountryCode = address.countryUk.code
+    )
+  }
 }
 
 object AddressUk {

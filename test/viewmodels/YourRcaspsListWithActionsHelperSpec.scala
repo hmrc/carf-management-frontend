@@ -35,8 +35,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
 
       "given a list of 2 RcaspDetails (of which neither is a registered business)" in {
         val rcaspDetailsList: List[RcaspDetails] = List(
-          individualRcaspDetails.copy(RCASPID = "RCASP1", IsRCASPUser = false),
-          organisationRcaspDetails.copy(RCASPID = "RCASP2", IsRCASPUser = false)
+          individualRcaspDetailsResponse.copy(RCASPID = "RCASP1", IsRCASPUser = false),
+          organisationRcaspDetailsResponse.copy(RCASPID = "RCASP2", IsRCASPUser = false)
         )
 
         val listWithActions = YourRcaspsListWithActionsHelper.getYourRcaspsRows(rcaspDetailsList)
@@ -91,10 +91,12 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
 
       "given a list of 4 RcaspDetails (of which 1 is a registered business)" in {
         val rcaspDetailsList: List[RcaspDetails] = List(
-          organisationRcaspDetails.copy(RCASPID = "RCASP1", IsRCASPUser = false, RCASPName = "org1"),
-          individualRcaspDetails.copy(RCASPID = "RCASP2", IsRCASPUser = false, FirstName = "John", LastName = "Doe"),
-          organisationRcaspDetails.copy(RCASPID = "RCASP3", IsRCASPUser = true, RCASPName = "ORG2"),
-          individualRcaspDetails.copy(RCASPID = "RCASP4", IsRCASPUser = false, FirstName = "Ann", LastName = "Smith")
+          organisationRcaspDetailsResponse.copy(RCASPID = "RCASP1", IsRCASPUser = false, RCASPName = "org1"),
+          individualRcaspDetailsResponse
+            .copy(RCASPID = "RCASP2", IsRCASPUser = false, FirstName = "John", LastName = "Doe"),
+          organisationRcaspDetailsResponse.copy(RCASPID = "RCASP3", IsRCASPUser = true, RCASPName = "ORG2"),
+          individualRcaspDetailsResponse
+            .copy(RCASPID = "RCASP4", IsRCASPUser = false, FirstName = "Ann", LastName = "Smith")
         )
 
         val listWithActions = YourRcaspsListWithActionsHelper.getYourRcaspsRows(rcaspDetailsList)

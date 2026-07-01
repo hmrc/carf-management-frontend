@@ -29,14 +29,14 @@ object UkAddressSummary {
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(UkAddressInUserAnswers).map { answer =>
       SummaryListRowViewModel(
-        key = "individual.address.checkYourAnswersLabel",
+        key = "address.checkYourAnswersLabel",
         value = ValueViewModel(HtmlContent(answer.renderHTML)),
         actions = Seq(
           ActionItemViewModel(
             "site.change",
             controllers.routes.FindAddressController.onPageLoad(ChangeMode).url
           )
-            .withVisuallyHiddenText(messages("individual.address.hidden"))
+            .withVisuallyHiddenText(messages("address.hidden"))
         )
       )
     }
