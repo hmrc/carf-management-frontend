@@ -16,7 +16,9 @@
 
 package navigation
 
+import config.Constants.noneOfTheseValue
 import controllers.routes
+import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.{NormalMode, OrganisationOrIndividual, UserAnswers}
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
@@ -91,6 +93,12 @@ trait NormalRoutesNavigator {
 
     case FindAddressPage =>
       userAnswers => navigateFromFindAddressPage(userAnswers)
+
+    case ChooseAddressPage =>
+      userAnswers => navigateFromChooseAddressPage(userAnswers)
+
+    case ReviewAddressPageForNavigatorOnly =>
+      userAnswers => navigateFromFinalAddressPages(userAnswers)
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
@@ -187,10 +195,32 @@ trait NormalRoutesNavigator {
   private def navigateFromFindAddressPage(userAnswers: UserAnswers): Call =
     (userAnswers.get(AddressLookupResult), userAnswers.get(AddressPagePrePop)) match {
       case (Some(addresses), None) =>
-        controllers.routes.PlaceholderController.onPageLoad("Should nav to /choose-address (CARF-201)")
+        controllers.routes.ChooseAddressController.onPageLoad(NormalMode)
       case (None, Some(address))   =>
-        controllers.routes.PlaceholderController.onPageLoad("Should nav to /review-address (CARF-201)")
+        controllers.routes.ReviewAddressController.onPageLoad(NormalMode)
       case _                       =>
         controllers.routes.JourneyRecoveryController.onPageLoad()
     }
+
+  private def navigateFromChooseAddressPage(userAnswers: UserAnswers): Call =
+    userAnswers
+      .get(ChooseAddressPage)
+      .fold {
+        routes.JourneyRecoveryController.onPageLoad()
+      } { answer =>
+        if (answer == noneOfTheseValue) {
+          controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
+        } else navigateFromFinalAddressPages(userAnswers)
+      }
+
+  private def navigateFromFinalAddressPages(userAnswers: UserAnswers): Call =
+    userAnswers.get(OrganisationOrIndividualPage) match {
+      case Some(Individual)   =>
+        controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
+      case Some(Organisation) =>
+        controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+      case None               =>
+        controllers.routes.JourneyRecoveryController.onPageLoad()
+    }
+
 }

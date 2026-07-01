@@ -17,14 +17,15 @@
 package navigation
 
 import base.SpecBase
+import config.Constants.noneOfTheseValue
 import controllers.routes
+import models.OrganisationOrIndividual.{Individual, Organisation}
+import models.*
 import models.responses.AddressRegistrationResponse
-import models.{CachedBusinessDetails, NormalMode, OrganisationOrIndividual}
+import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
-import pages.{AddressLookupResult, AddressPagePrePop, FindAddressPage, Page}
-
 class NormalRoutesNavigatorSpec extends SpecBase {
 
   val navigator = new Navigator()
@@ -519,7 +520,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           FindAddressPage,
           NormalMode,
           userAnswers
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /choose-address (CARF-201)")
+        ) mustBe controllers.routes.ChooseAddressController.onPageLoad(NormalMode)
       }
 
       "Should redirect to ReviewAddressPage when one address is returned" in {
@@ -528,7 +529,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           FindAddressPage,
           NormalMode,
           userAnswers
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /review-address (CARF-201)")
+        ) mustBe controllers.routes.ReviewAddressController.onPageLoad(NormalMode)
       }
 
       "Should redirect to JourneyRecovery when no address is returned and navigation has occurred" in {
@@ -537,6 +538,94 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NormalMode,
           emptyUserAnswers
         ) mustBe routes.JourneyRecoveryController.onPageLoad()
+      }
+    }
+
+    "When passed ChooseAddressPage" - {
+      "Should redirect to IndividualEmailPage when address is selected on individual journey" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ChooseAddressPage, testAddressUk.format)
+          .withPage(OrganisationOrIndividualPage, Individual)
+
+        navigator.nextPage(
+          ChooseAddressPage,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to OrganisationFirstContactNamePage when address is selected on organisation journey" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ChooseAddressPage, testAddressUk.format)
+          .withPage(OrganisationOrIndividualPage, Organisation)
+
+        navigator.nextPage(
+          ChooseAddressPage,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to ReviewAddressPage when none of these is selected" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ChooseAddressPage, noneOfTheseValue)
+
+        navigator.nextPage(
+          ChooseAddressPage,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
+      }
+
+      "Should redirect to JourneyRecovery when address is selected but OrganisationOrIndividual is missing" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ChooseAddressPage, testAddressUk.format)
+
+        navigator.nextPage(
+          ChooseAddressPage,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
+
+      "Should redirect to JourneyRecovery when no value is selected" in {
+        navigator.nextPage(
+          ChooseAddressPage,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
+    }
+
+    "When passed ReviewAddressPage" - {
+      "Should redirect to IndividualEmailPage when address is selected on individual journey" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Individual)
+
+        navigator.nextPage(
+          ReviewAddressPageForNavigatorOnly,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to OrganisationFirstContactNamePage when address is selected on organisation journey" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+
+        navigator.nextPage(
+          ReviewAddressPageForNavigatorOnly,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to JourneyRecovery when OrganisationOrIndividual is missing" in {
+        navigator.nextPage(
+          ReviewAddressPageForNavigatorOnly,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
       }
     }
 
