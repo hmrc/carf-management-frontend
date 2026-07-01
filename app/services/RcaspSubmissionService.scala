@@ -42,7 +42,7 @@ class RcaspSubmissionService @Inject (
         ResultT.fromValue(
           SubmitRcaspResponse(
             ResponseDetails = SubmitResponseDetails(
-              ReturnParameters = SubmitReturnParameters(Key = "RCASPID", Value = "XACARF0000123456")
+              ReturnParameters = SubmitReturnParameters(Key = "RCASPID", Value = "ZMCAR0123456789")
             )
           )
         )

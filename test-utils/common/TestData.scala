@@ -137,7 +137,7 @@ trait TestData extends Generators {
     )
 
   val carfId: String  = "XCCAR0024000102"
-  val rcaspId: String = "RCASP1"
+  val rcaspId: String = "ZMCAR0123456789"
 
   val rcaspContactDetails: RcaspContactDetails =
     RcaspContactDetails(

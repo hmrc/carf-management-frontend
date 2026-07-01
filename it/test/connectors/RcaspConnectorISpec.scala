@@ -44,7 +44,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
       |      "RCASPList": [
       |        {
       |          "SubscriptionID": "XCCAR0024000102",
-      |          "RCASPID": "RCASP1",
+      |          "RCASPID": "ZMCAR0123456789",
       |          "IsRCASPUser": true,
       |          "PartyType": "Organisation",
       |          "RCASPName": "Mesagoza",
@@ -190,7 +190,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
         |  "ResponseDetails": {
         |    "ReturnParameters": {
         |      "Key": "RCASPID",
-        |      "Value": "RCASP1"
+        |      "Value": "ZMCAR0123456789"
         |    }
         |  }
         |}
