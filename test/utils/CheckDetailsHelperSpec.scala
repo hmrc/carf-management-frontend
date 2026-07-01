@@ -77,9 +77,22 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
         }
       }
 
-      "must NOT return a section when a page is missing" in {
+      "must return None when pages are missing" in {
         val userAnswers = emptyUserAnswers
           .withPage(IndividualNamePage, testIndividualName)
+
+        val section = testHelper.getIndividualSectionMaybe(userAnswers)
+
+        section mustBe None
+      }
+
+      "must return None when ReportForRegisteredBusiness is true" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, true)
+          .withPage(OrganisationOrIndividualPage, Individual)
+          .withPage(IndividualNamePage, testIndividualName)
+          .withPage(NiNumberPage, testNiNumber)
+          .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val section = testHelper.getIndividualSectionMaybe(userAnswers)
 
@@ -199,6 +212,21 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
       "must return None when pages are missing" in {
         val userAnswers = emptyUserAnswers
           .withPage(OverwritableOrganisationName, testOrgName)
+
+        val section = testHelper.getOrganisationSectionMaybe(userAnswers)
+
+        section mustBe None
+      }
+
+      "must return None when ReportForRegisteredBusiness is true" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, true)
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OverwritableOrganisationName, testOrgName)
+          .withPage(HaveTradingNamePage, true)
+          .withPage(TradingNamePage, testTradingName)
+          .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+          .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val section = testHelper.getOrganisationSectionMaybe(userAnswers)
 
