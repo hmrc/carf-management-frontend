@@ -283,7 +283,7 @@ class ChooseAddressControllerSpec extends SpecBase {
 
     "must redirect to the next page when valid data is submitted and is not rcasp user" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val userAnswers =
@@ -318,7 +318,7 @@ class ChooseAddressControllerSpec extends SpecBase {
 
     "must redirect to the next page when none of these is submitted and does not store an address" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val userAnswers =
@@ -352,7 +352,7 @@ class ChooseAddressControllerSpec extends SpecBase {
 
     "must redirect to the next page when valid data is submitted and is rcasp user" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, InternalServerError.type](0))
 
       val userAnswers =

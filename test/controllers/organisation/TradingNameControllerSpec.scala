@@ -98,7 +98,7 @@ class TradingNameControllerSpec extends SpecBase {
 
     "must redirect to RegisteredBusinessIsTheAddressCorrectController when rcaspIsUser is true" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, InternalServerError.type](0))
 
       val ua = emptyUserAnswers
@@ -133,7 +133,7 @@ class TradingNameControllerSpec extends SpecBase {
 
     "must redirect to UtrController when rcaspIsUser is false" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
@@ -160,7 +160,7 @@ class TradingNameControllerSpec extends SpecBase {
 
     "must redirect to Journey Recovery when AccountService returns an error" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(EitherT.leftT[Future, Int](InternalServerError))
 
       val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
