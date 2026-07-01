@@ -167,7 +167,7 @@ organisationHaveSecondContact.heading = Is there someone else we can contact if 
 organisationHaveSecondContact.hint = This can be a team mailbox or another contact.
 organisationHaveSecondContact.checkYourAnswersLabel = Does the organisation have a second contact?
 organisationHaveSecondContact.error.required = Select yes if there is someone else we can contact
-organisationHaveSecondContact.change.hidden = Change if the organisation has have a second contact
+organisationHaveSecondContact.change.hidden = Change if the organisation has a second contact
 
 organisationSecondContactName.title = What is the name of the second person or team we should contact at the reporting cryptoasset service provider (RCASP)?
 organisationSecondContactName.heading = What is the name of the second person or team we should contact at {0}?
