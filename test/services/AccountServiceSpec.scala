@@ -73,10 +73,10 @@ class AccountServiceSpec extends SpecBase {
               ResponseCommon = rcaspResponseCommon,
               ResponseDetails = RcaspResponseDetails(
                 RCASPList = List(
-                  individualRcaspDetails,
-                  organisationRcaspDetails,
-                  individualRcaspDetails,
-                  organisationRcaspDetails
+                  individualRcaspDetailsResponse,
+                  organisationRcaspDetailsResponse,
+                  individualRcaspDetailsResponse,
+                  organisationRcaspDetailsResponse
                 )
               )
             )
