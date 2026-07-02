@@ -26,6 +26,7 @@ import org.scalatest.OptionValues.convertOptionToValuable
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
 import viewmodels.Section
+import viewmodels.govuk.all.{ActionItemViewModel, FluentActionItem, SummaryListRowViewModel, ValueViewModel}
 
 import java.time.{Clock, Instant, ZoneId}
 
@@ -254,8 +255,7 @@ trait TestData extends Generators {
         ActionItemViewModel(
           Text("TEST Action"),
           controllers.individual.routes.IndividualNameController.onPageLoad(ChangeMode).url
-        )
-          .withVisuallyHiddenText("TEST HIDDEN TEXT")
+        ).withVisuallyHiddenText("TEST HIDDEN TEXT")
       )
     )
 

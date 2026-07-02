@@ -34,8 +34,7 @@ extension (address: AddressRegistrationResponse) {
       address.addressLine2,
       address.addressLine3,
       address.addressLine4,
-      address.postalCode,
-      Some("United Kingdom")
+      address.postalCode
     ).flatten.filter(_.nonEmpty)
 
     val htmlLines = addressLines.zipWithIndex.map { case (line, index) =>

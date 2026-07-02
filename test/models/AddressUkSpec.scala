@@ -16,13 +16,11 @@
 
 package models
 
+import base.SpecBase
 import models.countries.CountryUk
 import models.requests.AddressDetails
-import org.scalatest.OptionValues
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
 
-class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
+class AddressUkSpec extends SpecBase {
 
   val ukAddressFull = AddressUk(
     addressLine1 = "123 Main Street",
@@ -61,7 +59,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
   )
 
   "AddressUk" - {
-    "renderHTML" - {
+    "renderHtml" - {
       "must render UK address correctly" in {
         val result = ukAddressFull.renderHtml
 

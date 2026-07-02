@@ -49,5 +49,5 @@ class CheckDetailsRegisteredBusinessHelper @Inject() extends Logging {
       } else {
         Some(topBaseRows :+ address)
       }
-    }).flatten.map(Section(messages(""), _))
+    }).flatten.map(Section("", _))
 }

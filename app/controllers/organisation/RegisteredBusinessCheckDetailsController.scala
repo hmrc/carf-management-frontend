@@ -17,13 +17,14 @@
 package controllers.organisation
 
 import cats.syntax.all.*
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
 import pages.RcaspIdPage
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.{RcaspSubmissionService, RegistrationService}
+import repositories.SessionRepository
+import services.RcaspSubmissionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckDetailsRegisteredBusinessHelper
 import views.html.organisation.CheckDetailsRegBusinessView
@@ -33,9 +34,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class RegisteredBusinessCheckDetailsController @Inject() (
     override val messagesApi: MessagesApi,
+    sessionRepository: SessionRepository,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     view: CheckDetailsRegBusinessView,
     val controllerComponents: MessagesControllerComponents,
     helper: CheckDetailsRegisteredBusinessHelper,
@@ -45,45 +48,47 @@ class RegisteredBusinessCheckDetailsController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
-    val userAnswers          = request.userAnswers
-    lazy val ifEmptyProtocol = Redirect(controllers.routes.InformationMissingController.onPageLoad())
+  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData) {
+    implicit request =>
+      val userAnswers          = request.userAnswers
+      lazy val ifEmptyProtocol = Redirect(controllers.routes.InformationMissingController.onPageLoad())
 
-    userAnswers.get(ReportForRegisteredBusinessPage) match {
-      case Some(true) =>
-        (
-          userAnswers.get(OverwritableOrganisationName),
-          helper.getRegisteredBusinessSection(userAnswers)
-        )
-          .mapN { (name, section) =>
-            Ok(view(section, name))
-          }
-          .getOrElse {
-            logger.warn(
-              "[CheckDetailsRegBusinessController][onPageLoad] Error! Could not load page missing answers"
-            )
-            ifEmptyProtocol
-          }
+      userAnswers.get(ReportForRegisteredBusinessPage) match {
+        case Some(true) =>
+          (
+            userAnswers.get(OverwritableOrganisationName),
+            helper.getRegisteredBusinessSection(userAnswers)
+          )
+            .mapN { (name, section) =>
+              Ok(view(section, name))
+            }
+            .getOrElse {
+              logger.warn(
+                "[CheckDetailsRegBusinessController][onPageLoad] Error! Could not load page missing answers"
+              )
+              ifEmptyProtocol
+            }
 
-      case _ =>
-        logger.warn(
-          "[CheckDetailsRegBusinessController][onPageLoad] ReportForRegisteredBusiness is false or missing. Redirecting to SIIM."
-        )
-        ifEmptyProtocol
-    }
+        case _ =>
+          logger.warn(
+            "[CheckDetailsRegBusinessController][onPageLoad] ReportForRegisteredBusiness is false or missing. Redirecting to SIIM."
+          )
+          ifEmptyProtocol
+      }
   }
 
-  def onSubmit: Action[AnyContent] = (identify() andThen getData() andThen requireData).async { implicit request =>
-    rcaspSubmissionService.submitRcasp(request.carfId, request.userAnswers).value.flatMap {
-      case Right(response) =>
-        val rcaspId = response.ResponseDetails.ReturnParameters.Value
-        for {
-          updatedAnswers <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
-          _              <- sessionRepository.set(updatedAnswers)
-        } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
-      case Left(error)     =>
-        logger.warn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")
-        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-    }
+  def onSubmit: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData).async {
+    implicit request =>
+      rcaspSubmissionService.submitRcasp(request.carfId, request.userAnswers).value.flatMap {
+        case Right(response) =>
+          val rcaspId = response.ResponseDetails.ReturnParameters.Value
+          for {
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
+            _              <- sessionRepository.set(updatedAnswers)
+          } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
+        case Left(error)     =>
+          logger.warn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")
+          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      }
   }
 }
