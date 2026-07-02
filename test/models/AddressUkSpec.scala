@@ -16,7 +16,7 @@
 
 package models
 
-import models.countries.CountryUk
+import config.Constants.ukCountryCode
 import models.requests.AddressDetails
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
@@ -29,8 +29,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
     addressLine2 = Some("Birmingham"),
     addressLine3 = Some("Hamingburm"),
     townOrCity = "Townington",
-    postCode = "B23 2AZ",
-    countryUk = CountryUk(code = "GB", name = "United Kingdom")
+    postCode = "B23 2AZ"
   )
 
   val ukAddressMinimal = AddressUk(
@@ -38,8 +37,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
     addressLine2 = None,
     addressLine3 = None,
     townOrCity = "Townington",
-    postCode = "B23 2AZ",
-    countryUk = CountryUk(code = "GB", name = "United Kingdom")
+    postCode = "B23 2AZ"
   )
 
   val ukAddressAddressLine3 = AddressUk(
@@ -47,8 +45,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
     addressLine2 = None,
     addressLine3 = Some("Address Line 3"),
     townOrCity = "Townington",
-    postCode = "B23 2AZ",
-    countryUk = CountryUk(code = "GB", name = "United Kingdom")
+    postCode = "B23 2AZ"
   )
 
   val ukAddressEmptyStrings = AddressUk(
@@ -56,8 +53,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
     addressLine2 = Some(""),
     addressLine3 = Some(""),
     townOrCity = "Townington",
-    postCode = "B23 2AZ",
-    countryUk = CountryUk(code = "GB", name = "United Kingdom")
+    postCode = "B23 2AZ"
   )
 
   "AddressUk" - {
@@ -96,7 +92,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
           addressLine3 = ukAddressFull.addressLine3,
           townOrCity = ukAddressFull.townOrCity,
           postalCode = Some(ukAddressFull.postCode),
-          countryCode = ukAddressFull.countryUk.code
+          countryCode = ukCountryCode
         )
         result mustBe expectedAddressDetails
       }
@@ -108,7 +104,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
           addressLine3 = ukAddressMinimal.addressLine3,
           townOrCity = ukAddressMinimal.townOrCity,
           postalCode = Some(ukAddressMinimal.postCode),
-          countryCode = ukAddressMinimal.countryUk.code
+          countryCode = ukCountryCode
         )
         result mustBe expectedAddressDetails
       }
@@ -121,7 +117,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
           addressLine3 = None,
           townOrCity = ukAddressAddressLine3.townOrCity,
           postalCode = Some(ukAddressAddressLine3.postCode),
-          countryCode = ukAddressAddressLine3.countryUk.code
+          countryCode = ukCountryCode
         )
         result mustBe expectedAddressDetails
       }

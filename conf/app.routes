@@ -155,3 +155,8 @@ GET         /review-address                                               contro
 GET         /review-address-submit                                        controllers.ReviewAddressController.onSubmit(mode: Mode = NormalMode)
 GET         /change-review-address                                        controllers.ReviewAddressController.onPageLoad(mode: Mode = ChangeMode)
 GET         /change-review-address-submit                                 controllers.ReviewAddressController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /address                                                      controllers.AddressController.onPageLoad(mode: Mode = NormalMode)
+POST        /address                                                      controllers.AddressController.onSubmit(mode: Mode = NormalMode)
+GET         /change-address                                               controllers.AddressController.onPageLoad(mode: Mode = ChangeMode)
+POST        /change-address                                               controllers.AddressController.onSubmit(mode: Mode = ChangeMode)

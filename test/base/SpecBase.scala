@@ -19,7 +19,6 @@ package base
 import common.TestData
 import controllers.actions.*
 import generators.Generators
-import models.countries.CountryUk
 import models.individual.IndividualName
 import models.requests.AddressDetails
 import models.responses.{AddressRecord, AddressRegistrationResponse, AddressResponse, CountryRecord}
@@ -128,6 +127,8 @@ trait SpecBase
 
   lazy val testPostcode: String = validPostcodes.sample.value
 
+  lazy val testNonCdPostcode: String = validGBOnlyNonCDPostcodes.sample.value
+
   def oneAddressResponse: AddressResponse =
     AddressResponse(
       id = "123",
@@ -145,8 +146,7 @@ trait SpecBase
     addressLine2 = Some("Test Street"),
     addressLine3 = Some("Test Region"),
     townOrCity = "Testingtown",
-    postCode = testPostcode,
-    countryUk = CountryUk("GB", "United Kingdom")
+    postCode = testPostcode
   )
 
   lazy val testAddressUkAlt: AddressUk = AddressUk(
@@ -154,8 +154,7 @@ trait SpecBase
     addressLine2 = Some("Test Road"),
     addressLine3 = Some("Test Area"),
     townOrCity = "Testingville",
-    postCode = testPostcode,
-    countryUk = CountryUk("GB", "United Kingdom")
+    postCode = testPostcode
   )
 
   lazy val testAddressAndUprns: Seq[AddressAndUPRN] = Seq(

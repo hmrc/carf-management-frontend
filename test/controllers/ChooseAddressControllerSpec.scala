@@ -20,7 +20,6 @@ import base.SpecBase
 import cats.data.EitherT
 import forms.ChooseAddressFormProvider
 import models.OrganisationOrIndividual.{Individual, Organisation}
-import models.countries.CountryUk
 import models.errors.ApiError.InternalServerError
 import models.{format, AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
@@ -62,8 +61,7 @@ class ChooseAddressControllerSpec extends SpecBase {
     Some("Line 2"),
     None,
     "Testtown",
-    "BB00 0BB",
-    CountryUk("GB", "United Kingdom")
+    "BB00 0BB"
   )
 
   "ChooseAddress Controller" - {
@@ -275,9 +273,7 @@ class ChooseAddressControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to /address - (CARF-203)")
-          .url
+        redirectLocation(result).value mustEqual controllers.routes.AddressController.onPageLoad(NormalMode).url
       }
     }
 
@@ -508,13 +504,7 @@ class ChooseAddressControllerSpec extends SpecBase {
             address.addressLine3,
             Some(address.townOrCity),
             Some(address.postCode)
-          ).flatten ++ {
-            if (address.countryUk.code == "GB") {
-              Seq.empty
-            } else {
-              Seq(address.countryUk.name)
-            }
-          }
+          ).flatten
 
           addressLines.mkString(", ")
         }

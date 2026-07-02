@@ -100,6 +100,9 @@ trait NormalRoutesNavigator {
     case ReviewAddressPageForNavigatorOnly =>
       userAnswers => navigateFromFinalAddressPages(userAnswers)
 
+    case AddressPageForNavigatorOnly =>
+      userAnswers => navigateFromFinalAddressPages(userAnswers)
+
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
 
@@ -209,7 +212,7 @@ trait NormalRoutesNavigator {
         routes.JourneyRecoveryController.onPageLoad()
       } { answer =>
         if (answer == noneOfTheseValue) {
-          controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
+          controllers.routes.AddressController.onPageLoad(NormalMode)
         } else navigateFromFinalAddressPages(userAnswers)
       }
 

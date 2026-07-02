@@ -61,7 +61,7 @@ class ChooseAddressController @Inject() (
   val form: Form[String] = formProvider()
 
   private lazy val addressControllerRedirect: Mode => Result = mode =>
-    Redirect(controllers.routes.PlaceholderController.onPageLoad("Should redirect to /address - (CARF-203)"))
+    Redirect(controllers.routes.AddressController.onPageLoad(mode))
 
   private def additionalLine(property: String, postcode: String)(implicit request: DataRequest[AnyContent]): String = {
     val messages: Messages = implicitly[Messages]

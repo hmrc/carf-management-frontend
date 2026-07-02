@@ -574,7 +574,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           ChooseAddressPage,
           NormalMode,
           userAnswers
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
+        ) mustBe controllers.routes.AddressController.onPageLoad(NormalMode)
       }
 
       "Should redirect to JourneyRecovery when address is selected but OrganisationOrIndividual is missing" in {
@@ -623,6 +623,38 @@ class NormalRoutesNavigatorSpec extends SpecBase {
       "Should redirect to JourneyRecovery when OrganisationOrIndividual is missing" in {
         navigator.nextPage(
           ReviewAddressPageForNavigatorOnly,
+          NormalMode,
+          emptyUserAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
+    }
+
+    "When passed AddressPage" - {
+      "Should redirect to IndividualEmailPage when address is selected on individual journey" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Individual)
+
+        navigator.nextPage(
+          AddressPageForNavigatorOnly,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to OrganisationFirstContactNamePage when address is selected on organisation journey" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+
+        navigator.nextPage(
+          AddressPageForNavigatorOnly,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to JourneyRecovery when OrganisationOrIndividual is missing" in {
+        navigator.nextPage(
+          AddressPageForNavigatorOnly,
           NormalMode,
           emptyUserAnswers
         ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()

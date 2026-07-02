@@ -16,9 +16,8 @@
 
 package models.responses
 
-import models.{AddressAndUPRN, AddressUk}
-import models.countries.CountryUk
 import models.errors.{CarfError, ConversionError}
+import models.{AddressAndUPRN, AddressUk}
 import play.api.libs.json.{Json, OFormat}
 
 case class AddressResponse(
@@ -42,8 +41,7 @@ object AddressResponse {
                 addressLine2 = next.headOption,
                 addressLine3 = next.lift(1),
                 townOrCity = address.town,
-                postCode = address.postcode,
-                countryUk = CountryUk(code = address.country.code, name = address.country.name)
+                postCode = address.postcode
               ),
               addressResponse.uprn
             )

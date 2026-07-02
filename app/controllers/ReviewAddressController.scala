@@ -52,7 +52,7 @@ class ReviewAddressController @Inject() (
     implicit request =>
 
       val editAddressLink: String =
-        routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)").url
+        routes.AddressController.onPageLoad(mode).url
 
       request.userAnswers.get(AddressPagePrePop) match {
         case Some(address) =>

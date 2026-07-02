@@ -29,6 +29,7 @@ object Constants {
   inline final val realNinoRegex   =
     "^([ACEHJLMOPRSWXY][A-CEGHJ-NPR-TW-Z]|B[A-CEHJ-NPR-TW-Z]|G[ACEGHJ-NPR-TW-Z]|[KT][A-CEGHJ-MPR-TW-Z]|N[A-CEGHJL-NPR-SW-Z]|Z[A-CEGHJ-NPR-TW-Y])[0-9]{6}[A-D ]$"
 
+  inline final val addressRegex  = "^[A-Za-z0-9 &.,'\\\\-]*$"
   final val regexPostcode        = """^[A-Za-z]{1,2}\d[A-Za-z0-9]?\s?\d[A-Za-z]{2}$"""
   final val postCodeAllowedChars = """^[A-Za-z0-9 ]*$"""
 
@@ -44,5 +45,6 @@ object Constants {
   val acceptedUtrLengths: Set[Int] = Set(10, 13)
 
   inline final val ukCountryCode = "GB"
+  inline final val ukCountryName = "United Kingdom"
   val noneOfTheseValue           = "none"
 }

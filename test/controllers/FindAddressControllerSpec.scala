@@ -84,7 +84,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
   val testName = "james"
 
   private def expectedManualUrl: String =
-    controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)").url
+    controllers.routes.AddressController.onPageLoad(NormalMode).url
 
   "FindAddress Controller" - {
 

@@ -60,14 +60,12 @@ trait ModelGenerators {
         addressLine3 <- Gen.option(addressStringGen)
         townOrCity   <- arbitrary[String]
         postcode     <- postcodeStringGen
-        countryUk    <- arbitrary[CountryUk]
       } yield AddressUk(
         addressLine1 = addressLine1,
         addressLine2 = addressLine2,
         addressLine3 = addressLine3,
         townOrCity = townOrCity,
-        postCode = postcode,
-        countryUk = countryUk
+        postCode = postcode
       )
     }
 

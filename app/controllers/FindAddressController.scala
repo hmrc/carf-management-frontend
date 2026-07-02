@@ -55,7 +55,7 @@ class FindAddressController @Inject() (
   val form: Form[FindAddress] = formProvider()
 
   lazy val manualLink: Mode => String =
-    mode => controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)").url
+    mode => controllers.routes.AddressController.onPageLoad(mode).url
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>

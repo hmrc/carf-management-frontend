@@ -17,7 +17,6 @@
 package models
 
 import config.Constants.ukCountryCode
-import models.countries.CountryUk
 import models.requests.AddressDetails
 import play.api.libs.json.{Json, OFormat}
 
@@ -28,8 +27,7 @@ case class AddressUk(
     addressLine2: Option[String],
     addressLine3: Option[String],
     townOrCity: String,
-    postCode: String,
-    countryUk: CountryUk
+    postCode: String
 )
 
 extension (address: AddressUk) {
@@ -61,11 +59,7 @@ extension (address: AddressUk) {
       address.addressLine3,
       Some(address.townOrCity),
       Some(address.postCode)
-    ).flatten ++ {
-      if (address.countryUk.code == ukCountryCode) {
-        Seq.empty
-      } else Seq(address.countryUk.name)
-    }
+    ).flatten
     addressLines.mkString(", ")
   }
 
@@ -77,7 +71,7 @@ extension (address: AddressUk) {
       addressLine3 = addressOptionalLines.lift(1),
       townOrCity = address.townOrCity,
       postalCode = Some(address.postCode),
-      countryCode = address.countryUk.code
+      countryCode = ukCountryCode
     )
   }
 }
