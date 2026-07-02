@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import models.errors.ApiError.InternalServerError
 import models.{ChangeMode, NormalMode, UserAnswers}
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{verify, when}
 import pages.organisation.OverwritableOrganisationName
 import pages.{RcaspIdPage, SubmissionSucceededPage}
@@ -52,9 +52,7 @@ class RoutingControllerSpec extends SpecBase {
         applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -75,9 +73,7 @@ class RoutingControllerSpec extends SpecBase {
         applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -98,9 +94,7 @@ class RoutingControllerSpec extends SpecBase {
         applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
           requestUtr = None
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -120,9 +114,7 @@ class RoutingControllerSpec extends SpecBase {
         applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -148,9 +140,7 @@ class RoutingControllerSpec extends SpecBase {
         applicationBuilder(
           userAnswers = Some(staleUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -162,7 +152,7 @@ class RoutingControllerSpec extends SpecBase {
       }
     }
 
-    "must save fresh UserAnswers in NormalMode even when stale session data exists" in {
+    "must save fresh UserAnswers in NormalMode when stale session data exists" in {
       val staleUserAnswers = emptyUserAnswers
         .withPage(SubmissionSucceededPage, true)
         .withPage(RcaspIdPage, rcaspId)
@@ -176,9 +166,7 @@ class RoutingControllerSpec extends SpecBase {
         applicationBuilder(
           userAnswers = Some(staleUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -187,11 +175,64 @@ class RoutingControllerSpec extends SpecBase {
         status(result) mustEqual SEE_OTHER
 
         verify(mockSessionRepository).set(
-          org.mockito.ArgumentMatchers.argThat((answers: UserAnswers) =>
+          argThat((answers: UserAnswers) =>
             answers.get(SubmissionSucceededPage).isEmpty &&
               answers.get(RcaspIdPage).isEmpty &&
               answers.get(OverwritableOrganisationName).isEmpty
           )
+        )
+      }
+    }
+
+    "must preserve UserAnswers in NormalMode when SubmissionSucceededPage is false" in {
+      val existingUserAnswers = emptyUserAnswers
+        .withPage(SubmissionSucceededPage, false)
+        .withPage(OverwritableOrganisationName, testOrgName)
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+        .thenReturn(ResultT.fromValue(0))
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(existingUserAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
+        verify(mockSessionRepository).set(
+          argThat(_.get(OverwritableOrganisationName).contains(testOrgName))
+        )
+      }
+    }
+
+    "must preserve UserAnswers in NormalMode when SubmissionSucceededPage is None" in {
+      val existingUserAnswers = emptyUserAnswers
+        .withPage(OverwritableOrganisationName, testOrgName)
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+        .thenReturn(ResultT.fromValue(0))
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(existingUserAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
+        verify(mockSessionRepository).set(
+          argThat(_.get(OverwritableOrganisationName).contains(testOrgName))
         )
       }
     }
@@ -220,9 +261,7 @@ class RoutingControllerSpec extends SpecBase {
           controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(ChangeMode).url
 
         verify(mockSessionRepository).set(
-          org.mockito.ArgumentMatchers.argThat((answers: UserAnswers) =>
-            answers.get(OverwritableOrganisationName).contains(testOrgName)
-          )
+          argThat((answers: UserAnswers) => answers.get(OverwritableOrganisationName).contains(testOrgName))
         )
       }
     }
@@ -247,7 +286,7 @@ class RoutingControllerSpec extends SpecBase {
         status(result) mustEqual SEE_OTHER
 
         verify(mockSessionRepository).set(
-          org.mockito.ArgumentMatchers.argThat((answers: UserAnswers) =>
+          argThat((answers: UserAnswers) =>
             answers.id == userAnswersId &&
               answers.get(OverwritableOrganisationName).isEmpty
           )
