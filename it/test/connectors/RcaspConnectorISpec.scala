@@ -21,11 +21,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import itutil.ApplicationWithWiremock
 import models.errors.ApiError.{InternalServerError, JsonValidationError}
 import models.responses.*
-import models.{RcaspAddress, RcaspContactDetails, TinDetails}
-import models.requests.*
-import models.responses
-import models.requests
-import models.responses.*
 import org.scalactic.Prettifier.default
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
@@ -35,8 +30,6 @@ import play.api.libs.json.Json
 class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with ScalaFutures with IntegrationPatience {
 
   val connector: RcaspConnector = app.injector.instanceOf[RcaspConnector]
-
-  val testCarfId: String = "CARF0000000001"
 
   val testViewRcaspResponseJson: String =
     """{
@@ -51,7 +44,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
       |      "RCASPList": [
       |        {
       |          "SubscriptionID": "XCCAR0024000102",
-      |          "RCASPID": "RCASP1",
+      |          "RCASPID": "ZMCAR0123456789",
       |          "IsRCASPUser": true,
       |          "PartyType": "Organisation",
       |          "RCASPName": "Mesagoza",
@@ -191,70 +184,17 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
     val testUrl = "/carf-management/create"
 
-    val createRcaspRequest: CreateRcaspRequest =
-      CreateRcaspRequest(
-        RCASPManagementRequest(
-          RcaspCreateRequestCommon(
-            OriginatingSystem = "CADX",
-            TransmittingSystem = "EIS",
-            RequestType = "VIEW",
-            Regime = "CARF",
-            RequestParameters = List(RequestParameter("key", "value"))
-          ),
-          requests.IndividualRcaspDetails(
-            SubscriptionID = "XCARF000000001",
-            IsRCASPUser = true,
-            PartyType = "Individual",
-            FirstName = "Penny",
-            LastName = "Cassiopeia",
-            TINDetails = Some(
-              List(
-                TinDetails(
-                  TINType = "UTR",
-                  TIN = "6893649",
-                  IssuedBy = "GB"
-                )
-              )
-            ),
-            AddressDetails = RcaspAddress(
-              AddressLine1 = "2 High Street",
-              AddressLine2 = Some("Birmingham"),
-              AddressLine3 = Some("Nowhereshire"),
-              AddressLine4 = Some("Down the road"),
-              PostalCode = "B23 2AZ",
-              CountryCode = "GB"
-            ),
-            PrimaryContactDetails = Some(
-              RcaspContactDetails(
-                ContactName = "Penny Cassiopeia",
-                EmailAddress = "penny.cassiopeia@uva.edu.org",
-                PhoneNumber = Some("07123412345")
-              )
-            )
-          )
-        )
-      )
-
     val submitStubResponse =
       """
         |{
         |  "ResponseDetails": {
         |    "ReturnParameters": {
         |      "Key": "RCASPID",
-        |      "Value": "RCASP12345"
+        |      "Value": "ZMCAR0123456789"
         |    }
         |  }
         |}
         |""".stripMargin
-
-    val expectedResponse = SubmitRcaspResponse(
-      SubmitResponseDetails(
-        SubmitReturnParameters(
-          "RCASPID",
-          "RCASP12345"
-        )
-      )
-    )
 
     "successfully retrieve a SubmitRcaspResponse" in {
 
@@ -267,8 +207,8 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
           )
       )
 
-      val result = connector.createRcasp(createRcaspRequest).value.futureValue
-      result shouldBe Right(expectedResponse)
+      val result = connector.createRcasp(createRcaspRequestIndividual).value.futureValue
+      result shouldBe Right(submitRcaspResponse)
     }
 
     "return JsonValidationError when response JSON is invalid" in {
@@ -281,7 +221,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
           )
       )
 
-      val result = connector.createRcasp(createRcaspRequest).value.futureValue
+      val result = connector.createRcasp(createRcaspRequestIndividual).value.futureValue
       result shouldBe Left(JsonValidationError)
     }
 
@@ -301,7 +241,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
           )
       )
 
-      val result = connector.createRcasp(createRcaspRequest).value.futureValue
+      val result = connector.createRcasp(createRcaspRequestIndividual).value.futureValue
       result shouldBe Left(InternalServerError)
     }
 
@@ -316,7 +256,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
           )
       )
 
-      val result = connector.createRcasp(createRcaspRequest).value.futureValue
+      val result = connector.createRcasp(createRcaspRequestIndividual).value.futureValue
       result shouldBe Left(InternalServerError)
     }
   }

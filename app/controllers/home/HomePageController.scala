@@ -16,7 +16,6 @@
 
 package controllers.home
 
-import cats.data.EitherT
 import config.Constants.ZERO
 import config.FrontendAppConfig
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
@@ -52,19 +51,13 @@ class HomePageController @Inject() (
 
       val viewModelFuture = for {
         numberOfRcaspsCurrentlyAdded     <- accountService.getNumberOfRcaspsCurrentlyAdded(carfId)
-        hasOrganisationContactDetails    <- accountService.hasOrganisationContactDetails(carfId)
-        organisationName                 <-
-          if (hasOrganisationContactDetails) {
-            accountService.getOrganisationName(carfId)
-          } else {
-            EitherT.rightT[Future, CarfError](None: Option[String])
-          }
+        subscriptionData                 <- accountService.getHomePageSubscriptionData(carfId)
         hasUserUploadedFilesInLast28Days <- uploadInformationService.hasUserUploadedFilesInLast28Days(carfId)
       } yield HomePageViewModel(
-        isBusiness = hasOrganisationContactDetails,
+        isBusiness = subscriptionData.hasOrganisationContactDetails,
         hasZeroRcaspsAdded = numberOfRcaspsCurrentlyAdded == ZERO,
         hasSentFilesInLast28Days = hasUserUploadedFilesInLast28Days,
-        organisationName = organisationName,
+        organisationName = subscriptionData.organisationName,
         ctUtr = request.utr,
         carfId = carfId
       )
