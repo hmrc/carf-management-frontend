@@ -45,7 +45,7 @@ class RoutingControllerSpec extends SpecBase {
 
     "must redirect to OrganisationOrIndividual when user has RCASPs already added" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(1))
 
       val application =
@@ -68,7 +68,7 @@ class RoutingControllerSpec extends SpecBase {
 
     "must redirect to ReportForRegisteredBusiness when user has zero RCASPs and has a CT UTR" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(0))
 
       val application =
@@ -91,7 +91,7 @@ class RoutingControllerSpec extends SpecBase {
 
     "must redirect to OrganisationOrIndividual when user has zero RCASPs and has no CT UTR" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(0))
 
       val application =
@@ -113,7 +113,7 @@ class RoutingControllerSpec extends SpecBase {
     }
 
     "must redirect to Journey Recovery when account service returns an error" in {
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromError(InternalServerError))
 
       val application =
@@ -141,7 +141,7 @@ class RoutingControllerSpec extends SpecBase {
         .withPage(OverwritableOrganisationName, testOrgName)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(1))
 
       val application =
@@ -169,7 +169,7 @@ class RoutingControllerSpec extends SpecBase {
         .withPage(OverwritableOrganisationName, testOrgName)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(0))
 
       val application =
@@ -200,7 +200,7 @@ class RoutingControllerSpec extends SpecBase {
       val existingUserAnswers = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(1))
 
       val application =
@@ -229,7 +229,7 @@ class RoutingControllerSpec extends SpecBase {
 
     "must create new UserAnswers in ChangeMode when no existing answers are found" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(0))
 
       val application =

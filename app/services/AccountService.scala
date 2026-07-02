@@ -16,24 +16,30 @@
 
 package services
 
+import connectors.RcaspConnector
 import models.errors.ApiError.InternalServerError
 import play.api.Logging
 import types.ResultT
+import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.ExecutionContext
 
 @Singleton
-class AccountService @Inject() extends Logging {
+class AccountService @Inject (
+    rcaspConnector: RcaspConnector
+) extends Logging {
 
-  def getNumberOfRcaspsCurrentlyAdded(carfId: String): ResultT[Int] =
-    carfId.last.toString match {
-      case "9" =>
-        logger.warn("[getNumberOfRcaspsCurrentlyAdded] Error!")
-        ResultT.fromError(InternalServerError)
-      case "0" => ResultT.fromValue(0)
-      case "1" => ResultT.fromValue(1)
-      case _   => ResultT.fromValue(2)
-    }
+  def getNumberOfRcaspsCurrentlyAdded(carfId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[Int] =
+    rcaspConnector
+      .viewRcasp(carfId)
+      .bimap(
+        error => {
+          logger.warn(s"[AccountService][getNumberOfRcaspsCurrentlyAdded] Error calling viewRcasp: $error")
+          error
+        },
+        viewRcaspResponse => viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList.size
+      )
 
   def hasOrganisationContactDetails(carfId: String): ResultT[Boolean] =
     carfId.dropRight(2).last.toString match {
