@@ -20,20 +20,25 @@ import controllers.combined.routes
 import models.{ChangeMode, OrganisationOrIndividual, UserAnswers}
 import pages.combined.OrganisationOrIndividualPage
 import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*
 import viewmodels.implicits.*
 
 object OrganisationOrIndividualSummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, showAcronymOnly: Boolean)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(OrganisationOrIndividualPage).map { answer =>
       SummaryListRowViewModel(
-        key = "organisationOrIndividual.checkYourAnswersLabel",
+        key =
+          if (showAcronymOnly) "organisationOrIndividual.checkYourAnswersLabel.acronymOnly"
+          else "organisationOrIndividual.checkYourAnswersLabel.full",
         value = ValueViewModel(messages(s"organisationOrIndividual.${answer.toString.toLowerCase}")),
         actions = Seq(
-          ActionItemViewModel("site.change", routes.OrganisationOrIndividualController.onPageLoad(ChangeMode).url)
-            .withVisuallyHiddenText(messages("organisationOrIndividual.change.hidden"))
+          ActionItemViewModel(
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            href = routes.OrganisationOrIndividualController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(messages("organisationOrIndividual.change.hidden"))
         )
       )
     }

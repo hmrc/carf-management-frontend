@@ -20,6 +20,7 @@ import controllers.organisation.routes
 import models.{ChangeMode, UserAnswers}
 import pages.organisation.RegisteredBusinessIsThisYourBusinessNamePage
 import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*
 import viewmodels.implicits.*
@@ -37,10 +38,9 @@ object RegisteredBusinessIsThisYourBusinessNameSummary {
         value = ValueViewModel(value),
         actions = Seq(
           ActionItemViewModel(
-            "site.change",
-            routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(ChangeMode).url
-          )
-            .withVisuallyHiddenText(messages("registeredBusinessIsThisYourBusinessName.change.hidden"))
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            href = routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(messages("registeredBusinessIsThisYourBusinessName.change.hidden"))
         )
       )
     }

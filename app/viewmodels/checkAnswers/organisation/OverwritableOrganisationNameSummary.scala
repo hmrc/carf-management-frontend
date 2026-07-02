@@ -18,23 +18,26 @@ package viewmodels.checkAnswers.organisation
 
 import controllers.organisation.routes
 import models.{ChangeMode, UserAnswers}
-import pages.organisation.OrganisationNamePage
+import pages.organisation.OverwritableOrganisationName
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
-object OrganisationNameSummary {
+object OverwritableOrganisationNameSummary {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(OrganisationNamePage).map { answer =>
+    answers.get(OverwritableOrganisationName).map { answer =>
       SummaryListRowViewModel(
         key = "organisationName.checkYourAnswersLabel",
         value = ValueViewModel(HtmlFormat.escape(answer).toString),
         actions = Seq(
-          ActionItemViewModel("site.change", routes.OrganisationNameController.onPageLoad(ChangeMode).url)
-            .withVisuallyHiddenText(messages("organisationName.change.hidden"))
+          ActionItemViewModel(
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            href = routes.OrganisationNameController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(messages("organisationName.change.hidden"))
         )
       )
     }

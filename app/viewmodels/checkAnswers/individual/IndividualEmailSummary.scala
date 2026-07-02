@@ -21,9 +21,10 @@ import models.{ChangeMode, UserAnswers}
 import pages.individual.IndividualEmailPage
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object IndividualEmailSummary {
 
@@ -33,8 +34,10 @@ object IndividualEmailSummary {
         key = "individualEmail.checkYourAnswersLabel",
         value = ValueViewModel(HtmlFormat.escape(answer).toString),
         actions = Seq(
-          ActionItemViewModel("site.change", routes.IndividualEmailController.onPageLoad(ChangeMode).url)
-            .withVisuallyHiddenText(messages("individualEmail.change.hidden"))
+          ActionItemViewModel(
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            href = routes.IndividualEmailController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(messages("individualEmail.change.hidden"))
         )
       )
     }

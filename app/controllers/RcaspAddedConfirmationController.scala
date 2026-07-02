@@ -18,12 +18,12 @@ package controllers
 
 import controllers.actions.*
 import pages.{RcaspIdPage, SubmissionSucceededPage}
-import utils.RcaspNameHelper
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.RcaspHelper
 import views.html.RcaspAddedConfirmationView
 
 import javax.inject.Inject
@@ -44,7 +44,7 @@ class RcaspAddedConfirmationController @Inject() (
 
   def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData).async { implicit request =>
     val maybeRcaspId   = request.userAnswers.get(RcaspIdPage)
-    val maybeRcaspName = RcaspNameHelper.from(request.userAnswers)
+    val maybeRcaspName = RcaspHelper.retrieveRcaspName(request.userAnswers)
 
     (maybeRcaspId, maybeRcaspName) match {
       case (Some(rcaspId), Some(name)) =>

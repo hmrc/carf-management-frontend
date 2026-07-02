@@ -16,16 +16,18 @@
 
 package controllers
 
+import cats.syntax.all.*
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
 import models.OrganisationOrIndividual.*
 import pages.RcaspIdPage
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
+import pages.organisation.OverwritableOrganisationName
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
-import services.SubmitRcaspService
+import services.RcaspSubmissionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckDetailsHelper
 import views.html.CheckDetailsView
@@ -39,19 +41,18 @@ class CheckDetailsController @Inject() (
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     submissionLock: SubmissionLockAction,
-    submitRcaspService: SubmitRcaspService,
     sessionRepository: SessionRepository,
     view: CheckDetailsView,
     val controllerComponents: MessagesControllerComponents,
-    helper: CheckDetailsHelper
+    helper: CheckDetailsHelper,
+    rcaspSubmissionService: RcaspSubmissionService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  def onPageLoad: Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
-      import cats.syntax.all.*
+  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData) {
+    implicit request =>
       val userAnswers          = request.userAnswers
       lazy val ifEmptyProtocol =
         Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -59,44 +60,56 @@ class CheckDetailsController @Inject() (
       userAnswers
         .get(OrganisationOrIndividualPage)
         .fold {
-          logger.warn(
-            s"[CheckDetailsController] Error! Could not load page OrganisationOrIndividualPage needed"
-          )
+          logger.warn("[CheckDetailsController][onPageLoad] Error! OrganisationOrIndividualPage not populated")
           ifEmptyProtocol
         } {
           case Individual   =>
             (
               userAnswers.get(IndividualNamePage),
               helper.getIndividualSectionMaybe(userAnswers),
-              helper.getContactDetails(userAnswers)
+              helper.getIndividualContactDetailsMaybe(userAnswers)
             )
               .mapN { (name, individualSection, contactDetailsSection) =>
                 Ok(view(Seq(individualSection, contactDetailsSection), name.fullName))
               }
               .getOrElse {
                 logger.warn(
-                  s"[CheckDetailsController] Error! Could not load page missing answers"
+                  "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (individual)"
                 )
                 ifEmptyProtocol
               }
-          case Organisation => Ok(view(Seq.empty, "Organisation Name")) // TODO [CARF-295] - Replace with real org name
+          case Organisation =>
+            (
+              userAnswers.get(OverwritableOrganisationName),
+              helper.getOrganisationSectionMaybe(userAnswers),
+              helper.getOrganisationFirstContactDetailsMaybe(userAnswers),
+              helper.getOrganisationSecondContactDetailsMaybe(userAnswers)
+            )
+              .mapN { (orgName, organisationSection, firstContactDetailsSection, secondContactDetailsSection) =>
+                Ok(view(Seq(organisationSection, firstContactDetailsSection, secondContactDetailsSection), orgName))
+              }
+              .getOrElse {
+                logger.warn(
+                  "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (organisation)"
+                )
+                ifEmptyProtocol
+              }
         }
-    }
+  }
 
-  def onSubmit: Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
-      // TODO - Current impl is to allow RcaspAddedConfirmationController to retrieve stubbed rcaspId, this will change in CARF-294/CARF-295
-
-      submitRcaspService.submitRcasp().value.flatMap {
+  def onSubmit: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData).async {
+    implicit request =>
+      rcaspSubmissionService.submitRcasp(request.carfId, request.userAnswers).value.flatMap {
         case Right(response) =>
           val rcaspId = response.ResponseDetails.ReturnParameters.Value
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
             _              <- sessionRepository.set(updatedAnswers)
           } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
-        case Left(_)         =>
-          logger.warn("[CheckDetailsController][onSubmit] Submit RCASP call failed")
+        case Left(error)     =>
+          logger.warn(s"[CheckDetailsController][onSubmit] Unable to add RCASP: $error")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
-    }
+  }
+
 }
