@@ -21,6 +21,7 @@ import models.{ChangeMode, UserAnswers}
 import pages.organisation.OverwritableOrganisationName
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*
 import viewmodels.implicits.*
@@ -33,8 +34,10 @@ object OverwritableOrganisationNameSummary {
         key = "organisationName.checkYourAnswersLabel",
         value = ValueViewModel(HtmlFormat.escape(answer).toString),
         actions = Seq(
-          ActionItemViewModel("site.change", routes.OrganisationNameController.onPageLoad(ChangeMode).url)
-            .withVisuallyHiddenText(messages("organisationName.change.hidden"))
+          ActionItemViewModel(
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            href = routes.OrganisationNameController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(messages("organisationName.change.hidden"))
         )
       )
     }

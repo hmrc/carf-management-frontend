@@ -23,8 +23,8 @@ import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object IndividualNameSummary {
 
@@ -37,8 +37,10 @@ object IndividualNameSummary {
         key = "individualName.checkYourAnswersLabel",
         value = ValueViewModel(HtmlContent(value)),
         actions = Seq(
-          ActionItemViewModel("site.change", routes.IndividualNameController.onPageLoad(ChangeMode).url)
-            .withVisuallyHiddenText(messages("individualName.change.hidden"))
+          ActionItemViewModel(
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            href = routes.IndividualNameController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(messages("individualName.change.hidden"))
         )
       )
     }

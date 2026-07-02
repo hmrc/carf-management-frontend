@@ -33,10 +33,9 @@ object UkAddressSummary {
         value = ValueViewModel(HtmlContent(answer.renderHTML)),
         actions = Seq(
           ActionItemViewModel(
-            "site.change",
-            controllers.routes.FindAddressController.onPageLoad(ChangeMode).url
-          )
-            .withVisuallyHiddenText(messages("address.hidden"))
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            href = controllers.routes.FindAddressController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(messages("address.hidden"))
         )
       )
     }

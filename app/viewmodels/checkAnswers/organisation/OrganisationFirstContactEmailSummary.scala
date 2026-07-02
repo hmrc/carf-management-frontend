@@ -21,9 +21,10 @@ import models.{ChangeMode, UserAnswers}
 import pages.organisation.OrganisationFirstContactEmailPage
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object OrganisationFirstContactEmailSummary {
 
@@ -33,8 +34,10 @@ object OrganisationFirstContactEmailSummary {
         key = "organisationFirstContactEmail.checkYourAnswersLabel",
         value = ValueViewModel(HtmlFormat.escape(answer).toString),
         actions = Seq(
-          ActionItemViewModel("site.change", routes.OrganisationFirstContactEmailController.onPageLoad(ChangeMode).url)
-            .withVisuallyHiddenText(messages("organisationFirstContactEmail.change.hidden"))
+          ActionItemViewModel(
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            href = routes.OrganisationFirstContactEmailController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(messages("organisationFirstContactEmail.change.hidden"))
         )
       )
     }
