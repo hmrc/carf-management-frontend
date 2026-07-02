@@ -21,6 +21,7 @@ import pages.individual.IndividualHavePhonePage
 import play.api.Logging
 import play.api.i18n.Messages
 import viewmodels.Section
+import viewmodels.checkAnswers.combined.UkAddressSummary
 import viewmodels.checkAnswers.individual.*
 
 import javax.inject.Inject
@@ -31,7 +32,7 @@ class CheckDetailsHelper @Inject() extends Logging {
     for {
       rcaspName <- IndividualNameSummary.row(userAnswers)
       ni        <- NiNumberSummary.row(userAnswers)
-      address   <- IndividualAddressSummary.row(userAnswers)
+      address   <- UkAddressSummary.row(userAnswers)
     } yield Section("", Seq(rcaspName, ni, address))
 
   def getContactDetails(userAnswers: UserAnswers)(implicit messages: Messages): Option[Section] =

@@ -35,7 +35,7 @@ class RichJsValueSpec
 
   val min                           = 2
   val max                           = 10
-  val nonEmptyAlphaStr: Gen[String] = Gen.alphaStr.suchThat(_.nonEmpty)
+  val nonEmptyAlphaStr: Gen[String] = Gen.alphaStr.suchThat(_.trim.nonEmpty)
 
   def buildJsObj[B](keys: Seq[String], values: Seq[B])(implicit writes: Writes[B]): JsObject =
     keys.zip(values).foldLeft(JsObject.empty) { case (acc, (key, value)) =>

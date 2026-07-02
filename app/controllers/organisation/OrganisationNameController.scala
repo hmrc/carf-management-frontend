@@ -38,6 +38,7 @@ class OrganisationNameController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: OrganisationNameFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: OrganisationNameView
@@ -47,16 +48,16 @@ class OrganisationNameController @Inject() (
 
   val form: Form[String] = formProvider()
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(OrganisationNamePage).fold(form)(form.fill)
 
       Ok(view(preparedForm, mode))
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -68,5 +69,5 @@ class OrganisationNameController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(OrganisationNamePage, mode, updatedAnswers))
         )
-  }
+    }
 }

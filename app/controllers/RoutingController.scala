@@ -18,9 +18,8 @@ package controllers
 
 import config.Constants.ZERO
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
-import models.Mode
+import models.{ChangeMode, Mode, NormalMode, UserAnswers}
 import play.api.Logging
-import models.UserAnswers
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.AccountService
@@ -50,8 +49,12 @@ class RoutingController @Inject() (
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
 
         case Right(numberOfRcasps) =>
-          val updatedAnswers =
-            request.userAnswers.getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
+          val updatedAnswers = mode match {
+            case NormalMode =>
+              UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false)
+            case ChangeMode =>
+              request.userAnswers.getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
+          }
 
           val redirectUrl =
             if (numberOfRcasps == ZERO && request.utr.isDefined) {

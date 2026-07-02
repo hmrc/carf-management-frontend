@@ -16,8 +16,8 @@
 
 package viewmodels.checkAnswers.organisation
 
-import models.countries.CountryUk
 import models.{AddressUk, UserAnswers}
+import pages.UkAddressInUserAnswers
 import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsTheAddressCorrectPage}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -33,19 +33,8 @@ object RegisteredBusinessAddressSummary {
       import models.responses.renderHtml
       answers.get(CachedBusinessDetailsPage).map(_.address.renderHtml)
     } else {
-//      TODO Replace with manual address
-//      answers.get(UkAddressInUserAnswers).map(_.renderHtml)
       import models.renderHtml
-      Some(
-        AddressUk(
-          addressLine1 = "Stamford Bridge",
-          addressLine2 = Some("Fulham Road"),
-          addressLine3 = Some("Chelsea"),
-          townOrCity = "London",
-          postCode = "SW6 1HS",
-          countryUk = CountryUk(code = "GB", name = "United Kingdom")
-        ).renderHtml
-      )
+      answers.get(UkAddressInUserAnswers).map(_.renderHtml)
     }
 
     address.map { address =>

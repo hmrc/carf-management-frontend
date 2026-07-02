@@ -12,8 +12,6 @@ GET         /placeholder                                                  contro
 
 GET         /problem/some-information-is-missing                          controllers.InformationMissingController.onPageLoad()
 
-GET         /check-your-answers                                           controllers.CheckYourAnswersController.onPageLoad()
-
 GET         /account/sign-out-survey                                      controllers.auth.AuthController.signOut()
 GET         /account/sign-out                                             controllers.auth.AuthController.signOutNoSurvey()
 GET         /account/signed-out                                           controllers.auth.SignedOutController.onPageLoad()
@@ -103,6 +101,8 @@ POST        /second-contact-phone                                         contro
 GET         /change-second-contact-phone                                  controllers.organisation.OrganisationSecondContactPhoneNumberController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-second-contact-phone                                  controllers.organisation.OrganisationSecondContactPhoneNumberController.onSubmit(mode: Mode = ChangeMode)
 
+GET         /rcasp-added                                                  controllers.RcaspAddedConfirmationController.onPageLoad()
+
 GET         /contact-name                                                 controllers.organisation.OrganisationFirstContactNameController.onPageLoad(mode: Mode = NormalMode)
 POST        /contact-name                                                 controllers.organisation.OrganisationFirstContactNameController.onSubmit(mode: Mode = NormalMode)
 GET         /change-contact-name                                          controllers.organisation.OrganisationFirstContactNameController.onPageLoad(mode: Mode = ChangeMode)
@@ -148,3 +148,13 @@ GET         /find-address                                                 contro
 POST        /find-address                                                 controllers.FindAddressController.onSubmit(mode: Mode = NormalMode)
 GET         /change-find-address                                          controllers.FindAddressController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-find-address                                          controllers.FindAddressController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /choose-address                                               controllers.ChooseAddressController.onPageLoad(mode: Mode = NormalMode)
+POST        /choose-address                                               controllers.ChooseAddressController.onSubmit(mode: Mode = NormalMode)
+GET         /change-choose-address                                        controllers.ChooseAddressController.onPageLoad(mode: Mode = ChangeMode)
+POST        /change-choose-address                                        controllers.ChooseAddressController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /review-address                                               controllers.ReviewAddressController.onPageLoad(mode: Mode = NormalMode)
+GET         /review-address-submit                                        controllers.ReviewAddressController.onSubmit(mode: Mode = NormalMode)
+GET         /change-review-address                                        controllers.ReviewAddressController.onPageLoad(mode: Mode = ChangeMode)
+GET         /change-review-address-submit                                 controllers.ReviewAddressController.onSubmit(mode: Mode = ChangeMode)

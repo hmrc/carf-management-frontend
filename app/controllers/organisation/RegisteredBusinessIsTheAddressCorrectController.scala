@@ -38,6 +38,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
     navigator: Navigator,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
+    submissionLock: SubmissionLockAction,
     requireData: DataRequiredAction,
     formProvider: GenericYesNoPageFormProvider,
     val controllerComponents: MessagesControllerComponents,
@@ -56,7 +57,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
     } yield (name, cachedDetails)
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen requireData) { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       getNameAndDetailsMaybe(userAnswers = request.userAnswers).fold {
         logger.warn(
           "[RegisteredBusinessIsTheAddressCorrectController][onPageLoad] No cached business details found. Redirecting to journey recovery."
@@ -81,7 +82,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen requireData).async { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(

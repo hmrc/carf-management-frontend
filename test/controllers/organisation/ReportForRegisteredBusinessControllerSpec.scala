@@ -78,12 +78,10 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(
-            bind[RegistrationService].toInstance(mockRegistrationService),
-            bind[CountryListFactory].toInstance(mockCountryListFactory)
-          )
-          .build()
+        ).overrides(
+          bind[RegistrationService].toInstance(mockRegistrationService),
+          bind[CountryListFactory].toInstance(mockCountryListFactory)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -117,12 +115,10 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         applicationBuilder(
           userAnswers = Some(userAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(
-            bind[RegistrationService].toInstance(mockRegistrationService),
-            bind[CountryListFactory].toInstance(mockCountryListFactory)
-          )
-          .build()
+        ).overrides(
+          bind[RegistrationService].toInstance(mockRegistrationService),
+          bind[CountryListFactory].toInstance(mockCountryListFactory)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -149,12 +145,10 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(
-            bind[RegistrationService].toInstance(mockRegistrationService),
-            bind[CountryListFactory].toInstance(mockCountryListFactory)
-          )
-          .build()
+        ).overrides(
+          bind[RegistrationService].toInstance(mockRegistrationService),
+          bind[CountryListFactory].toInstance(mockCountryListFactory)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -166,8 +160,6 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     }
 
     "must redirect to Journey Recovery on GET when country code is not found in country list" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
       when(mockRegistrationService.getBusinessWithUtr(any()))
         .thenReturn(ResultT.fromValue(businessDetailsFromService))
 
@@ -178,12 +170,10 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(
-            bind[RegistrationService].toInstance(mockRegistrationService),
-            bind[CountryListFactory].toInstance(mockCountryListFactory)
-          )
-          .build()
+        ).overrides(
+          bind[RegistrationService].toInstance(mockRegistrationService),
+          bind[CountryListFactory].toInstance(mockCountryListFactory)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)

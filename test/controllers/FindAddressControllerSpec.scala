@@ -195,7 +195,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
           .withPage(AddressLookupResult, testAddressAndUprns)
 
       val onwardRouteOneAddress =
-        controllers.routes.PlaceholderController.onPageLoad("Should nav to /review-address (CARF-201)")
+        controllers.routes.ReviewAddressController.onPageLoad(NormalMode)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(Some("value 2")))(any(), any()))
@@ -235,7 +235,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
           .withPage(OverwritableOrganisationName, testName)
 
       val onwardRouteMultipleAddresses =
-        controllers.routes.PlaceholderController.onPageLoad("Should nav to /choose-address (CARF-201)")
+        controllers.routes.ChooseAddressController.onPageLoad(NormalMode)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any()))
@@ -278,7 +278,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
           .withPage(OverwritableOrganisationName, testName)
 
       val onwardRouteMultipleAddresses =
-        controllers.routes.PlaceholderController.onPageLoad("Should nav to /choose-address (CARF-201)")
+        controllers.routes.ChooseAddressController.onPageLoad(NormalMode)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAddressLookupService.postcodeSearch(eqTo("TE1 1ST"), eqTo(None))(any(), any()))

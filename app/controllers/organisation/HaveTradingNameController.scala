@@ -40,6 +40,7 @@ class HaveTradingNameController @Inject() (
     ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLockAction: SubmissionLockAction,
     formProvider: GenericYesNoPageFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: HaveTradingNameView
@@ -51,40 +52,42 @@ class HaveTradingNameController @Inject() (
   val form: Form[Boolean] = formProvider("haveTradingName.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData) { implicit request =>
-      val preparedForm = request.userAnswers.get(HaveTradingNamePage).fold(form)(form.fill)
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLockAction andThen requireData) {
+      implicit request =>
+        val preparedForm = request.userAnswers.get(HaveTradingNamePage).fold(form)(form.fill)
 
-      request.userAnswers
-        .get(OverwritableOrganisationName)
-        .fold {
-          logger.warn(
-            "[HaveTradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
-          )
-          Redirect(controllers.routes.InformationMissingController.onPageLoad())
-        }(orgName => Ok(view(preparedForm, mode, orgName)))
+        request.userAnswers
+          .get(OverwritableOrganisationName)
+          .fold {
+            logger.warn(
+              "[HaveTradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
+            )
+            Redirect(controllers.routes.InformationMissingController.onPageLoad())
+          }(orgName => Ok(view(preparedForm, mode, orgName)))
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      form
-        .bindFromRequest()
-        .fold(
-          formWithErrors =>
-            request.userAnswers
-              .get(OverwritableOrganisationName)
-              .fold {
-                logger.warn(
-                  "[HaveTradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
-                )
-                Future.successful(
-                  Redirect(controllers.routes.InformationMissingController.onPageLoad())
-                )
-              }(orgName => Future.successful(BadRequest(view(formWithErrors, mode, orgName)))),
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveTradingNamePage, value))
-              _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(HaveTradingNamePage, mode, updatedAnswers))
-        )
-    }
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLockAction andThen requireData)
+      .async { implicit request =>
+        form
+          .bindFromRequest()
+          .fold(
+            formWithErrors =>
+              request.userAnswers
+                .get(OverwritableOrganisationName)
+                .fold {
+                  logger.warn(
+                    "[HaveTradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
+                  )
+                  Future.successful(
+                    Redirect(controllers.routes.InformationMissingController.onPageLoad())
+                  )
+                }(orgName => Future.successful(BadRequest(view(formWithErrors, mode, orgName)))),
+            value =>
+              for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveTradingNamePage, value))
+                _              <- sessionRepository.set(updatedAnswers)
+              } yield Redirect(navigator.nextPage(HaveTradingNamePage, mode, updatedAnswers))
+          )
+      }
 }

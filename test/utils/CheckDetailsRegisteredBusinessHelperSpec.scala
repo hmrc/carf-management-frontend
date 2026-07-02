@@ -18,6 +18,7 @@ package utils
 
 import base.SpecBase
 import models.{CachedBusinessDetails, UserAnswers}
+import pages.*
 import pages.organisation.*
 import play.api.i18n.Messages
 
@@ -68,7 +69,7 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
             .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
             .withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
             .withPage(OverwritableOrganisationName, testOrgName)
-            .withPage(CachedBusinessDetailsPage, cachedBusinessDetails) // TODO: Replace with UkAddressInUserAnswers
+            .withPage(UkAddressInUserAnswers, testAddressUk)
             .withPage(HaveTradingNamePage, false)
 
           val section = helper.getRegisteredBusinessSection(userAnswers).get
@@ -78,7 +79,7 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
             "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
             "What is the name of the organisation?",
             "Does the organisation trade under a different name?",
-            "Trading name"
+            "Main business address"
           )
 
           compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)

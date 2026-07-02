@@ -40,6 +40,7 @@ class OrganisationHaveSecondContactController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: GenericYesNoPageFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: OrganisationHaveSecondContactView
@@ -50,8 +51,8 @@ class OrganisationHaveSecondContactController @Inject() (
 
   val form: Form[Boolean] = formProvider("organisationHaveSecondContact.error.required")
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(OrganisationHaveSecondContactPage).fold(form)(form.fill)
 
@@ -65,10 +66,10 @@ class OrganisationHaveSecondContactController @Inject() (
             controllers.routes.InformationMissingController.onPageLoad()
           )
       }
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -91,5 +92,5 @@ class OrganisationHaveSecondContactController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(OrganisationHaveSecondContactPage, mode, updatedAnswers))
         )
-  }
+    }
 }

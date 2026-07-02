@@ -40,6 +40,7 @@ class IndividualHavePhoneController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: GenericYesNoPageFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: IndividualHavePhoneView
@@ -50,8 +51,8 @@ class IndividualHavePhoneController @Inject() (
 
   val form: Form[Boolean] = formProvider("individualHavePhone.error.required")
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(IndividualHavePhonePage).fold(form)(form.fill)
 
@@ -65,10 +66,10 @@ class IndividualHavePhoneController @Inject() (
             controllers.routes.InformationMissingController.onPageLoad()
           )
         }(individualName => Ok(view(preparedForm, mode, individualName.fullName)))
-  }
+    }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -91,5 +92,5 @@ class IndividualHavePhoneController @Inject() (
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(navigator.nextPage(IndividualHavePhonePage, mode, updatedAnswers))
         )
-  }
+    }
 }

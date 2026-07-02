@@ -30,6 +30,7 @@ class NotInUkController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     val controllerComponents: MessagesControllerComponents,
     view: NotInUkView
 ) extends FrontendBaseController
@@ -37,7 +38,7 @@ class NotInUkController @Inject() (
     with Logging {
 
   def onPageLoad(): Action[AnyContent] =
-    (identify() andThen getData() andThen requireData) { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       request.userAnswers.getRegisteredBusinessOrganisationNameMaybe
         .fold {
           logger.warn(

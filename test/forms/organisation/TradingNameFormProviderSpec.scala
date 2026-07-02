@@ -33,11 +33,12 @@ class TradingNameFormProviderSpec extends StringFieldBehaviours {
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 &'\\`^-".toSeq
   )
 
-  val tradingNameGen: Gen[String] =
+  val tradingNameGen: Gen[String] = {
     for {
       length <- Gen.choose(1, maxLength)
       chars  <- Gen.listOfN(length, validTradingNameChars)
     } yield chars.mkString
+  }.suchThat(_.trim.nonEmpty)
 
   ".value" - {
 

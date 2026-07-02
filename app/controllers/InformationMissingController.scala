@@ -30,12 +30,14 @@ class InformationMissingController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     val controllerComponents: MessagesControllerComponents,
     view: InformationMissingView
 ) extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
-    Ok(view(routes.RoutingController.onPageLoad(NormalMode).url))
+  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData) {
+    implicit request =>
+      Ok(view(routes.RoutingController.onPageLoad(NormalMode).url))
   }
 }

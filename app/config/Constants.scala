@@ -37,11 +37,12 @@ object Constants {
   inline final val maxEmailLength                   = 132
   inline final val maxPhoneLength                   = 24
   inline final val maxOrganisationContactNameLength = 35
+  inline final val addressMaxLength                 = 35
 
   inline final val notReal0808PhoneNumber = "+448081570192"
 
   val acceptedUtrLengths: Set[Int] = Set(10, 13)
 
   inline final val ukCountryCode = "GB"
-
+  val noneOfTheseValue           = "none"
 }

@@ -31,6 +31,7 @@ import views.html.organisation.RegisteredBusinessIsThisYourBusinessNameView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
 class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
     override val messagesApi: MessagesApi,
@@ -40,6 +41,7 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
     ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: GenericYesNoPageFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: RegisteredBusinessIsThisYourBusinessNameView
@@ -51,50 +53,54 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
   val form: Form[Boolean] = formProvider("registeredBusinessIsThisYourBusinessName.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      request.userAnswers.get(CachedBusinessDetailsPage) match {
-        case Some(businessDetails) =>
-          val preparedForm =
-            request.userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).fold(form)(form.fill)
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+      implicit request =>
+        request.userAnswers.get(CachedBusinessDetailsPage) match {
+          case Some(businessDetails) =>
+            val preparedForm =
+              request.userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).fold(form)(form.fill)
 
-          Future.successful(Ok(view(preparedForm, mode, businessDetails.name)))
+            Future.successful(Ok(view(preparedForm, mode, businessDetails.name)))
 
-        case None =>
-          logger.warn(
-            "[RegisteredBusinessIsThisYourBusinessNameController][onPageLoad] No cached business details found"
-          )
-          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      }
+          case None =>
+            logger.warn(
+              "[RegisteredBusinessIsThisYourBusinessNameController][onPageLoad] No cached business details found"
+            )
+            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+        }
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      request.userAnswers.get(CachedBusinessDetailsPage) match {
-        case Some(businessDetails) =>
-          form
-            .bindFromRequest()
-            .fold(
-              formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, businessDetails.name))),
-              value =>
-                for {
-                  updatedAnswers     <- Future.fromTry(
-                                          request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
-                                        )
-                  uaWithOrgNameIfYes <- Future.fromTry(
-                                          if (value) {
-                                            updatedAnswers.set(OverwritableOrganisationName, businessDetails.name)
-                                          } else { Try(updatedAnswers) }
-                                        )
-                  _                  <- sessionRepository.set(answersWithOrgNameIfYes)
-                } yield Redirect(
-                  navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, answersWithOrgName)
-                )
-            )
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+      implicit request =>
+        request.userAnswers.get(CachedBusinessDetailsPage) match {
+          case Some(businessDetails) =>
+            form
+              .bindFromRequest()
+              .fold(
+                formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, businessDetails.name))),
+                value =>
+                  for {
+                    updatedAnswers     <- Future.fromTry(
+                                            request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
+                                          )
+                    uaWithOrgNameIfYes <- Future.fromTry(
+                                            if (value) {
+                                              updatedAnswers.set(OverwritableOrganisationName, businessDetails.name)
+                                            } else { Success(updatedAnswers) }
+                                          )
+                    _                  <- sessionRepository.set(uaWithOrgNameIfYes)
+                  } yield Redirect(
+                    navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, uaWithOrgNameIfYes)
+                  )
+              )
 
-        case None =>
-          logger.warn("[RegisteredBusinessIsThisYourBusinessNameController][onSubmit] No cached business details found")
-          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      }
+          case None =>
+            logger.warn(
+              "[RegisteredBusinessIsThisYourBusinessNameController][onSubmit] No cached business details found"
+            )
+            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+        }
     }
 
 }

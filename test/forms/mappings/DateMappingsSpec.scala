@@ -47,12 +47,12 @@ class DateMappingsSpec
     )
   )
 
-  val validData = datesBetween(
+  val validData: Gen[LocalDate] = datesBetween(
     min = LocalDate.of(2000, 1, 1),
     max = LocalDate.of(3000, 1, 1)
   )
 
-  val invalidField: Gen[String] = Gen.alphaStr.suchThat(_.nonEmpty)
+  val invalidField: Gen[String] = Gen.alphaStr.suchThat(_.trim.nonEmpty)
 
   val missingField: Gen[Option[String]] = Gen.option(Gen.const(""))
 
