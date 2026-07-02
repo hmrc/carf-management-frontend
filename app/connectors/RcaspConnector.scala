@@ -63,7 +63,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] = {
     val baseUrl = url"${config.carfManagementBaseUrl}/create"
 
-    logger.debug(s"[RcaspConnector] Creating RCASP")
+    logger.debug("[RcaspConnector] Creating RCASP")
 
     sendRequest(
       url = baseUrl,

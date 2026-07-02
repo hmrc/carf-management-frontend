@@ -17,14 +17,14 @@
 package controllers
 
 import base.SpecBase
+import models.OrganisationOrIndividual.Individual
 import models.UserAnswers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
-import models.OrganisationOrIndividual.Individual
 import pages.combined.OrganisationOrIndividualPage
-import pages.{RcaspIdPage, SubmissionSucceededPage}
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
+import pages.{RcaspIdPage, SubmissionSucceededPage}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.RcaspAddedConfirmationView

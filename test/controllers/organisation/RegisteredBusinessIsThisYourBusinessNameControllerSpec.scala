@@ -18,7 +18,6 @@ package controllers.organisation
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
-import models.responses.AddressRegistrationResponse
 import models.{CachedBusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any

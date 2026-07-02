@@ -21,9 +21,10 @@ import models.{ChangeMode, UserAnswers}
 import pages.organisation.OrganisationFirstContactPhoneNumberPage
 import play.api.i18n.Messages
 import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object OrganisationFirstContactPhoneNumberSummary {
 
@@ -34,10 +35,9 @@ object OrganisationFirstContactPhoneNumberSummary {
         value = ValueViewModel(HtmlFormat.escape(answer).toString),
         actions = Seq(
           ActionItemViewModel(
-            "site.change",
-            routes.OrganisationFirstContactPhoneNumberController.onPageLoad(ChangeMode).url
-          )
-            .withVisuallyHiddenText(messages("organisationFirstContactPhoneNumber.change.hidden"))
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            href = routes.OrganisationFirstContactPhoneNumberController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(messages("organisationFirstContactPhoneNumber.change.hidden"))
         )
       )
     }

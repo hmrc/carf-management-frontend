@@ -40,7 +40,7 @@ class RcaspController @Inject() (
     connector.viewRcasp(carfId).processResponse(data => Ok(Json.prettyPrint(Json.toJson(data))))
   }
 
-  def createRcasp(email: String, isIndividual: String) = Action.async { implicit request =>
+  def createRcasp(email: String, isIndividual: String): Action[AnyContent] = Action.async { implicit request =>
 
     val fullAddress = RcaspAddress(
       AddressLine1 = "2 High Street",
@@ -61,9 +61,9 @@ class RcaspController @Inject() (
       CreateRcaspRequest(
         RCASPManagementRequest(
           RcaspCreateRequestCommon(
-            OriginatingSystem = "CADX",
+            OriginatingSystem = "MDTP",
             TransmittingSystem = "EIS",
-            RequestType = "VIEW",
+            RequestType = "CREATE",
             Regime = "CARF",
             RequestParameters = List(RequestParameter("key", "value"))
           ),
