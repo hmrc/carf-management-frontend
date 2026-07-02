@@ -190,7 +190,7 @@ class RoutingControllerSpec extends SpecBase {
         .withPage(OverwritableOrganisationName, testOrgName)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(0))
 
       val application =
@@ -216,7 +216,7 @@ class RoutingControllerSpec extends SpecBase {
         .withPage(OverwritableOrganisationName, testOrgName)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(0))
 
       val application =
