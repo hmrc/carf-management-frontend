@@ -29,6 +29,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.{AccountService, RegistrationService}
 import types.ResultT
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CountryListFactory
 import views.html.organisation.ReportForRegisteredBusinessView
@@ -146,7 +147,7 @@ class ReportForRegisteredBusinessController @Inject() (
       pageAnswer: Boolean,
       carfId: String,
       ctUtr: Option[String]
-  ): ResultT[UserAnswers] =
+  )(implicit hc: HeaderCarrier): ResultT[UserAnswers] =
     accountService.getNumberOfRcaspsCurrentlyAdded(carfId = carfId).map { numberOfRcasps =>
       if (numberOfRcasps == ZERO && pageAnswer && ctUtr.nonEmpty) {
         userAnswers.copy(rcaspIsRegisteredBusiness = true)

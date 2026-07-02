@@ -20,9 +20,10 @@ import controllers.organisation.routes
 import models.{ChangeMode, UserAnswers}
 import pages.organisation.UtrPage
 import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object UtrSummary {
 
@@ -32,8 +33,10 @@ object UtrSummary {
         key = "utr.checkYourAnswersLabel",
         value = ValueViewModel(answer),
         actions = Seq(
-          ActionItemViewModel("site.change", routes.UtrController.onPageLoad(ChangeMode).url)
-            .withVisuallyHiddenText(messages("utr.change.hidden"))
+          ActionItemViewModel(
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            routes.UtrController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(messages("utr.change.hidden"))
         )
       )
     }

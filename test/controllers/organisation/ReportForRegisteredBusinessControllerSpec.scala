@@ -189,7 +189,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
         val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
-        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
+        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
         val application =
@@ -219,7 +219,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
         val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
-        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
+        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
         val application =
@@ -249,7 +249,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
         val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
-        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(1))
+        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(1))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
         val application =
@@ -279,7 +279,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
         val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
-        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
+        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
         val application =

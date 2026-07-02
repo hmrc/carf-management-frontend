@@ -87,8 +87,9 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
         result must not include """<span class="govuk-!-margin-bottom-0"></span>"""
       }
     }
+
     "toAddressDetails" - {
-      "should return address details when given a full address details" in {
+      "must return address details when given a full address details" in {
         val result                 = ukAddressFull.toAddressDetails
         val expectedAddressDetails = AddressDetails(
           addressLine1 = ukAddressFull.addressLine1,
@@ -100,7 +101,8 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
         )
         result mustBe expectedAddressDetails
       }
-      "should return address details when given an empty address details" in {
+
+      "must return address details when given an empty address details" in {
         val result                 = ukAddressMinimal.toAddressDetails
         val expectedAddressDetails = AddressDetails(
           addressLine1 = ukAddressMinimal.addressLine1,
@@ -113,7 +115,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
         result mustBe expectedAddressDetails
       }
 
-      "should return address details with address line 3 shifted to address line 2 if address line 2 is None" in {
+      "must return address details with address line 3 shifted to address line 2 if address line 2 is None" in {
         val result                 = ukAddressAddressLine3.toAddressDetails
         val expectedAddressDetails = AddressDetails(
           addressLine1 = ukAddressAddressLine3.addressLine1,
@@ -124,6 +126,47 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
           countryCode = ukAddressAddressLine3.countryUk.code
         )
         result mustBe expectedAddressDetails
+      }
+    }
+
+    ".toRcaspAddress" - {
+      "must return address details when given a full address details" in {
+        val result               = ukAddressFull.toRcaspAddress
+        val expectedRcaspAddress = RcaspAddress(
+          AddressLine1 = ukAddressFull.addressLine1,
+          AddressLine2 = ukAddressFull.addressLine2,
+          AddressLine3 = ukAddressFull.addressLine3,
+          AddressLine4 = Some(ukAddressFull.townOrCity),
+          PostalCode = ukAddressFull.postCode,
+          CountryCode = ukAddressFull.countryUk.code
+        )
+        result mustBe expectedRcaspAddress
+      }
+
+      "must return address details when given an empty address details" in {
+        val result               = ukAddressMinimal.toRcaspAddress
+        val expectedRcaspAddress = RcaspAddress(
+          AddressLine1 = ukAddressMinimal.addressLine1,
+          AddressLine2 = Some(ukAddressMinimal.townOrCity),
+          AddressLine3 = None,
+          AddressLine4 = None,
+          PostalCode = ukAddressMinimal.postCode,
+          CountryCode = ukAddressMinimal.countryUk.code
+        )
+        result mustBe expectedRcaspAddress
+      }
+
+      "must return address details when line 3 is defined and line 2 is None" in {
+        val result               = ukAddressAddressLine3.toRcaspAddress
+        val expectedRcaspAddress = RcaspAddress(
+          AddressLine1 = ukAddressAddressLine3.addressLine1,
+          AddressLine2 = ukAddressAddressLine3.addressLine3,
+          AddressLine3 = Some(ukAddressAddressLine3.townOrCity),
+          AddressLine4 = None,
+          PostalCode = ukAddressAddressLine3.postCode,
+          CountryCode = ukAddressAddressLine3.countryUk.code
+        )
+        result mustBe expectedRcaspAddress
       }
     }
   }

@@ -25,7 +25,6 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.HeaderCarrier
 
 class AddressLookupConnectorISpec
     extends ApplicationWithWiremock

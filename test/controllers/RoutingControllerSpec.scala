@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import models.errors.ApiError.InternalServerError
 import models.{ChangeMode, NormalMode, UserAnswers}
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{verify, when}
 import pages.organisation.OverwritableOrganisationName
 import pages.{RcaspIdPage, SubmissionSucceededPage}
@@ -45,16 +45,14 @@ class RoutingControllerSpec extends SpecBase {
 
     "must redirect to OrganisationOrIndividual when user has RCASPs already added" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(1))
 
       val application =
         applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -68,16 +66,14 @@ class RoutingControllerSpec extends SpecBase {
 
     "must redirect to ReportForRegisteredBusiness when user has zero RCASPs and has a CT UTR" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(0))
 
       val application =
         applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -91,16 +87,14 @@ class RoutingControllerSpec extends SpecBase {
 
     "must redirect to OrganisationOrIndividual when user has zero RCASPs and has no CT UTR" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(0))
 
       val application =
         applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
           requestUtr = None
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -113,16 +107,14 @@ class RoutingControllerSpec extends SpecBase {
     }
 
     "must redirect to Journey Recovery when account service returns an error" in {
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromError(InternalServerError))
 
       val application =
         applicationBuilder(
           userAnswers = Some(emptyUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -141,16 +133,14 @@ class RoutingControllerSpec extends SpecBase {
         .withPage(OverwritableOrganisationName, testOrgName)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(1))
 
       val application =
         applicationBuilder(
           userAnswers = Some(staleUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -162,23 +152,21 @@ class RoutingControllerSpec extends SpecBase {
       }
     }
 
-    "must save fresh UserAnswers in NormalMode even when stale session data exists" in {
+    "must save fresh UserAnswers in NormalMode when stale session data exists" in {
       val staleUserAnswers = emptyUserAnswers
         .withPage(SubmissionSucceededPage, true)
         .withPage(RcaspIdPage, rcaspId)
         .withPage(OverwritableOrganisationName, testOrgName)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(0))
 
       val application =
         applicationBuilder(
           userAnswers = Some(staleUserAnswers),
           requestUtr = Some(testUtr.uniqueTaxPayerReference)
-        )
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
 
       running(application) {
         val request = FakeRequest(GET, routeUnderTest)
@@ -187,7 +175,7 @@ class RoutingControllerSpec extends SpecBase {
         status(result) mustEqual SEE_OTHER
 
         verify(mockSessionRepository).set(
-          org.mockito.ArgumentMatchers.argThat((answers: UserAnswers) =>
+          argThat((answers: UserAnswers) =>
             answers.get(SubmissionSucceededPage).isEmpty &&
               answers.get(RcaspIdPage).isEmpty &&
               answers.get(OverwritableOrganisationName).isEmpty
@@ -196,11 +184,64 @@ class RoutingControllerSpec extends SpecBase {
       }
     }
 
+    "must preserve UserAnswers in NormalMode when SubmissionSucceededPage is false" in {
+      val existingUserAnswers = emptyUserAnswers
+        .withPage(SubmissionSucceededPage, false)
+        .withPage(OverwritableOrganisationName, testOrgName)
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
+        .thenReturn(ResultT.fromValue(0))
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(existingUserAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
+        verify(mockSessionRepository).set(
+          argThat(_.get(OverwritableOrganisationName).contains(testOrgName))
+        )
+      }
+    }
+
+    "must preserve UserAnswers in NormalMode when SubmissionSucceededPage is None" in {
+      val existingUserAnswers = emptyUserAnswers
+        .withPage(OverwritableOrganisationName, testOrgName)
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
+        .thenReturn(ResultT.fromValue(0))
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(existingUserAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
+        verify(mockSessionRepository).set(
+          argThat(_.get(OverwritableOrganisationName).contains(testOrgName))
+        )
+      }
+    }
+
     "must preserve existing UserAnswers in ChangeMode" in {
       val existingUserAnswers = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(1))
 
       val application =
@@ -220,16 +261,14 @@ class RoutingControllerSpec extends SpecBase {
           controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(ChangeMode).url
 
         verify(mockSessionRepository).set(
-          org.mockito.ArgumentMatchers.argThat((answers: UserAnswers) =>
-            answers.get(OverwritableOrganisationName).contains(testOrgName)
-          )
+          argThat((answers: UserAnswers) => answers.get(OverwritableOrganisationName).contains(testOrgName))
         )
       }
     }
 
     "must create new UserAnswers in ChangeMode when no existing answers are found" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromValue(0))
 
       val application =
@@ -247,7 +286,7 @@ class RoutingControllerSpec extends SpecBase {
         status(result) mustEqual SEE_OTHER
 
         verify(mockSessionRepository).set(
-          org.mockito.ArgumentMatchers.argThat((answers: UserAnswers) =>
+          argThat((answers: UserAnswers) =>
             answers.id == userAnswersId &&
               answers.get(OverwritableOrganisationName).isEmpty
           )

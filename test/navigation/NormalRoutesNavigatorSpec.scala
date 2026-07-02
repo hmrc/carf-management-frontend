@@ -19,13 +19,13 @@ package navigation
 import base.SpecBase
 import config.Constants.noneOfTheseValue
 import controllers.routes
+import models.*
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.responses.AddressRegistrationResponse
-import models.*
+import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
-import pages.*
 
 class NormalRoutesNavigatorSpec extends SpecBase {
 

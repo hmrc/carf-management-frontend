@@ -19,19 +19,16 @@ package services
 import base.SpecBase
 import cats.data.EitherT
 import connectors.AddressLookupConnector
-import generators.Generators
 import models.AddressAndUPRN
 import models.errors.{ApiError, CarfError, ConversionError}
 import models.requests.SearchByPostcodeRequest
 import models.responses.AddressResponse
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.*
-import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.Future
 
-class AddressLookupServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach with Generators {
+class AddressLookupServiceSpec extends SpecBase {
 
   val mockAddressLookupConnector: AddressLookupConnector = mock[AddressLookupConnector]
 

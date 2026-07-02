@@ -19,6 +19,7 @@ package controllers
 import config.Constants.ZERO
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
 import models.{ChangeMode, Mode, NormalMode, UserAnswers}
+import pages.SubmissionSucceededPage
 import play.api.Logging
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -51,7 +52,12 @@ class RoutingController @Inject() (
         case Right(numberOfRcasps) =>
           val updatedAnswers = mode match {
             case NormalMode =>
-              UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false)
+              request.userAnswers
+                .flatMap(ua =>
+                  if (ua.get(SubmissionSucceededPage).contains(true)) { None }
+                  else { request.userAnswers }
+                )
+                .getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
             case ChangeMode =>
               request.userAnswers.getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
           }

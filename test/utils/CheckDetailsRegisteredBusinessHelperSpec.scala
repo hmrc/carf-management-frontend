@@ -55,7 +55,7 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
           "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
           "What is the name of the organisation?",
           "Does the organisation trade under a different name?",
-          "Trading name",
+          "What is the trading name for the organisation?",
           "Main business address"
         )
 
