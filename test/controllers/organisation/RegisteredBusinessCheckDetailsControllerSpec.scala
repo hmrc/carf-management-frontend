@@ -20,7 +20,6 @@ import base.SpecBase
 import controllers.actions.*
 import models.UserAnswers
 import models.errors.ApiError.InternalServerError
-import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
@@ -28,7 +27,7 @@ import pages.{RcaspIdPage, SubmissionSucceededPage}
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.{Call, Result}
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
@@ -38,13 +37,11 @@ import uk.gov.hmrc.auth.core.AffinityGroup
 import utils.CheckDetailsRegisteredBusinessHelper
 import views.html.organisation.CheckDetailsRegBusinessView
 
-import java.time.Clock
 import scala.concurrent.Future
 
 class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
 
   lazy val cdRoute: String = controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad.url
-  def onwardRoute: Call    = Call("GET", "/foo")
 
   "CheckDetailsRegBusiness Controller" - {
 
@@ -212,9 +209,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
       applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
           bind[CheckDetailsRegisteredBusinessHelper].toInstance(mockHelper),
-          bind[RcaspSubmissionService].toInstance(mockRcaspSubmissionService),
-          bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-          bind[Clock].toInstance(clock)
+          bind[RcaspSubmissionService].toInstance(mockRcaspSubmissionService)
         )
         .build()
   }
