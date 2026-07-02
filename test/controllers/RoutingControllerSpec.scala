@@ -187,7 +187,6 @@ class RoutingControllerSpec extends SpecBase {
     "must preserve UserAnswers in NormalMode when SubmissionSucceededPage is false" in {
       val existingUserAnswers = emptyUserAnswers
         .withPage(SubmissionSucceededPage, false)
-        .withPage(RcaspIdPage, rcaspId)
         .withPage(OverwritableOrganisationName, testOrgName)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
