@@ -20,7 +20,7 @@ import models.{AddressUk, UserAnswers}
 import pages.UkAddressInUserAnswers
 import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsTheAddressCorrectPage}
 import play.api.i18n.Messages
-import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
+import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*
 import viewmodels.implicits.*
@@ -43,15 +43,14 @@ object RegisteredBusinessAddressSummary {
         value = ValueViewModel(HtmlContent(address)),
         actions = Seq(
           ActionItemViewModel(
-            "site.change",
-            controllers.routes.PlaceholderController
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            href = controllers.routes.PlaceholderController
               .onPageLoad(
                 "Should nav to /registered-business/is-the-address-correct (CARF-197)" +
                   "routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(ChangeMode).url"
               )
               .url
-          )
-            .withVisuallyHiddenText(messages("registeredBusiness.address.change.hidden"))
+          ).withVisuallyHiddenText(messages("registeredBusiness.address.change.hidden"))
         )
       )
     }

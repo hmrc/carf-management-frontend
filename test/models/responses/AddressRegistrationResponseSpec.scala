@@ -17,8 +17,6 @@
 package models.responses
 
 import base.SpecBase
-import models.countries.CountryUk
-import models.requests.AddressDetails
 
 class AddressRegistrationResponseSpec extends SpecBase {
 
@@ -51,7 +49,7 @@ class AddressRegistrationResponseSpec extends SpecBase {
 
   "AddressRegistrationResponse" - {
     "renderHtml" - {
-      "must render UK address correctly" in {
+      "must render AddressRegistrationResponse correctly" in {
         val result = addressFull.renderHtml
 
         result must include("123 Main Street")
