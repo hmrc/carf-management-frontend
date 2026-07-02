@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.organisation
 
 import base.SpecBase
 import models.UserAnswers
@@ -28,7 +28,7 @@ import play.api.inject.bind
 import play.api.mvc.{Call, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.RegistrationService
+import services.{RcaspSubmissionService, RegistrationService}
 import types.ResultT
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
@@ -41,23 +41,6 @@ import java.time.Clock
 import scala.concurrent.Future
 
 class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
-
-  private val testRow: SummaryListRow =
-    SummaryListRowViewModel(
-      key = Key(Text("TEST Key")),
-      value = ValueViewModel(Text("TEST Value")),
-      actions = Seq(
-        ActionItemViewModel(
-          Text("TEST Action"),
-          controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController
-            .onPageLoad(models.ChangeMode)
-            .url
-        )
-          .withVisuallyHiddenText("TEST HIDDEN TEXT")
-      )
-    )
-
-  private val testSection: Section = Section("TEST SECTION NAME", Seq(testRow))
 
   lazy val cdRoute: String = controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad.url
   def onwardRoute: Call    = Call("GET", "/foo")
@@ -82,9 +65,9 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         )
           .thenReturn(Some(testSection))
 
-        val request                = FakeRequest(GET, cdRoute)
-        val view                   = application.injector.instanceOf[CheckDetailsRegBusinessView]
-        val result: Future[Result] = route(application, request).value
+        val request                           = FakeRequest(GET, cdRoute)
+        val view: CheckDetailsRegBusinessView = application.injector.instanceOf[CheckDetailsRegBusinessView]
+        val result: Future[Result]            = route(application, request).value
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(testSection, "Test Business Ltd")(
@@ -152,59 +135,82 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
     }
 
     "onSubmit" - {
+      "must redirect to the RCASP added page if submission is successful" in new Setup(emptyUserAnswers) {
+        when(mockRcaspService.submitRcasp(any(), any())(any(), any()))
+          .thenReturn(ResultT.fromValue(submitRcaspResponse))
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      "must redirect to Placeholder page on success" in new Setup(
-        emptyUserAnswers
-      ) {
-        when(mockRegistrationService.registerRcasp(any()))
-          .thenReturn(ResultT.fromValue(()))
-
-        val request                = FakeRequest(POST, cdRoute)
+        val request                = FakeRequest(POST, checkDetailsRoute)
         val result: Future[Result] = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual
-          controllers.routes.PlaceholderController
-            .onPageLoad("[CARF-296] RCASP added page - /rcasp-added")
-            .url
+        redirectLocation(result).value mustEqual controllers.routes.RcaspAddedConfirmationController.onPageLoad().url
+
+        verify(mockRcaspService, times(1)).submitRcasp(any(), any())(any(), any())
+        verify(mockSessionRepository, times(1)).set(eqTo(emptyUserAnswers.withPage(RcaspIdPage, rcaspId)))
       }
 
-      "must redirect to Journey Recovery on failure" in new Setup(
-        emptyUserAnswers
-      ) {
-        when(mockRegistrationService.registerRcasp(any()))
+      "must redirect to Journey Recovery if submission failed" in new Setup(emptyUserAnswers) {
+        when(mockRcaspService.submitRcasp(any(), any())(any(), any()))
           .thenReturn(ResultT.fromError(InternalServerError))
 
-        val request                = FakeRequest(POST, cdRoute)
+        val request                = FakeRequest(POST, checkDetailsRoute)
         val result: Future[Result] = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+
+        verify(mockRcaspService, times(1)).submitRcasp(any(), any())(any(), any())
+        verify(mockSessionRepository, times(0)).set(eqTo(emptyUserAnswers))
       }
 
       "must redirect to Journey Recovery for a POST if no existing data is found" in {
         val application = applicationBuilder(userAnswers = None).build()
-
         running(application) {
-          val request = FakeRequest(POST, cdRoute)
-          val result  = route(application, request).value
+          val request = FakeRequest(POST, checkDetailsRoute)
+
+          val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to the page unavailable placeholder for a POST when submission has already succeeded" in {
+        val userAnswers = emptyUserAnswers.withPage(SubmissionSucceededPage, true)
+
+        val application = new GuiceApplicationBuilder()
+          .overrides(
+            bind[DataRequiredAction].to[DataRequiredActionImpl],
+            bind[IdentifierAction]
+              .toInstance(new FakeIdentifierAction(injectedParsers, AffinityGroup.Individual, None)),
+            bind[DataRetrievalAction].toInstance(new FakeDataRetrievalActionProvider(Some(userAnswers))),
+            bind[SessionRepository].toInstance(mockSessionRepository)
+          )
+          .build()
+
+        running(application) {
+          val request = FakeRequest(POST, checkDetailsRoute)
+          val result  = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.PlaceholderController
+            .onPageLoad("Should nav to /problem/page-unavailable (CARF-308)")
+            .url
         }
       }
     }
   }
 
   class Setup(userAnswers: UserAnswers) {
-    final val mockHelper: CheckDetailsRegisteredBusinessHelper = mock[CheckDetailsRegisteredBusinessHelper]
-    final val mockRegistrationService: RegistrationService     = mock[RegistrationService]
+    final val mockHelper: CheckDetailsRegisteredBusinessHelper   = mock[CheckDetailsRegisteredBusinessHelper]
+    final val mockRcaspSubmissionService: RcaspSubmissionService = mock[RcaspSubmissionService]
 
     val application: Application =
       applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
           bind[CheckDetailsRegisteredBusinessHelper].toInstance(mockHelper),
-          bind[RegistrationService].toInstance(mockRegistrationService),
+          bind[RcaspSubmissionService].toInstance(mockRcaspSubmissionService),
           bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
           bind[Clock].toInstance(clock)
         )

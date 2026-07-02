@@ -40,7 +40,7 @@ class HaveTradingNameController @Inject() (
     ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    submissionLockAction: SubmissionLockAction,
+    submissionLock: SubmissionLockAction,
     formProvider: GenericYesNoPageFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: HaveTradingNameView
@@ -52,7 +52,7 @@ class HaveTradingNameController @Inject() (
   val form: Form[Boolean] = formProvider("haveTradingName.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLockAction andThen requireData) {
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData) {
       implicit request =>
         val preparedForm = request.userAnswers.get(HaveTradingNamePage).fold(form)(form.fill)
 
@@ -67,7 +67,7 @@ class HaveTradingNameController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLockAction andThen requireData)
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData)
       .async { implicit request =>
         form
           .bindFromRequest()

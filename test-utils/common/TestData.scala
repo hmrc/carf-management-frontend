@@ -23,6 +23,9 @@ import models.individual.IndividualName
 import models.requests.*
 import models.responses.*
 import org.scalatest.OptionValues.convertOptionToValuable
+import uk.gov.hmrc.govukfrontend.views.Aliases.Text
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
+import viewmodels.Section
 
 import java.time.{Clock, Instant, ZoneId}
 
@@ -242,4 +245,19 @@ trait TestData extends Generators {
         )
       )
     )
+
+  lazy val testRow: SummaryListRow =
+    SummaryListRowViewModel(
+      key = Key(Text("TEST Key")),
+      value = ValueViewModel(Text("TEST Value")),
+      actions = Seq(
+        ActionItemViewModel(
+          Text("TEST Action"),
+          controllers.individual.routes.IndividualNameController.onPageLoad(ChangeMode).url
+        )
+          .withVisuallyHiddenText("TEST HIDDEN TEXT")
+      )
+    )
+
+  lazy val testSection: Section = Section("TEST SECTION NAME", Seq(testRow))
 }

@@ -58,12 +58,4 @@ class RegistrationService @Inject() {
         )
       )
     }
-
-  // TODO link up backend call for RCASP registration
-  def registerRcasp(utr: String): ResultT[Unit] =
-    if (utr.startsWith("9")) {
-      ResultT.fromError(InternalServerError)
-    } else {
-      ResultT.fromValue(())
-    }
 }

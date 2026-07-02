@@ -39,7 +39,7 @@ class TradingNameController @Inject() (
     identify: IdentifierAction,
     ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
-    submissionLockAction: SubmissionLockAction,
+    submissionLock: SubmissionLockAction,
     requireData: DataRequiredAction,
     formProvider: TradingNameFormProvider,
     val controllerComponents: MessagesControllerComponents,
@@ -52,7 +52,7 @@ class TradingNameController @Inject() (
   val form: Form[String] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLockAction andThen requireData) {
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData) {
       implicit request =>
         val preparedForm = request.userAnswers.get(TradingNamePage).fold(form)(form.fill)
 
@@ -67,7 +67,7 @@ class TradingNameController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLockAction andThen requireData)
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData)
       .async { implicit request =>
         form
           .bindFromRequest()

@@ -18,17 +18,18 @@ package controllers.organisation
 
 import cats.syntax.all.*
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import pages.RcaspIdPage
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.RegistrationService
+import services.{RcaspSubmissionService, RegistrationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckDetailsRegisteredBusinessHelper
 import views.html.organisation.CheckDetailsRegBusinessView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class RegisteredBusinessCheckDetailsController @Inject() (
     override val messagesApi: MessagesApi,
@@ -38,7 +39,7 @@ class RegisteredBusinessCheckDetailsController @Inject() (
     view: CheckDetailsRegBusinessView,
     val controllerComponents: MessagesControllerComponents,
     helper: CheckDetailsRegisteredBusinessHelper,
-    registrationService: RegistrationService
+    rcaspSubmissionService: RcaspSubmissionService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
@@ -73,12 +74,16 @@ class RegisteredBusinessCheckDetailsController @Inject() (
   }
 
   def onSubmit: Action[AnyContent] = (identify() andThen getData() andThen requireData).async { implicit request =>
-    registrationService.registerRcasp("stub").value.map {
-      case Right(_)    =>
-        Redirect(controllers.routes.PlaceholderController.onPageLoad("[CARF-296] RCASP added page - /rcasp-added"))
-      case Left(error) =>
-        logger.warn(s"[CheckDetailsRegBusinessController][onSubmit] Failed to register RCASP: $error")
-        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+    rcaspSubmissionService.submitRcasp(request.carfId, request.userAnswers).value.flatMap {
+      case Right(response) =>
+        val rcaspId = response.ResponseDetails.ReturnParameters.Value
+        for {
+          updatedAnswers <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
+          _              <- sessionRepository.set(updatedAnswers)
+        } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
+      case Left(error)     =>
+        logger.warn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")
+        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
     }
   }
 }

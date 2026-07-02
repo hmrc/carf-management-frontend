@@ -48,20 +48,6 @@ import scala.concurrent.Future
 
 class CheckDetailsControllerSpec extends SpecBase {
 
-  private val testRow: SummaryListRow =
-    SummaryListRowViewModel(
-      key = Key(Text("TEST Key")),
-      value = ValueViewModel(Text("TEST Value")),
-      actions = Seq(
-        ActionItemViewModel(
-          Text("TEST Action"),
-          controllers.individual.routes.IndividualNameController.onPageLoad(ChangeMode).url
-        )
-          .withVisuallyHiddenText("TEST HIDDEN TEXT")
-      )
-    )
-
-  private val testSection: Section            = Section("TEST SECTION NAME", Seq(testRow))
   private val individualCompleteUserAnswers   = emptyUserAnswers
     .withPage(OrganisationOrIndividualPage, Individual)
     .withPage(IndividualNamePage, testIndividualName)
