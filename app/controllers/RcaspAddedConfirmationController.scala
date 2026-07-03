@@ -26,7 +26,6 @@ import utils.RcaspHelper
 import views.html.RcaspAddedConfirmationView
 
 import javax.inject.Inject
-import scala.concurrent.Future
 
 class RcaspAddedConfirmationController @Inject() (
     override val messagesApi: MessagesApi,
