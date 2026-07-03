@@ -16,6 +16,7 @@
 
 package navigation
 
+import config.Constants
 import config.Constants.noneOfTheseValue
 import controllers.routes
 import models.OrganisationOrIndividual.{Individual, Organisation}
@@ -25,7 +26,6 @@ import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
 import play.api.mvc.Call
-import config.Constants
 
 trait NormalRoutesNavigator {
 

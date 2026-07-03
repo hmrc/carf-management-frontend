@@ -66,7 +66,7 @@ class HomePageControllerSpec extends SpecBase {
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromValue(true))
       when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue(Some("Timmy Ltd")))
 
@@ -92,7 +92,7 @@ class HomePageControllerSpec extends SpecBase {
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromValue(true))
       when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue(None))
 
@@ -120,7 +120,7 @@ class HomePageControllerSpec extends SpecBase {
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(false))
 
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(2))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(2))
       when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromValue(false))
 
       running(application) {
@@ -143,7 +143,8 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromError(InternalServerError))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
+        .thenReturn(ResultT.fromError(InternalServerError))
       when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromValue(true))
       when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue(Some("Timmy Ltd")))
 
@@ -155,7 +156,7 @@ class HomePageControllerSpec extends SpecBase {
 
         status(result)              mustEqual SEE_OTHER
         redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
-        verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())
+        verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
         verify(mockAccountService, times(0)).hasOrganisationContactDetails(any())
         verify(mockAccountService, times(0)).getOrganisationName(any())
         verify(mockUploadInformationService, times(0)).hasUserUploadedFilesInLast28Days(any())
@@ -169,7 +170,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromError(InternalServerError))
       when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue(Some("Timmy Ltd")))
 
@@ -181,7 +182,7 @@ class HomePageControllerSpec extends SpecBase {
 
         status(result)              mustEqual SEE_OTHER
         redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
-        verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())
+        verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
         verify(mockAccountService).hasOrganisationContactDetails(any())
         verify(mockAccountService, times(0)).getOrganisationName(any())
         verify(mockUploadInformationService, times(0)).hasUserUploadedFilesInLast28Days(any())
@@ -195,7 +196,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromValue(true))
       when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromError(InternalServerError))
 
@@ -207,7 +208,7 @@ class HomePageControllerSpec extends SpecBase {
 
         status(result)              mustEqual SEE_OTHER
         redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
-        verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())
+        verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
         verify(mockAccountService).hasOrganisationContactDetails(any())
         verify(mockAccountService).getOrganisationName(any())
         verify(mockUploadInformationService, times(0)).hasUserUploadedFilesInLast28Days(any())
@@ -221,7 +222,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())).thenReturn(ResultT.fromValue(0))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.hasOrganisationContactDetails(any())).thenReturn(ResultT.fromValue(true))
       when(mockAccountService.getOrganisationName(any())).thenReturn(ResultT.fromValue(Some("Timmy Ltd")))
 
@@ -234,7 +235,7 @@ class HomePageControllerSpec extends SpecBase {
 
         status(result)              mustEqual SEE_OTHER
         redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
-        verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())
+        verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
         verify(mockAccountService).hasOrganisationContactDetails(any())
         verify(mockAccountService).getOrganisationName(any())
         verify(mockUploadInformationService).hasUserUploadedFilesInLast28Days(any())
