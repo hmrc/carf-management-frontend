@@ -43,7 +43,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
 
   lazy val cdRoute: String = controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad.url
 
-  "CheckDetailsRegBusiness Controller" - {
+  "RegisteredBusinessCheckDetailsController Controller" - {
 
     "onPageLoad" - {
 
@@ -190,7 +190,13 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
           .overrides(
             bind[DataRequiredAction].to[DataRequiredActionImpl],
             bind[IdentifierAction]
-              .toInstance(new FakeIdentifierAction(injectedParsers, AffinityGroup.Individual, None)),
+              .toInstance(
+                new FakeIdentifierAction(
+                  injectedParsers,
+                  AffinityGroup.Organisation,
+                  Some(testUtr.uniqueTaxPayerReference)
+                )
+              ),
             bind[DataRetrievalAction].toInstance(new FakeDataRetrievalActionProvider(Some(userAnswers))),
             bind[SessionRepository].toInstance(mockSessionRepository)
           )
