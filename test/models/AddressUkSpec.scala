@@ -131,8 +131,8 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
         val expectedRcaspAddress = RcaspAddress(
           AddressLine1 = ukAddressFull.addressLine1,
           AddressLine2 = ukAddressFull.addressLine2,
-          AddressLine3 = ukAddressFull.addressLine3,
-          AddressLine4 = Some(ukAddressFull.townOrCity),
+          AddressLine3 = Some(ukAddressFull.townOrCity),
+          AddressLine4 = ukAddressFull.addressLine3,
           PostalCode = ukAddressFull.postCode,
           CountryCode = ukCountryCode
         )
@@ -156,8 +156,8 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
         val result               = ukAddressAddressLine3.toRcaspAddress
         val expectedRcaspAddress = RcaspAddress(
           AddressLine1 = ukAddressAddressLine3.addressLine1,
-          AddressLine2 = ukAddressAddressLine3.addressLine3,
-          AddressLine3 = Some(ukAddressAddressLine3.townOrCity),
+          AddressLine2 = Some(ukAddressAddressLine3.townOrCity),
+          AddressLine3 = ukAddressAddressLine3.addressLine3,
           AddressLine4 = None,
           PostalCode = ukAddressAddressLine3.postCode,
           CountryCode = ukCountryCode
