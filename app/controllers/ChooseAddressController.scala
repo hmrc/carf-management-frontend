@@ -47,6 +47,7 @@ class ChooseAddressController @Inject() (
     ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: ChooseAddressFormProvider,
     accountService: AccountService,
     val controllerComponents: MessagesControllerComponents,
@@ -78,8 +79,8 @@ class ChooseAddressController @Inject() (
         )}"""
     }
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       lazy val preparedForm: Form[String] = request.userAnswers.get(ChooseAddressPage).fold(form)(form.fill)
 
       val WithRadiosResult(result, _) = resultWithRadios(mode) { (radios, maybeFindAddress) =>
@@ -93,49 +94,53 @@ class ChooseAddressController @Inject() (
         }
       }
 
-      Future.successful(result)
-  }
+    result
+    }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      form
-        .bindFromRequest()
-        .fold(
-          formWithErrors => {
-            val WithRadiosResult(result, _) = resultWithRadios(mode) { (radios, maybeFindAddress) =>
-              RcaspHelper.retrieveRcaspName(request.userAnswers) match {
-                case Some(name) => BadRequest(view(formWithErrors, mode, radios, generateHtml(maybeFindAddress), name))
-                case None       =>
-                  logger.warn(
-                    "[ChooseAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
-                  )
-                  Redirect(controllers.routes.InformationMissingController.onPageLoad())
-              }
-            }
-            Future.successful(result)
-          },
-          value =>
-            for {
-              updatedAnswers                <- Future.fromTry(request.userAnswers.set(ChooseAddressPage, value))
-              addressToStoreMaybe           <- findAddressToStore(mode, value)
-              updatedAnswersAsAddressMaybe  <-
-                addressToStoreMaybe.fold(Future.successful(updatedAnswers)) { addressToStore =>
-                  storeAddress(addressToStore, updatedAnswers)
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+      implicit request =>
+        form
+          .bindFromRequest()
+          .fold(
+            formWithErrors => {
+              val WithRadiosResult(result, _) = resultWithRadios(mode) { (radios, maybeFindAddress) =>
+                RcaspHelper.retrieveRcaspName(request.userAnswers) match {
+                  case Some(name) =>
+                    BadRequest(view(formWithErrors, mode, radios, generateHtml(maybeFindAddress), name))
+                  case None       =>
+                    logger.warn(
+                      "[ChooseAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
+                    )
+                    Redirect(controllers.routes.InformationMissingController.onPageLoad())
                 }
-              updatedAnswersWithEmptyPrePop <-
-                Future.fromTry(updatedAnswersAsAddressMaybe.remove(AddressPagePrePop))
-              _                             <- sessionRepository.set(updatedAnswersWithEmptyPrePop)
-              result                        <-
-                accountService
-                  .getNumberOfRcaspsCurrentlyAdded(request.carfId)
-                  .map(count => Redirect(isRcaspUserRedirect(count, request.utr, updatedAnswersWithEmptyPrePop, mode)))
-                  .leftMap { error =>
-                    logger.warn(s"[ChooseAddressController] Error retrieving RCASP count: $error")
-                    Redirect(routes.JourneyRecoveryController.onPageLoad())
+              }
+              Future.successful(result)
+            },
+            value =>
+              for {
+                updatedAnswers                <- Future.fromTry(request.userAnswers.set(ChooseAddressPage, value))
+                addressToStoreMaybe           <- findAddressToStore(mode, value)
+                updatedAnswersAsAddressMaybe  <-
+                  addressToStoreMaybe.fold(Future.successful(updatedAnswers)) { addressToStore =>
+                    storeAddress(addressToStore, updatedAnswers)
                   }
-                  .merge
-            } yield result
-        )
+                updatedAnswersWithEmptyPrePop <-
+                  Future.fromTry(updatedAnswersAsAddressMaybe.remove(AddressPagePrePop))
+                _                             <- sessionRepository.set(updatedAnswersWithEmptyPrePop)
+                result                        <-
+                  accountService
+                    .getNumberOfRcaspsCurrentlyAdded(request.carfId)
+                    .map(count =>
+                      Redirect(isRcaspUserRedirect(count, request.utr, updatedAnswersWithEmptyPrePop, mode))
+                    )
+                    .leftMap { error =>
+                      logger.warn(s"[ChooseAddressController] Error retrieving RCASP count: $error")
+                      Redirect(routes.JourneyRecoveryController.onPageLoad())
+                    }
+                    .merge
+              } yield result
+          )
     }
 
   private def storeAddress(addressToStore: AddressAndUPRN, userAnswer: UserAnswers): Future[UserAnswers] =

@@ -38,6 +38,7 @@ class ReviewAddressController @Inject() (
     ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     navigator: Navigator,
     sessionRepository: SessionRepository,
     accountService: AccountService,
@@ -48,8 +49,8 @@ class ReviewAddressController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val editAddressLink: String =
         routes.AddressController.onPageLoad(mode).url
@@ -57,41 +58,42 @@ class ReviewAddressController @Inject() (
       request.userAnswers.get(AddressPagePrePop) match {
         case Some(address) =>
           RcaspHelper.retrieveRcaspName(request.userAnswers) match {
-            case Some(name) => Future.successful(Ok(view(address, mode, editAddressLink, name)))
+            case Some(name) => Ok(view(address, mode, editAddressLink, name))
             case None       =>
               logger.warn(
                 "[ReviewAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onPageLoad"
               )
-              Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
+              Redirect(controllers.routes.InformationMissingController.onPageLoad())
           }
         case None          =>
           logger.warn("No address found in user answers")
-          Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+          Redirect(routes.JourneyRecoveryController.onPageLoad())
       }
-  }
+    }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
-      request.userAnswers.get(AddressPagePrePop) match {
-        case Some(address) =>
-          for {
-            updatedAnswers <-
-              Future.fromTry(request.userAnswers.set(UkAddressInUserAnswers, address))
-            _              <- sessionRepository.set(updatedAnswers)
-            result         <-
-              accountService
-                .getNumberOfRcaspsCurrentlyAdded(request.carfId)
-                .map(count => Redirect(isRcaspUserRedirect(count, request.utr, updatedAnswers, mode)))
-                .leftMap { error =>
-                  logger.warn(s"[ReviewAddressController] Error retrieving RCASP count: $error")
-                  Redirect(routes.JourneyRecoveryController.onPageLoad())
-                }
-                .merge
-          } yield result
-        case None          =>
-          logger.error("No address found in user answers")
-          Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
-      }
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+      implicit request =>
+        request.userAnswers.get(AddressPagePrePop) match {
+          case Some(address) =>
+            for {
+              updatedAnswers <-
+                Future.fromTry(request.userAnswers.set(UkAddressInUserAnswers, address))
+              _              <- sessionRepository.set(updatedAnswers)
+              result         <-
+                accountService
+                  .getNumberOfRcaspsCurrentlyAdded(request.carfId)
+                  .map(count => Redirect(isRcaspUserRedirect(count, request.utr, updatedAnswers, mode)))
+                  .leftMap { error =>
+                    logger.warn(s"[ReviewAddressController] Error retrieving RCASP count: $error")
+                    Redirect(routes.JourneyRecoveryController.onPageLoad())
+                  }
+                  .merge
+            } yield result
+          case None          =>
+            logger.error("No address found in user answers")
+            Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+        }
     }
 
   private def isRcaspUserRedirect(

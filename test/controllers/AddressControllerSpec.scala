@@ -19,14 +19,12 @@ package controllers
 import base.SpecBase
 import cats.data.EitherT
 import forms.AddressFormProvider
-import generators.Generators
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.errors.ApiError.InternalServerError
 import models.{AddressUk, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{reset, times, verify, when}
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
@@ -40,7 +38,7 @@ import views.html.AddressView
 
 import scala.concurrent.Future
 
-class AddressControllerSpec extends SpecBase with ScalaCheckPropertyChecks with Generators {
+class AddressControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
@@ -57,11 +55,6 @@ class AddressControllerSpec extends SpecBase with ScalaCheckPropertyChecks with 
   inline final val addressMaxLength = 35
 
   private val mockAccountService: AccountService = mock[AccountService]
-
-  override def beforeEach(): Unit = {
-    reset(mockSessionRepository)
-    super.beforeEach()
-  }
 
   "Address Controller" - {
     "must return OK and the correct view for a GET when IndividualNamePage is present" in {
@@ -298,8 +291,7 @@ class AddressControllerSpec extends SpecBase with ScalaCheckPropertyChecks with 
           FakeRequest(POST, addressRoute)
             .withFormUrlEncodedBody(("addressLine1", ""))
 
-        val boundForm = form.bind(Map("addressLine1" -> ""))
-        val result    = route(application, request).value
+        val result = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual routes.InformationMissingController.onPageLoad().url

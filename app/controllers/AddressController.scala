@@ -41,6 +41,7 @@ class AddressController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     submissionLock: SubmissionLockAction,
+    ctUtrRetrievalAction: CtUtrRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: AddressFormProvider,
     accountService: AccountService,
@@ -54,53 +55,54 @@ class AddressController @Inject() (
   val form: Form[AddressUk] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       lazy val preparedForm = request.userAnswers.get(AddressPagePrePop).fold(form)(form.fill)
 
       RcaspHelper.retrieveRcaspName(request.userAnswers) match {
         case Some(name) =>
-          Future.successful(Ok(view(preparedForm, mode, name)))
+          Ok(view(preparedForm, mode, name))
         case None       =>
           logger.warn(
             "[AddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onPageLoad"
           )
-          Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
+          Redirect(controllers.routes.InformationMissingController.onPageLoad())
       }
     }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
-      form
-        .bindFromRequest()
-        .fold(
-          formWithErrors =>
-            RcaspHelper
-              .retrieveRcaspName(request.userAnswers)
-              .fold {
-                logger.warn(
-                  "[AddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
-                )
-                Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
-              }(name => Future.successful(BadRequest(view(formWithErrors, mode, name)))),
-          value =>
-            for {
-              a      <- Future.fromTry(request.userAnswers.set(UkAddressInUserAnswers, value))
-              b      <- Future.fromTry(a.set(AddressPagePrePop, value))
-              c      <- Future.fromTry(b.remove(AddressUPRNUserAnswers))
-              _      <- sessionRepository.set(c)
-              result <-
-                accountService
-                  .getNumberOfRcaspsCurrentlyAdded(request.carfId)
-                  .map(count => Redirect(isRcaspUserRedirect(count, request.utr, c, mode)))
-                  .leftMap { error =>
-                    logger.warn(s"[AddressController] Error retrieving RCASP count: $error")
-                    Redirect(routes.JourneyRecoveryController.onPageLoad())
-                  }
-                  .merge
-            } yield result
-        )
-  }
+  def onSubmit(mode: Mode): Action[AnyContent] =
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+      implicit request =>
+        form
+          .bindFromRequest()
+          .fold(
+            formWithErrors =>
+              RcaspHelper
+                .retrieveRcaspName(request.userAnswers)
+                .fold {
+                  logger.warn(
+                    "[AddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
+                  )
+                  Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
+                }(name => Future.successful(BadRequest(view(formWithErrors, mode, name)))),
+            value =>
+              for {
+                a      <- Future.fromTry(request.userAnswers.set(UkAddressInUserAnswers, value))
+                b      <- Future.fromTry(a.set(AddressPagePrePop, value))
+                c      <- Future.fromTry(b.remove(AddressUPRNUserAnswers))
+                _      <- sessionRepository.set(c)
+                result <-
+                  accountService
+                    .getNumberOfRcaspsCurrentlyAdded(request.carfId)
+                    .map(count => Redirect(isRcaspUserRedirect(count, request.utr, c, mode)))
+                    .leftMap { error =>
+                      logger.warn(s"[AddressController] Error retrieving RCASP count: $error")
+                      Redirect(routes.JourneyRecoveryController.onPageLoad())
+                    }
+                    .merge
+              } yield result
+          )
+    }
 
   private def isRcaspUserRedirect(
       rcaspCount: Int,
