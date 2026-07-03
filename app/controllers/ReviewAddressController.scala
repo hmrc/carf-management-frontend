@@ -18,14 +18,13 @@ package controllers
 
 import com.google.inject.Inject
 import controllers.actions.*
-import models.{Mode, UniqueTaxpayerReference, UserAnswers}
+import models.Mode
 import navigation.Navigator
 import pages.{AddressPagePrePop, ReviewAddressPageForNavigatorOnly, UkAddressInUserAnswers}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
-import services.AccountService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ReviewAddressView
 
@@ -39,7 +38,6 @@ class ReviewAddressController @Inject() (
     requireData: DataRequiredAction,
     navigator: Navigator,
     sessionRepository: SessionRepository,
-    accountService: AccountService,
     val controllerComponents: MessagesControllerComponents,
     view: ReviewAddressView
 )(implicit ec: ExecutionContext)

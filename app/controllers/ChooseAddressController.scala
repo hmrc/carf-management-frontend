@@ -20,7 +20,7 @@ import config.Constants.noneOfTheseValue
 import controllers.actions.*
 import forms.ChooseAddressFormProvider
 import models.requests.DataRequest
-import models.{AddressAndUPRN, AddressUk, FindAddress, Mode, UniqueTaxpayerReference, UserAnswers, format}
+import models.{AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers, format}
 import navigation.Navigator
 import pages.*
 import play.api.Logging
@@ -28,7 +28,6 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
 import repositories.SessionRepository
-import services.AccountService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -47,7 +46,6 @@ class ChooseAddressController @Inject() (
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: ChooseAddressFormProvider,
-    accountService: AccountService,
     val controllerComponents: MessagesControllerComponents,
     view: ChooseAddressView
 )(implicit ec: ExecutionContext)

@@ -17,12 +17,10 @@
 package controllers
 
 import base.SpecBase
-import cats.data.EitherT
 import forms.ChooseAddressFormProvider
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.countries.CountryUk
-import models.errors.ApiError.InternalServerError
-import models.{AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers, format}
+import models.{format, AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{times, verify, when}
@@ -35,7 +33,6 @@ import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, *}
-import services.AccountService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import views.html.ChooseAddressView
@@ -51,8 +48,6 @@ class ChooseAddressControllerSpec extends SpecBase {
 
   val formProvider       = new ChooseAddressFormProvider()
   val form: Form[String] = formProvider()
-
-  val mockAccountService: AccountService = mock[AccountService]
 
   val address = AddressUk(
     "1 Test Street",
@@ -277,8 +272,6 @@ class ChooseAddressControllerSpec extends SpecBase {
 
     "must redirect to the next page when valid data is submitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val userAnswers =
         emptyUserAnswers
@@ -290,8 +283,7 @@ class ChooseAddressControllerSpec extends SpecBase {
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
           )
           .build()
 
@@ -312,8 +304,6 @@ class ChooseAddressControllerSpec extends SpecBase {
 
     "must redirect to the next page when none of these is submitted and does not store an address" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val userAnswers =
         emptyUserAnswers
@@ -325,8 +315,7 @@ class ChooseAddressControllerSpec extends SpecBase {
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
           )
           .build()
 
@@ -441,8 +430,7 @@ class ChooseAddressControllerSpec extends SpecBase {
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
           )
           .build()
 
