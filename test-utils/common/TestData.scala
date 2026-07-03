@@ -247,6 +247,87 @@ trait TestData extends Generators {
       )
     )
 
+  val displaySubscriptionIndividual   =
+    DisplaySubscriptionIndividual(firstName = "Joe", middleName = None, lastName = "Smith")
+  val displaySubscriptionOrganisation = DisplaySubscriptionOrganisation(name = "Bobby")
+
+  val testIndividualDisplaySubscriptionResponse = DisplaySubscriptionResponse(success =
+    DisplaySubscriptionSuccess(
+      processingDate = Instant.now(clock).toString,
+      carfSubscriptionDetails = DisplaySubscriptionDetails(
+        carfReference = carfId,
+        tradingName = Some(testTradingName),
+        gbUser = true,
+        primaryContact = DisplaySubscriptionContact(
+          individual = Some(displaySubscriptionIndividual),
+          organisation = None,
+          email = testEmail,
+          phone = Some(testPhone),
+          mobile = Some(testPhone)
+        ),
+        secondaryContact = None
+      )
+    )
+  )
+
+  def testOrganisationDisplaySubscriptionResponse(tradingName: Option[String]) =
+    DisplaySubscriptionResponse(success =
+      DisplaySubscriptionSuccess(
+        processingDate = Instant.now(clock).toString,
+        carfSubscriptionDetails = DisplaySubscriptionDetails(
+          carfReference = carfId,
+          tradingName = tradingName,
+          gbUser = true,
+          primaryContact = DisplaySubscriptionContact(
+            individual = None,
+            organisation = Some(DisplaySubscriptionOrganisation(name = "Bobby")),
+            email = testEmail,
+            phone = Some(testPhone),
+            mobile = None
+          ),
+          secondaryContact = None
+        )
+      )
+    )
+
+  val testInvalidSubscriptionResponseNeither = DisplaySubscriptionResponse(success =
+    DisplaySubscriptionSuccess(
+      processingDate = Instant.now(clock).toString,
+      carfSubscriptionDetails = DisplaySubscriptionDetails(
+        carfReference = carfId,
+        tradingName = Some(testTradingName),
+        gbUser = true,
+        primaryContact = DisplaySubscriptionContact(
+          individual = None,
+          organisation = None,
+          email = testEmail,
+          phone = Some(testPhone),
+          mobile = None
+        ),
+        secondaryContact = None
+      )
+    )
+  )
+
+  val testInvalidSubscriptionResponseBoth = DisplaySubscriptionResponse(success =
+    DisplaySubscriptionSuccess(
+      processingDate = Instant.now(clock).toString,
+      carfSubscriptionDetails = DisplaySubscriptionDetails(
+        carfReference = carfId,
+        tradingName = Some(testTradingName),
+        gbUser = true,
+        primaryContact = DisplaySubscriptionContact(
+          individual = Some(displaySubscriptionIndividual),
+          organisation = Some(displaySubscriptionOrganisation),
+          email = testEmail,
+          phone = Some(testPhone),
+          mobile = None
+        ),
+        secondaryContact = None
+      )
+    )
+  )
+
   lazy val testSummaryListRow: SummaryListRow =
     SummaryListRowViewModel(
       key = Key(Text("TEST Key")),

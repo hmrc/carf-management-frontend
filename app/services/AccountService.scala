@@ -16,7 +16,9 @@
 
 package services
 
-import connectors.RcaspConnector
+import connectors.{RcaspConnector, SubscriptionConnector}
+import models.HomePageSubscriptionData
+import models.errors.ApiError
 import models.errors.ApiError.InternalServerError
 import play.api.Logging
 import types.ResultT
@@ -27,7 +29,8 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class AccountService @Inject (
-    rcaspConnector: RcaspConnector
+    rcaspConnector: RcaspConnector,
+    subscriptionConnector: SubscriptionConnector
 ) extends Logging {
 
   def getNumberOfRcaspsCurrentlyAdded(carfId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[Int] =
@@ -41,22 +44,31 @@ class AccountService @Inject (
         viewRcaspResponse => viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList.size
       )
 
-  def hasOrganisationContactDetails(carfId: String): ResultT[Boolean] =
-    carfId.dropRight(2).last.toString match {
-      case "9" =>
-        logger.warn("[hasOrganisationContactDetails] Error!")
-        ResultT.fromError(InternalServerError)
-      case "1" => ResultT.fromValue(true)
-      case _   => ResultT.fromValue(false)
-    }
-
-  def getOrganisationName(carfId: String): ResultT[Option[String]] =
-    carfId.dropRight(3).last.toString match {
-      case "9" =>
-        logger.warn("[getOrganisationName] Error!")
-        ResultT.fromError(InternalServerError)
-      case "8" => ResultT.fromValue(None)
-      case _   => ResultT.fromValue(Some("Timmy's Turtles Ltd"))
-    }
-
+  def getHomePageSubscriptionData(
+      carfId: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[HomePageSubscriptionData] =
+    subscriptionConnector
+      .displaySubscription(carfId)
+      .leftMap { error =>
+        logger.warn(s"[AccountService][getHomePageSubscriptionData] Error calling displaySubscription: $error")
+        error
+      }
+      .subflatMap { displaySubscriptionResponse =>
+        displaySubscriptionResponse.hasOrganisationContactDetailsMaybe.fold {
+          logger.warn(
+            s"[AccountService][getHomePageSubscriptionData] DisplaySubscriptionResponse has contact details for neither or both individual and organisation"
+          )
+          Left(InternalServerError)
+        } { hasOrganisationContactDetails =>
+          Right(
+            HomePageSubscriptionData(
+              hasOrganisationContactDetails = hasOrganisationContactDetails,
+              organisationName =
+                if (hasOrganisationContactDetails)
+                  displaySubscriptionResponse.success.carfSubscriptionDetails.tradingName
+                else None
+            )
+          )
+        }
+      }
 }
