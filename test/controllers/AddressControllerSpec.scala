@@ -24,7 +24,7 @@ import models.errors.ApiError.InternalServerError
 import models.{AddressUk, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.{times, verify, when}
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}

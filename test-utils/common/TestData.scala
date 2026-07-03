@@ -18,7 +18,6 @@ package common
 
 import generators.Generators
 import models.*
-import models.countries.CountryUk
 import models.individual.IndividualName
 import models.requests.*
 import models.responses.*

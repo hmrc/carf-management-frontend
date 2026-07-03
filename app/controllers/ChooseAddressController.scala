@@ -94,7 +94,7 @@ class ChooseAddressController @Inject() (
         }
       }
 
-    result
+      result
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =

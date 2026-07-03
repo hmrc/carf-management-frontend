@@ -35,8 +35,8 @@ extension (address: AddressUk) {
     val addressLines = Seq(
       Some(address.addressLine1),
       address.addressLine2,
-      address.addressLine3,
       Some(address.townOrCity),
+      address.addressLine3,
       Some(address.postCode)
     ).flatten.filter(_.nonEmpty)
 
@@ -56,8 +56,8 @@ extension (address: AddressUk) {
     val addressLines: Seq[String] = Seq(
       Some(address.addressLine1),
       address.addressLine2,
-      address.addressLine3,
       Some(address.townOrCity),
+      address.addressLine3,
       Some(address.postCode)
     ).flatten
     addressLines.mkString(", ")
@@ -76,7 +76,7 @@ extension (address: AddressUk) {
   }
 
   def toRcaspAddress: RcaspAddress = {
-    val addressSubsequentLines = Seq(address.addressLine2, address.addressLine3, Some(address.townOrCity)).flatten
+    val addressSubsequentLines = Seq(address.addressLine2, Some(address.townOrCity), address.addressLine3).flatten
     RcaspAddress(
       AddressLine1 = address.addressLine1,
       AddressLine2 = addressSubsequentLines.headOption,
