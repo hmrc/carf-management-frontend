@@ -304,14 +304,14 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
     }
 
     "when the user answers has rcaspIsRegisteredBusiness as true, but fails the conditions for being a registered business" - {
-      "must redirect to the next page and keep rcaspIsRegisteredBusiness as false" in {
+      "must redirect to the next page and change rcaspIsRegisteredBusiness to false" in {
         val mockAccountService: AccountService = mock[AccountService]
 
         val userAnswers = emptyUserAnswers
           .copy(rcaspIsRegisteredBusiness = true)
           .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
-        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(1))
+        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
         val application =
