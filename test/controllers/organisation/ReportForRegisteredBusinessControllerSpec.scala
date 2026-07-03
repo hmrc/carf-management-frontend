@@ -303,6 +303,38 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
       }
     }
 
+    "when the user answers has rcaspIsRegisteredBusiness as true, but fails the conditions for being a registered business" - {
+      "must redirect to the next page and keep rcaspIsRegisteredBusiness as false" in {
+        val mockAccountService: AccountService = mock[AccountService]
+
+        val userAnswers = emptyUserAnswers
+          .copy(rcaspIsRegisteredBusiness = true)
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+
+        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(1))
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val application =
+          applicationBuilder(
+            userAnswers = Some(userAnswers),
+            requestUtr = Some(testUtr.uniqueTaxPayerReference)
+          ).overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[AccountService].toInstance(mockAccountService)
+          ).build()
+
+        running(application) {
+          val request = FakeRequest(POST, routeUnderTest).withFormUrlEncodedBody(("value", "false"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+          verify(mockSessionRepository).set(argThat(!_.rcaspIsRegisteredBusiness))
+        }
+      }
+    }
+
     "must return a Bad Request and errors when invalid data is submitted" in {
       val userAnswers =
         emptyUserAnswers

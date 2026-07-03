@@ -152,7 +152,7 @@ class ReportForRegisteredBusinessController @Inject() (
       if (numberOfRcasps == ZERO && pageAnswer && ctUtr.nonEmpty) {
         userAnswers.copy(rcaspIsRegisteredBusiness = true)
       } else {
-        userAnswers
+        userAnswers.copy(rcaspIsRegisteredBusiness = false)
       }
     }
 }
