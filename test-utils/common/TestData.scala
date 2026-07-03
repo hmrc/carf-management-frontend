@@ -53,6 +53,8 @@ trait TestData extends Generators {
 
   lazy val testPostcode: String = validPostcodes.sample.value
 
+  lazy val testNonCdPostcode: String = validGBOnlyNonCDPostcodes.sample.value
+
   def oneAddressResponse: AddressResponse =
     AddressResponse(
       id = "123",
@@ -70,8 +72,7 @@ trait TestData extends Generators {
     addressLine2 = Some("Test Street"),
     addressLine3 = Some("Test Region"),
     townOrCity = "Testingtown",
-    postCode = testPostcode,
-    countryUk = CountryUk("GB", "United Kingdom")
+    postCode = testPostcode
   )
 
   lazy val testAddressUkAlt: AddressUk = AddressUk(
@@ -79,8 +80,7 @@ trait TestData extends Generators {
     addressLine2 = Some("Test Road"),
     addressLine3 = Some("Test Area"),
     townOrCity = "Testingville",
-    postCode = testPostcode,
-    countryUk = CountryUk("GB", "United Kingdom")
+    postCode = testPostcode
   )
 
   lazy val testAddressAndUprns: Seq[AddressAndUPRN] = Seq(

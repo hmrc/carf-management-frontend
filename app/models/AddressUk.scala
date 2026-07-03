@@ -83,7 +83,7 @@ extension (address: AddressUk) {
       AddressLine3 = addressSubsequentLines.lift(1),
       AddressLine4 = addressSubsequentLines.lift(2),
       PostalCode = address.postCode,
-      CountryCode = address.countryUk.code
+      CountryCode = ukCountryCode
     )
   }
 }

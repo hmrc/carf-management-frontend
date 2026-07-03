@@ -134,7 +134,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
           AddressLine3 = ukAddressFull.addressLine3,
           AddressLine4 = Some(ukAddressFull.townOrCity),
           PostalCode = ukAddressFull.postCode,
-          CountryCode = ukAddressFull.countryUk.code
+          CountryCode = ukCountryCode
         )
         result mustBe expectedRcaspAddress
       }
@@ -147,7 +147,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
           AddressLine3 = None,
           AddressLine4 = None,
           PostalCode = ukAddressMinimal.postCode,
-          CountryCode = ukAddressMinimal.countryUk.code
+          CountryCode = ukCountryCode
         )
         result mustBe expectedRcaspAddress
       }
@@ -160,7 +160,7 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
           AddressLine3 = Some(ukAddressAddressLine3.townOrCity),
           AddressLine4 = None,
           PostalCode = ukAddressAddressLine3.postCode,
-          CountryCode = ukAddressAddressLine3.countryUk.code
+          CountryCode = ukCountryCode
         )
         result mustBe expectedRcaspAddress
       }

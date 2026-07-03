@@ -18,11 +18,7 @@ package base
 
 import common.TestData
 import controllers.actions.*
-import generators.Generators
-import models.individual.IndividualName
-import models.requests.AddressDetails
-import models.responses.{AddressRecord, AddressRegistrationResponse, AddressResponse, CountryRecord}
-import models.{AddressAndUPRN, AddressUk, CachedBusinessDetails, FindAddress, RichJsObject, UniqueTaxpayerReference, UserAnswers}
+import models.{RichJsObject, UserAnswers}
 import org.mockito.Mockito.reset
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec

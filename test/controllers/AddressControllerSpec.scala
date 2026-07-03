@@ -143,7 +143,7 @@ class AddressControllerSpec extends SpecBase {
 
     "must redirect to the next page when valid data is submitted and is not rcasp user" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val userAnswers = emptyUserAnswers
@@ -182,7 +182,7 @@ class AddressControllerSpec extends SpecBase {
 
     "must redirect to the next page when valid data is submitted and is rcasp user" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, InternalServerError.type](0))
 
       val userAnswers = emptyUserAnswers
@@ -222,7 +222,7 @@ class AddressControllerSpec extends SpecBase {
 
     "must redirect to Journey Recovery when valid data is submitted but Account Service returns an error" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any()))
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(EitherT.leftT[Future, Int](InternalServerError))
 
       val userAnswers = emptyUserAnswers
