@@ -43,7 +43,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
 
   lazy val cdRoute: String = controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad.url
 
-  "RegisteredBusinessCheckDetailsController Controller" - {
+  "RegisteredBusinessCheckDetailsController" - {
 
     "onPageLoad" - {
 
