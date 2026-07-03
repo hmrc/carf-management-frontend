@@ -59,8 +59,8 @@ class SubscriptionConnectorISpec
           DisplaySubscriptionContact(
             individual = Some(
               DisplaySubscriptionIndividual(
-                firstName = "Joe",
-                middleName = Some("Martyn"),
+                firstName = "Martyn",
+                middleName = None,
                 lastName = "Smith"
               )
             ),
@@ -94,8 +94,7 @@ class SubscriptionConnectorISpec
       |      },
       |      "secondaryContact": {
       |        "individual": {
-      |          "firstName": "Joe",
-      |          "middleName": "Martyn",
+      |          "firstName": "Martyn",
       |          "lastName": "Smith"
       |        },
       |        "email": "GroupRep@FATCACRS.com",
