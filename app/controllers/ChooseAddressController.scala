@@ -20,7 +20,7 @@ import config.Constants.noneOfTheseValue
 import controllers.actions.*
 import forms.ChooseAddressFormProvider
 import models.requests.DataRequest
-import models.{AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers, format}
+import models.{format, AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers}
 import navigation.Navigator
 import pages.*
 import play.api.Logging
