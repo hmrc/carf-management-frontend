@@ -14,23 +14,6 @@
  * limitations under the License.
  */
 
-package models.errors
+package models
 
-sealed trait CarfError
-
-case object ConversionError extends CarfError
-
-case class MandatoryInformationMissingError(value: String = "") extends CarfError
-
-sealed trait ApiError extends CarfError
-
-object ApiError {
-
-  case object BadRequestError extends ApiError
-
-  case object NotFoundError extends ApiError
-
-  case object InternalServerError extends ApiError
-
-  case object JsonValidationError extends ApiError
-}
+case class HomePageSubscriptionData(hasOrganisationContactDetails: Boolean, organisationName: Option[String])
