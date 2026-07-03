@@ -39,15 +39,15 @@ class RcaspAddedConfirmationController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData).async { implicit request =>
+  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
     val maybeRcaspId   = request.userAnswers.get(RcaspIdPage)
     val maybeRcaspName = RcaspHelper.retrieveRcaspName(request.userAnswers)
 
     (maybeRcaspId, maybeRcaspName) match {
-      case (Some(rcaspId), Some(name)) => Future.successful(Ok(view(rcaspId, name)))
+      case (Some(rcaspId), Some(name)) => Ok(view(rcaspId, name))
       case _                           =>
         logger.warn("[RcaspAddedConfirmationController][onPageLoad] Missing required data")
-        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
     }
   }
 }

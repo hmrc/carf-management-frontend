@@ -37,14 +37,13 @@ trait NormalRoutesNavigator {
     case HaveTradingNamePage =>
       userAnswers => navigateFromHaveTradingNamePage(userAnswers)
 
+    case TradingNamePage => userAnswers => tradingNamePagesRegisteredBusinessRedirects(userAnswers)
+
     case UtrPage =>
       _ => controllers.routes.FindAddressController.onPageLoad(NormalMode)
 
     case RegisteredBusinessIsTheAddressCorrectPage =>
       userAnswers => navigateFromRegisteredBusinessIsTheAddressCorrectPage(userAnswers)
-
-    case TradingNamePage =>
-      userAnswers => navigateFromTradingNamePage(userAnswers)
 
     case OrganisationOrIndividualPage =>
       userAnswers => navigateFromOrganisationOrIndividualPage(userAnswers)
@@ -110,14 +109,10 @@ trait NormalRoutesNavigator {
     userAnswers.get(HaveTradingNamePage) match {
       case Some(true) => controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
       case _          =>
-        if (userAnswers.rcaspIsRegisteredBusiness) {
-          controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(NormalMode)
-        } else {
-          controllers.organisation.routes.UtrController.onPageLoad(NormalMode)
-        }
+        tradingNamePagesRegisteredBusinessRedirects(userAnswers)
     }
 
-  private def navigateFromTradingNamePage(userAnswers: UserAnswers): Call =
+  private def tradingNamePagesRegisteredBusinessRedirects(userAnswers: UserAnswers): Call =
     if (userAnswers.rcaspIsRegisteredBusiness) {
       controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(NormalMode)
     } else {

@@ -27,7 +27,7 @@ import repositories.SessionRepository
 import services.RcaspSubmissionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckDetailsRegisteredBusinessHelper
-import views.html.organisation.CheckDetailsRegBusinessView
+import views.html.organisation.RegisteredBusinessCheckDetailsView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,7 +39,7 @@ class RegisteredBusinessCheckDetailsController @Inject() (
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     submissionLock: SubmissionLockAction,
-    view: CheckDetailsRegBusinessView,
+    view: RegisteredBusinessCheckDetailsView,
     val controllerComponents: MessagesControllerComponents,
     helper: CheckDetailsRegisteredBusinessHelper,
     rcaspSubmissionService: RcaspSubmissionService

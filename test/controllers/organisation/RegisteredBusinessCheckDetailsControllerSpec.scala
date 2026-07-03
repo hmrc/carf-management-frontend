@@ -35,7 +35,7 @@ import services.RcaspSubmissionService
 import types.ResultT
 import uk.gov.hmrc.auth.core.AffinityGroup
 import utils.CheckDetailsRegisteredBusinessHelper
-import views.html.organisation.CheckDetailsRegBusinessView
+import views.html.organisation.RegisteredBusinessCheckDetailsView
 
 import scala.concurrent.Future
 
@@ -63,9 +63,10 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         )
           .thenReturn(Some(testSection))
 
-        val request                           = FakeRequest(GET, cdRoute)
-        val view: CheckDetailsRegBusinessView = application.injector.instanceOf[CheckDetailsRegBusinessView]
-        val result: Future[Result]            = route(application, request).value
+        val request                                  = FakeRequest(GET, cdRoute)
+        val view: RegisteredBusinessCheckDetailsView =
+          application.injector.instanceOf[RegisteredBusinessCheckDetailsView]
+        val result: Future[Result]                   = route(application, request).value
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(testSection, "Test Business Ltd")(
