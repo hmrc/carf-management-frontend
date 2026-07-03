@@ -16,6 +16,9 @@
 
 package models
 
+import models.OrganisationOrIndividual.Individual
+import pages.combined.OrganisationOrIndividualPage
+import pages.individual.IndividualNamePage
 import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsThisYourBusinessNamePage}
 import play.api.libs.json.*
 import queries.{Gettable, Settable}
@@ -79,6 +82,12 @@ final case class UserAnswers(
       this.get(CachedBusinessDetailsPage).map(_.name)
     } else {
       this.get(OverwritableOrganisationName)
+    }
+
+  def retrieveRcaspName: Option[String] =
+    this.get(OrganisationOrIndividualPage) match {
+      case Some(Individual) => this.get(IndividualNamePage).map(_.fullName)
+      case _                => this.get(OverwritableOrganisationName)
     }
 }
 

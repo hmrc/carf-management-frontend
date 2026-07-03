@@ -100,7 +100,7 @@ trait NormalRoutesNavigator {
       userAnswers => navigateFromChooseAddressPage(userAnswers)
 
     case ReviewAddressPageForNavigatorOnly =>
-      userAnswers => navigateFromFinalAddressPages(userAnswers)
+      userAnswers => successfulAddressNavigation(userAnswers)
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
@@ -219,17 +219,20 @@ trait NormalRoutesNavigator {
       } { answer =>
         if (answer == noneOfTheseValue) {
           controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
-        } else navigateFromFinalAddressPages(userAnswers)
+        } else successfulAddressNavigation(userAnswers)
       }
 
-  private def navigateFromFinalAddressPages(userAnswers: UserAnswers): Call =
-    userAnswers.get(OrganisationOrIndividualPage) match {
-      case Some(Individual)   =>
-        controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
-      case Some(Organisation) =>
-        controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
-      case None               =>
-        controllers.routes.JourneyRecoveryController.onPageLoad()
+  private def successfulAddressNavigation(userAnswers: UserAnswers): Call =
+    if (userAnswers.rcaspIsRegisteredBusiness) {
+      controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
+    } else {
+      userAnswers.get(OrganisationOrIndividualPage) match {
+        case Some(Individual)   =>
+          controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
+        case Some(Organisation) =>
+          controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+        case None               =>
+          controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
     }
-
 }

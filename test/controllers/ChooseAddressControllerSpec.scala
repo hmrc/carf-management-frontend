@@ -22,14 +22,14 @@ import forms.ChooseAddressFormProvider
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.countries.CountryUk
 import models.errors.ApiError.InternalServerError
-import models.{format, AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers}
+import models.{AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers, format}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{times, verify, when}
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
-import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
+import pages.organisation.OverwritableOrganisationName
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -48,9 +48,6 @@ class ChooseAddressControllerSpec extends SpecBase {
 
   private lazy val chooseAddressRoute =
     controllers.routes.ChooseAddressController.onPageLoad(NormalMode).url
-
-  private lazy val isRcaspUserRoute =
-    routes.PlaceholderController.onPageLoad("Should nav to /registered-business/check-answers (CARF-294)").url
 
   val formProvider       = new ChooseAddressFormProvider()
   val form: Form[String] = formProvider()
@@ -278,7 +275,7 @@ class ChooseAddressControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to the next page when valid data is submitted and is not rcasp user" in {
+    "must redirect to the next page when valid data is submitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
@@ -344,39 +341,6 @@ class ChooseAddressControllerSpec extends SpecBase {
         redirectLocation(result).value mustEqual onwardRoute.url
 
         verify(mockSessionRepository).set(argThat(_.get(SelectedChooseAddressPage).isEmpty))
-      }
-    }
-
-    "must redirect to the next page when valid data is submitted and is rcasp user" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](0))
-
-      val userAnswers =
-        emptyUserAnswers
-          .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
-          .withPage(FindAddressPage, FindAddress(address.postCode, None))
-          .withPage(FindAddressAdditionalCallUa, false)
-          .withPage(OverwritableOrganisationName, testOrgName)
-          .withPage(ReportForRegisteredBusinessPage, true)
-
-      val application =
-        applicationBuilder(userAnswers = Some(userAnswers), requestUtr = Some(testUtr.uniqueTaxPayerReference))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
-          )
-          .build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, chooseAddressRoute)
-            .withFormUrlEncodedBody(("value", address.format))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual isRcaspUserRoute
       }
     }
 

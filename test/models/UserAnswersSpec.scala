@@ -17,6 +17,9 @@
 package models
 
 import base.SpecBase
+import models.OrganisationOrIndividual.{Individual, Organisation}
+import pages.combined.OrganisationOrIndividualPage
+import pages.individual.IndividualNamePage
 import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsThisYourBusinessNamePage}
 
 class UserAnswersSpec extends SpecBase {
@@ -56,5 +59,42 @@ class UserAnswersSpec extends SpecBase {
         ua.getRegisteredBusinessOrganisationNameMaybe mustBe None
       }
     }
+
+    "retrieveRcaspName method" - {
+      "must return the name inside IndividualNamePage has said they are an individual" in {
+        val ua = emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Individual)
+          .withPage(IndividualNamePage, testIndividualName)
+
+        ua.retrieveRcaspName mustBe Some("Timmy Jimmison")
+      }
+      "must return OverwritableOrganisationName when the user has said they are an organisation" in {
+        val ua = emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OverwritableOrganisationName, testOrgName)
+
+        ua.retrieveRcaspName mustBe Some(testOrgName)
+      }
+      "must return OverwritableOrganisationName when the user has not answered OrganisationOrIndividualPage" in {
+        val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+
+        ua.retrieveRcaspName mustBe Some(testOrgName)
+      }
+      "must return None when the user has said they are an individual but no name exists" in {
+        val ua = emptyUserAnswers.withPage(OrganisationOrIndividualPage, Individual)
+
+        ua.retrieveRcaspName mustBe None
+      }
+      "must return None when the user has said they are an organisation but no name exists" in {
+        val ua = emptyUserAnswers.withPage(OrganisationOrIndividualPage, Organisation)
+
+        ua.retrieveRcaspName mustBe None
+      }
+      "must return None when the user has not answered OrganisationOrIndividualPage and no name exists" in {
+        emptyUserAnswers.retrieveRcaspName mustBe None
+      }
+
+    }
+
   }
 }

@@ -22,7 +22,6 @@ import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.RcaspHelper
 import views.html.RcaspAddedConfirmationView
 
 import javax.inject.Inject
@@ -40,7 +39,7 @@ class RcaspAddedConfirmationController @Inject() (
 
   def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
     val maybeRcaspId   = request.userAnswers.get(RcaspIdPage)
-    val maybeRcaspName = RcaspHelper.retrieveRcaspName(request.userAnswers)
+    val maybeRcaspName = request.userAnswers.retrieveRcaspName
 
     (maybeRcaspId, maybeRcaspName) match {
       case (Some(rcaspId), Some(name)) => Ok(view(rcaspId, name))

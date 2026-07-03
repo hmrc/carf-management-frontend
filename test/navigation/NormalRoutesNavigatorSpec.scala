@@ -18,7 +18,6 @@ package navigation
 
 import base.SpecBase
 import config.Constants.noneOfTheseValue
-import controllers.routes
 import models.*
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.responses.AddressRegistrationResponse
@@ -553,8 +552,9 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed ChooseAddressPage" - {
-      "Should redirect to IndividualEmailPage when address is selected on individual journey" in {
+      "Should redirect to IndividualEmailPage when address is selected on individual journey and user is not an rcasp" in {
         val userAnswers = emptyUserAnswers
+          .copy(rcaspIsRegisteredBusiness = false)
           .withPage(ChooseAddressPage, testAddressUk.format)
           .withPage(OrganisationOrIndividualPage, Individual)
 
@@ -565,8 +565,9 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to OrganisationFirstContactNamePage when address is selected on organisation journey" in {
+      "Should redirect to OrganisationFirstContactNamePage when address is selected on organisation journey and user is not an rcasp" in {
         val userAnswers = emptyUserAnswers
+          .copy(rcaspIsRegisteredBusiness = false)
           .withPage(ChooseAddressPage, testAddressUk.format)
           .withPage(OrganisationOrIndividualPage, Organisation)
 
@@ -575,6 +576,18 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           NormalMode,
           userAnswers
         ) mustBe controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to RegisteredBusinessCheckDetailsController when address is selected the rcasp is the registered business" in {
+        val userAnswers = emptyUserAnswers
+          .copy(rcaspIsRegisteredBusiness = true)
+          .withPage(ChooseAddressPage, testAddressUk.format)
+
+        navigator.nextPage(
+          ChooseAddressPage,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
       }
 
       "Should redirect to ReviewAddressPage when none of these is selected" in {
@@ -609,8 +622,19 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed ReviewAddressPage" - {
-      "Should redirect to IndividualEmailPage when address is selected on individual journey" in {
+      "Should redirect to RegisteredBusinessCheckDetailsController the rcasp is the registered business" in {
+        val userAnswers = emptyUserAnswers.copy(rcaspIsRegisteredBusiness = true)
+
+        navigator.nextPage(
+          ReviewAddressPageForNavigatorOnly,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
+      }
+
+      "Should redirect to IndividualEmailPage when address is selected on individual journey and user is not an rcasp" in {
         val userAnswers = emptyUserAnswers
+          .copy(rcaspIsRegisteredBusiness = false)
           .withPage(OrganisationOrIndividualPage, Individual)
 
         navigator.nextPage(
@@ -620,8 +644,9 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to OrganisationFirstContactNamePage when address is selected on organisation journey" in {
+      "Should redirect to OrganisationFirstContactNamePage when address is selected on organisation journey and user is not an rcasp" in {
         val userAnswers = emptyUserAnswers
+          .copy(rcaspIsRegisteredBusiness = false)
           .withPage(OrganisationOrIndividualPage, Organisation)
 
         navigator.nextPage(
@@ -631,11 +656,13 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to JourneyRecovery when OrganisationOrIndividual is missing" in {
+      "Should redirect to JourneyRecovery when OrganisationOrIndividual is missing and user is not an rcasp" in {
+        val userAnswers = emptyUserAnswers.copy(rcaspIsRegisteredBusiness = false)
+
         navigator.nextPage(
           ReviewAddressPageForNavigatorOnly,
           NormalMode,
-          emptyUserAnswers
+          userAnswers
         ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
       }
     }
