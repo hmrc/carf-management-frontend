@@ -18,8 +18,8 @@ package controllers.organisation
 
 import cats.syntax.all.*
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
-import pages.RcaspIdPage
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
+import pages.{RcaspIdPage, SubmissionSucceededPage}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -64,14 +64,14 @@ class RegisteredBusinessCheckDetailsController @Inject() (
             }
             .getOrElse {
               logger.warn(
-                "[CheckDetailsRegBusinessController][onPageLoad] Error! Could not load page missing answers"
+                "[RegisteredBusinessCheckDetailsController][onPageLoad] Error! Could not load page missing answers"
               )
               ifEmptyProtocol
             }
 
         case _ =>
           logger.warn(
-            "[CheckDetailsRegBusinessController][onPageLoad] ReportForRegisteredBusiness is false or missing. Redirecting to SIIM."
+            "[RegisteredBusinessCheckDetailsController][onPageLoad] ReportForRegisteredBusiness is false or missing. Redirecting to SIIM."
           )
           ifEmptyProtocol
       }
@@ -83,8 +83,9 @@ class RegisteredBusinessCheckDetailsController @Inject() (
         case Right(response) =>
           val rcaspId = response.ResponseDetails.ReturnParameters.Value
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
-            _              <- sessionRepository.set(updatedAnswers)
+            ua                <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
+            uaWithSuccessFlag <- Future.fromTry(ua.set(SubmissionSucceededPage, true))
+            _                 <- sessionRepository.set(uaWithSuccessFlag)
           } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
         case Left(error)     =>
           logger.warn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")

@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.organisation
 
-import models.{AddressUk, UserAnswers}
+import models.{AddressUk, ChangeMode, UserAnswers}
 import pages.UkAddressInUserAnswers
 import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsTheAddressCorrectPage}
 import play.api.i18n.Messages
@@ -44,12 +44,8 @@ object RegisteredBusinessAddressSummary {
         actions = Seq(
           ActionItemViewModel(
             content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
-            href = controllers.routes.PlaceholderController
-              .onPageLoad(
-                "Should nav to /registered-business/is-the-address-correct (CARF-197)" +
-                  "routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(ChangeMode).url"
-              )
-              .url
+            href =
+              controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(ChangeMode).url
           ).withVisuallyHiddenText(messages("registeredBusiness.address.change.hidden"))
         )
       )

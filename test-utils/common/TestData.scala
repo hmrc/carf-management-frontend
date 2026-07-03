@@ -247,7 +247,7 @@ trait TestData extends Generators {
       )
     )
 
-  lazy val testRow: SummaryListRow =
+  lazy val testSummaryListRow: SummaryListRow =
     SummaryListRowViewModel(
       key = Key(Text("TEST Key")),
       value = ValueViewModel(Text("TEST Value")),
@@ -259,5 +259,5 @@ trait TestData extends Generators {
       )
     )
 
-  lazy val testSection: Section = Section("TEST SECTION NAME", Seq(testRow))
+  lazy val testSection: Section = Section("TEST SECTION NAME", Seq(testSummaryListRow))
 }

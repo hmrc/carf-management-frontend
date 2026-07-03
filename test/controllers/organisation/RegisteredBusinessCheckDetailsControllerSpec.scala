@@ -133,7 +133,9 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
     }
 
     "onSubmit" - {
-      "must redirect to the RCASP added page if submission is successful" in new Setup(emptyUserAnswers) {
+      "must set the SubmissionSucceededPage flag as true redirect to the RCASP added page if submission is successful" in new Setup(
+        emptyUserAnswers
+      ) {
         when(mockRcaspSubmissionService.submitRcasp(any(), any())(any(), any()))
           .thenReturn(ResultT.fromValue(submitRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
@@ -145,7 +147,13 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         redirectLocation(result).value mustEqual controllers.routes.RcaspAddedConfirmationController.onPageLoad().url
 
         verify(mockRcaspSubmissionService, times(1)).submitRcasp(any(), any())(any(), any())
-        verify(mockSessionRepository, times(1)).set(eqTo(emptyUserAnswers.withPage(RcaspIdPage, rcaspId)))
+        verify(mockSessionRepository, times(1)).set(
+          eqTo(
+            emptyUserAnswers
+              .withPage(RcaspIdPage, rcaspId)
+              .withPage(SubmissionSucceededPage, true)
+          )
+        )
       }
 
       "must redirect to Journey Recovery if submission failed" in new Setup(emptyUserAnswers) {

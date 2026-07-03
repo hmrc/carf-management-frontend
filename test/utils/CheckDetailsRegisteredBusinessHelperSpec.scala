@@ -17,7 +17,7 @@
 package utils
 
 import base.SpecBase
-import models.{CachedBusinessDetails, UserAnswers}
+import models.{CachedBusinessDetails, ChangeMode, UserAnswers}
 import pages.*
 import pages.organisation.*
 import play.api.i18n.Messages
@@ -62,7 +62,7 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
         compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
       }
 
-      "must return an alternative section with no trading name, non cached address or business name" - {
+      "must return an alternative section with no trading name, non cached address or business name and correct name row url" - {
         "when user indicates that the do not trade under a different name, and the address from the api is not correct" in {
           val userAnswers = emptyUserAnswers
             .withPage(ReportForRegisteredBusinessPage, true)
@@ -74,8 +74,12 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
 
           val section = helper.getRegisteredBusinessSection(userAnswers).get
 
-          val expectedTitle             = ""
-          val expectedKeys: Seq[String] = Seq(
+          val expectedOrganisationNameUrl: String =
+            controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController
+              .onPageLoad(ChangeMode)
+              .url
+          val expectedTitle                       = ""
+          val expectedKeys: Seq[String]           = Seq(
             "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
             "What is the name of the organisation?",
             "Does the organisation trade under a different name?",
@@ -83,6 +87,7 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
           )
 
           compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          section.rows(1).actions.get.items.head.href mustBe expectedOrganisationNameUrl
         }
       }
 

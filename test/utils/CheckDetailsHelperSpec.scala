@@ -18,6 +18,7 @@ package utils
 
 import base.SpecBase
 import generators.Generators
+import models.ChangeMode
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.UkAddressInUserAnswers
@@ -147,7 +148,7 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
     }
 
     "getOrganisationSectionMaybe" - {
-      "must return a section when relevant pages are present" - {
+      "must return a section with the correct name row url when relevant pages are present" - {
         "when ReportForRegisteredBusiness is answered and haveTradingName is true" in {
           val userAnswers = emptyUserAnswers
             .withPage(ReportForRegisteredBusinessPage, false)
@@ -158,9 +159,12 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
 
-          val section: Section          = testHelper.getOrganisationSectionMaybe(userAnswers).get
-          val expectedTitle             = ""
-          val expectedKeys: Seq[String] = Seq(
+          val section: Section = testHelper.getOrganisationSectionMaybe(userAnswers).get
+
+          val expectedOrganisationNameUrl: String =
+            controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode).url
+          val expectedTitle                       = ""
+          val expectedKeys: Seq[String]           = Seq(
             "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
             "Would you like to add an organisation or individual as an RCASP?",
             "What is the name of the organisation?",
@@ -171,6 +175,7 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
           )
 
           compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          section.rows(2).actions.get.items.head.href mustBe expectedOrganisationNameUrl
         }
 
         "when ReportForRegisteredBusiness is not answered and and haveTradingName is false" in {

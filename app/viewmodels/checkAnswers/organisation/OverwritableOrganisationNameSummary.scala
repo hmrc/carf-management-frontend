@@ -28,7 +28,7 @@ import viewmodels.implicits.*
 
 object OverwritableOrganisationNameSummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, isRegisteredBusiness: Boolean)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(OverwritableOrganisationName).map { answer =>
       SummaryListRowViewModel(
         key = "organisationName.checkYourAnswersLabel",
@@ -36,7 +36,11 @@ object OverwritableOrganisationNameSummary {
         actions = Seq(
           ActionItemViewModel(
             content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
-            href = routes.OrganisationNameController.onPageLoad(ChangeMode).url
+            href = if (isRegisteredBusiness) {
+              routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(ChangeMode).url
+            } else {
+              routes.OrganisationNameController.onPageLoad(ChangeMode).url
+            }
           ).withVisuallyHiddenText(messages("organisationName.change.hidden"))
         )
       )

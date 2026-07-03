@@ -18,18 +18,13 @@ package controllers
 
 import base.SpecBase
 import models.OrganisationOrIndividual.Individual
-import models.UserAnswers
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{verify, when}
+import pages.RcaspIdPage
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
-import pages.{RcaspIdPage, SubmissionSucceededPage}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.RcaspAddedConfirmationView
-
-import scala.concurrent.Future
 
 class RcaspAddedConfirmationControllerSpec extends SpecBase {
 
@@ -42,8 +37,6 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
       val userAnswers = emptyUserAnswers
         .withPage(OverwritableOrganisationName, testOrgName)
         .withPage(RcaspIdPage, rcaspId)
-
-      when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -59,12 +52,6 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
           request,
           messages(application)
         ).toString
-
-        verify(mockSessionRepository).set(
-          org.mockito.ArgumentMatchers.argThat((answers: UserAnswers) =>
-            answers.get(SubmissionSucceededPage).contains(true)
-          )
-        )
       }
     }
 
@@ -74,8 +61,6 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
         .withPage(OrganisationOrIndividualPage, Individual)
         .withPage(IndividualNamePage, testIndividualName)
         .withPage(RcaspIdPage, rcaspId)
-
-      when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -91,12 +76,6 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
           request,
           messages(application)
         ).toString
-
-        verify(mockSessionRepository).set(
-          org.mockito.ArgumentMatchers.argThat((answers: UserAnswers) =>
-            answers.get(SubmissionSucceededPage).contains(true)
-          )
-        )
       }
     }
 
@@ -105,8 +84,6 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
       val userAnswers = emptyUserAnswers
         .withPage(OverwritableOrganisationName, testOrgName)
         .withPage(RcaspIdPage, rcaspId)
-
-      when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -125,8 +102,6 @@ class RcaspAddedConfirmationControllerSpec extends SpecBase {
       val userAnswers = emptyUserAnswers
         .withPage(OverwritableOrganisationName, testOrgName)
         .withPage(RcaspIdPage, rcaspId)
-
-      when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 

@@ -19,10 +19,10 @@ package controllers
 import cats.syntax.all.*
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
 import models.OrganisationOrIndividual.*
-import pages.RcaspIdPage
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
+import pages.{RcaspIdPage, SubmissionSucceededPage}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -103,8 +103,9 @@ class CheckDetailsController @Inject() (
         case Right(response) =>
           val rcaspId = response.ResponseDetails.ReturnParameters.Value
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
-            _              <- sessionRepository.set(updatedAnswers)
+            ua                <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
+            uaWithSuccessFlag <- Future.fromTry(ua.set(SubmissionSucceededPage, true))
+            _                 <- sessionRepository.set(uaWithSuccessFlag)
           } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
         case Left(error)     =>
           logger.warn(s"[CheckDetailsController][onSubmit] Unable to add RCASP: $error")
