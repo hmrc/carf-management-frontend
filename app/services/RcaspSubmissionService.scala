@@ -44,12 +44,12 @@ class RcaspSubmissionService @Inject (
         rcaspConnector
           .createRcasp(request)
           .leftMap { error =>
-            logger.warn(s"[RcaspService][submitRegisteredBusinessRcasp] Failed to add RCASP: $error")
+            logger.warn(s"[RcaspSubmissionService][submitRegisteredBusinessRcasp] Failed to add RCASP: $error")
             error
           }
       case None          =>
         logger.warn(
-          "[RcaspService][submitRegisteredBusinessRcasp] Error building the CreateRcaspRequest from userAnswers"
+          "[RcaspSubmissionService][submitRegisteredBusinessRcasp] Error building the CreateRcaspRequest from userAnswers"
         )
         ResultT.fromError(MandatoryInformationMissingError("Error building the CreateRcaspRequest from userAnswers"))
     }
@@ -63,11 +63,11 @@ class RcaspSubmissionService @Inject (
         rcaspConnector
           .createRcasp(request)
           .leftMap { error =>
-            logger.warn(s"[RcaspService][submitRcasp] Failed to add RCASP: $error")
+            logger.warn(s"[RcaspSubmissionService][submitRcasp] Failed to add RCASP: $error")
             error
           }
       case None          =>
-        logger.warn("[RcaspService][submitRcasp] Error building the CreateRcaspRequest from userAnswers")
+        logger.warn("[RcaspSubmissionService][submitRcasp] Error building the CreateRcaspRequest from userAnswers")
         ResultT.fromError(MandatoryInformationMissingError("Error building the CreateRcaspRequest from userAnswers"))
     }
 }

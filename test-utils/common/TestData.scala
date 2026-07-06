@@ -115,8 +115,8 @@ trait TestData extends Generators {
       address = AddressRegistrationResponse(
         addressLine1 = "1 Test",
         addressLine2 = Some("Test Street"),
-        addressLine3 = Some("Testingtown"),
-        addressLine4 = Some("Test Region"),
+        addressLine3 = Some("Test Region"),
+        addressLine4 = Some("Testingtown"),
         postalCode = Some(testPostcode),
         countryCode = "GB"
       ),

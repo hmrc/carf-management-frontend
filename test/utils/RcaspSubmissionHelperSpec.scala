@@ -32,8 +32,8 @@ class RcaspSubmissionHelperSpec extends SpecBase {
   private val rcaspAddress = RcaspAddress(
     AddressLine1 = "1 Test",
     AddressLine2 = Some("Test Street"),
-    AddressLine3 = Some("Testingtown"),
-    AddressLine4 = Some("Test Region"),
+    AddressLine3 = Some("Test Region"),
+    AddressLine4 = Some("Testingtown"),
     PostalCode = testPostcode,
     CountryCode = "GB"
   )
