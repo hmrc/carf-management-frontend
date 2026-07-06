@@ -50,7 +50,7 @@ class RcaspSubmissionHelper {
       isCachedAddressCorrect <- userAnswers.get(RegisteredBusinessIsTheAddressCorrectPage)
       address                <- if (isCachedAddressCorrect) {
                                   import models.responses.toRcaspAddress
-                                  userAnswers.get(CachedBusinessDetailsPage).map(_.address.toRcaspAddress)
+                                  userAnswers.get(CachedBusinessDetailsPage).flatMap(_.address.toRcaspAddress)
                                 } else {
                                   import models.toRcaspAddress
                                   userAnswers.get(UkAddressInUserAnswers).map(_.toRcaspAddress)

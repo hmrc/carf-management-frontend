@@ -96,20 +96,20 @@ class AddressRegistrationResponseSpec extends SpecBase {
           PostalCode = addressFull.postalCode.get,
           CountryCode = addressFull.countryCode
         )
-        result mustBe expectedRcaspAddress
+        result mustBe Some(expectedRcaspAddress)
       }
 
-      "must return address details when given an empty address details" in {
-        val result               = addressMinimal.toRcaspAddress
+      "must return address details when given an empty address details (excluding postcode)" in {
+        val result               = addressMinimal.copy(postalCode = Some("B23 2AZ")).toRcaspAddress
         val expectedRcaspAddress = RcaspAddress(
           AddressLine1 = addressMinimal.addressLine1,
           AddressLine2 = None,
           AddressLine3 = None,
           AddressLine4 = None,
-          PostalCode = "",
+          PostalCode = "B23 2AZ",
           CountryCode = addressMinimal.countryCode
         )
-        result mustBe expectedRcaspAddress
+        result mustBe Some(expectedRcaspAddress)
       }
 
       "must return address details when line 3 is defined and line 2 is None" in {
@@ -122,7 +122,12 @@ class AddressRegistrationResponseSpec extends SpecBase {
           PostalCode = addressLine3NoLine2.postalCode.get,
           CountryCode = addressLine3NoLine2.countryCode
         )
-        result mustBe expectedRcaspAddress
+        result mustBe Some(expectedRcaspAddress)
+      }
+
+      "must return None when postalCode is missing" in {
+        val result = addressMinimal.toRcaspAddress
+        result mustBe None
       }
     }
   }

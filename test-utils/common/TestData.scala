@@ -109,24 +109,6 @@ trait TestData extends Generators {
     countryCode = "GB"
   )
 
-  val testAddressDetails = AddressDetails(
-    addressLine1 = "123 Test Street",
-    addressLine2 = Some("Test Area"),
-    addressLine3 = None,
-    townOrCity = "Test City",
-    postalCode = Some("TE5T 1NG"),
-    countryCode = "GB"
-  )
-
-  val testAddressDetailsUk = AddressDetails(
-    addressLine1 = "1 Test",
-    addressLine2 = Some("Test Street"),
-    addressLine3 = Some("Test Region"),
-    townOrCity = "Testingtown",
-    postalCode = Some(testPostcode),
-    countryCode = "GB"
-  )
-
   val cachedBusinessDetails: CachedBusinessDetails =
     CachedBusinessDetails(
       name = "Test Business Ltd",
