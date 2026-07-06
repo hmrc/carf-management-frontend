@@ -253,7 +253,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           )
         }
 
-        "must build the request without optional phone number" in {
+        "must build the request without optional phone number and when reportForRegisteredBusiness is None" in {
           val userAnswers = emptyUserAnswers
             .withPage(OrganisationOrIndividualPage, Individual)
             .withPage(IndividualNamePage, testIndividualName)
@@ -369,7 +369,38 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           )
         }
 
-        "must build the request without trading name, first contact phone and second contact" in {
+        "must build the request successfully without second contact phone and when reportForRegisteredBusiness is None" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(OrganisationOrIndividualPage, Organisation)
+            .withPage(OverwritableOrganisationName, testOrgName)
+            .withPage(HaveTradingNamePage, true)
+            .withPage(TradingNamePage, testTradingName)
+            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+            .withPage(OrganisationFirstContactEmailPage, testEmail)
+            .withPage(OrganisationFirstContactHavePhonePage, true)
+            .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
+            .withPage(OrganisationHaveSecondContactPage, true)
+            .withPage(OrganisationSecondContactNamePage, testOrgContactName)
+            .withPage(OrganisationSecondContactEmailPage, testEmail)
+            .withPage(OrganisationSecondContactHavePhonePage, false)
+
+          val result: Option[CreateRcaspRequest] = rcaspSubmissionHelper.createRcaspRequest(carfId, userAnswers)
+
+          result mustBe Some(
+            CreateRcaspRequest(
+              RCASPManagementRequest(
+                RequestCommon = rcaspCreateRequestCommon,
+                RequestDetails = organisationRcaspDetails.copy(
+                  SecondaryContactDetails = Some(organisationContactDetails.copy(PhoneNumber = None))
+                )
+              )
+            )
+          )
+        }
+
+        "must build the request without trading name, first contact phone and second contact, when reportForRegisteredBusiness is None" in {
           val userAnswers = emptyUserAnswers
             .withPage(OrganisationOrIndividualPage, Organisation)
             .withPage(OverwritableOrganisationName, testOrgName)
