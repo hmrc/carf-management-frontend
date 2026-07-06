@@ -17,6 +17,7 @@
 package models.responses
 
 import base.SpecBase
+import models.RcaspAddress
 
 class AddressRegistrationResponseSpec extends SpecBase {
 
@@ -35,6 +36,15 @@ class AddressRegistrationResponseSpec extends SpecBase {
     addressLine3 = None,
     addressLine4 = None,
     postalCode = None,
+    countryCode = "GB"
+  )
+
+  val addressLine3NoLine2 = AddressRegistrationResponse(
+    addressLine1 = "123 Main Street",
+    addressLine2 = None,
+    addressLine3 = Some("Address Line 3"),
+    addressLine4 = None,
+    postalCode = Some("B23 2AZ"),
     countryCode = "GB"
   )
 
@@ -72,6 +82,47 @@ class AddressRegistrationResponseSpec extends SpecBase {
 
         result must include("123 Main Street")
         result must not include """<span class="govuk-!-margin-bottom-0"></span>"""
+      }
+    }
+
+    ".toRcaspAddress" - {
+      "must return address details when given a full address details" in {
+        val result               = addressFull.toRcaspAddress
+        val expectedRcaspAddress = RcaspAddress(
+          AddressLine1 = addressFull.addressLine1,
+          AddressLine2 = addressFull.addressLine2,
+          AddressLine3 = addressFull.addressLine3,
+          AddressLine4 = addressFull.addressLine4,
+          PostalCode = addressFull.postalCode.get,
+          CountryCode = addressFull.countryCode
+        )
+        result mustBe expectedRcaspAddress
+      }
+
+      "must return address details when given an empty address details" in {
+        val result               = addressMinimal.toRcaspAddress
+        val expectedRcaspAddress = RcaspAddress(
+          AddressLine1 = addressMinimal.addressLine1,
+          AddressLine2 = None,
+          AddressLine3 = None,
+          AddressLine4 = None,
+          PostalCode = "",
+          CountryCode = addressMinimal.countryCode
+        )
+        result mustBe expectedRcaspAddress
+      }
+
+      "must return address details when line 3 is defined and line 2 is None" in {
+        val result               = addressLine3NoLine2.toRcaspAddress
+        val expectedRcaspAddress = RcaspAddress(
+          AddressLine1 = addressLine3NoLine2.addressLine1,
+          AddressLine2 = addressLine3NoLine2.addressLine3,
+          AddressLine3 = None,
+          AddressLine4 = None,
+          PostalCode = addressLine3NoLine2.postalCode.get,
+          CountryCode = addressLine3NoLine2.countryCode
+        )
+        result mustBe expectedRcaspAddress
       }
     }
   }

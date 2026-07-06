@@ -16,7 +16,10 @@
 
 package models.responses
 
+import models.RcaspAddress
 import play.api.libs.json.{Json, OFormat}
+
+import scala.collection.immutable.Seq
 
 case class AddressRegistrationResponse(
     addressLine1: String,
@@ -46,6 +49,18 @@ extension (address: AddressRegistrationResponse) {
     }
 
     htmlLines.mkString("<br>")
+  }
+
+  def toRcaspAddress: RcaspAddress = {
+    val addressSubsequentLines = Seq(address.addressLine2, address.addressLine3, address.addressLine4).flatten
+    RcaspAddress(
+      AddressLine1 = address.addressLine1,
+      AddressLine2 = addressSubsequentLines.headOption,
+      AddressLine3 = addressSubsequentLines.lift(1),
+      AddressLine4 = addressSubsequentLines.lift(2),
+      PostalCode = address.postalCode.getOrElse(""),
+      CountryCode = address.countryCode
+    )
   }
 }
 

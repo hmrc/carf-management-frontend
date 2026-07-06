@@ -133,8 +133,8 @@ class AddressUkSpec extends SpecBase {
         val expectedRcaspAddress = RcaspAddress(
           AddressLine1 = ukAddressFull.addressLine1,
           AddressLine2 = ukAddressFull.addressLine2,
-          AddressLine3 = ukAddressFull.addressLine3,
-          AddressLine4 = Some(ukAddressFull.townOrCity),
+          AddressLine3 = Some(ukAddressFull.townOrCity),
+          AddressLine4 = ukAddressFull.addressLine3,
           PostalCode = ukAddressFull.postCode,
           CountryCode = ukAddressFull.countryUk.code
         )
@@ -154,12 +154,12 @@ class AddressUkSpec extends SpecBase {
         result mustBe expectedRcaspAddress
       }
 
-      "must return address details when line 3 is defined and line 2 is None" in {
+      "must return address details when line 3 (county) is defined and line 2 is None" in {
         val result               = ukAddressAddressLine3.toRcaspAddress
         val expectedRcaspAddress = RcaspAddress(
           AddressLine1 = ukAddressAddressLine3.addressLine1,
-          AddressLine2 = ukAddressAddressLine3.addressLine3,
-          AddressLine3 = Some(ukAddressAddressLine3.townOrCity),
+          AddressLine2 = Some(ukAddressAddressLine3.townOrCity),
+          AddressLine3 = ukAddressAddressLine3.addressLine3,
           AddressLine4 = None,
           PostalCode = ukAddressAddressLine3.postCode,
           CountryCode = ukAddressAddressLine3.countryUk.code
