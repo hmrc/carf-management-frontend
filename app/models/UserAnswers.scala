@@ -16,6 +16,9 @@
 
 package models
 
+import models.OrganisationOrIndividual.Individual
+import pages.combined.OrganisationOrIndividualPage
+import pages.individual.IndividualNamePage
 import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsThisYourBusinessNamePage}
 import play.api.libs.json.*
 import queries.{Gettable, Settable}
@@ -26,6 +29,7 @@ import scala.util.{Failure, Success, Try}
 
 final case class UserAnswers(
     id: String,
+    rcaspIsRegisteredBusiness: Boolean,
     data: JsObject = Json.obj(),
     lastUpdated: Instant = Instant.now
 ) {
@@ -79,6 +83,12 @@ final case class UserAnswers(
     } else {
       this.get(OverwritableOrganisationName)
     }
+
+  def retrieveRcaspName: Option[String] =
+    this.get(OrganisationOrIndividualPage) match {
+      case Some(Individual) => this.get(IndividualNamePage).map(_.fullName)
+      case _                => this.get(OverwritableOrganisationName)
+    }
 }
 
 object UserAnswers {
@@ -89,6 +99,7 @@ object UserAnswers {
 
     (
       (__ \ "_id").read[String] and
+        (__ \ "rcaspIsRegisteredBusiness").read[Boolean] and
         (__ \ "data").read[JsObject] and
         (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
     )(UserAnswers.apply _)
@@ -100,9 +111,10 @@ object UserAnswers {
 
     (
       (__ \ "_id").write[String] and
+        (__ \ "rcaspIsRegisteredBusiness").write[Boolean] and
         (__ \ "data").write[JsObject] and
         (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
-    )(ua => (ua.id, ua.data, ua.lastUpdated))
+    )(ua => (ua.id, ua.rcaspIsRegisteredBusiness, ua.data, ua.lastUpdated))
   }
 
   implicit val format: OFormat[UserAnswers] = OFormat(reads, writes)

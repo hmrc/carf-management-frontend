@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.organisation
 
 import cats.syntax.all.*
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
-import models.OrganisationOrIndividual.*
-import pages.combined.OrganisationOrIndividualPage
-import pages.individual.IndividualNamePage
-import pages.organisation.OverwritableOrganisationName
+import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import pages.{RcaspIdPage, SubmissionSucceededPage}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -29,22 +26,22 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.RcaspSubmissionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.CheckDetailsHelper
-import views.html.CheckDetailsView
+import utils.CheckDetailsRegisteredBusinessHelper
+import views.html.organisation.RegisteredBusinessCheckDetailsView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class CheckDetailsController @Inject() (
+class RegisteredBusinessCheckDetailsController @Inject() (
     override val messagesApi: MessagesApi,
+    sessionRepository: SessionRepository,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     submissionLock: SubmissionLockAction,
-    sessionRepository: SessionRepository,
-    view: CheckDetailsView,
+    view: RegisteredBusinessCheckDetailsView,
     val controllerComponents: MessagesControllerComponents,
-    helper: CheckDetailsHelper,
+    helper: CheckDetailsRegisteredBusinessHelper,
     rcaspSubmissionService: RcaspSubmissionService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -54,47 +51,30 @@ class CheckDetailsController @Inject() (
   def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData) {
     implicit request =>
       val userAnswers          = request.userAnswers
-      lazy val ifEmptyProtocol =
-        Redirect(controllers.routes.InformationMissingController.onPageLoad())
+      lazy val ifEmptyProtocol = Redirect(controllers.routes.InformationMissingController.onPageLoad())
 
-      userAnswers
-        .get(OrganisationOrIndividualPage)
-        .fold {
-          logger.warn("[CheckDetailsController][onPageLoad] Error! OrganisationOrIndividualPage not populated")
+      userAnswers.get(ReportForRegisteredBusinessPage) match {
+        case Some(true) =>
+          (
+            userAnswers.get(OverwritableOrganisationName),
+            helper.getRegisteredBusinessSection(userAnswers)
+          )
+            .mapN { (name, section) =>
+              Ok(view(section, name))
+            }
+            .getOrElse {
+              logger.warn(
+                "[RegisteredBusinessCheckDetailsController][onPageLoad] Error! Could not load page missing answers"
+              )
+              ifEmptyProtocol
+            }
+
+        case _ =>
+          logger.warn(
+            "[RegisteredBusinessCheckDetailsController][onPageLoad] ReportForRegisteredBusiness is false or missing. Redirecting to SIIM."
+          )
           ifEmptyProtocol
-        } {
-          case Individual   =>
-            (
-              userAnswers.get(IndividualNamePage),
-              helper.getIndividualSectionMaybe(userAnswers),
-              helper.getIndividualContactDetailsMaybe(userAnswers)
-            )
-              .mapN { (name, individualSection, contactDetailsSection) =>
-                Ok(view(Seq(individualSection, contactDetailsSection), name.fullName))
-              }
-              .getOrElse {
-                logger.warn(
-                  "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (individual)"
-                )
-                ifEmptyProtocol
-              }
-          case Organisation =>
-            (
-              userAnswers.get(OverwritableOrganisationName),
-              helper.getOrganisationSectionMaybe(userAnswers),
-              helper.getOrganisationFirstContactDetailsMaybe(userAnswers),
-              helper.getOrganisationSecondContactDetailsMaybe(userAnswers)
-            )
-              .mapN { (orgName, organisationSection, firstContactDetailsSection, secondContactDetailsSection) =>
-                Ok(view(Seq(organisationSection, firstContactDetailsSection, secondContactDetailsSection), orgName))
-              }
-              .getOrElse {
-                logger.warn(
-                  "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (organisation)"
-                )
-                ifEmptyProtocol
-              }
-        }
+      }
   }
 
   def onSubmit: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData).async {
@@ -108,9 +88,8 @@ class CheckDetailsController @Inject() (
             _                 <- sessionRepository.set(uaWithSuccessFlag)
           } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
         case Left(error)     =>
-          logger.warn(s"[CheckDetailsController][onSubmit] Unable to add RCASP: $error")
+          logger.warn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }
-
 }

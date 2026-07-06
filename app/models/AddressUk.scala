@@ -31,7 +31,7 @@ case class AddressUk(
 )
 
 extension (address: AddressUk) {
-  def renderHTML: String = {
+  def renderHtml: String = {
     val addressLines = Seq(
       Some(address.addressLine1),
       address.addressLine2,

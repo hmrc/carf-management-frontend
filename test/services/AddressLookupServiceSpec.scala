@@ -51,7 +51,7 @@ class AddressLookupServiceSpec extends SpecBase {
         )
           .thenReturn(EitherT.rightT[Future, CarfError](Seq(oneAddressResponse)))
 
-        val Right(result, retry) = service.postcodeSearch("TE1 1ST", Some("Flat 1")).value.futureValue
+        val (result, retry) = service.postcodeSearch("TE1 1ST", Some("Flat 1")).value.futureValue.toOption.get
 
         result   mustBe Seq(AddressAndUPRN(testAddressUk, testUPRN))
         retry mustEqual false
@@ -63,7 +63,7 @@ class AddressLookupServiceSpec extends SpecBase {
         when(mockAddressLookupConnector.searchByPostcode(eqTo(SearchByPostcodeRequest("TE1 1ST", None)))(any()))
           .thenReturn(EitherT.rightT[Future, CarfError](multipleAddressResponses))
 
-        val Right(result, retry) = service.postcodeSearch("TE1 1ST", None).value.futureValue
+        val (result, retry) = service.postcodeSearch("TE1 1ST", None).value.futureValue.toOption.get
 
         result   mustBe Seq(
           AddressAndUPRN(testAddressUk, testUPRN),
@@ -84,7 +84,7 @@ class AddressLookupServiceSpec extends SpecBase {
         when(mockAddressLookupConnector.searchByPostcode(eqTo(SearchByPostcodeRequest("TE1 1ST", None)))(any()))
           .thenReturn(EitherT.rightT[Future, CarfError](multipleAddressResponses))
 
-        val Right(result, retry) = service.postcodeSearch("TE1 1ST", Some("Flat 99")).value.futureValue
+        val (result, retry) = service.postcodeSearch("TE1 1ST", Some("Flat 99")).value.futureValue.toOption.get
 
         result   mustBe Seq(
           AddressAndUPRN(testAddressUk, testUPRN),
@@ -107,7 +107,7 @@ class AddressLookupServiceSpec extends SpecBase {
         when(mockAddressLookupConnector.searchByPostcode(eqTo(SearchByPostcodeRequest("TE1 1ST", None)))(any()))
           .thenReturn(EitherT.rightT[Future, CarfError](Seq.empty))
 
-        val Right(result, retry) = service.postcodeSearch("TE1 1ST", Some("Flat 99")).value.futureValue
+        val (result, retry) = service.postcodeSearch("TE1 1ST", Some("Flat 99")).value.futureValue.toOption.get
 
         result mustEqual Seq.empty
         retry  mustEqual true
@@ -121,7 +121,7 @@ class AddressLookupServiceSpec extends SpecBase {
         when(mockAddressLookupConnector.searchByPostcode(eqTo(SearchByPostcodeRequest("XX1 1XX", None)))(any()))
           .thenReturn(EitherT.rightT[Future, CarfError](Seq.empty))
 
-        val Right(result, retry) = service.postcodeSearch("XX1 1XX", None).value.futureValue
+        val (result, retry) = service.postcodeSearch("XX1 1XX", None).value.futureValue.toOption.get
 
         result mustEqual Seq.empty
         retry  mustEqual false

@@ -16,19 +16,17 @@
 
 package controllers
 
+import com.google.inject.Inject
 import controllers.actions.*
-import models.{Mode, UniqueTaxpayerReference, UserAnswers}
+import models.Mode
 import navigation.Navigator
 import pages.{AddressPagePrePop, ReviewAddressPageForNavigatorOnly, UkAddressInUserAnswers}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.RcaspHelper
 import views.html.ReviewAddressView
-import com.google.inject.Inject
-import services.AccountService
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,7 +39,6 @@ class ReviewAddressController @Inject() (
     submissionLock: SubmissionLockAction,
     navigator: Navigator,
     sessionRepository: SessionRepository,
-    accountService: AccountService,
     val controllerComponents: MessagesControllerComponents,
     view: ReviewAddressView
 )(implicit ec: ExecutionContext)
@@ -57,7 +54,7 @@ class ReviewAddressController @Inject() (
 
       request.userAnswers.get(AddressPagePrePop) match {
         case Some(address) =>
-          RcaspHelper.retrieveRcaspName(request.userAnswers) match {
+          request.userAnswers.retrieveRcaspName match {
             case Some(name) => Ok(view(address, mode, editAddressLink, name))
             case None       =>
               logger.warn(
@@ -72,40 +69,17 @@ class ReviewAddressController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
-      implicit request =>
-        request.userAnswers.get(AddressPagePrePop) match {
-          case Some(address) =>
-            for {
-              updatedAnswers <-
-                Future.fromTry(request.userAnswers.set(UkAddressInUserAnswers, address))
-              _              <- sessionRepository.set(updatedAnswers)
-              result         <-
-                accountService
-                  .getNumberOfRcaspsCurrentlyAdded(request.carfId)
-                  .map(count => Redirect(isRcaspUserRedirect(count, request.utr, updatedAnswers, mode)))
-                  .leftMap { error =>
-                    logger.warn(s"[ReviewAddressController] Error retrieving RCASP count: $error")
-                    Redirect(routes.JourneyRecoveryController.onPageLoad())
-                  }
-                  .merge
-            } yield result
-          case None          =>
-            logger.error("No address found in user answers")
-            Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
-        }
-    }
-
-  private def isRcaspUserRedirect(
-      rcaspCount: Int,
-      ctUtr: Option[UniqueTaxpayerReference],
-      userAnswers: UserAnswers,
-      mode: Mode
-  ): Call =
-    if (RcaspHelper.isRcaspUser(rcaspCount, ctUtr, userAnswers)) {
-      routes.PlaceholderController.onPageLoad("Should nav to /registered-business/check-answers (CARF-294)")
-    } else {
-      navigator.nextPage(ReviewAddressPageForNavigatorOnly, mode, userAnswers)
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
+      request.userAnswers.get(AddressPagePrePop) match {
+        case Some(address) =>
+          for {
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(UkAddressInUserAnswers, address))
+            _              <- sessionRepository.set(updatedAnswers)
+          } yield Redirect(navigator.nextPage(ReviewAddressPageForNavigatorOnly, mode, updatedAnswers))
+        case None          =>
+          logger.error("No address found in user answers")
+          Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+      }
     }
 
 }

@@ -20,7 +20,7 @@ import config.Constants.noneOfTheseValue
 import controllers.actions.*
 import forms.ChooseAddressFormProvider
 import models.requests.DataRequest
-import models.{format, AddressAndUPRN, AddressUk, FindAddress, Mode, UniqueTaxpayerReference, UserAnswers}
+import models.{format, AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers}
 import navigation.Navigator
 import pages.*
 import play.api.Logging
@@ -28,11 +28,9 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
 import repositories.SessionRepository
-import services.AccountService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.RcaspHelper
 import views.html.ChooseAddressView
 
 import javax.inject.Inject
@@ -49,7 +47,6 @@ class ChooseAddressController @Inject() (
     requireData: DataRequiredAction,
     submissionLock: SubmissionLockAction,
     formProvider: ChooseAddressFormProvider,
-    accountService: AccountService,
     val controllerComponents: MessagesControllerComponents,
     view: ChooseAddressView
 )(implicit ec: ExecutionContext)
@@ -84,11 +81,11 @@ class ChooseAddressController @Inject() (
       lazy val preparedForm: Form[String] = request.userAnswers.get(ChooseAddressPage).fold(form)(form.fill)
 
       val WithRadiosResult(result, _) = resultWithRadios(mode) { (radios, maybeFindAddress) =>
-        RcaspHelper.retrieveRcaspName(request.userAnswers) match {
+        request.userAnswers.retrieveRcaspName match {
           case Some(name) => Ok(view(preparedForm, mode, radios, generateHtml(maybeFindAddress), name))
           case None       =>
             logger.warn(
-              "[ChooseAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onPageLoad"
+              "[ChooseAddressController][onPageLoad] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
             )
             Redirect(controllers.routes.InformationMissingController.onPageLoad())
         }
@@ -98,49 +95,36 @@ class ChooseAddressController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
-      implicit request =>
-        form
-          .bindFromRequest()
-          .fold(
-            formWithErrors => {
-              val WithRadiosResult(result, _) = resultWithRadios(mode) { (radios, maybeFindAddress) =>
-                RcaspHelper.retrieveRcaspName(request.userAnswers) match {
-                  case Some(name) =>
-                    BadRequest(view(formWithErrors, mode, radios, generateHtml(maybeFindAddress), name))
-                  case None       =>
-                    logger.warn(
-                      "[ChooseAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
-                    )
-                    Redirect(controllers.routes.InformationMissingController.onPageLoad())
-                }
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
+      form
+        .bindFromRequest()
+        .fold(
+          formWithErrors => {
+            val WithRadiosResult(result, _) = resultWithRadios(mode) { (radios, maybeFindAddress) =>
+              request.userAnswers.retrieveRcaspName match {
+                case Some(name) => BadRequest(view(formWithErrors, mode, radios, generateHtml(maybeFindAddress), name))
+                case None       =>
+                  logger.warn(
+                    "[ChooseAddressController][onSubmit] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
+                  )
+                  Redirect(controllers.routes.InformationMissingController.onPageLoad())
               }
-              Future.successful(result)
-            },
-            value =>
-              for {
-                updatedAnswers                <- Future.fromTry(request.userAnswers.set(ChooseAddressPage, value))
-                addressToStoreMaybe           <- findAddressToStore(mode, value)
-                updatedAnswersAsAddressMaybe  <-
-                  addressToStoreMaybe.fold(Future.successful(updatedAnswers)) { addressToStore =>
-                    storeAddress(addressToStore, updatedAnswers)
-                  }
-                updatedAnswersWithEmptyPrePop <-
-                  Future.fromTry(updatedAnswersAsAddressMaybe.remove(AddressPagePrePop))
-                _                             <- sessionRepository.set(updatedAnswersWithEmptyPrePop)
-                result                        <-
-                  accountService
-                    .getNumberOfRcaspsCurrentlyAdded(request.carfId)
-                    .map(count =>
-                      Redirect(isRcaspUserRedirect(count, request.utr, updatedAnswersWithEmptyPrePop, mode))
-                    )
-                    .leftMap { error =>
-                      logger.warn(s"[ChooseAddressController] Error retrieving RCASP count: $error")
-                      Redirect(routes.JourneyRecoveryController.onPageLoad())
-                    }
-                    .merge
-              } yield result
-          )
+            }
+            Future.successful(result)
+          },
+          value =>
+            for {
+              updatedAnswers                <- Future.fromTry(request.userAnswers.set(ChooseAddressPage, value))
+              addressToStoreMaybe           <- findAddressToStore(mode, value)
+              updatedAnswersAsAddressMaybe  <-
+                addressToStoreMaybe.fold(Future.successful(updatedAnswers)) { addressToStore =>
+                  storeAddress(addressToStore, updatedAnswers)
+                }
+              updatedAnswersWithEmptyPrePop <-
+                Future.fromTry(updatedAnswersAsAddressMaybe.remove(AddressPagePrePop))
+              _                             <- sessionRepository.set(updatedAnswersWithEmptyPrePop)
+            } yield Redirect(navigator.nextPage(ChooseAddressPage, mode, updatedAnswersWithEmptyPrePop))
+        )
     }
 
   private def storeAddress(addressToStore: AddressAndUPRN, userAnswer: UserAnswers): Future[UserAnswers] =
@@ -207,17 +191,5 @@ class ChooseAddressController @Inject() (
           )(identity)
         }
       }
-
-  private def isRcaspUserRedirect(
-      rcaspCount: Int,
-      ctUtr: Option[UniqueTaxpayerReference],
-      userAnswers: UserAnswers,
-      mode: Mode
-  ): Call =
-    if (RcaspHelper.isRcaspUser(rcaspCount, ctUtr, userAnswers)) {
-      routes.PlaceholderController.onPageLoad("Should nav to /registered-business/check-answers (CARF-294)")
-    } else {
-      navigator.nextPage(ChooseAddressPage, mode, userAnswers)
-    }
 
 }

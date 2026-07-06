@@ -249,8 +249,7 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to Journey Recovery for a POST when cached business details are not found" in {
-
+    "must redirect to Journey Recovery for a POST when cached business details are not found when form has errors" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {

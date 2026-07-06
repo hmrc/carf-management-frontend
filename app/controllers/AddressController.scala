@@ -18,17 +18,15 @@ package controllers
 
 import controllers.actions.*
 import forms.AddressFormProvider
-import models.{AddressUk, Mode, UniqueTaxpayerReference, UserAnswers}
+import models.{AddressUk, Mode}
 import navigation.Navigator
 import pages.{AddressPageForNavigatorOnly, AddressPagePrePop, AddressUPRNUserAnswers, UkAddressInUserAnswers}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
-import services.AccountService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.RcaspHelper
 import views.html.AddressView
 
 import javax.inject.Inject
@@ -44,7 +42,6 @@ class AddressController @Inject() (
     ctUtrRetrievalAction: CtUtrRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: AddressFormProvider,
-    accountService: AccountService,
     val controllerComponents: MessagesControllerComponents,
     view: AddressView
 )(implicit ec: ExecutionContext)
@@ -59,7 +56,7 @@ class AddressController @Inject() (
 
       lazy val preparedForm = request.userAnswers.get(AddressPagePrePop).fold(form)(form.fill)
 
-      RcaspHelper.retrieveRcaspName(request.userAnswers) match {
+      request.userAnswers.retrieveRcaspName match {
         case Some(name) =>
           Ok(view(preparedForm, mode, name))
         case None       =>
@@ -77,43 +74,19 @@ class AddressController @Inject() (
           .bindFromRequest()
           .fold(
             formWithErrors =>
-              RcaspHelper
-                .retrieveRcaspName(request.userAnswers)
-                .fold {
-                  logger.warn(
-                    "[AddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
-                  )
-                  Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
-                }(name => Future.successful(BadRequest(view(formWithErrors, mode, name)))),
+              request.userAnswers.retrieveRcaspName.fold {
+                logger.warn(
+                  "[AddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
+                )
+                Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
+              }(name => Future.successful(BadRequest(view(formWithErrors, mode, name)))),
             value =>
               for {
-                a      <- Future.fromTry(request.userAnswers.set(UkAddressInUserAnswers, value))
-                b      <- Future.fromTry(a.set(AddressPagePrePop, value))
-                c      <- Future.fromTry(b.remove(AddressUPRNUserAnswers))
-                _      <- sessionRepository.set(c)
-                result <-
-                  accountService
-                    .getNumberOfRcaspsCurrentlyAdded(request.carfId)
-                    .map(count => Redirect(isRcaspUserRedirect(count, request.utr, c, mode)))
-                    .leftMap { error =>
-                      logger.warn(s"[AddressController] Error retrieving RCASP count: $error")
-                      Redirect(routes.JourneyRecoveryController.onPageLoad())
-                    }
-                    .merge
-              } yield result
+                a <- Future.fromTry(request.userAnswers.set(UkAddressInUserAnswers, value))
+                b <- Future.fromTry(a.set(AddressPagePrePop, value))
+                c <- Future.fromTry(b.remove(AddressUPRNUserAnswers))
+                _ <- sessionRepository.set(c)
+              } yield Redirect(navigator.nextPage(AddressPageForNavigatorOnly, mode, c))
           )
     }
-
-  private def isRcaspUserRedirect(
-      rcaspCount: Int,
-      ctUtr: Option[UniqueTaxpayerReference],
-      userAnswers: UserAnswers,
-      mode: Mode
-  ): Call =
-    if (RcaspHelper.isRcaspUser(rcaspCount, ctUtr, userAnswers)) {
-      routes.PlaceholderController.onPageLoad("Should nav to /registered-business/check-answers (CARF-294)")
-    } else {
-      navigator.nextPage(AddressPageForNavigatorOnly, mode, userAnswers)
-    }
-
 }

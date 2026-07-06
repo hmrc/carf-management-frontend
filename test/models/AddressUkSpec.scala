@@ -16,13 +16,12 @@
 
 package models
 
+import base.SpecBase
 import config.Constants.ukCountryCode
+import models.countries.CountryUk
 import models.requests.AddressDetails
-import org.scalatest.OptionValues
-import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.must.Matchers
 
-class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
+class AddressUkSpec extends SpecBase {
 
   val ukAddressFull = AddressUk(
     addressLine1 = "123 Main Street",
@@ -57,9 +56,9 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
   )
 
   "AddressUk" - {
-    "renderHTML" - {
+    "renderHtml" - {
       "must render UK address correctly" in {
-        val result = ukAddressFull.renderHTML
+        val result = ukAddressFull.renderHtml
 
         result must include("123 Main Street")
         result must include("Birmingham")
@@ -71,13 +70,13 @@ class AddressUkSpec extends AnyFreeSpec with Matchers with OptionValues {
       }
 
       "must handle minimal address with only required fields" in {
-        val result = ukAddressMinimal.renderHTML
+        val result = ukAddressMinimal.renderHtml
 
         result mustEqual """<span class="govuk-!-margin-bottom-0">123 Main Street</span><br><span class="govuk-!-margin-bottom-0">Townington</span><br>B23 2AZ"""
       }
 
       "must filter out empty optional fields" in {
-        val result = ukAddressEmptyStrings.renderHTML
+        val result = ukAddressEmptyStrings.renderHtml
 
         result must include("123 Main Street")
         result must not include """<span class="govuk-!-margin-bottom-0"></span>"""

@@ -17,22 +17,19 @@
 package controllers
 
 import base.SpecBase
-import cats.data.EitherT
 import models.NormalMode
 import models.OrganisationOrIndividual.{Individual, Organisation}
-import models.errors.ApiError.InternalServerError
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
-import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
+import pages.organisation.OverwritableOrganisationName
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.AccountService
 import views.html.ReviewAddressView
 
 import scala.concurrent.Future
@@ -46,8 +43,6 @@ class ReviewAddressControllerSpec extends SpecBase {
 
   lazy val reviewAddressOnSubmitRoute: String =
     controllers.routes.ReviewAddressController.onSubmit(NormalMode).url
-
-  val mockAccountService: AccountService = mock[AccountService]
 
   "ReviewAddress Controller" - {
 
@@ -171,19 +166,16 @@ class ReviewAddressControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to the next page when user clicks the Continue button and is not rcasp user" in {
+    "must redirect to the next page when user clicks the Continue button" in {
       val userAnswers =
         emptyUserAnswers.withPage(AddressPagePrePop, testAddressUk)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
           )
           .build()
 
@@ -195,38 +187,6 @@ class ReviewAddressControllerSpec extends SpecBase {
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual onwardRoute.url
-        verify(mockSessionRepository, times(1)).set(any())
-      }
-    }
-
-    "must redirect to the next page when user clicks the Continue button and is rcasp user" in {
-      val userAnswers =
-        emptyUserAnswers.withPage(AddressPagePrePop, testAddressUk).withPage(ReportForRegisteredBusinessPage, true)
-
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](0))
-
-      val application =
-        applicationBuilder(userAnswers = Some(userAnswers), requestUtr = Some(testUtr.uniqueTaxPayerReference))
-          .overrides(
-            bind[AccountService].toInstance(mockAccountService)
-          )
-          .build()
-
-      running(application) {
-        val request =
-          FakeRequest(GET, reviewAddressOnSubmitRoute)
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual
-          routes.PlaceholderController
-            .onPageLoad(
-              "Should nav to /registered-business/check-answers (CARF-294)"
-            )
-            .url
         verify(mockSessionRepository, times(1)).set(any())
       }
     }

@@ -17,9 +17,9 @@
 package controllers
 
 import base.SpecBase
-import cats.data.EitherT
 import forms.ChooseAddressFormProvider
 import models.OrganisationOrIndividual.{Individual, Organisation}
+import models.countries.CountryUk
 import models.errors.ApiError.InternalServerError
 import models.{format, AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
@@ -28,13 +28,12 @@ import org.mockito.Mockito.{times, verify, when}
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
-import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
+import pages.organisation.OverwritableOrganisationName
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{redirectLocation, *}
-import services.AccountService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import views.html.ChooseAddressView
@@ -48,13 +47,8 @@ class ChooseAddressControllerSpec extends SpecBase {
   private lazy val chooseAddressRoute =
     controllers.routes.ChooseAddressController.onPageLoad(NormalMode).url
 
-  private lazy val isRcaspUserRoute =
-    routes.PlaceholderController.onPageLoad("Should nav to /registered-business/check-answers (CARF-294)").url
-
   val formProvider       = new ChooseAddressFormProvider()
   val form: Form[String] = formProvider()
-
-  val mockAccountService: AccountService = mock[AccountService]
 
   val address = AddressUk(
     "1 Test Street",
@@ -69,7 +63,7 @@ class ChooseAddressControllerSpec extends SpecBase {
     "must return OK and the correct view for a GET when OverwriteableOrganisationName is present" in {
 
       val userAnswers =
-        UserAnswers(userAnswersId)
+        emptyUserAnswers
           .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
           .withPage(FindAddressPage, FindAddress(address.postCode, None))
           .withPage(FindAddressAdditionalCallUa, false)
@@ -97,7 +91,7 @@ class ChooseAddressControllerSpec extends SpecBase {
     "must return OK and the correct view for a GET when IndividualNamePage is present" in {
 
       val userAnswers =
-        UserAnswers(userAnswersId)
+        emptyUserAnswers
           .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
           .withPage(FindAddressPage, FindAddress(address.postCode, None))
           .withPage(FindAddressAdditionalCallUa, false)
@@ -129,7 +123,7 @@ class ChooseAddressControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET when OverwriteableOrganisationName is present but OrganisationOrIndividualPage is not" in {
       val userAnswers =
-        UserAnswers(userAnswersId)
+        emptyUserAnswers
           .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
           .withPage(FindAddressPage, FindAddress(address.postCode, None))
           .withPage(FindAddressAdditionalCallUa, false)
@@ -158,7 +152,7 @@ class ChooseAddressControllerSpec extends SpecBase {
       val additionalHtml = generateHtml("property 1", address.postCode)
 
       val userAnswers =
-        UserAnswers(userAnswersId)
+        emptyUserAnswers
           .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
           .withPage(FindAddressPage, FindAddress(address.postCode, Some("property 1")))
           .withPage(FindAddressAdditionalCallUa, true)
@@ -191,7 +185,7 @@ class ChooseAddressControllerSpec extends SpecBase {
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
       val userAnswers =
-        UserAnswers(userAnswersId)
+        emptyUserAnswers
           .withPage(ChooseAddressPage, address.format)
           .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
           .withPage(FindAddressPage, FindAddress(address.postCode, None))
@@ -223,8 +217,7 @@ class ChooseAddressControllerSpec extends SpecBase {
 
     "must return Redirect to journey recovery when FindAddressPage or FindAddressAdditionalCallUa is missing in ua for GET " in {
 
-      val userAnswers =
-        UserAnswers(userAnswersId).withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
+      val userAnswers = emptyUserAnswers.withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers)).build()
@@ -260,9 +253,7 @@ class ChooseAddressControllerSpec extends SpecBase {
 
     "must redirect to address page when no address is found but AddressLookup is present for a GET" in {
 
-      val userAnswers =
-        UserAnswers(userAnswersId)
-          .withPage(AddressLookupResult, Seq.empty)
+      val userAnswers = emptyUserAnswers.withPage(AddressLookupResult, Seq.empty)
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers)).build()
@@ -277,13 +268,11 @@ class ChooseAddressControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to the next page when valid data is submitted and is not rcasp user" in {
+    "must redirect to the next page when valid data is submitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val userAnswers =
-        UserAnswers(userAnswersId)
+        emptyUserAnswers
           .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
           .withPage(FindAddressPage, FindAddress(address.postCode, None))
           .withPage(FindAddressAdditionalCallUa, false)
@@ -292,8 +281,7 @@ class ChooseAddressControllerSpec extends SpecBase {
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
           )
           .build()
 
@@ -314,11 +302,9 @@ class ChooseAddressControllerSpec extends SpecBase {
 
     "must redirect to the next page when none of these is submitted and does not store an address" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val userAnswers =
-        UserAnswers(userAnswersId)
+        emptyUserAnswers
           .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
           .withPage(FindAddressPage, FindAddress(address.postCode, None))
           .withPage(FindAddressAdditionalCallUa, false)
@@ -327,8 +313,7 @@ class ChooseAddressControllerSpec extends SpecBase {
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
           )
           .build()
 
@@ -346,43 +331,10 @@ class ChooseAddressControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to the next page when valid data is submitted and is rcasp user" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](0))
-
-      val userAnswers =
-        UserAnswers(userAnswersId)
-          .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
-          .withPage(FindAddressPage, FindAddress(address.postCode, None))
-          .withPage(FindAddressAdditionalCallUa, false)
-          .withPage(OverwritableOrganisationName, testOrgName)
-          .withPage(ReportForRegisteredBusinessPage, true)
-
-      val application =
-        applicationBuilder(userAnswers = Some(userAnswers), requestUtr = Some(testUtr.uniqueTaxPayerReference))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
-          )
-          .build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, chooseAddressRoute)
-            .withFormUrlEncodedBody(("value", address.format))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual isRcaspUserRoute
-      }
-    }
-
     "must return a Bad Request and errors when invalid data is submitted" in {
 
       val userAnswers =
-        UserAnswers(userAnswersId)
+        emptyUserAnswers
           .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
           .withPage(FindAddressPage, FindAddress(address.postCode, None))
           .withPage(FindAddressAdditionalCallUa, false)
@@ -420,7 +372,7 @@ class ChooseAddressControllerSpec extends SpecBase {
       val additionalHtml = generateHtml("property 1", address.postCode)
 
       val userAnswers =
-        UserAnswers(userAnswersId)
+        emptyUserAnswers
           .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
           .withPage(FindAddressPage, FindAddress(address.postCode, Some("property 1")))
           .withPage(FindAddressAdditionalCallUa, true)
@@ -471,15 +423,12 @@ class ChooseAddressControllerSpec extends SpecBase {
 
     "must fail when address selected cannot be found for a POST" in {
 
-      val userAnswers =
-        UserAnswers(userAnswersId)
-          .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
+      val userAnswers = emptyUserAnswers.withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
           )
           .build()
 

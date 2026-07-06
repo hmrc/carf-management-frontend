@@ -28,6 +28,8 @@ object ApiError {
 
   case object BadRequestError extends ApiError
 
+  case object NotFoundError extends ApiError
+
   case object InternalServerError extends ApiError
 
   case object JsonValidationError extends ApiError

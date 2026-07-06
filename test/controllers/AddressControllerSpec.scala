@@ -48,13 +48,8 @@ class AddressControllerSpec extends SpecBase {
   private lazy val addressRoute =
     controllers.routes.AddressController.onPageLoad(NormalMode).url
 
-  private lazy val isRcaspUserRoute =
-    routes.PlaceholderController.onPageLoad("Should nav to /registered-business/check-answers (CARF-294)").url
-
   inline final val addressRegex     = """^[a-zA-Z0-9 \.&`\-\'\^]*$"""
   inline final val addressMaxLength = 35
-
-  private val mockAccountService: AccountService = mock[AccountService]
 
   "Address Controller" - {
     "must return OK and the correct view for a GET when IndividualNamePage is present" in {
@@ -141,10 +136,8 @@ class AddressControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to the next page when valid data is submitted and is not rcasp user" in {
+    "must redirect to the next page when valid data is submitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](1))
 
       val userAnswers = emptyUserAnswers
         .withPage(AddressUPRNUserAnswers, testUPRN)
@@ -153,10 +146,7 @@ class AddressControllerSpec extends SpecBase {
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
-          )
+          .overrides(bind[Navigator].toInstance(new FakeNavigator(onwardRoute)))
           .build()
 
       running(application) {
@@ -177,83 +167,6 @@ class AddressControllerSpec extends SpecBase {
         verify(mockSessionRepository, times(1)).set(
           argThat(_.get(AddressUPRNUserAnswers).isEmpty)
         )
-      }
-    }
-
-    "must redirect to the next page when valid data is submitted and is rcasp user" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-        .thenReturn(EitherT.rightT[Future, InternalServerError.type](0))
-
-      val userAnswers = emptyUserAnswers
-        .withPage(AddressUPRNUserAnswers, testUPRN)
-        .withPage(OrganisationOrIndividualPage, Organisation)
-        .withPage(OverwritableOrganisationName, testOrgName)
-        .withPage(ReportForRegisteredBusinessPage, true)
-
-      val application =
-        applicationBuilder(userAnswers = Some(userAnswers), requestUtr = Some(testUtr.uniqueTaxPayerReference))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
-          )
-          .build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, addressRoute)
-            .withFormUrlEncodedBody(
-              "addressLine1" -> "value 1",
-              "addressLine2" -> "value 2",
-              "county"       -> "west testshire",
-              "townOrCity"   -> "test town",
-              "postcode"     -> testNonCdPostcode
-            )
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual isRcaspUserRoute
-        verify(mockSessionRepository, times(1)).set(
-          argThat(_.get(AddressUPRNUserAnswers).isEmpty)
-        )
-      }
-    }
-
-    "must redirect to Journey Recovery when valid data is submitted but Account Service returns an error" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-        .thenReturn(EitherT.leftT[Future, Int](InternalServerError))
-
-      val userAnswers = emptyUserAnswers
-        .withPage(AddressUPRNUserAnswers, testUPRN)
-        .withPage(OrganisationOrIndividualPage, Organisation)
-        .withPage(OverwritableOrganisationName, testOrgName)
-        .withPage(ReportForRegisteredBusinessPage, true)
-
-      val application =
-        applicationBuilder(userAnswers = Some(userAnswers), requestUtr = Some(testUtr.uniqueTaxPayerReference))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[AccountService].toInstance(mockAccountService)
-          )
-          .build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, addressRoute)
-            .withFormUrlEncodedBody(
-              "addressLine1" -> "value 1",
-              "addressLine2" -> "value 2",
-              "county"       -> "west testshire",
-              "townOrCity"   -> "test town",
-              "postcode"     -> testNonCdPostcode
-            )
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
       }
     }
 

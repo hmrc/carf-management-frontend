@@ -22,15 +22,15 @@ import models.errors.ApiError.InternalServerError
 import models.responses.AddressRegistrationResponse
 import models.{BusinessDetails, CachedBusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
+import org.mockito.Mockito.{verify, when}
 import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.RegistrationService
+import services.{AccountService, RegistrationService}
 import types.ResultT
 import utils.CountryListFactory
 import views.html.organisation.ReportForRegisteredBusinessView
@@ -183,25 +183,155 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+    "when the user answers Yes to the question, has a CT UTR and has zero RCASPs added" - {
+      "must redirect to the next page and set rcaspIsRegisteredBusiness to true" in {
+        val mockAccountService: AccountService = mock[AccountService]
 
-      val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+        val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
-      val application = applicationBuilder(
-        userAnswers = Some(userAnswers),
-        requestUtr = Some(testUtr.uniqueTaxPayerReference)
-      ).overrides(bind[Navigator].toInstance(new FakeNavigator(onwardRoute))).build()
+        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      running(application) {
-        val request =
-          FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", "true"))
+        val application =
+          applicationBuilder(
+            userAnswers = Some(userAnswers),
+            requestUtr = Some(testUtr.uniqueTaxPayerReference)
+          ).overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[AccountService].toInstance(mockAccountService)
+          ).build()
 
-        val result = route(application, request).value
+        running(application) {
+          val request = FakeRequest(POST, routeUnderTest).withFormUrlEncodedBody(("value", "true"))
 
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual onwardRoute.url
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+          verify(mockSessionRepository).set(argThat(_.rcaspIsRegisteredBusiness))
+        }
+      }
+    }
+
+    "when the user answers No to the question, has a CT UTR and has zero RCASPs added" - {
+      "must redirect to the next page and keep rcaspIsRegisteredBusiness as false" in {
+        val mockAccountService: AccountService = mock[AccountService]
+
+        val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+
+        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val application =
+          applicationBuilder(
+            userAnswers = Some(userAnswers),
+            requestUtr = Some(testUtr.uniqueTaxPayerReference)
+          ).overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[AccountService].toInstance(mockAccountService)
+          ).build()
+
+        running(application) {
+          val request = FakeRequest(POST, routeUnderTest).withFormUrlEncodedBody(("value", "false"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+          verify(mockSessionRepository).set(argThat(!_.rcaspIsRegisteredBusiness))
+        }
+      }
+    }
+
+    "when the user answers Yes to the question, has a CT UTR and has more zero RCASPs added" - {
+      "must redirect to the next page and keep rcaspIsRegisteredBusiness as false" in {
+        val mockAccountService: AccountService = mock[AccountService]
+
+        val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+
+        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(1))
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val application =
+          applicationBuilder(
+            userAnswers = Some(userAnswers),
+            requestUtr = Some(testUtr.uniqueTaxPayerReference)
+          ).overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[AccountService].toInstance(mockAccountService)
+          ).build()
+
+        running(application) {
+          val request = FakeRequest(POST, routeUnderTest).withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+          verify(mockSessionRepository).set(argThat(!_.rcaspIsRegisteredBusiness))
+        }
+      }
+    }
+
+    "when the user answers Yes to the question, does NOT have a CT UTR and has zero RCASPs added" - {
+      "must redirect to the next page and keep rcaspIsRegisteredBusiness as false" in {
+        val mockAccountService: AccountService = mock[AccountService]
+
+        val userAnswers = emptyUserAnswers.withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+
+        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val application =
+          applicationBuilder(
+            userAnswers = Some(userAnswers),
+            requestUtr = None
+          ).overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[AccountService].toInstance(mockAccountService)
+          ).build()
+
+        running(application) {
+          val request = FakeRequest(POST, routeUnderTest).withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+          verify(mockSessionRepository).set(argThat(!_.rcaspIsRegisteredBusiness))
+        }
+      }
+    }
+
+    "when the user answers has rcaspIsRegisteredBusiness as true, but fails the conditions for being a registered business" - {
+      "must redirect to the next page and change rcaspIsRegisteredBusiness to false" in {
+        val mockAccountService: AccountService = mock[AccountService]
+
+        val userAnswers = emptyUserAnswers
+          .copy(rcaspIsRegisteredBusiness = true)
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+
+        when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val application =
+          applicationBuilder(
+            userAnswers = Some(userAnswers),
+            requestUtr = Some(testUtr.uniqueTaxPayerReference)
+          ).overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[AccountService].toInstance(mockAccountService)
+          ).build()
+
+        running(application) {
+          val request = FakeRequest(POST, routeUnderTest).withFormUrlEncodedBody(("value", "false"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+          verify(mockSessionRepository).set(argThat(!_.rcaspIsRegisteredBusiness))
+        }
       }
     }
 

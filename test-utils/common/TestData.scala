@@ -22,6 +22,10 @@ import models.individual.IndividualName
 import models.requests.*
 import models.responses.*
 import org.scalatest.OptionValues.convertOptionToValuable
+import uk.gov.hmrc.govukfrontend.views.Aliases.Text
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
+import viewmodels.Section
+import viewmodels.govuk.all.{ActionItemViewModel, FluentActionItem, SummaryListRowViewModel, ValueViewModel}
 
 import java.time.{Clock, Instant, ZoneId}
 
@@ -39,6 +43,7 @@ trait TestData extends Generators {
 
   val testOrgName        = "Timmy Ltd"
   val testTradingName    = "Trading Name"
+  val testName           = "Timmy"
   val testOrgContactName = "John Doe"
   val testIndividualName = IndividualName("Timmy", "Jimmison")
   val testNiNumber       = "BA123456A"
@@ -46,7 +51,7 @@ trait TestData extends Generators {
   val testPhone          = "07123456789"
 
   def emptyUserAnswers: UserAnswers =
-    UserAnswers(id = userAnswersId, lastUpdated = Instant.now(clock))
+    UserAnswers(id = userAnswersId, lastUpdated = Instant.now(clock), rcaspIsRegisteredBusiness = false)
 
   lazy val testFindAddress: FindAddress = FindAddress("SW1A 1AA", Some("10"))
 
@@ -240,4 +245,99 @@ trait TestData extends Generators {
         )
       )
     )
+
+  val displaySubscriptionIndividual   =
+    DisplaySubscriptionIndividual(firstName = "Joe", middleName = None, lastName = "Smith")
+  val displaySubscriptionOrganisation = DisplaySubscriptionOrganisation(name = "Bobby")
+
+  val testIndividualDisplaySubscriptionResponse = DisplaySubscriptionResponse(success =
+    DisplaySubscriptionSuccess(
+      processingDate = Instant.now(clock).toString,
+      carfSubscriptionDetails = DisplaySubscriptionDetails(
+        carfReference = carfId,
+        tradingName = Some(testTradingName),
+        gbUser = true,
+        primaryContact = DisplaySubscriptionContact(
+          individual = Some(displaySubscriptionIndividual),
+          organisation = None,
+          email = testEmail,
+          phone = Some(testPhone),
+          mobile = Some(testPhone)
+        ),
+        secondaryContact = None
+      )
+    )
+  )
+
+  def testOrganisationDisplaySubscriptionResponse(tradingName: Option[String]) =
+    DisplaySubscriptionResponse(success =
+      DisplaySubscriptionSuccess(
+        processingDate = Instant.now(clock).toString,
+        carfSubscriptionDetails = DisplaySubscriptionDetails(
+          carfReference = carfId,
+          tradingName = tradingName,
+          gbUser = true,
+          primaryContact = DisplaySubscriptionContact(
+            individual = None,
+            organisation = Some(DisplaySubscriptionOrganisation(name = "Bobby")),
+            email = testEmail,
+            phone = Some(testPhone),
+            mobile = None
+          ),
+          secondaryContact = None
+        )
+      )
+    )
+
+  val testInvalidSubscriptionResponseNeither = DisplaySubscriptionResponse(success =
+    DisplaySubscriptionSuccess(
+      processingDate = Instant.now(clock).toString,
+      carfSubscriptionDetails = DisplaySubscriptionDetails(
+        carfReference = carfId,
+        tradingName = Some(testTradingName),
+        gbUser = true,
+        primaryContact = DisplaySubscriptionContact(
+          individual = None,
+          organisation = None,
+          email = testEmail,
+          phone = Some(testPhone),
+          mobile = None
+        ),
+        secondaryContact = None
+      )
+    )
+  )
+
+  val testInvalidSubscriptionResponseBoth = DisplaySubscriptionResponse(success =
+    DisplaySubscriptionSuccess(
+      processingDate = Instant.now(clock).toString,
+      carfSubscriptionDetails = DisplaySubscriptionDetails(
+        carfReference = carfId,
+        tradingName = Some(testTradingName),
+        gbUser = true,
+        primaryContact = DisplaySubscriptionContact(
+          individual = Some(displaySubscriptionIndividual),
+          organisation = Some(displaySubscriptionOrganisation),
+          email = testEmail,
+          phone = Some(testPhone),
+          mobile = None
+        ),
+        secondaryContact = None
+      )
+    )
+  )
+
+  lazy val testSummaryListRow: SummaryListRow =
+    SummaryListRowViewModel(
+      key = Key(Text("TEST Key")),
+      value = ValueViewModel(Text("TEST Value")),
+      actions = Seq(
+        ActionItemViewModel(
+          Text("TEST Action"),
+          controllers.individual.routes.IndividualNameController.onPageLoad(ChangeMode).url
+        ).withVisuallyHiddenText("TEST HIDDEN TEXT")
+      )
+    )
+
+  lazy val testSection: Section = Section("TEST SECTION NAME", Seq(testSummaryListRow))
 }
