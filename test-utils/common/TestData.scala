@@ -239,7 +239,7 @@ trait TestData extends Generators {
       TransmittingSystem = "EIS",
       RequestType = "CREATE",
       Regime = "CARF",
-      RequestParameters = List(RequestParameter("key", "value"))
+      RequestParameters = None
     )
 
   val createRcaspRequestIndividual: CreateRcaspRequest =

@@ -33,7 +33,7 @@ class RcaspSubmissionHelper {
       TransmittingSystem = "EIS",
       RequestType = "CREATE",
       Regime = "CARF",
-      RequestParameters = List(RequestParameter("key", "value"))
+      RequestParameters = None
     )
 
   def createRcaspRequestForRegisteredBusiness(
@@ -42,8 +42,8 @@ class RcaspSubmissionHelper {
       userAnswers: UserAnswers
   ): Option[CreateRcaspRequest] =
     for {
-      isRcaspUserAnswer      <- userAnswers.get(ReportForRegisteredBusinessPage)
-      isRcaspUser            <- if (isRcaspUserAnswer) Some(isRcaspUserAnswer) else None
+      isRcaspUser            <- userAnswers.get(ReportForRegisteredBusinessPage)
+      if isRcaspUser
       orgName                <- userAnswers.get(OverwritableOrganisationName)
       haveTradingName        <- userAnswers.get(HaveTradingNamePage)
       tradingName            <- if (haveTradingName) userAnswers.get(TradingNamePage) else Some(orgName)
