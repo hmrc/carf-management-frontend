@@ -16,7 +16,7 @@
 
 package viewmodels.checkAnswers.combined
 
-import models.{renderHTML, ChangeMode, UserAnswers}
+import models.{renderHtml, ChangeMode, UserAnswers}
 import pages.UkAddressInUserAnswers
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
@@ -30,7 +30,7 @@ object UkAddressSummary {
     answers.get(UkAddressInUserAnswers).map { answer =>
       SummaryListRowViewModel(
         key = "address.checkYourAnswersLabel",
-        value = ValueViewModel(HtmlContent(answer.renderHTML)),
+        value = ValueViewModel(HtmlContent(answer.renderHtml)),
         actions = Seq(
           ActionItemViewModel(
             content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),

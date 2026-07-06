@@ -27,6 +27,28 @@ case class AddressRegistrationResponse(
     countryCode: String
 )
 
+extension (address: AddressRegistrationResponse) {
+  def renderHtml: String = {
+    val addressLines = Seq(
+      Some(address.addressLine1),
+      address.addressLine2,
+      address.addressLine3,
+      address.addressLine4,
+      address.postalCode
+    ).flatten.filter(_.nonEmpty)
+
+    val htmlLines = addressLines.zipWithIndex.map { case (line, index) =>
+      if (index < addressLines.length - 1) {
+        s"""<span class="govuk-!-margin-bottom-0">$line</span>"""
+      } else {
+        line
+      }
+    }
+
+    htmlLines.mkString("<br>")
+  }
+}
+
 object AddressRegistrationResponse {
   implicit val format: OFormat[AddressRegistrationResponse] = Json.format[AddressRegistrationResponse]
 }

@@ -16,33 +16,39 @@
 
 package viewmodels.checkAnswers.organisation
 
-import controllers.organisation.routes
-import models.{ChangeMode, UserAnswers}
-import pages.organisation.OverwritableOrganisationName
+import models.{AddressUk, ChangeMode, UserAnswers}
+import pages.UkAddressInUserAnswers
+import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsTheAddressCorrectPage}
 import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*
 import viewmodels.implicits.*
 
-object OverwritableOrganisationNameSummary {
+object RegisteredBusinessAddressSummary {
 
-  def row(answers: UserAnswers, isRegisteredBusiness: Boolean)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(OverwritableOrganisationName).map { answer =>
+  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] = {
+
+    val address: Option[String] = if (answers.get(RegisteredBusinessIsTheAddressCorrectPage).contains(true)) {
+      import models.responses.renderHtml
+      answers.get(CachedBusinessDetailsPage).map(_.address.renderHtml)
+    } else {
+      import models.renderHtml
+      answers.get(UkAddressInUserAnswers).map(_.renderHtml)
+    }
+
+    address.map { address =>
       SummaryListRowViewModel(
-        key = "organisationName.checkYourAnswersLabel",
-        value = ValueViewModel(HtmlFormat.escape(answer).toString),
+        key = "registeredBusiness.address.checkYourAnswersLabel",
+        value = ValueViewModel(HtmlContent(address)),
         actions = Seq(
           ActionItemViewModel(
             content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
-            href = if (isRegisteredBusiness) {
-              routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(ChangeMode).url
-            } else {
-              routes.OrganisationNameController.onPageLoad(ChangeMode).url
-            }
-          ).withVisuallyHiddenText(messages("organisationName.change.hidden"))
+            href =
+              controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(messages("registeredBusiness.address.change.hidden"))
         )
       )
     }
+  }
 }

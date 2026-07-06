@@ -37,6 +37,8 @@ trait NormalRoutesNavigator {
     case HaveTradingNamePage =>
       userAnswers => navigateFromHaveTradingNamePage(userAnswers)
 
+    case TradingNamePage => userAnswers => tradingNamePagesRegisteredBusinessRedirects(userAnswers)
+
     case UtrPage =>
       _ => controllers.routes.FindAddressController.onPageLoad(NormalMode)
 
@@ -98,7 +100,7 @@ trait NormalRoutesNavigator {
       userAnswers => navigateFromChooseAddressPage(userAnswers)
 
     case ReviewAddressPageForNavigatorOnly =>
-      userAnswers => navigateFromFinalAddressPages(userAnswers)
+      userAnswers => successfulAddressNavigation(userAnswers)
 
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
@@ -106,7 +108,15 @@ trait NormalRoutesNavigator {
   private def navigateFromHaveTradingNamePage(userAnswers: UserAnswers): Call =
     userAnswers.get(HaveTradingNamePage) match {
       case Some(true) => controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
-      case _          => controllers.routes.JourneyRecoveryController.onPageLoad()
+      case _          =>
+        tradingNamePagesRegisteredBusinessRedirects(userAnswers)
+    }
+
+  private def tradingNamePagesRegisteredBusinessRedirects(userAnswers: UserAnswers): Call =
+    if (userAnswers.rcaspIsRegisteredBusiness) {
+      controllers.organisation.routes.RegisteredBusinessIsTheAddressCorrectController.onPageLoad(NormalMode)
+    } else {
+      controllers.organisation.routes.UtrController.onPageLoad(NormalMode)
     }
 
   private def navigateFromIndividualHavePhonePage(userAnswers: UserAnswers): Call =
@@ -171,8 +181,7 @@ trait NormalRoutesNavigator {
             controllers.routes.JourneyRecoveryController.onPageLoad()
           ) { businessDetails =>
             if (businessDetails.address.countryCode.toUpperCase == Constants.ukCountryCode) {
-              controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /registered-business/check-answers (CARF-294)")
+              controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
             } else {
               controllers.organisation.routes.NotInUkController.onPageLoad()
             }
@@ -210,17 +219,20 @@ trait NormalRoutesNavigator {
       } { answer =>
         if (answer == noneOfTheseValue) {
           controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
-        } else navigateFromFinalAddressPages(userAnswers)
+        } else successfulAddressNavigation(userAnswers)
       }
 
-  private def navigateFromFinalAddressPages(userAnswers: UserAnswers): Call =
-    userAnswers.get(OrganisationOrIndividualPage) match {
-      case Some(Individual)   =>
-        controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
-      case Some(Organisation) =>
-        controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
-      case None               =>
-        controllers.routes.JourneyRecoveryController.onPageLoad()
+  private def successfulAddressNavigation(userAnswers: UserAnswers): Call =
+    if (userAnswers.rcaspIsRegisteredBusiness) {
+      controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
+    } else {
+      userAnswers.get(OrganisationOrIndividualPage) match {
+        case Some(Individual)   =>
+          controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
+        case Some(Organisation) =>
+          controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+        case None               =>
+          controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
     }
-
 }

@@ -17,16 +17,16 @@
 package controllers
 
 import base.SpecBase
-import controllers.actions.{DataRequiredAction, DataRequiredActionImpl, DataRetrievalAction, FakeDataRetrievalActionProvider, FakeIdentifierAction, IdentifierAction}
+import controllers.actions.*
 import models.OrganisationOrIndividual.{Individual, Organisation}
+import models.UserAnswers
 import models.errors.ApiError.InternalServerError
-import models.{ChangeMode, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
-import pages.{RcaspIdPage, SubmissionSucceededPage}
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
+import pages.{RcaspIdPage, SubmissionSucceededPage}
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -37,31 +37,14 @@ import repositories.SessionRepository
 import services.RcaspSubmissionService
 import types.ResultT
 import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.govukfrontend.views.Aliases.Text
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.{Key, SummaryListRow}
 import utils.CheckDetailsHelper
 import viewmodels.Section
-import viewmodels.govuk.all.{ActionItemViewModel, FluentActionItem, SummaryListRowViewModel, ValueViewModel}
 import views.html.CheckDetailsView
 
 import scala.concurrent.Future
 
 class CheckDetailsControllerSpec extends SpecBase {
 
-  private val testRow: SummaryListRow =
-    SummaryListRowViewModel(
-      key = Key(Text("TEST Key")),
-      value = ValueViewModel(Text("TEST Value")),
-      actions = Seq(
-        ActionItemViewModel(
-          Text("TEST Action"),
-          controllers.individual.routes.IndividualNameController.onPageLoad(ChangeMode).url
-        )
-          .withVisuallyHiddenText("TEST HIDDEN TEXT")
-      )
-    )
-
-  private val testSection: Section            = Section("TEST SECTION NAME", Seq(testRow))
   private val individualCompleteUserAnswers   = emptyUserAnswers
     .withPage(OrganisationOrIndividualPage, Individual)
     .withPage(IndividualNamePage, testIndividualName)
@@ -78,10 +61,10 @@ class CheckDetailsControllerSpec extends SpecBase {
           individualCompleteUserAnswers
         ) {
 
-          when(mockCDAHelper.getIndividualSectionMaybe(eqTo(individualCompleteUserAnswers))(any()))
+          when(mockCdHelper.getIndividualSectionMaybe(eqTo(individualCompleteUserAnswers))(any()))
             .thenReturn(Some(testSection))
 
-          when(mockCDAHelper.getIndividualContactDetailsMaybe(eqTo(individualCompleteUserAnswers))(any()))
+          when(mockCdHelper.getIndividualContactDetailsMaybe(eqTo(individualCompleteUserAnswers))(any()))
             .thenReturn(Some(testSection))
 
           val request                = FakeRequest(GET, checkDetailsRoute)
@@ -99,10 +82,10 @@ class CheckDetailsControllerSpec extends SpecBase {
           individualCompleteUserAnswers
         ) {
 
-          when(mockCDAHelper.getIndividualSectionMaybe(eqTo(individualCompleteUserAnswers))(any()))
+          when(mockCdHelper.getIndividualSectionMaybe(eqTo(individualCompleteUserAnswers))(any()))
             .thenReturn(None)
 
-          when(mockCDAHelper.getIndividualContactDetailsMaybe(eqTo(individualCompleteUserAnswers))(any()))
+          when(mockCdHelper.getIndividualContactDetailsMaybe(eqTo(individualCompleteUserAnswers))(any()))
             .thenReturn(Some(testSection))
 
           val request                = FakeRequest(GET, checkDetailsRoute)
@@ -118,13 +101,13 @@ class CheckDetailsControllerSpec extends SpecBase {
         "must return OK and the correct view for a GET when all required questions have been answered" in new Setup(
           organisationCompleteUserAnswers
         ) {
-          when(mockCDAHelper.getOrganisationSectionMaybe(eqTo(organisationCompleteUserAnswers))(any()))
+          when(mockCdHelper.getOrganisationSectionMaybe(eqTo(organisationCompleteUserAnswers))(any()))
             .thenReturn(Some(testSection))
 
-          when(mockCDAHelper.getOrganisationFirstContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
+          when(mockCdHelper.getOrganisationFirstContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
             .thenReturn(Some(testSection))
 
-          when(mockCDAHelper.getOrganisationSecondContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
+          when(mockCdHelper.getOrganisationSecondContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
             .thenReturn(Some(testSection))
 
           val request                = FakeRequest(GET, checkDetailsRoute)
@@ -141,13 +124,13 @@ class CheckDetailsControllerSpec extends SpecBase {
         "must redirect to information is missing page for a GET when a section is none (answers missing)" in new Setup(
           organisationCompleteUserAnswers
         ) {
-          when(mockCDAHelper.getOrganisationSectionMaybe(eqTo(organisationCompleteUserAnswers))(any()))
+          when(mockCdHelper.getOrganisationSectionMaybe(eqTo(organisationCompleteUserAnswers))(any()))
             .thenReturn(Some(testSection))
 
-          when(mockCDAHelper.getOrganisationFirstContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
+          when(mockCdHelper.getOrganisationFirstContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
             .thenReturn(Some(testSection))
 
-          when(mockCDAHelper.getOrganisationSecondContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
+          when(mockCdHelper.getOrganisationSecondContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
             .thenReturn(None)
 
           val request                = FakeRequest(GET, checkDetailsRoute)
@@ -208,7 +191,9 @@ class CheckDetailsControllerSpec extends SpecBase {
     }
 
     "onSubmit" - {
-      "must redirect to the RCASP added page if submission is successful" in new Setup(individualCompleteUserAnswers) {
+      "must set the SubmissionSucceededPage flag as true and redirect to the RCASP added page if submission is successful" in new Setup(
+        individualCompleteUserAnswers
+      ) {
         when(mockRcaspService.submitRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
           .thenReturn(ResultT.fromValue(submitRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
@@ -220,7 +205,13 @@ class CheckDetailsControllerSpec extends SpecBase {
         redirectLocation(result).value mustEqual controllers.routes.RcaspAddedConfirmationController.onPageLoad().url
 
         verify(mockRcaspService, times(1)).submitRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
-        verify(mockSessionRepository, times(1)).set(eqTo(individualCompleteUserAnswers.withPage(RcaspIdPage, rcaspId)))
+        verify(mockSessionRepository, times(1)).set(
+          eqTo(
+            individualCompleteUserAnswers
+              .withPage(RcaspIdPage, rcaspId)
+              .withPage(SubmissionSucceededPage, true)
+          )
+        )
       }
 
       "must redirect to Journey Recovery if submission failed" in new Setup(individualCompleteUserAnswers) {
@@ -276,13 +267,13 @@ class CheckDetailsControllerSpec extends SpecBase {
   }
 
   class Setup(userAnswers: UserAnswers) {
-    final val mockCDAHelper    = mock[CheckDetailsHelper]
+    final val mockCdHelper     = mock[CheckDetailsHelper]
     final val mockRcaspService = mock[RcaspSubmissionService]
 
     val application: Application =
       applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
-          bind[CheckDetailsHelper].toInstance(mockCDAHelper),
+          bind[CheckDetailsHelper].toInstance(mockCdHelper),
           bind[RcaspSubmissionService].toInstance(mockRcaspService)
         )
         .build()

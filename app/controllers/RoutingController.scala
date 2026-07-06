@@ -57,9 +57,9 @@ class RoutingController @Inject() (
                   if (ua.get(SubmissionSucceededPage).contains(true)) { None }
                   else { request.userAnswers }
                 )
-                .getOrElse(UserAnswers(id = request.userId))
+                .getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
             case ChangeMode =>
-              request.userAnswers.getOrElse(UserAnswers(id = request.userId))
+              request.userAnswers.getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
           }
 
           val redirectUrl =

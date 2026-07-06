@@ -72,7 +72,7 @@ class CheckDetailsHelper @Inject() extends Logging {
   def getOrganisationSectionMaybe(userAnswers: UserAnswers)(implicit messages: Messages): Option[Section] = {
     for {
       sharedRows            <- getSharedQuestionRows(userAnswers)
-      organisationName      <- OverwritableOrganisationNameSummary.row(userAnswers)
+      organisationName      <- OverwritableOrganisationNameSummary.row(userAnswers, false)
       haveTradingName       <- HaveTradingNameSummary.row(userAnswers)
       haveTradingNameAnswer <- userAnswers.get(HaveTradingNamePage)
       utr                   <- UtrSummary.row(userAnswers)

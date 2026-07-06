@@ -17,44 +17,35 @@
 package controllers
 
 import controllers.actions.*
-import pages.{RcaspIdPage, SubmissionSucceededPage}
+import pages.RcaspIdPage
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.RcaspHelper
 import views.html.RcaspAddedConfirmationView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
 
 class RcaspAddedConfirmationController @Inject() (
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    sessionRepository: SessionRepository,
     val controllerComponents: MessagesControllerComponents,
     view: RcaspAddedConfirmationView
-)(implicit ec: ExecutionContext)
-    extends FrontendBaseController
+) extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData).async { implicit request =>
+  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
     val maybeRcaspId   = request.userAnswers.get(RcaspIdPage)
-    val maybeRcaspName = RcaspHelper.retrieveRcaspName(request.userAnswers)
+    val maybeRcaspName = request.userAnswers.retrieveRcaspName
 
     (maybeRcaspId, maybeRcaspName) match {
-      case (Some(rcaspId), Some(name)) =>
-        for {
-          updatedAnswers <- Future.fromTry(request.userAnswers.set(SubmissionSucceededPage, true))
-          _              <- sessionRepository.set(updatedAnswers)
-        } yield Ok(view(rcaspId, name))
+      case (Some(rcaspId), Some(name)) => Ok(view(rcaspId, name))
       case _                           =>
         logger.warn("[RcaspAddedConfirmationController][onPageLoad] Missing required data")
-        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
     }
   }
 }

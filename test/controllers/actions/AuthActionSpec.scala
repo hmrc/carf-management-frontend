@@ -17,7 +17,6 @@
 package controllers.actions
 
 import base.SpecBase
-import javax.inject.Inject
 import config.FrontendAppConfig
 import controllers.routes
 import play.api.mvc.{Action, AnyContent, BodyParsers, Results}
@@ -28,6 +27,7 @@ import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.http.HeaderCarrier
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class AuthActionSpec extends SpecBase {

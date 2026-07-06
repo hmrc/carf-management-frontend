@@ -18,6 +18,7 @@ package utils
 
 import base.SpecBase
 import generators.Generators
+import models.ChangeMode
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.UkAddressInUserAnswers
@@ -25,7 +26,6 @@ import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
 import play.api.i18n.Messages
-import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import viewmodels.Section
 
 class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with Generators {
@@ -148,7 +148,7 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
     }
 
     "getOrganisationSectionMaybe" - {
-      "must return a section when relevant pages are present" - {
+      "must return a section with the correct name row url when relevant pages are present" - {
         "when ReportForRegisteredBusiness is answered and haveTradingName is true" in {
           val userAnswers = emptyUserAnswers
             .withPage(ReportForRegisteredBusinessPage, false)
@@ -159,9 +159,12 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
 
-          val section: Section          = testHelper.getOrganisationSectionMaybe(userAnswers).get
-          val expectedTitle             = ""
-          val expectedKeys: Seq[String] = Seq(
+          val section: Section = testHelper.getOrganisationSectionMaybe(userAnswers).get
+
+          val expectedOrganisationNameUrl: String =
+            controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode).url
+          val expectedTitle                       = ""
+          val expectedKeys: Seq[String]           = Seq(
             "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
             "Would you like to add an organisation or individual as an RCASP?",
             "What is the name of the organisation?",
@@ -172,6 +175,7 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
           )
 
           compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          section.rows(2).actions.get.items.head.href mustBe expectedOrganisationNameUrl
         }
 
         "when ReportForRegisteredBusiness is not answered and and haveTradingName is false" in {
@@ -379,28 +383,6 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
 
         section mustBe None
       }
-    }
-  }
-
-  def compareRowsAndTitleToExpected(
-      expectedTitle: String,
-      expectedKeys: Seq[String],
-      section: Section
-  ): Unit = {
-
-    val actualKeys            = section.rows.map(_.key.content)
-    val formattedExpectedKeys = expectedKeys.map(key => Text(key))
-
-    withClue(s"""
-         |Expected table keys to match in order
-         |Expected: $formattedExpectedKeys
-         |Actual:   $actualKeys
-         |
-         |""".stripMargin) {
-
-      expectedTitle mustEqual section.sectionName
-      actualKeys         must have size formattedExpectedKeys.size
-      actualKeys         must contain theSameElementsInOrderAs formattedExpectedKeys
     }
   }
 }

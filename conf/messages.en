@@ -11,6 +11,7 @@ site.startAgain = Start again
 site.confirmAndAdd = Confirm and add
 site.signIn = Sign in
 site.govuk = GOV.UK
+site.confirmAndSend = Confirm and send
 
 date.day = Day
 date.month = Month
@@ -102,8 +103,8 @@ reportForRegisteredBusiness.change.hidden = Change if the business you registere
 registeredBusinessIsThisYourBusinessName.title = Is this still the correct name for the business?
 registeredBusinessIsThisYourBusinessName.heading = Is {0} still the correct name for the business?
 registeredBusinessIsThisYourBusinessName.error.required = Select yes if this is still the correct name for the business
-registeredBusinessIsThisYourBusinessName.checkYourAnswersLabel = Is this still the correct name for the business?
-registeredBusinessIsThisYourBusinessName.change.hidden = Change if this is still the correct name for the business
+registeredBusinessIsThisYourBusinessName.checkYourAnswersLabel = What is the name of the organisation?
+registeredBusinessIsThisYourBusinessName.change.hidden = Change organisation name
 
 organisationOrIndividual.title = Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?
 organisationOrIndividual.heading = Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?
@@ -298,6 +299,13 @@ yourRcasps.change.hidden = Change the details for {0}
 yourRcasps.remove.hidden = Remove {0} from the list
 yourRcasps.registeredBusinessTag = Registered&nbsp;business
 
+registeredBusiness.address.checkYourAnswersLabel = Main business address
+registeredBusiness.address.change.hidden = Change main business address
+
+registeredBusinessCheckDetails.title = Check the details for the registered business
+registeredBusinessCheckDetails.heading = Check the details for {0}
+registeredBusinessCheckDetails.declaration.subtitle = Now send these details for the registered business
+registeredBusinessCheckDetails.declaration.p1 = By sending these details, you are confirming that the information is correct and complete to the best of your knowledge.
 
 findAddress.title = Find the address for the reporting cryptoasset service provider (RCASP)
 findAddress.heading = Find the address for {0}

@@ -66,7 +66,7 @@ class OrganisationSecondContactPhoneNumberControllerSpec extends SpecBase {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val prePopulatedUserAnswers = UserAnswers(userAnswersId)
+      val prePopulatedUserAnswers = emptyUserAnswers
         .withPage(OrganisationSecondContactNamePage, "Simothy")
         .withPage(OrganisationSecondContactPhoneNumberPage, "12345")
 

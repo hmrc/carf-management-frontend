@@ -19,7 +19,7 @@ package controllers.organisation
 import base.SpecBase
 import controllers.routes
 import forms.organisation.GenericOrganisationContactNameFormProvider
-import models.{NormalMode, UserAnswers}
+import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -50,7 +50,7 @@ class OrganisationSecondContactEmailControllerSpec extends SpecBase with Mockito
 
     "must return OK and the correct view for a GET" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
+      val userAnswers = emptyUserAnswers
         .withPage(OrganisationSecondContactNamePage, secondContactName)
         .withPage(OverwritableOrganisationName, organisationName)
 
@@ -73,7 +73,7 @@ class OrganisationSecondContactEmailControllerSpec extends SpecBase with Mockito
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
+      val userAnswers = emptyUserAnswers
         .withPage(OrganisationSecondContactNamePage, secondContactName)
         .withPage(OverwritableOrganisationName, organisationName)
         .withPage(OrganisationSecondContactEmailPage, "anexampleevalidemail@email.com")
@@ -124,7 +124,7 @@ class OrganisationSecondContactEmailControllerSpec extends SpecBase with Mockito
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
+      val userAnswers = emptyUserAnswers
         .withPage(OrganisationSecondContactNamePage, secondContactName)
         .withPage(OverwritableOrganisationName, organisationName)
 
@@ -164,7 +164,7 @@ class OrganisationSecondContactEmailControllerSpec extends SpecBase with Mockito
 
     "must redirect to Some Information Is Missing for a GET if no second contact name is found" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
+      val userAnswers = emptyUserAnswers
         .withPage(OrganisationSecondContactEmailPage, "test@example.com")
         .withPage(OverwritableOrganisationName, organisationName)
 
@@ -183,7 +183,7 @@ class OrganisationSecondContactEmailControllerSpec extends SpecBase with Mockito
 
     "must redirect to Some Information Is Missing for a GET if no organisation name is found" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
+      val userAnswers = emptyUserAnswers
         .withPage(OrganisationSecondContactEmailPage, "test@example.com")
         .withPage(OrganisationSecondContactNamePage, secondContactName)
 
@@ -234,7 +234,7 @@ class OrganisationSecondContactEmailControllerSpec extends SpecBase with Mockito
 
     "must redirect to Some Information Is Missing for a POST if no organisationName is found" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
+      val userAnswers = emptyUserAnswers
         .withPage(OrganisationSecondContactEmailPage, "test@example.com")
         .withPage(OrganisationSecondContactNamePage, secondContactName)
 

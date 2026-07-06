@@ -31,6 +31,7 @@ import views.html.organisation.RegisteredBusinessIsThisYourBusinessNameView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
 class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
     override val messagesApi: MessagesApi,
@@ -79,28 +80,19 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
               .fold(
                 formWithErrors => Future.successful(BadRequest(view(formWithErrors, mode, businessDetails.name))),
                 value =>
-                  if (value) {
-                    for {
-                      updatedAnswers     <- Future.fromTry(
-                                              request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
-                                            )
-                      answersWithOrgName <- Future.fromTry(
+                  for {
+                    updatedAnswers     <- Future.fromTry(
+                                            request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
+                                          )
+                    uaWithOrgNameIfYes <- Future.fromTry(
+                                            if (value) {
                                               updatedAnswers.set(OverwritableOrganisationName, businessDetails.name)
-                                            )
-                      _                  <- sessionRepository.set(answersWithOrgName)
-                    } yield Redirect(
-                      navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, answersWithOrgName)
-                    )
-                  } else {
-                    for {
-                      updatedAnswers <- Future.fromTry(
-                                          request.userAnswers.set(RegisteredBusinessIsThisYourBusinessNamePage, value)
-                                        )
-                      _              <- sessionRepository.set(updatedAnswers)
-                    } yield Redirect(
-                      navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, updatedAnswers)
-                    )
-                  }
+                                            } else { Success(updatedAnswers) }
+                                          )
+                    _                  <- sessionRepository.set(uaWithOrgNameIfYes)
+                  } yield Redirect(
+                    navigator.nextPage(RegisteredBusinessIsThisYourBusinessNamePage, mode, uaWithOrgNameIfYes)
+                  )
               )
 
           case None =>

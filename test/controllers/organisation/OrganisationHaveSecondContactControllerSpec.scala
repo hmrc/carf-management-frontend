@@ -19,7 +19,7 @@ package controllers.organisation
 import base.SpecBase
 import controllers.routes
 import forms.GenericYesNoPageFormProvider
-import models.{NormalMode, UserAnswers}
+import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.eq as eqTo
 import org.mockito.Mockito.{times, verify, when}
@@ -50,7 +50,7 @@ class OrganisationHaveSecondContactControllerSpec extends SpecBase with MockitoS
 
     "must return OK and the correct view for a GET" in {
 
-      val userAnswers = UserAnswers(userAnswersId).withPage(OrganisationFirstContactNamePage, firstContactName)
+      val userAnswers = emptyUserAnswers.withPage(OrganisationFirstContactNamePage, firstContactName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -71,7 +71,7 @@ class OrganisationHaveSecondContactControllerSpec extends SpecBase with MockitoS
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
+      val userAnswers = emptyUserAnswers
         .withPage(OrganisationHaveSecondContactPage, true)
         .withPage(OrganisationFirstContactNamePage, firstContactName)
 
@@ -120,7 +120,7 @@ class OrganisationHaveSecondContactControllerSpec extends SpecBase with MockitoS
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val userAnswers = UserAnswers(userAnswersId).withPage(OrganisationFirstContactNamePage, firstContactName)
+      val userAnswers = emptyUserAnswers.withPage(OrganisationFirstContactNamePage, firstContactName)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -159,8 +159,7 @@ class OrganisationHaveSecondContactControllerSpec extends SpecBase with MockitoS
 
     "must redirect to the Some Information is Missing page for a GET if no first contact name exists in user answers" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
-        .withPage(OrganisationHaveSecondContactPage, true)
+      val userAnswers = emptyUserAnswers.withPage(OrganisationHaveSecondContactPage, true)
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
