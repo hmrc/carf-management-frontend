@@ -33,7 +33,7 @@ class RcaspSubmissionHelper {
       TransmittingSystem = "EIS",
       RequestType = "CREATE",
       Regime = "CARF",
-      RequestParameters = None
+      RequestParameters = List(RequestParameter("key", "value"))
     )
 
   def createRcaspRequestForRegisteredBusiness(

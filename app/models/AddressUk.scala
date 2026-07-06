@@ -69,7 +69,7 @@ extension (address: AddressUk) {
   }
 
   def toRcaspAddress: RcaspAddress = {
-    val addressSubsequentLines = Seq(address.addressLine2, address.addressLine3, Some(address.townOrCity)).flatten
+    val addressSubsequentLines = Seq(address.addressLine2, Some(address.townOrCity), address.addressLine3).flatten
     RcaspAddress(
       AddressLine1 = address.addressLine1,
       AddressLine2 = addressSubsequentLines.headOption,
