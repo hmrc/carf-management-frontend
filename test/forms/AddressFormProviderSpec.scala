@@ -81,10 +81,10 @@ class AddressFormProviderSpec extends StringFieldBehaviours {
     }
   }
 
-  ".county" - {
-    val fieldName  = "county"
-    val lengthKey  = "address.county.error.length"
-    val invalidKey = "address.county.error.invalid"
+  ".addressLine3" - {
+    val fieldName  = "addressLine3"
+    val lengthKey  = "address.addressLine3.error.length"
+    val invalidKey = "address.addressLine3.error.invalid"
     behave like fieldThatBindsValidData(form, fieldName, validAddressStringGen)
     "must not bind strings longer than the max length" in {
       val longString = "a" * (addressMaxLength + 1)
@@ -96,7 +96,7 @@ class AddressFormProviderSpec extends StringFieldBehaviours {
       result.errors mustBe empty
     }
     "must not bind strings with invalid characters" in {
-      val invalidString = "Yorkshire!"
+      val invalidString = "Apt 4!"
       val result        = form.bind(Map(fieldName -> invalidString)).apply(fieldName)
       result.errors must contain(FormError(fieldName, invalidKey, Seq(addressRegex)))
     }

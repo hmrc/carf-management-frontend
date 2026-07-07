@@ -22,8 +22,8 @@ import generators.Generators
 import models.OrganisationOrIndividual.*
 import models.errors.ApiError.BadRequestError
 import models.individual.IndividualName
-import models.responses.{AddressRecord, AddressResponse, CountryRecord}
-import models.{AddressAndUPRN, FindAddress, NormalMode, UserAnswers}
+import models.responses.{AddressLookupResponse, AddressRecord, CountryRecord}
+import models.{AddressAndUPRN, ChangeMode, FindAddress, NormalMode, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
 import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
@@ -48,8 +48,8 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
   val form: Form[FindAddress]                        = formProvider()
   val mockAddressLookupService: AddressLookupService = mock[AddressLookupService]
 
-  lazy val findAddressRoute: String =
-    controllers.routes.FindAddressController.onPageLoad(NormalMode).url
+  lazy val findAddressRoute: String       = controllers.routes.FindAddressController.onPageLoad(NormalMode).url
+  lazy val findAddressChangeRoute: String = controllers.routes.FindAddressController.onPageLoad(ChangeMode).url
 
   override def beforeEach(): Unit = {
     reset(mockAddressLookupService)
@@ -57,8 +57,8 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
     super.beforeEach()
   }
 
-  val searchByPostcodeValidResponse: Seq[AddressResponse] = Seq(
-    AddressResponse(
+  val searchByPostcodeValidResponse: Seq[AddressLookupResponse] = Seq(
+    AddressLookupResponse(
       id = "Test-Id",
       uprn = 123456,
       address = AddressRecord(
@@ -70,17 +70,18 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
     )
   )
 
-  private def expectedManualUrl: String =
-    controllers.routes.AddressController.onPageLoad(NormalMode).url
+  private def expectedManualUrl: String       = controllers.routes.AddressController.onPageLoad(NormalMode).url
+  private def expectedManualChangeUrl: String = controllers.routes.AddressController.onPageLoad(ChangeMode).url
 
   "FindAddress Controller" - {
 
-    "must return OK and the correct view for a GET when IndividualNamePage is present" in {
+    "must return OK, the correct view and clear AddressPagePrePop for a GET when IndividualNamePage is present" in {
 
       val userAnswersWithName =
         emptyUserAnswers
           .withPage(OrganisationOrIndividualPage, Individual)
           .withPage(IndividualNamePage, testIndividualName)
+          .withPage(AddressPagePrePop, testAddressUk)
 
       val application = applicationBuilder(userAnswers = Some(userAnswersWithName)).build()
 
@@ -98,6 +99,35 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
           request,
           messages(application)
         ).toString
+        verify(mockSessionRepository).set(argThat(_.get(AddressPagePrePop).isEmpty))
+      }
+    }
+
+    "must return the view in and not clear AddressPagePrePop for a GET in Change Mode" in {
+
+      val userAnswersWithName =
+        emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Individual)
+          .withPage(IndividualNamePage, testIndividualName)
+          .withPage(AddressPagePrePop, testAddressUk)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswersWithName)).build()
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      running(application) {
+        val request = FakeRequest(GET, findAddressChangeRoute)
+
+        val view = application.injector.instanceOf[FindAddressView]
+
+        val result = route(application, request).value
+
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(form, ChangeMode, testIndividualName.fullName, expectedManualChangeUrl)(
+          request,
+          messages(application)
+        ).toString
+        verify(mockSessionRepository).set(argThat(_.get(AddressPagePrePop).contains(testAddressUk)))
       }
     }
 
@@ -388,6 +418,8 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
     }
 
     "must redirect to Some Information Is Missing for a GET if no available name is found" in {
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 

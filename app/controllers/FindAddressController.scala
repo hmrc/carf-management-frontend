@@ -19,7 +19,7 @@ package controllers
 import controllers.actions.*
 import forms.FindAddressFormProvider
 import models.requests.DataRequest
-import models.{AddressAndUPRN, AddressUk, FindAddress, Mode}
+import models.{AddressAndUPRN, AddressUk, FindAddress, Mode, NormalMode}
 import navigation.Navigator
 import pages.*
 import play.api.Logging
@@ -57,11 +57,19 @@ class FindAddressController @Inject() (
     mode => controllers.routes.AddressController.onPageLoad(mode).url
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
 
       lazy val preparedForm = request.userAnswers.get(FindAddressPage).fold(form)(form.fill)
 
-      request.userAnswers.retrieveRcaspName match {
+      for {
+        userAnswersNoPrePop <- {
+          mode match {
+            case NormalMode => Future.fromTry(request.userAnswers.remove(AddressPagePrePop))
+            case _          => Future.successful(request.userAnswers)
+          }
+        }
+        _                   <- sessionRepository.set(userAnswersNoPrePop)
+      } yield request.userAnswers.retrieveRcaspName match {
         case Some(name) => Ok(view(preparedForm, mode, name, manualLink(mode)))
         case None       =>
           logger.warn(

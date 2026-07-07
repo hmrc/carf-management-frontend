@@ -45,12 +45,12 @@ class AddressFormProvider @Inject() extends Mappings {
             )
           )
       ),
-      "county"       -> optional(
-        text("address.county.error.required")
+      "addressLine3" -> optional(
+        text("address.addressLine3.error.required")
           .verifying(
             firstError(
-              maxLength(maxLength, "address.county.error.length"),
-              regexp(addressRegex, "address.county.error.invalid")
+              maxLength(maxLength, "address.addressLine3.error.length"),
+              regexp(addressRegex, "address.addressLine3.error.invalid")
             )
           )
       ),

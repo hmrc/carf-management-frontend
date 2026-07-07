@@ -21,7 +21,7 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import models.errors.ApiError
 import models.requests.SearchByPostcodeRequest
-import models.responses.AddressResponse
+import models.responses.AddressLookupResponse
 import play.api.Logging
 import play.api.http.Status.OK
 import play.api.libs.json.Json
@@ -42,7 +42,7 @@ class AddressLookupConnector @Inject() (val config: FrontendAppConfig, val http:
 
   def searchByPostcode(
       request: SearchByPostcodeRequest
-  )(implicit hc: HeaderCarrier): ResultT[Seq[AddressResponse]] =
+  )(implicit hc: HeaderCarrier): ResultT[Seq[AddressLookupResponse]] =
     EitherT {
       http
         .post(searchByPostcodeUrl)
@@ -51,7 +51,7 @@ class AddressLookupConnector @Inject() (val config: FrontendAppConfig, val http:
         .execute[HttpResponse]
         .map {
           case response if response.status equals OK =>
-            Try(response.json.as[Seq[AddressResponse]]) match {
+            Try(response.json.as[Seq[AddressLookupResponse]]) match {
               case Success(data)      =>
                 Right(data)
               case Failure(exception) =>
