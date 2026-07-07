@@ -17,6 +17,7 @@
 package viewmodels
 
 import models.viewAndUpdateRcasp.RcaspDetails
+import models.NormalMode
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.{HtmlContent, Text}
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.listwithactions.{ListWithActions, ListWithActionsAction, ListWithActionsItem}
@@ -35,8 +36,8 @@ object YourRcaspsListWithActionsHelper {
             visuallyHiddenText = Some(messages("yourRcasps.change.hidden", rcasp.getName))
           ),
           ListWithActionsAction(
-            href = controllers.routes.PlaceholderController
-              .onPageLoad(s"Should nav to /remove/user-access/${rcasp.RCASPID} (CARF-355)")
+            href = controllers.combined.routes.RemoveUserAccessController
+              .onPageLoad(NormalMode, rcasp.RCASPID)
               .url,
             content = Text(messages("site.remove")),
             visuallyHiddenText = Some(messages("yourRcasps.remove.hidden", rcasp.getName))
