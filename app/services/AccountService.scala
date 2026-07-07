@@ -19,7 +19,8 @@ package services
 import connectors.{RcaspConnector, SubscriptionConnector}
 import models.HomePageSubscriptionData
 import models.errors.ApiError
-import models.errors.ApiError.InternalServerError
+import models.errors.ApiError.{InternalServerError, NotFoundError}
+import models.responses.RcaspDetails
 import play.api.Logging
 import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
@@ -43,6 +44,25 @@ class AccountService @Inject (
         },
         viewRcaspResponse => viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList.size
       )
+
+  def getRcaspDetails(
+      carfId: String,
+      rcaspId: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[RcaspDetails] =
+    rcaspConnector
+      .viewRcasp(carfId)
+      .leftMap { error =>
+        logger.warn(s"[AccountService][getRcaspDetails] Error calling viewRcasp: $error")
+        error
+      }
+      .subflatMap { viewRcaspResponse =>
+        viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList
+          .find(_.RCASPID == rcaspId)
+          .fold {
+            logger.warn(s"[AccountService][getRcaspDetails] No RCASP found with ID $rcaspId")
+            Left(NotFoundError)
+          }(Right(_))
+      }
 
   def getHomePageSubscriptionData(
       carfId: String

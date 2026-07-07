@@ -19,8 +19,8 @@ package services
 import base.SpecBase
 import connectors.{RcaspConnector, SubscriptionConnector}
 import models.HomePageSubscriptionData
-import models.errors.ApiError.InternalServerError
-import models.responses.{RcaspResponseDetails, ViewRcasp, ViewRcaspResponse}
+import models.errors.ApiError.{InternalServerError, NotFoundError}
+import models.responses.{RcaspDetails, RcaspResponseDetails, ViewRcasp, ViewRcaspResponse}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import types.ResultT
@@ -100,6 +100,64 @@ class AccountServiceSpec extends SpecBase {
         val result: ResultT[Int] = accountService.getNumberOfRcaspsCurrentlyAdded(testCarfId)
 
         result.value.futureValue mustBe Left(InternalServerError)
+
+        verify(mockRcaspConnector, times(1)).viewRcasp(eqTo(testCarfId))(any(), any())
+      }
+    }
+
+    ".getRcaspDetails" - {
+      "must return a Right with RcaspDetails" in {
+        val viewRcaspResponse = ViewRcaspResponse(
+          ViewRCASP = ViewRcasp(
+            ResponseCommon = rcaspResponseCommon,
+            ResponseDetails = RcaspResponseDetails(
+              RCASPList = List(
+                individualRcaspDetailsResponse.copy(RCASPID = "RCASP1"),
+                organisationRcaspDetailsResponse.copy(RCASPID = "RCASP2"),
+                individualRcaspDetailsResponse,
+                organisationRcaspDetailsResponse.copy(RCASPID = "RCASP3")
+              )
+            )
+          )
+        )
+
+        when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromValue(viewRcaspResponse))
+
+        val result: ResultT[RcaspDetails] = accountService.getRcaspDetails(testCarfId, rcaspId)
+
+        result.value.futureValue mustBe Right(individualRcaspDetailsResponse)
+
+        verify(mockRcaspConnector, times(1)).viewRcasp(eqTo(testCarfId))(any(), any())
+      }
+
+      "must return a Left when the connector returns an error" in {
+        when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromError(InternalServerError))
+
+        val result: ResultT[RcaspDetails] = accountService.getRcaspDetails(testCarfId, rcaspId)
+
+        result.value.futureValue mustBe Left(InternalServerError)
+
+        verify(mockRcaspConnector, times(1)).viewRcasp(eqTo(testCarfId))(any(), any())
+      }
+
+      "must return a Left with NotFoundError when the connector response does not contain details for the RCASPID" in {
+        val viewRcaspResponse = ViewRcaspResponse(
+          ViewRCASP = ViewRcasp(
+            ResponseCommon = rcaspResponseCommon,
+            ResponseDetails = RcaspResponseDetails(
+              RCASPList = List(
+                individualRcaspDetailsResponse.copy(RCASPID = "RCASP1"),
+                organisationRcaspDetailsResponse.copy(RCASPID = "RCASP2")
+              )
+            )
+          )
+        )
+
+        when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromValue(viewRcaspResponse))
+
+        val result: ResultT[RcaspDetails] = accountService.getRcaspDetails(testCarfId, rcaspId)
+
+        result.value.futureValue mustBe Left(NotFoundError)
 
         verify(mockRcaspConnector, times(1)).viewRcasp(eqTo(testCarfId))(any(), any())
       }

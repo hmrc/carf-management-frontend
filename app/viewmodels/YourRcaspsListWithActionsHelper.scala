@@ -30,15 +30,7 @@ object YourRcaspsListWithActionsHelper {
         name = getValueContent(rcasp.getName, rcasp.IsRCASPUser),
         actions = Seq(
           ListWithActionsAction(
-            href = if (rcasp.IsRCASPUser) {
-              controllers.routes.PlaceholderController
-                .onPageLoad(s"Should nav to /registered-business/change-answers/${rcasp.RCASPID} (CARF-350)")
-                .url
-            } else {
-              controllers.routes.PlaceholderController
-                .onPageLoad(s"Should nav to /change-answers/${rcasp.RCASPID} (CARF-354)")
-                .url
-            },
+            href = controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcasp.RCASPID).url,
             content = Text(messages("site.change")),
             visuallyHiddenText = Some(messages("yourRcasps.change.hidden", rcasp.getName))
           ),

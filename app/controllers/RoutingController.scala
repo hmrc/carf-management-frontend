@@ -20,6 +20,7 @@ import config.Constants.ZERO
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
 import models.{ChangeMode, Mode, NormalMode, UserAnswers}
 import pages.SubmissionSucceededPage
+import pages.changeDetails.ChangeRcaspCachedDetails
 import play.api.Logging
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -54,8 +55,8 @@ class RoutingController @Inject() (
             case NormalMode =>
               request.userAnswers
                 .flatMap(ua =>
-                  if (ua.get(SubmissionSucceededPage).contains(true)) { None }
-                  else { request.userAnswers }
+                  if (ua.get(SubmissionSucceededPage).contains(true) || ua.get(ChangeRcaspCachedDetails).isDefined) None
+                  else request.userAnswers
                 )
                 .getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
             case ChangeMode =>

@@ -158,3 +158,8 @@ GET         /review-address                                               contro
 GET         /review-address-submit                                        controllers.ReviewAddressController.onSubmit(mode: Mode = NormalMode)
 GET         /change-review-address                                        controllers.ReviewAddressController.onPageLoad(mode: Mode = ChangeMode)
 GET         /change-review-address-submit                                 controllers.ReviewAddressController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /change/:rcaspId                                              controllers.changeDetails.ChangeDetailsRoutingController.onPageLoad(rcaspId: String)
+
+GET         /change-answers/:rcaspId                                      controllers.changeDetails.ChangeDetailsController.onPageLoad(rcaspId: String)
+POST        /change-answers/:rcaspId                                      controllers.changeDetails.ChangeDetailsController.onSubmit(rcaspId: String)

@@ -19,7 +19,6 @@ package controllers
 import base.SpecBase
 import forms.ChooseAddressFormProvider
 import models.OrganisationOrIndividual.{Individual, Organisation}
-import models.countries.CountryUk
 import models.{format, AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
@@ -54,8 +53,7 @@ class ChooseAddressControllerSpec extends SpecBase {
     Some("Line 2"),
     None,
     "Testtown",
-    "BB00 0BB",
-    CountryUk("GB", "United Kingdom")
+    "BB00 0BB"
   )
 
   "ChooseAddress Controller" - {
@@ -455,13 +453,7 @@ class ChooseAddressControllerSpec extends SpecBase {
             address.addressLine3,
             Some(address.townOrCity),
             Some(address.postCode)
-          ).flatten ++ {
-            if (address.countryUk.code == "GB") {
-              Seq.empty
-            } else {
-              Seq(address.countryUk.name)
-            }
-          }
+          ).flatten
 
           addressLines.mkString(", ")
         }

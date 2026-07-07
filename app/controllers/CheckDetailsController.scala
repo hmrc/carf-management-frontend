@@ -66,7 +66,7 @@ class CheckDetailsController @Inject() (
           case Individual   =>
             (
               userAnswers.get(IndividualNamePage),
-              helper.getIndividualSectionMaybe(userAnswers),
+              helper.getIndividualSectionMaybe(userAnswers, changeJourney = false),
               helper.getIndividualContactDetailsMaybe(userAnswers)
             )
               .mapN { (name, individualSection, contactDetailsSection) =>
@@ -81,7 +81,7 @@ class CheckDetailsController @Inject() (
           case Organisation =>
             (
               userAnswers.get(OverwritableOrganisationName),
-              helper.getOrganisationSectionMaybe(userAnswers),
+              helper.getOrganisationSectionMaybe(userAnswers, changeJourney = false),
               helper.getOrganisationFirstContactDetailsMaybe(userAnswers),
               helper.getOrganisationSecondContactDetailsMaybe(userAnswers)
             )

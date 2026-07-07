@@ -43,6 +43,10 @@ object Constants {
 
   val acceptedUtrLengths: Set[Int] = Set(10, 13)
 
-  inline final val ukCountryCode = "GB"
-  val noneOfTheseValue           = "none"
+  inline final val ukCountryCode             = "GB"
+  private inline final val ukAlternativeCode = "UK"
+
+  val acceptedUkCountryCode: Set[String] = Set(ukCountryCode, ukAlternativeCode)
+
+  val noneOfTheseValue = "none"
 }

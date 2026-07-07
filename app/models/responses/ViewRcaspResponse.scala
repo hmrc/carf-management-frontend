@@ -16,6 +16,7 @@
 
 package models.responses
 
+import models.changeDetails.{IndividualRcaspDetailsForComparison, OrganisationRcaspDetailsForComparison, RcaspDetailsForComparison}
 import play.api.libs.json.*
 import models.{RcaspAddress, RcaspContactDetails, TinDetails}
 
@@ -27,7 +28,10 @@ sealed trait RcaspDetails {
   val TINDetails: Option[List[TinDetails]]
   val AddressDetails: RcaspAddress
   val PrimaryContactDetails: Option[RcaspContactDetails]
+
   def getName: String
+
+  def forComparison: Option[RcaspDetailsForComparison]
 }
 
 object RcaspDetails {
@@ -59,6 +63,19 @@ case class IndividualRcaspDetails(
 
   def getName: String = s"$FirstName $LastName"
 
+  def forComparison: Option[IndividualRcaspDetailsForComparison] =
+    for {
+      nino  <- TINDetails.flatMap(_.headOption.map(_.TIN))
+      email <- PrimaryContactDetails.map(_.EmailAddress)
+    } yield IndividualRcaspDetailsForComparison(
+      IsRCASPUser,
+      FirstName,
+      LastName,
+      nino,
+      AddressDetails,
+      email,
+      PrimaryContactDetails.flatMap(_.PhoneNumber)
+    )
 }
 
 object IndividualRcaspDetails {
@@ -80,6 +97,18 @@ case class OrganisationRcaspDetails(
 
   def getName: String = RCASPName
 
+  def forComparison: Option[OrganisationRcaspDetailsForComparison] =
+    TINDetails.flatMap(_.headOption.map(_.TIN)).map { utr =>
+      OrganisationRcaspDetailsForComparison(
+        IsRCASPUser,
+        RCASPName,
+        TradingName,
+        utr,
+        AddressDetails,
+        PrimaryContactDetails,
+        SecondaryContactDetails
+      )
+    }
 }
 
 object OrganisationRcaspDetails {
