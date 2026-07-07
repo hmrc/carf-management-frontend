@@ -168,3 +168,13 @@ GET         /change/:rcaspId                                              contro
 
 GET         /change-answers/:rcaspId                                      controllers.changeDetails.ChangeDetailsController.onPageLoad(rcaspId: String)
 POST        /change-answers/:rcaspId                                      controllers.changeDetails.ChangeDetailsController.onSubmit(rcaspId: String)
+
+GET         /remove/user-access                                           controllers.combined.RemoveUserAccessController.onPageLoad(mode: Mode = NormalMode, rcaspId: String)
+POST        /remove/user-access                                           controllers.combined.RemoveUserAccessController.onSubmit(mode: Mode = NormalMode, rcaspId: String)
+GET         /remove/change-user-access                                    controllers.combined.RemoveUserAccessController.onPageLoad(mode: Mode = ChangeMode, rcaspId: String)
+POST        /remove/change-user-access                                    controllers.combined.RemoveUserAccessController.onSubmit(mode: Mode = ChangeMode, rcaspId: String)
+
+GET         /remove/other-access                                          controllers.combined.RemoveOtherAccessController.onPageLoad(mode: Mode = NormalMode, rcaspId: String)
+POST        /remove/other-access                                          controllers.combined.RemoveOtherAccessController.onSubmit(mode: Mode = NormalMode, rcaspId: String)
+GET         /remove/change-other-access                                   controllers.combined.RemoveOtherAccessController.onPageLoad(mode: Mode = ChangeMode, rcaspId: String)
+POST        /remove/change-other-access                                   controllers.combined.RemoveOtherAccessController.onSubmit(mode: Mode = ChangeMode, rcaspId: String)
