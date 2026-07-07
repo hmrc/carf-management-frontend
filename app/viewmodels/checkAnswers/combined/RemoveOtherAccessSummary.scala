@@ -25,23 +25,22 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import viewmodels.govuk.summarylist._
 import viewmodels.implicits._
 
-object RemoveOtherAccessSummary  {
+object RemoveOtherAccessSummary {
 
   def row(answers: UserAnswers, rcaspId: String)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(RemoveOtherAccessPage).map {
-      answer =>
+    answers.get(RemoveOtherAccessPage).map { answer =>
 
-        val value = if (answer) "site.yes" else "site.no"
+      val value = if (answer) "site.yes" else "site.no"
 
-        SummaryListRowViewModel(
-          key     = "removeOtherAccess.checkYourAnswersLabel",
-          value   = ValueViewModel(value),
-          actions = Seq(
-            ActionItemViewModel(
-              content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
-              href = routes.RemoveOtherAccessController.onPageLoad(ChangeMode, rcaspId).url
-            ).withVisuallyHiddenText(messages("removeOtherAccess.change.hidden"))
-          )
+      SummaryListRowViewModel(
+        key = "removeOtherAccess.checkYourAnswersLabel",
+        value = ValueViewModel(value),
+        actions = Seq(
+          ActionItemViewModel(
+            content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
+            href = routes.RemoveOtherAccessController.onPageLoad(ChangeMode, rcaspId).url
+          ).withVisuallyHiddenText(messages("removeOtherAccess.change.hidden"))
         )
+      )
     }
 }

@@ -16,55 +16,158 @@
 
 package controllers.combined
 
-import controllers.actions._
+import connectors.RcaspConnector
+import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
 import pages.combined.RemoveOtherAccessPage
+import play.api.Logging
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
+import services.AccountService
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.combined.RemoveOtherAccessView
-import play.api.data.Form
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RemoveOtherAccessController @Inject()(
-                                         override val messagesApi: MessagesApi,
-                                         sessionRepository: SessionRepository,
-                                         navigator: Navigator,
-                                         identify: IdentifierAction,
-                                         getData: DataRetrievalAction,
-                                         requireData: DataRequiredAction,
-                                         formProvider: GenericYesNoPageFormProvider,
-                                         val controllerComponents: MessagesControllerComponents,
-                                         view: RemoveOtherAccessView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class RemoveOtherAccessController @Inject() (
+    override val messagesApi: MessagesApi,
+    identify: IdentifierAction,
+    getData: DataRetrievalAction,
+    requireData: DataRequiredAction,
+    sessionRepository: SessionRepository,
+    formProvider: GenericYesNoPageFormProvider,
+    navigator: Navigator,
+    rcaspConnector: RcaspConnector,
+    val controllerComponents: MessagesControllerComponents,
+    view: RemoveOtherAccessView
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport
+    with Logging {
 
-  val form: Form[Boolean] = formProvider("removeOtherAccess.error.required")
+  private val IndividualPartyType = "Individual"
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  private val journeyRecovery: Result =
+    Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
-      val preparedForm = request.userAnswers.get(RemoveOtherAccessPage).fold(form)(form.fill)
+  private case class RemoveOtherAccessViewData(
+      titleKey: String,
+      headingKey: String,
+      errorKey: String,
+      rcaspName: String,
+      form: Form[Boolean]
+  )
 
-      Ok(view(preparedForm, mode))
-  }
+  private def buildViewData(
+      carfId: String,
+      rcaspId: String
+  )(implicit hc: HeaderCarrier): Future[Either[Result, RemoveOtherAccessViewData]] =
+    for {
+      rcaspResult <- rcaspConnector.viewRcasp(carfId).value
+    } yield rcaspResult match {
+      case Right(viewRcaspResponse) =>
+        val rcaspList        = viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList
+        val selectedRcaspOpt = rcaspList.find(_.RCASPID == rcaspId)
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+        selectedRcaspOpt match {
+          case Some(selectedRcasp) =>
+            val rcaspName   = selectedRcasp.getName
+            val isRcaspUser = selectedRcasp.IsRCASPUser
+            val partyType   = selectedRcasp.PartyType
 
-      form.bindFromRequest().fold(
-        formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, mode))),
+            val suffix =
+              if (partyType == IndividualPartyType) "individual"
+              else if (isRcaspUser) "rcaspIsUser"
+              else "otherOrg"
 
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(RemoveOtherAccessPage, value))
-            _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(RemoveOtherAccessPage, mode, updatedAnswers))
-      )
-  }
+            val titleKey   = s"removeOtherAccess.title.$suffix"
+            val headingKey = s"removeOtherAccess.heading.$suffix"
+            val errorKey   = s"removeOtherAccess.error.required.$suffix"
+
+            Right(
+              RemoveOtherAccessViewData(
+                titleKey = titleKey,
+                headingKey = headingKey,
+                errorKey = errorKey,
+                rcaspName = rcaspName,
+                form = formProvider(errorKey)
+              )
+            )
+
+          case None =>
+            logger.warn(
+              s"[RemoveOtherAccessController][buildViewData] Could not find selected RCASP for rcaspId=$rcaspId"
+            )
+            Left(journeyRecovery)
+        }
+
+      case Left(_) =>
+        logger.warn("[RemoveOtherAccessController][buildViewData] Failed to retrieve RCASP details")
+        Left(journeyRecovery)
+    }
+
+  def onPageLoad(mode: Mode, rcaspId: String): Action[AnyContent] =
+    (identify() andThen getData() andThen requireData).async { implicit request =>
+      buildViewData(request.carfId, rcaspId).map {
+        case Right(data) =>
+          val preparedForm =
+            request.userAnswers.get(RemoveOtherAccessPage).fold(data.form)(data.form.fill)
+
+          Ok(
+            view(
+              preparedForm,
+              mode,
+              rcaspId,
+              data.titleKey,
+              data.headingKey,
+              data.errorKey,
+              data.rcaspName
+            )
+          )
+
+        case Left(recovery) =>
+          recovery
+      }
+    }
+
+  def onSubmit(mode: Mode, rcaspId: String): Action[AnyContent] =
+    (identify() andThen getData() andThen requireData).async { implicit request =>
+      buildViewData(request.carfId, rcaspId).flatMap {
+        case Right(data) =>
+          data.form
+            .bindFromRequest()
+            .fold(
+              formWithErrors =>
+                Future.successful(
+                  BadRequest(
+                    view(
+                      formWithErrors,
+                      mode,
+                      rcaspId,
+                      data.titleKey,
+                      data.headingKey,
+                      data.errorKey,
+                      data.rcaspName
+                    )
+                  )
+                ),
+              value =>
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(RemoveOtherAccessPage, value))
+                  _              <- sessionRepository.set(updatedAnswers)
+                } yield Redirect(
+                  controllers.routes.PlaceholderController.onPageLoad("Should nav to /remove/remove-rcasp (CARF-549)")
+                )
+            )
+
+        case Left(recovery) =>
+          Future.successful(recovery)
+      }
+    }
 }
