@@ -137,7 +137,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
       "must set the SubmissionSucceededPage flag as true redirect to the RCASP added page if submission is successful" in new Setup(
         emptyUserAnswers
       ) {
-        when(mockRcaspSubmissionService.submitRcasp(any(), any())(any(), any()))
+        when(mockRcaspSubmissionService.submitRegisteredBusinessRcasp(any(), any(), any())(any(), any()))
           .thenReturn(ResultT.fromValue(submitRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -147,7 +147,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.RcaspAddedConfirmationController.onPageLoad().url
 
-        verify(mockRcaspSubmissionService, times(1)).submitRcasp(any(), any())(any(), any())
+        verify(mockRcaspSubmissionService, times(1)).submitRegisteredBusinessRcasp(any(), any(), any())(any(), any())
         verify(mockSessionRepository, times(1)).set(
           eqTo(
             emptyUserAnswers
@@ -158,7 +158,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
       }
 
       "must redirect to Journey Recovery if submission failed" in new Setup(emptyUserAnswers) {
-        when(mockRcaspSubmissionService.submitRcasp(any(), any())(any(), any()))
+        when(mockRcaspSubmissionService.submitRegisteredBusinessRcasp(any(), any(), any())(any(), any()))
           .thenReturn(ResultT.fromError(InternalServerError))
 
         val request                = FakeRequest(POST, cdRoute)
@@ -167,8 +167,19 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-        verify(mockRcaspSubmissionService, times(1)).submitRcasp(any(), any())(any(), any())
+        verify(mockRcaspSubmissionService, times(1)).submitRegisteredBusinessRcasp(any(), any(), any())(any(), any())
         verify(mockSessionRepository, times(0)).set(eqTo(emptyUserAnswers))
+      }
+
+      "must redirect to Journey Recovery if CT UTR is not found in the request" in new Setup(
+        emptyUserAnswers,
+        requestUtr = None
+      ) {
+        val request                = FakeRequest(POST, cdRoute)
+        val result: Future[Result] = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
 
       "must redirect to Journey Recovery for a POST if no existing data is found" in {
@@ -216,12 +227,12 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
     }
   }
 
-  class Setup(userAnswers: UserAnswers) {
+  class Setup(userAnswers: UserAnswers, requestUtr: Option[String] = Some(testUtr.uniqueTaxPayerReference)) {
     final val mockHelper: CheckDetailsRegisteredBusinessHelper   = mock[CheckDetailsRegisteredBusinessHelper]
     final val mockRcaspSubmissionService: RcaspSubmissionService = mock[RcaspSubmissionService]
 
     val application: Application =
-      applicationBuilder(userAnswers = Some(userAnswers))
+      applicationBuilder(userAnswers = Some(userAnswers), requestUtr = requestUtr)
         .overrides(
           bind[CheckDetailsRegisteredBusinessHelper].toInstance(mockHelper),
           bind[RcaspSubmissionService].toInstance(mockRcaspSubmissionService)

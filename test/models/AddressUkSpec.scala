@@ -18,8 +18,6 @@ package models
 
 import base.SpecBase
 import config.Constants.ukCountryCode
-import models.countries.CountryUk
-import models.requests.AddressDetails
 
 class AddressUkSpec extends SpecBase {
 
@@ -83,55 +81,14 @@ class AddressUkSpec extends SpecBase {
       }
     }
 
-    "toAddressDetails" - {
-      "must return address details when given a full address details" in {
-        val result                 = ukAddressFull.toAddressDetails
-        val expectedAddressDetails = AddressDetails(
-          addressLine1 = ukAddressFull.addressLine1,
-          addressLine2 = ukAddressFull.addressLine2,
-          addressLine3 = ukAddressFull.addressLine3,
-          townOrCity = ukAddressFull.townOrCity,
-          postalCode = Some(ukAddressFull.postCode),
-          countryCode = ukCountryCode
-        )
-        result mustBe expectedAddressDetails
-      }
-
-      "must return address details when given an empty address details" in {
-        val result                 = ukAddressMinimal.toAddressDetails
-        val expectedAddressDetails = AddressDetails(
-          addressLine1 = ukAddressMinimal.addressLine1,
-          addressLine2 = ukAddressMinimal.addressLine2,
-          addressLine3 = ukAddressMinimal.addressLine3,
-          townOrCity = ukAddressMinimal.townOrCity,
-          postalCode = Some(ukAddressMinimal.postCode),
-          countryCode = ukCountryCode
-        )
-        result mustBe expectedAddressDetails
-      }
-
-      "must return address details with address line 3 shifted to address line 2 if address line 2 is None" in {
-        val result                 = ukAddressAddressLine3.toAddressDetails
-        val expectedAddressDetails = AddressDetails(
-          addressLine1 = ukAddressAddressLine3.addressLine1,
-          addressLine2 = ukAddressAddressLine3.addressLine3,
-          addressLine3 = None,
-          townOrCity = ukAddressAddressLine3.townOrCity,
-          postalCode = Some(ukAddressAddressLine3.postCode),
-          countryCode = ukCountryCode
-        )
-        result mustBe expectedAddressDetails
-      }
-    }
-
     ".toRcaspAddress" - {
       "must return address details when given a full address details" in {
         val result               = ukAddressFull.toRcaspAddress
         val expectedRcaspAddress = RcaspAddress(
           AddressLine1 = ukAddressFull.addressLine1,
           AddressLine2 = ukAddressFull.addressLine2,
-          AddressLine3 = Some(ukAddressFull.townOrCity),
-          AddressLine4 = ukAddressFull.addressLine3,
+          AddressLine3 = ukAddressFull.addressLine3,
+          AddressLine4 = Some(ukAddressFull.townOrCity),
           PostalCode = ukAddressFull.postCode,
           CountryCode = ukCountryCode
         )
@@ -155,8 +112,8 @@ class AddressUkSpec extends SpecBase {
         val result               = ukAddressAddressLine3.toRcaspAddress
         val expectedRcaspAddress = RcaspAddress(
           AddressLine1 = ukAddressAddressLine3.addressLine1,
-          AddressLine2 = Some(ukAddressAddressLine3.townOrCity),
-          AddressLine3 = ukAddressAddressLine3.addressLine3,
+          AddressLine2 = ukAddressAddressLine3.addressLine3,
+          AddressLine3 = Some(ukAddressAddressLine3.townOrCity),
           AddressLine4 = None,
           PostalCode = ukAddressAddressLine3.postCode,
           CountryCode = ukCountryCode

@@ -16,17 +16,17 @@
 
 package testOnly.controllers
 
-import javax.inject.Inject
 import connectors.RcaspConnector
-import models.{RcaspAddress, RcaspContactDetails, TinDetails}
-import models.requests.{CreateRcaspRequest, IndividualRcaspDetails, OrganisationRcaspDetails, RCASPManagementRequest, RcaspCreateRequestCommon, RequestParameter}
+import models.requests.*
 import models.responses.{SubmitRcaspResponse, ViewRcaspResponse}
+import models.{RcaspAddress, RcaspContactDetails, TinDetails}
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import types.ResultT
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class RcaspController @Inject() (
@@ -65,7 +65,7 @@ class RcaspController @Inject() (
             TransmittingSystem = "EIS",
             RequestType = "CREATE",
             Regime = "CARF",
-            RequestParameters = List(RequestParameter("key", "value"))
+            RequestParameters = None
           ),
           if (isIndividual.toBoolean) {
             IndividualRcaspDetails(

@@ -120,36 +120,18 @@ trait TestData extends Generators {
     countryCode = "GB"
   )
 
-  val testAddressDetails = AddressDetails(
-    addressLine1 = "123 Test Street",
-    addressLine2 = Some("Test Area"),
-    addressLine3 = None,
-    townOrCity = "Test City",
-    postalCode = Some("TE5T 1NG"),
-    countryCode = "GB"
-  )
-
-  val testAddressDetailsUk = AddressDetails(
-    addressLine1 = "1 Test",
-    addressLine2 = Some("Test Street"),
-    addressLine3 = Some("Test Region"),
-    townOrCity = "Testingtown",
-    postalCode = Some(testPostcode),
-    countryCode = "GB"
-  )
-
   val cachedBusinessDetails: CachedBusinessDetails =
     CachedBusinessDetails(
       name = "Test Business Ltd",
       address = AddressRegistrationResponse(
-        addressLine1 = "1 Test Street",
-        addressLine2 = Some("Testville"),
-        addressLine3 = None,
-        addressLine4 = None,
-        postalCode = Some("TE1 1ST"),
-        countryCode = "US"
+        addressLine1 = "1 Test",
+        addressLine2 = Some("Test Street"),
+        addressLine3 = Some("Test Region"),
+        addressLine4 = Some("Testingtown"),
+        postalCode = Some(testPostcode),
+        countryCode = "GB"
       ),
-      countryName = "United States"
+      countryName = "United Kingdom"
     )
 
   val carfId: String  = "XCCAR0024000102"
@@ -231,13 +213,26 @@ trait TestData extends Generators {
       PrimaryContactDetails = Some(rcaspContactDetails)
     )
 
+  val registeredBusinessRcaspDetailsRequest: requests.OrganisationRcaspDetails =
+    requests.OrganisationRcaspDetails(
+      SubscriptionID = carfId,
+      IsRCASPUser = true,
+      PartyType = "Organisation",
+      RCASPName = testOrgName,
+      TradingName = testTradingName,
+      TINDetails = Some(List(TinDetails(TINType = "UTR", TIN = "68936493", IssuedBy = "GB"))),
+      AddressDetails = rcaspAddress,
+      PrimaryContactDetails = None,
+      SecondaryContactDetails = None
+    )
+
   val rcaspCreateRequestCommon: RcaspCreateRequestCommon =
     RcaspCreateRequestCommon(
       OriginatingSystem = "MDTP",
       TransmittingSystem = "EIS",
       RequestType = "CREATE",
       Regime = "CARF",
-      RequestParameters = List(RequestParameter("key", "value"))
+      RequestParameters = None
     )
 
   val createRcaspRequestIndividual: CreateRcaspRequest =
@@ -245,6 +240,14 @@ trait TestData extends Generators {
       RCASPManagementRequest(
         RequestCommon = rcaspCreateRequestCommon,
         RequestDetails = individualRcaspDetailsRequest
+      )
+    )
+
+  val createRcaspRequestRegisteredBusiness: CreateRcaspRequest =
+    CreateRcaspRequest(
+      RCASPManagementRequest(
+        RequestCommon = rcaspCreateRequestCommon,
+        RequestDetails = registeredBusinessRcaspDetailsRequest
       )
     )
 
