@@ -40,7 +40,7 @@ class RemoveUserAccessController @Inject() (
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     sessionRepository: SessionRepository,
-    formProvider: GenericYesNoPageFormProvider, 
+    formProvider: GenericYesNoPageFormProvider,
     rcaspConnector: RcaspConnector,
     accountService: AccountService,
     val controllerComponents: MessagesControllerComponents,
@@ -151,7 +151,7 @@ class RemoveUserAccessController @Inject() (
           recovery
       }
     }
-  
+
   def onSubmit(mode: Mode, rcaspId: String): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
       buildViewData(request.carfId, rcaspId).flatMap {
@@ -178,9 +178,11 @@ class RemoveUserAccessController @Inject() (
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(RemoveUserAccessPage, value))
                   _              <- sessionRepository.set(updatedAnswers)
-                } yield Redirect(controllers.combined.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId))
+                } yield Redirect(
+                  controllers.combined.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId)
+                )
             )
-          
+
         case Left(recovery) =>
           Future.successful(recovery)
       }
