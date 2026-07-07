@@ -30,10 +30,10 @@
         <h1 class="govuk-heading-l long-word">@messages("checkDetails.heading", name)</h1>
 
         @sections.map { section =>
-            @if(section.sectionName.nonEmpty){
+            @if(section.sectionName.nonEmpty) {
                 <h2 class="govuk-heading-m">@section.sectionName</h2>
             }
-          
+
             @govukSummaryList(SummaryList(
                 rows = section.rows,
                 classes = "govuk-summary-list govuk-!-margin-bottom-9"

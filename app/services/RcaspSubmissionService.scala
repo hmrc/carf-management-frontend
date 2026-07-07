@@ -17,34 +17,57 @@
 package services
 
 import connectors.RcaspConnector
-import models.UserAnswers
-import models.errors.ApiError.InternalServerError
-import models.responses.{SubmitRcaspResponse, SubmitResponseDetails, SubmitReturnParameters}
+import models.{UniqueTaxpayerReference, UserAnswers}
+import models.errors.MandatoryInformationMissingError
+import models.requests.CreateRcaspRequest
+import models.responses.SubmitRcaspResponse
 import play.api.Logging
 import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.RcaspSubmissionHelper
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class RcaspSubmissionService @Inject (
-    rcaspConnector: RcaspConnector
+    rcaspConnector: RcaspConnector,
+    rcaspSubmissionHelper: RcaspSubmissionHelper
 ) extends Logging {
+
+  def submitRegisteredBusinessRcasp(
+      carfId: String,
+      utr: UniqueTaxpayerReference,
+      userAnswers: UserAnswers
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
+    rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, utr, userAnswers) match {
+      case Some(request) =>
+        rcaspConnector
+          .createRcasp(request)
+          .leftMap { error =>
+            logger.warn(s"[RcaspSubmissionService][submitRegisteredBusinessRcasp] Failed to add RCASP: $error")
+            error
+          }
+      case None          =>
+        logger.warn(
+          "[RcaspSubmissionService][submitRegisteredBusinessRcasp] Error building the CreateRcaspRequest from userAnswers"
+        )
+        ResultT.fromError(MandatoryInformationMissingError("Error building the CreateRcaspRequest from userAnswers"))
+    }
 
   def submitRcasp(
       carfId: String,
       userAnswers: UserAnswers
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
-    // TODO: Create actual request and send to stubs [CARF-572]
-    carfId.take(2) match {
-      case "EE" => ResultT.fromError(InternalServerError)
-      case _    =>
-        ResultT.fromValue(
-          SubmitRcaspResponse(
-            ResponseDetails = SubmitResponseDetails(
-              ReturnParameters = SubmitReturnParameters(Key = "RCASPID", Value = "ZMCAR0123456789")
-            )
-          )
-        )
+    rcaspSubmissionHelper.createRcaspRequest(carfId, userAnswers) match {
+      case Some(request) =>
+        rcaspConnector
+          .createRcasp(request)
+          .leftMap { error =>
+            logger.warn(s"[RcaspSubmissionService][submitRcasp] Failed to add RCASP: $error")
+            error
+          }
+      case None          =>
+        logger.warn("[RcaspSubmissionService][submitRcasp] Error building the CreateRcaspRequest from userAnswers")
+        ResultT.fromError(MandatoryInformationMissingError("Error building the CreateRcaspRequest from userAnswers"))
     }
 }

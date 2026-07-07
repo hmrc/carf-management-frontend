@@ -17,7 +17,7 @@
 package controllers.organisation
 
 import cats.syntax.all.*
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
+import controllers.actions.{CtUtrRetrievalAction, DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import pages.{RcaspIdPage, SubmissionSucceededPage}
 import play.api.Logging
@@ -36,6 +36,7 @@ class RegisteredBusinessCheckDetailsController @Inject() (
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     identify: IdentifierAction,
+    ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     submissionLock: SubmissionLockAction,
@@ -77,19 +78,29 @@ class RegisteredBusinessCheckDetailsController @Inject() (
       }
   }
 
-  def onSubmit: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData).async {
-    implicit request =>
-      rcaspSubmissionService.submitRcasp(request.carfId, request.userAnswers).value.flatMap {
-        case Right(response) =>
-          val rcaspId = response.ResponseDetails.ReturnParameters.Value
-          for {
-            ua                <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
-            uaWithSuccessFlag <- Future.fromTry(ua.set(SubmissionSucceededPage, true))
-            _                 <- sessionRepository.set(uaWithSuccessFlag)
-          } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
-        case Left(error)     =>
-          logger.warn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")
-          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      }
-  }
+  def onSubmit: Action[AnyContent] =
+    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+      implicit request =>
+        request.utr match {
+          case Some(utr) =>
+            rcaspSubmissionService
+              .submitRegisteredBusinessRcasp(request.carfId, utr, request.userAnswers)
+              .value
+              .flatMap {
+                case Right(response) =>
+                  val rcaspId = response.ResponseDetails.ReturnParameters.Value
+                  for {
+                    ua                <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
+                    uaWithSuccessFlag <- Future.fromTry(ua.set(SubmissionSucceededPage, true))
+                    _                 <- sessionRepository.set(uaWithSuccessFlag)
+                  } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
+                case Left(error)     =>
+                  logger.warn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")
+                  Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+              }
+          case None      =>
+            logger.warn("[RegisteredBusinessCheckDetailsController][onSubmit] CT UTR not found in request")
+            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+        }
+    }
 }

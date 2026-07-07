@@ -18,7 +18,6 @@ package models
 
 import config.Constants.ukCountryCode
 import models.countries.CountryUk
-import models.requests.AddressDetails
 import play.api.libs.json.{Json, OFormat}
 
 import scala.collection.immutable.Seq
@@ -67,18 +66,6 @@ extension (address: AddressUk) {
       } else Seq(address.countryUk.name)
     }
     addressLines.mkString(", ")
-  }
-
-  def toAddressDetails: AddressDetails = {
-    val addressOptionalLines = Seq(address.addressLine2, address.addressLine3).flatten
-    AddressDetails(
-      addressLine1 = address.addressLine1,
-      addressLine2 = addressOptionalLines.headOption,
-      addressLine3 = addressOptionalLines.lift(1),
-      townOrCity = address.townOrCity,
-      postalCode = Some(address.postCode),
-      countryCode = address.countryUk.code
-    )
   }
 
   def toRcaspAddress: RcaspAddress = {
