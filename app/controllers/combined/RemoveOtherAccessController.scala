@@ -20,14 +20,12 @@ import connectors.RcaspConnector
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import models.Mode
-import navigation.Navigator
 import pages.combined.RemoveOtherAccessPage
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
-import services.AccountService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.combined.RemoveOtherAccessView
@@ -42,7 +40,6 @@ class RemoveOtherAccessController @Inject() (
     requireData: DataRequiredAction,
     sessionRepository: SessionRepository,
     formProvider: GenericYesNoPageFormProvider,
-    navigator: Navigator,
     rcaspConnector: RcaspConnector,
     val controllerComponents: MessagesControllerComponents,
     view: RemoveOtherAccessView
