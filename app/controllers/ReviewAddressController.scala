@@ -33,7 +33,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class ReviewAddressController @Inject() (
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
-    ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     submissionLock: SubmissionLockAction,
@@ -69,7 +68,7 @@ class ReviewAddressController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       request.userAnswers.get(AddressPagePrePop) match {
         case Some(address) =>
           for {

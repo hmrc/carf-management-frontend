@@ -19,9 +19,7 @@ package controllers
 import base.SpecBase
 import forms.ChooseAddressFormProvider
 import models.OrganisationOrIndividual.{Individual, Organisation}
-import models.countries.CountryUk
-import models.errors.ApiError.InternalServerError
-import models.{format, AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers}
+import models.{AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers, format}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{times, verify, when}
