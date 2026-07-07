@@ -91,4 +91,34 @@ class AccountService @Inject (
           )
         }
       }
+
+  def getUserBusinessName(
+      carfId: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[Option[String]] =
+    subscriptionConnector
+      .displaySubscription(carfId)
+      .leftMap { error =>
+        logger.warn(s"[AccountService][getUserBusinessName] Error calling displaySubscription: $error")
+        error
+      }
+      .subflatMap { displaySubscriptionResponse =>
+        displaySubscriptionResponse.hasOrganisationContactDetailsMaybe.fold {
+          logger.warn(
+            "[AccountService][getUserBusinessName] DisplaySubscriptionResponse has contact details for neither or both individual and organisation"
+          )
+          Left(InternalServerError)
+        } { hasOrganisationContactDetails =>
+          val name =
+            if (hasOrganisationContactDetails) {
+              displaySubscriptionResponse.success.carfSubscriptionDetails.tradingName
+            } else {
+              displaySubscriptionResponse.success.carfSubscriptionDetails.primaryContact.individual.map { individual =>
+                s"${individual.firstName} ${individual.lastName}"
+              }
+
+            }
+
+          Right(name)
+        }
+      }
 }
