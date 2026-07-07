@@ -73,7 +73,7 @@ class FindAddressController @Inject() (
         case Some(name) => Ok(view(preparedForm, mode, name, manualLink(mode)))
         case None       =>
           logger.warn(
-            "[FindAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onPageLoad"
+            "[FindAddressController][onPageLoad] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
       }
@@ -89,7 +89,7 @@ class FindAddressController @Inject() (
             request.userAnswers.retrieveRcaspName
               .fold {
                 logger.warn(
-                  "[FindAddressController][formWithErrors] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
+                  "[FindAddressController][onSubmit] Form with errors: Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
                 )
                 Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
               }(name => Future.successful(BadRequest(view(formWithErrors, mode, name, manualLink(mode))))),
@@ -99,14 +99,14 @@ class FindAddressController @Inject() (
               .value
               .flatMap {
                 case Left(error)                                    =>
-                  logger.error(s"Address lookup service failed: $error")
+                  logger.error(s"[FindAddressController][onSubmit] Address lookup service failed: $error")
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
                 case Right((Nil, _))                                =>
                   val formError =
                     formReturned.withError(FormError("postcode", List("findAddress.postcode.error.notFound")))
                   request.userAnswers.retrieveRcaspName.fold {
                     logger.warn(
-                      "[FindAddressController][form success] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
+                      "[FindAddressController][onSubmit] Form success: Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
                     )
                     Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
                   }(name => Future.successful(BadRequest(view(formError, mode, name, manualLink(mode)))))

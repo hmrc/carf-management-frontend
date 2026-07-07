@@ -18,8 +18,8 @@ package controllers.home
 
 import base.SpecBase
 import config.FrontendAppConfig
-import models.{HomePageSubscriptionData, UserAnswers}
 import models.errors.ApiError.InternalServerError
+import models.{HomePageSubscriptionData, UserAnswers}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
 import play.api.Application

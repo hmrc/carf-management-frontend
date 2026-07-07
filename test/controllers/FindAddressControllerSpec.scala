@@ -103,7 +103,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
       }
     }
 
-    "must return the view in and not clear AddressPagePrePop for a GET in Change Mode" in {
+    "must return OK, the correct view and not clear AddressPagePrePop for a GET in Change Mode" in {
 
       val userAnswersWithName =
         emptyUserAnswers

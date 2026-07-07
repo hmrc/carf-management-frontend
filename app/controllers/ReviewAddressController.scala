@@ -58,12 +58,12 @@ class ReviewAddressController @Inject() (
             case Some(name) => Ok(view(address, mode, editAddressLink, name))
             case None       =>
               logger.warn(
-                "[ReviewAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onPageLoad"
+                "[ReviewAddressController][onPageLoad] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
               )
               Redirect(controllers.routes.InformationMissingController.onPageLoad())
           }
         case None          =>
-          logger.warn("No address found in user answers")
+          logger.warn("[ReviewAddressController][onPageLoad] No address found in user answers")
           Redirect(routes.JourneyRecoveryController.onPageLoad())
       }
     }
@@ -77,7 +77,7 @@ class ReviewAddressController @Inject() (
             _              <- sessionRepository.set(updatedAnswers)
           } yield Redirect(navigator.nextPage(ReviewAddressPageForNavigatorOnly, mode, updatedAnswers))
         case None          =>
-          logger.error("No address found in user answers")
+          logger.error("[ReviewAddressController][onSubmit] No address found in user answers")
           Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       }
     }

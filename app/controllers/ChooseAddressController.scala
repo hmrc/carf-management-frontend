@@ -42,7 +42,6 @@ class ChooseAddressController @Inject() (
     sessionRepository: SessionRepository,
     navigator: Navigator,
     identify: IdentifierAction,
-    ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     submissionLock: SubmissionLockAction,
@@ -95,7 +94,7 @@ class ChooseAddressController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(

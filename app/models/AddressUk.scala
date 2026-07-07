@@ -35,8 +35,8 @@ extension (address: AddressUk) {
     val addressLines = Seq(
       Some(address.addressLine1),
       address.addressLine2,
-      Some(address.townOrCity),
       address.addressLine3,
+      Some(address.townOrCity),
       Some(address.postCode)
     ).flatten.filter(_.nonEmpty)
 
@@ -56,8 +56,8 @@ extension (address: AddressUk) {
     val addressLines: Seq[String] = Seq(
       Some(address.addressLine1),
       address.addressLine2,
-      Some(address.townOrCity),
       address.addressLine3,
+      Some(address.townOrCity),
       Some(address.postCode)
     ).flatten
     addressLines.mkString(", ")

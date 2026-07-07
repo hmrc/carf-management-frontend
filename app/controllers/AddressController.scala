@@ -39,7 +39,6 @@ class AddressController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     submissionLock: SubmissionLockAction,
-    ctUtrRetrievalAction: CtUtrRetrievalAction,
     requireData: DataRequiredAction,
     formProvider: AddressFormProvider,
     val controllerComponents: MessagesControllerComponents,
@@ -61,32 +60,31 @@ class AddressController @Inject() (
           Ok(view(preparedForm, mode, name))
         case None       =>
           logger.warn(
-            "[AddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onPageLoad"
+            "[AddressController][onPageLoad] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
       }
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
-      implicit request =>
-        form
-          .bindFromRequest()
-          .fold(
-            formWithErrors =>
-              request.userAnswers.retrieveRcaspName.fold {
-                logger.warn(
-                  "[AddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
-                )
-                Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
-              }(name => Future.successful(BadRequest(view(formWithErrors, mode, name)))),
-            value =>
-              for {
-                a <- Future.fromTry(request.userAnswers.set(UkAddressInUserAnswers, value))
-                b <- Future.fromTry(a.set(AddressPagePrePop, value))
-                c <- Future.fromTry(b.remove(AddressUPRNUserAnswers))
-                _ <- sessionRepository.set(c)
-              } yield Redirect(navigator.nextPage(AddressPageForNavigatorOnly, mode, c))
-          )
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+      form
+        .bindFromRequest()
+        .fold(
+          formWithErrors =>
+            request.userAnswers.retrieveRcaspName.fold {
+              logger.warn(
+                "[AddressController][onSubmit] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
+              )
+              Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
+            }(name => Future.successful(BadRequest(view(formWithErrors, mode, name)))),
+          value =>
+            for {
+              a <- Future.fromTry(request.userAnswers.set(UkAddressInUserAnswers, value))
+              b <- Future.fromTry(a.set(AddressPagePrePop, value))
+              c <- Future.fromTry(b.remove(AddressUPRNUserAnswers))
+              _ <- sessionRepository.set(c)
+            } yield Redirect(navigator.nextPage(AddressPageForNavigatorOnly, mode, c))
+        )
     }
 }
