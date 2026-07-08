@@ -28,10 +28,6 @@ sealed trait RcaspDetails {
   val TINDetails: Option[List[TinDetails]]
   val AddressDetails: RcaspAddress
   val PrimaryContactDetails: Option[RcaspContactDetails]
-
-  def getName: String
-
-  def forComparison: Option[RcaspDetailsForComparison]
 }
 
 object RcaspDetails {
@@ -49,6 +45,43 @@ object RcaspDetails {
   }
 }
 
+extension (rcaspDetails: RcaspDetails) {
+  def getName: String =
+    rcaspDetails match {
+      case individual: IndividualRcaspDetails     => s"${individual.FirstName} ${individual.LastName}"
+      case organisation: OrganisationRcaspDetails => organisation.RCASPName
+    }
+
+  def forComparison: Option[RcaspDetailsForComparison] =
+    rcaspDetails match {
+      case individual: IndividualRcaspDetails     =>
+        for {
+          nino  <- individual.TINDetails.flatMap(_.headOption.map(_.TIN))
+          email <- individual.PrimaryContactDetails.map(_.EmailAddress)
+        } yield IndividualRcaspDetailsForComparison(
+          individual.IsRCASPUser,
+          individual.FirstName,
+          individual.LastName,
+          nino,
+          individual.AddressDetails,
+          email,
+          individual.PrimaryContactDetails.flatMap(_.PhoneNumber)
+        )
+      case organisation: OrganisationRcaspDetails =>
+        organisation.TINDetails.flatMap(_.headOption.map(_.TIN)).map { utr =>
+          OrganisationRcaspDetailsForComparison(
+            organisation.IsRCASPUser,
+            organisation.RCASPName,
+            organisation.TradingName,
+            utr,
+            organisation.AddressDetails,
+            organisation.PrimaryContactDetails,
+            organisation.SecondaryContactDetails
+          )
+        }
+    }
+}
+
 case class IndividualRcaspDetails(
     SubscriptionID: String,
     RCASPID: String,
@@ -59,24 +92,7 @@ case class IndividualRcaspDetails(
     TINDetails: Option[List[TinDetails]],
     AddressDetails: RcaspAddress,
     PrimaryContactDetails: Option[RcaspContactDetails]
-) extends RcaspDetails {
-
-  def getName: String = s"$FirstName $LastName"
-
-  def forComparison: Option[IndividualRcaspDetailsForComparison] =
-    for {
-      nino  <- TINDetails.flatMap(_.headOption.map(_.TIN))
-      email <- PrimaryContactDetails.map(_.EmailAddress)
-    } yield IndividualRcaspDetailsForComparison(
-      IsRCASPUser,
-      FirstName,
-      LastName,
-      nino,
-      AddressDetails,
-      email,
-      PrimaryContactDetails.flatMap(_.PhoneNumber)
-    )
-}
+) extends RcaspDetails
 
 object IndividualRcaspDetails {
   implicit val format: OFormat[IndividualRcaspDetails] = Json.format[IndividualRcaspDetails]
@@ -93,23 +109,7 @@ case class OrganisationRcaspDetails(
     AddressDetails: RcaspAddress,
     PrimaryContactDetails: Option[RcaspContactDetails],
     SecondaryContactDetails: Option[RcaspContactDetails]
-) extends RcaspDetails {
-
-  def getName: String = RCASPName
-
-  def forComparison: Option[OrganisationRcaspDetailsForComparison] =
-    TINDetails.flatMap(_.headOption.map(_.TIN)).map { utr =>
-      OrganisationRcaspDetailsForComparison(
-        IsRCASPUser,
-        RCASPName,
-        TradingName,
-        utr,
-        AddressDetails,
-        PrimaryContactDetails,
-        SecondaryContactDetails
-      )
-    }
-}
+) extends RcaspDetails
 
 object OrganisationRcaspDetails {
   implicit val format: OFormat[OrganisationRcaspDetails] = Json.format[OrganisationRcaspDetails]

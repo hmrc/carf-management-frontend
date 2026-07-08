@@ -18,6 +18,7 @@ package utils
 
 import cats.syntax.all.*
 import models.UserAnswers
+import models.responses.forComparison
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.individual.IndividualHavePhonePage
 import pages.organisation.*
