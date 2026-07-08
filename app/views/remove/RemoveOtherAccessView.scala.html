@@ -47,14 +47,10 @@
             )
         }
 
-        <h1 class="govuk-heading-l">
-        @messages(headingKey, rcaspName)
-        </h1>
-
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages(headingKey, rcaspName)).withCssClass("govuk-visually-hidden govuk-!-display-block")
+                legend = LegendViewModel(messages(headingKey, rcaspName)).asPageHeading()
             ).copy(classes = "")
         )
 

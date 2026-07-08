@@ -35,6 +35,11 @@
         userBusinessName: Option[String]
 )(implicit request: Request[_], messages: Messages)
 
+@headingText = @{
+    if (userBusinessName.isDefined) messages(headingKey, userBusinessName.get, rcaspName)
+    else messages(headingKey, rcaspName)
+}
+
 @layout(pageTitle = title(form, messages(titleKey, rcaspName))) {
 
     @formHelper(action = controllers.remove.routes.RemoveUserAccessController.onSubmit(rcaspId), Symbol("autoComplete") -> "off") {
@@ -48,21 +53,10 @@
             )
         }
 
-        <h1 class="govuk-heading-l">
-        @if(userBusinessName.isDefined) {
-            @messages(headingKey, userBusinessName.get, rcaspName)
-        } else {
-            @messages(headingKey, rcaspName)
-        }
-        </h1>
-
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(
-                    if (userBusinessName.isDefined) messages(headingKey, userBusinessName.get, rcaspName)
-                    else messages(headingKey, rcaspName)
-                ).withCssClass("govuk-visually-hidden govuk-!-display-block")
+                legend = LegendViewModel(headingText).asPageHeading()
             ).copy(classes = "")
         )
 
