@@ -46,14 +46,15 @@ class ChangeDetailsRoutingController @Inject() (
       request.userAnswers.flatMap(_.get(ChangeRcaspCachedDetails)),
       request.userAnswers.flatMap(_.get(ReportForRegisteredBusinessPage))
     ) match {
-      case (Some(cachedDetails), Some(isRcaspUserAnswer)) if cachedDetails.RCASPID == rcaspId && !submissionFlagSet =>
+      case (Some(cachedDetails), Some(isRcaspUserAnswer))
+          if cachedDetails.RCASPID.toUpperCase == rcaspId.toUpperCase && !submissionFlagSet =>
         val redirectCall: Call =
           if (isRcaspUserAnswer)
             controllers.routes.PlaceholderController
               .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
           else controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId)
         Future.successful(Redirect(redirectCall))
-      case _                                                                                                        =>
+      case _ =>
         accountService.getRcaspDetails(request.carfId, rcaspId).value.flatMap {
           case Left(error)                                               =>
             logger.warn(s"[ChangeDetailsRoutingController][onPageLoad] Failed to get RCASP details: $error")

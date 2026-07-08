@@ -59,7 +59,7 @@ class ChangeDetailsController @Inject() (
         Redirect(controllers.routes.InformationMissingController.onPageLoad())
 
       (userAnswers.get(ChangeRcaspCachedDetails), userAnswers.get(OrganisationOrIndividualPage)) match {
-        case (Some(cachedDetails), Some(orgOrIndividual)) if cachedDetails.RCASPID == rcaspId =>
+        case (Some(cachedDetails), Some(orgOrIndividual)) if cachedDetails.RCASPID.toUpperCase == rcaspId.toUpperCase =>
           orgOrIndividual match {
             case Individual   =>
               (
@@ -109,7 +109,7 @@ class ChangeDetailsController @Inject() (
                   ifEmptyProtocol
                 }
           }
-        case _                                                                                =>
+        case _                                                                                                        =>
           logger.warn(
             "[ChangeDetailsController][onPageLoad] Error! Missing ChangeRcaspCachedDetails or OrganisationOrIndividual"
           )

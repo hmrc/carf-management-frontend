@@ -130,6 +130,30 @@ class AccountServiceSpec extends SpecBase {
         verify(mockRcaspConnector, times(1)).viewRcasp(eqTo(testCarfId))(any(), any())
       }
 
+      "must return a Right with RcaspDetails when an RCASPID matches after converting to uppercase" in {
+        val viewRcaspResponse = ViewRcaspResponse(
+          ViewRCASP = ViewRcasp(
+            ResponseCommon = rcaspResponseCommon,
+            ResponseDetails = RcaspResponseDetails(
+              RCASPList = List(
+                individualRcaspDetailsResponse.copy(RCASPID = "RCASP1"),
+                organisationRcaspDetailsResponse.copy(RCASPID = "RCASP2"),
+                individualRcaspDetailsResponse.copy(RCASPID = "ZMcar0123456789"),
+                organisationRcaspDetailsResponse.copy(RCASPID = "RCASP3")
+              )
+            )
+          )
+        )
+
+        when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromValue(viewRcaspResponse))
+
+        val result: ResultT[RcaspDetails] = accountService.getRcaspDetails(testCarfId, "zmCAR0123456789")
+
+        result.value.futureValue mustBe Right(individualRcaspDetailsResponse.copy(RCASPID = "ZMcar0123456789"))
+
+        verify(mockRcaspConnector, times(1)).viewRcasp(eqTo(testCarfId))(any(), any())
+      }
+
       "must return a Left when the connector returns an error" in {
         when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromError(InternalServerError))
 

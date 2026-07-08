@@ -57,7 +57,7 @@ class AccountService @Inject (
       }
       .subflatMap { viewRcaspResponse =>
         viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList
-          .find(_.RCASPID == rcaspId)
+          .find(_.RCASPID.toUpperCase == rcaspId.toUpperCase)
           .fold {
             logger.warn(s"[AccountService][getRcaspDetails] No RCASP found with ID $rcaspId")
             Left(NotFoundError)
