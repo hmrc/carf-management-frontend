@@ -31,7 +31,7 @@ class RegistrationConnectorISpec
     with Matchers
     with ScalaFutures
     with IntegrationPatience {
-  
+
   val connector: RegistrationConnector = app.injector.instanceOf[RegistrationConnector]
 
   val addressResponse: AddressRegistrationResponse = AddressRegistrationResponse(
@@ -53,7 +53,21 @@ class RegistrationConnectorISpec
     organisationName = "Monsters Inc",
     address = addressResponse
   )
-  
+
+  val validRegisterWithIdResponseJson: String =
+    """
+      |{
+      |  "organisationName": "Monsters Inc",
+      |  "address": {
+      |    "addressLine1": "2 High Street",
+      |    "addressLine2": "Birmingham",
+      |    "addressLine3": "Townington",
+      |    "addressLine4": "Kingdom of UK",
+      |    "postalCode": "B23 2AZ",
+      |    "countryCode": "GB"
+      |  }
+      |}""".stripMargin
+
   "registerOrganisationWithUtrCtAutoMatch" should {
     "successfully retrieve a name and address" in {
       stubFor(
@@ -61,7 +75,7 @@ class RegistrationConnectorISpec
           .willReturn(
             aResponse()
               .withStatus(OK)
-              .withBody(Json.toJson(validRegisterWithIdResponse).toString)
+              .withBody(validRegisterWithIdResponseJson)
           )
       )
 
