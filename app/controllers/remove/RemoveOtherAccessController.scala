@@ -19,7 +19,6 @@ package controllers.remove
 import connectors.RcaspConnector
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import models.Mode
 import pages.remove.RemoveOtherAccessPage
 import play.api.Logging
 import play.api.data.Form
@@ -109,7 +108,7 @@ class RemoveOtherAccessController @Inject() (
         Left(journeyRecovery)
     }
 
-  def onPageLoad(mode: Mode, rcaspId: String): Action[AnyContent] =
+  def onPageLoad(rcaspId: String): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
       buildViewData(request.carfId, rcaspId).map {
         case Right(data) =>
@@ -119,7 +118,6 @@ class RemoveOtherAccessController @Inject() (
           Ok(
             view(
               preparedForm,
-              mode,
               rcaspId,
               data.titleKey,
               data.headingKey,
@@ -133,7 +131,7 @@ class RemoveOtherAccessController @Inject() (
       }
     }
 
-  def onSubmit(mode: Mode, rcaspId: String): Action[AnyContent] =
+  def onSubmit(rcaspId: String): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
       buildViewData(request.carfId, rcaspId).flatMap {
         case Right(data) =>
@@ -145,7 +143,6 @@ class RemoveOtherAccessController @Inject() (
                   BadRequest(
                     view(
                       formWithErrors,
-                      mode,
                       rcaspId,
                       data.titleKey,
                       data.headingKey,

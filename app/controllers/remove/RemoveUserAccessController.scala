@@ -19,7 +19,7 @@ package controllers.remove
 import connectors.RcaspConnector
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import models.{Mode, NormalMode, UserAnswers}
+import models.UserAnswers
 import pages.remove.RemoveUserAccessPage
 import play.api.Logging
 import play.api.data.Form
@@ -126,7 +126,7 @@ class RemoveUserAccessController @Inject() (
         Left(journeyRecovery)
     }
 
-  def onPageLoad(mode: Mode, rcaspId: String): Action[AnyContent] =
+  def onPageLoad(rcaspId: String): Action[AnyContent] =
     identify().async { implicit request =>
       val freshAnswers = UserAnswers(
         id = request.userId,
@@ -141,7 +141,6 @@ class RemoveUserAccessController @Inject() (
           Ok(
             view(
               data.form,
-              mode,
               rcaspId,
               data.titleKey,
               data.headingKey,
@@ -156,7 +155,7 @@ class RemoveUserAccessController @Inject() (
       }
     }
 
-  def onSubmit(mode: Mode, rcaspId: String): Action[AnyContent] =
+  def onSubmit(rcaspId: String): Action[AnyContent] =
     identify().async { implicit request =>
       buildViewData(request.carfId, rcaspId).flatMap {
         case Right(data) =>
@@ -168,7 +167,6 @@ class RemoveUserAccessController @Inject() (
                   BadRequest(
                     view(
                       formWithErrors,
-                      mode,
                       rcaspId,
                       data.titleKey,
                       data.headingKey,
@@ -188,7 +186,7 @@ class RemoveUserAccessController @Inject() (
                                  )
                   _           <- sessionRepository.set(userAnswers)
                 } yield Redirect(
-                  controllers.remove.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId)
+                  controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId)
                 )
             )
 

@@ -27,7 +27,6 @@
 )
 
 @(form: Form[Boolean],
-        mode: Mode,
         rcaspId: String,
         titleKey: String,
         headingKey: String,
@@ -38,7 +37,7 @@
 
 @layout(pageTitle = title(form, messages(titleKey, rcaspName))) {
 
-    @formHelper(action = controllers.remove.routes.RemoveUserAccessController.onSubmit(mode, rcaspId), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.remove.routes.RemoveUserAccessController.onSubmit(rcaspId), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(

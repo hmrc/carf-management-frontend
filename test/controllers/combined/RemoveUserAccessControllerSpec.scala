@@ -19,7 +19,6 @@ package controllers.combined
 import base.SpecBase
 import connectors.RcaspConnector
 import models.errors.ApiError.InternalServerError
-import models.NormalMode
 import models.responses.*
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -34,10 +33,10 @@ import scala.concurrent.Future
 class RemoveUserAccessControllerSpec extends SpecBase {
 
   lazy val onPageLoadRoute: String =
-    controllers.remove.routes.RemoveUserAccessController.onPageLoad(NormalMode, rcaspId).url
+    controllers.remove.routes.RemoveUserAccessController.onPageLoad(rcaspId).url
 
   lazy val onSubmitRoute: String =
-    controllers.remove.routes.RemoveUserAccessController.onSubmit(NormalMode, rcaspId).url
+    controllers.remove.routes.RemoveUserAccessController.onSubmit(rcaspId).url
 
   val mockRcaspConnector: RcaspConnector = mock[RcaspConnector]
   val mockAccountService: AccountService = mock[AccountService]
@@ -259,7 +258,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual
-            controllers.remove.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId).url
+            controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId).url
         }
       }
 

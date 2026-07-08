@@ -60,7 +60,7 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
             ),
             ListWithActionsAction(
               href = controllers.remove.routes.RemoveUserAccessController
-                .onPageLoad(NormalMode: Mode, "RCASP2")
+                .onPageLoad("RCASP2")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove Timmy Jimmison from the list")
@@ -74,7 +74,7 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
             ),
             ListWithActionsAction(
               href = controllers.remove.routes.RemoveUserAccessController
-                .onPageLoad(NormalMode: Mode, "RCASP1")
+                .onPageLoad("RCASP1")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove Timmy Ltd from the list")
@@ -121,7 +121,7 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
             ),
             ListWithActionsAction(
               href = controllers.remove.routes.RemoveUserAccessController
-                .onPageLoad(NormalMode: Mode, "RCASP3")
+                .onPageLoad("RCASP3")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove ORG2 from the list")
@@ -135,7 +135,7 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
             ),
             ListWithActionsAction(
               href = controllers.remove.routes.RemoveUserAccessController
-                .onPageLoad(NormalMode: Mode, "RCASP4")
+                .onPageLoad("RCASP4")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove Ann Smith from the list")
@@ -149,7 +149,7 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
             ),
             ListWithActionsAction(
               href = controllers.remove.routes.RemoveUserAccessController
-                .onPageLoad(NormalMode: Mode, "RCASP2")
+                .onPageLoad("RCASP2")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove John Doe from the list")
@@ -163,7 +163,7 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
             ),
             ListWithActionsAction(
               href = controllers.remove.routes.RemoveUserAccessController
-                .onPageLoad(NormalMode: Mode, "RCASP1")
+                .onPageLoad("RCASP1")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove org1 from the list")
