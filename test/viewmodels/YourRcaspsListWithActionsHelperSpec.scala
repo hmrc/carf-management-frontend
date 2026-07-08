@@ -18,6 +18,7 @@ package viewmodels
 
 import base.SpecBase
 import models.viewAndUpdateRcasp.RcaspDetails
+import models.{Mode, NormalMode}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.{HtmlContent, Text}
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.listwithactions.{ListWithActions, ListWithActionsAction}
@@ -58,8 +59,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for Timmy Jimmison")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP1 (CARF-355)")
+              href = controllers.combined.routes.RemoveUserAccessController
+                .onPageLoad(NormalMode: Mode, "RCASP2")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove Timmy Jimmison from the list")
@@ -72,8 +73,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for Timmy Ltd")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP2 (CARF-355)")
+              href = controllers.combined.routes.RemoveUserAccessController
+                .onPageLoad(NormalMode: Mode, "RCASP1")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove Timmy Ltd from the list")
@@ -119,8 +120,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for ORG2")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP3 (CARF-355)")
+              href = controllers.combined.routes.RemoveUserAccessController
+                .onPageLoad(NormalMode: Mode, "RCASP3")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove ORG2 from the list")
@@ -133,8 +134,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for Ann Smith")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP4 (CARF-355)")
+              href = controllers.combined.routes.RemoveUserAccessController
+                .onPageLoad(NormalMode: Mode, "RCASP4")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove Ann Smith from the list")
@@ -147,8 +148,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for John Doe")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP2 (CARF-355)")
+              href = controllers.combined.routes.RemoveUserAccessController
+                .onPageLoad(NormalMode: Mode, "RCASP2")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove John Doe from the list")
@@ -161,8 +162,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for org1")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP1 (CARF-355)")
+              href = controllers.combined.routes.RemoveUserAccessController
+                .onPageLoad(NormalMode: Mode, "RCASP1")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove org1 from the list")

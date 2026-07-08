@@ -261,5 +261,73 @@ class AccountServiceSpec extends SpecBase {
         verify(mockSubscriptionConnector, times(1)).displaySubscription(eqTo(testCarfId))(any(), any())
       }
     }
+    ".getUserBusinessName" - {
+
+      "must return a Right with Some trading name when organisation contact details are present with trading name" in {
+        when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
+          .thenReturn(ResultT.fromValue(testOrganisationDisplaySubscriptionResponse(Some(testTradingName))))
+
+        val result: ResultT[Option[String]] = accountService.getUserBusinessName(testCarfId)
+
+        result.value.futureValue mustBe Right(Some(testTradingName))
+
+        verify(mockSubscriptionConnector, times(1)).displaySubscription(eqTo(testCarfId))(any(), any())
+      }
+
+      "must return a Right with None when organisation contact details are present without trading name" in {
+        when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
+          .thenReturn(ResultT.fromValue(testOrganisationDisplaySubscriptionResponse(None)))
+
+        val result: ResultT[Option[String]] = accountService.getUserBusinessName(testCarfId)
+
+        result.value.futureValue mustBe Right(None)
+
+        verify(mockSubscriptionConnector, times(1)).displaySubscription(eqTo(testCarfId))(any(), any())
+      }
+
+      "must return a Right with Some full name when individual contact details are present" in {
+        when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
+          .thenReturn(ResultT.fromValue(testIndividualDisplaySubscriptionResponse))
+
+        val result: ResultT[Option[String]] = accountService.getUserBusinessName(testCarfId)
+
+        result.value.futureValue mustBe Right(Some("Joe Smith"))
+
+        verify(mockSubscriptionConnector, times(1)).displaySubscription(eqTo(testCarfId))(any(), any())
+      }
+
+      "must return a Left when both individual and organisation contact details are present" in {
+        when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
+          .thenReturn(ResultT.fromValue(testInvalidSubscriptionResponseBoth))
+
+        val result: ResultT[Option[String]] = accountService.getUserBusinessName(testCarfId)
+
+        result.value.futureValue mustBe Left(InternalServerError)
+
+        verify(mockSubscriptionConnector, times(1)).displaySubscription(eqTo(testCarfId))(any(), any())
+      }
+
+      "must return a Left when neither individual nor organisation contact details are present" in {
+        when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
+          .thenReturn(ResultT.fromValue(testInvalidSubscriptionResponseNeither))
+
+        val result: ResultT[Option[String]] = accountService.getUserBusinessName(testCarfId)
+
+        result.value.futureValue mustBe Left(InternalServerError)
+
+        verify(mockSubscriptionConnector, times(1)).displaySubscription(eqTo(testCarfId))(any(), any())
+      }
+
+      "must return a Left when the connector returns an error" in {
+        when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
+          .thenReturn(ResultT.fromError(InternalServerError))
+
+        val result: ResultT[Option[String]] = accountService.getUserBusinessName(testCarfId)
+
+        result.value.futureValue mustBe Left(InternalServerError)
+
+        verify(mockSubscriptionConnector, times(1)).displaySubscription(eqTo(testCarfId))(any(), any())
+      }
+    }
   }
 }
