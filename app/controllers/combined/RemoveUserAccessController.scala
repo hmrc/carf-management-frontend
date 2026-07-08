@@ -19,7 +19,7 @@ package controllers.combined
 import connectors.RcaspConnector
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import models.{Mode, NormalMode}
+import models.{Mode, NormalMode, UserAnswers}
 import pages.combined.RemoveUserAccessPage
 import play.api.Logging
 import play.api.data.Form
@@ -128,15 +128,12 @@ class RemoveUserAccessController @Inject() (
     }
 
   def onPageLoad(mode: Mode, rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData() andThen requireData).async { implicit request =>
+    identify().async { implicit request =>
       buildViewData(request.carfId, rcaspId).map {
         case Right(data) =>
-          val preparedForm =
-            request.userAnswers.get(RemoveUserAccessPage).fold(data.form)(data.form.fill)
-
           Ok(
             view(
-              preparedForm,
+              data.form,
               mode,
               rcaspId,
               data.titleKey,
@@ -153,7 +150,7 @@ class RemoveUserAccessController @Inject() (
     }
 
   def onSubmit(mode: Mode, rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData() andThen requireData).async { implicit request =>
+    identify().async { implicit request =>
       buildViewData(request.carfId, rcaspId).flatMap {
         case Right(data) =>
           data.form
@@ -176,8 +173,11 @@ class RemoveUserAccessController @Inject() (
                 ),
               value =>
                 for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(RemoveUserAccessPage, value))
-                  _              <- sessionRepository.set(updatedAnswers)
+                  userAnswers <- Future.fromTry(
+                                   UserAnswers(request.carfId, rcaspIsRegisteredBusiness = false)
+                                     .set(RemoveUserAccessPage, value)
+                                 )
+                  _           <- sessionRepository.set(userAnswers)
                 } yield Redirect(
                   controllers.combined.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId)
                 )
