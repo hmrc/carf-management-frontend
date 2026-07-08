@@ -16,33 +16,25 @@
 
 package controllers.changeDetails
 
-import cats.syntax.all.*
 import controllers.actions.{DataRetrievalAction, IdentifierAction}
-import models.OrganisationOrIndividual.{Individual, Organisation}
-import models.individual.IndividualName
-import models.requests.OptionalDataRequest
 import models.responses.{IndividualRcaspDetails, OrganisationRcaspDetails}
-import models.{CachedBusinessDetails, RcaspContactDetails, UserAnswers}
-import pages.{SubmissionSucceededPage, UkAddressInUserAnswers}
+import pages.SubmissionSucceededPage
 import pages.changeDetails.ChangeRcaspCachedDetails
-import pages.combined.OrganisationOrIndividualPage
-import pages.individual.*
 import pages.organisation.*
 import play.api.Logging
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
-import repositories.SessionRepository
 import services.AccountService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.changeDetails.PopulateUserAnswersHelper
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Success
 
 class ChangeDetailsRoutingController @Inject() (
     identify: IdentifierAction,
     accountService: AccountService,
-    sessionRepository: SessionRepository,
     getData: DataRetrievalAction,
+    populateUserAnswersHelper: PopulateUserAnswersHelper,
     val controllerComponents: MessagesControllerComponents
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -72,148 +64,16 @@ class ChangeDetailsRoutingController @Inject() (
                 s"[ChangeDetailsRoutingController][onPageLoad] RCASP $rcaspId is an individual but isRcaspUser = true"
               )
               Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-            } else populateUserAnswersForIndividual(individualRcaspDetails)
+            } else {
+              populateUserAnswersHelper.populateUserAnswersForIndividual(request.userId, individualRcaspDetails)
+            }
           case Right(organisationRcaspDetails: OrganisationRcaspDetails) =>
-            if (organisationRcaspDetails.IsRCASPUser) populateUserAnswersForRegisteredBusiness(organisationRcaspDetails)
-            else populateUserAnswersForOrganisation(organisationRcaspDetails)
+            if (organisationRcaspDetails.IsRCASPUser)
+              populateUserAnswersHelper
+                .populateUserAnswersForRegisteredBusiness(request.userId, organisationRcaspDetails)
+            else
+              populateUserAnswersHelper.populateUserAnswersForOrganisation(request.userId, organisationRcaspDetails)
         }
-    }
-  }
-
-  private def populateUserAnswersForIndividual(
-      individualRcaspDetails: IndividualRcaspDetails
-  )(implicit request: OptionalDataRequest[AnyContent]) = {
-    val emptyUserAnswers    = UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false)
-    val individualName      = IndividualName(individualRcaspDetails.FirstName, individualRcaspDetails.LastName)
-    val maybeNino           = individualRcaspDetails.TINDetails.flatMap(_.headOption.map(_.TIN))
-    val maybeAddressUk      = individualRcaspDetails.AddressDetails.toAddressUk
-    val maybeContactDetails = individualRcaspDetails.PrimaryContactDetails
-
-    (maybeNino, maybeAddressUk, maybeContactDetails)
-      .mapN { (nino, address, contactDetails) =>
-        for {
-          a              <- Future.fromTry(emptyUserAnswers.set(ReportForRegisteredBusinessPage, false))
-          b              <- Future.fromTry(a.set(OrganisationOrIndividualPage, Individual))
-          c              <- Future.fromTry(b.set(IndividualNamePage, individualName))
-          d              <- Future.fromTry(c.set(NiNumberPage, nino))
-          e              <- Future.fromTry(d.set(UkAddressInUserAnswers, address))
-          f              <- Future.fromTry(e.set(IndividualEmailPage, contactDetails.EmailAddress))
-          g              <- Future.fromTry(f.set(IndividualHavePhonePage, contactDetails.PhoneNumber.nonEmpty))
-          h              <- Future.fromTry(contactDetails.PhoneNumber.fold(Success(g))(g.set(IndividualPhonePage, _)))
-          updatedAnswers <- Future.fromTry(h.set(ChangeRcaspCachedDetails, individualRcaspDetails))
-          _              <- sessionRepository.set(updatedAnswers)
-        } yield Redirect(
-          controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(individualRcaspDetails.RCASPID)
-        )
-      }
-      .getOrElse {
-        logger.warn(
-          s"[ChangeDetailsRoutingController][populateUserAnswersForIndividual] Unable to populate user answers from IndividualRcaspDetails"
-        )
-        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      }
-  }
-
-  private def populateUserAnswersForOrganisation(
-      organisationRcaspDetails: OrganisationRcaspDetails
-  )(implicit request: OptionalDataRequest[AnyContent]) = {
-    val emptyUserAnswers         = UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false)
-    val haveTradingName          = organisationRcaspDetails.TradingName != organisationRcaspDetails.RCASPName
-    val maybeUtr                 = organisationRcaspDetails.TINDetails.flatMap(_.headOption.map(_.TIN))
-    val maybeAddressUk           = organisationRcaspDetails.AddressDetails.toAddressUk
-    val maybeFirstContactDetails = organisationRcaspDetails.PrimaryContactDetails
-
-    (maybeUtr, maybeAddressUk, maybeFirstContactDetails)
-      .mapN { (utr, address, firstContactDetails) =>
-        for {
-          a              <- Future.fromTry(emptyUserAnswers.set(ReportForRegisteredBusinessPage, false))
-          b              <- Future.fromTry(a.set(OrganisationOrIndividualPage, Organisation))
-          c              <- Future.fromTry(b.set(OrganisationNamePage, organisationRcaspDetails.RCASPName))
-          d              <- Future.fromTry(c.set(OverwritableOrganisationName, organisationRcaspDetails.RCASPName))
-          e              <- Future.fromTry(d.set(HaveTradingNamePage, haveTradingName))
-          f              <- Future.fromTry {
-                              if (haveTradingName) e.set(TradingNamePage, organisationRcaspDetails.TradingName) else Success(e)
-                            }
-          g              <- Future.fromTry(f.set(UtrPage, utr))
-          h              <- Future.fromTry(g.set(UkAddressInUserAnswers, address))
-          i              <- Future.fromTry(h.set(OrganisationFirstContactNamePage, firstContactDetails.ContactName))
-          j              <- Future.fromTry(i.set(OrganisationFirstContactEmailPage, firstContactDetails.EmailAddress))
-          k              <- Future.fromTry(j.set(OrganisationFirstContactHavePhonePage, firstContactDetails.PhoneNumber.nonEmpty))
-          l              <- Future.fromTry(
-                              firstContactDetails.PhoneNumber.fold(Success(k))(k.set(OrganisationFirstContactPhoneNumberPage, _))
-                            )
-          m              <- Future.fromTry(
-                              l.set(OrganisationHaveSecondContactPage, organisationRcaspDetails.SecondaryContactDetails.nonEmpty)
-                            )
-          n              <- organisationRcaspDetails.SecondaryContactDetails.fold(Future.successful(m))(
-                              addSecondContactDetailsToUserAnswers(_, m)
-                            )
-          updatedAnswers <- Future.fromTry(n.set(ChangeRcaspCachedDetails, organisationRcaspDetails))
-          _              <- sessionRepository.set(updatedAnswers)
-        } yield Redirect(
-          controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(organisationRcaspDetails.RCASPID)
-        )
-      }
-      .getOrElse {
-        logger.warn(
-          s"[ChangeDetailsRoutingController][populateUserAnswersForOrganisation] Unable to populate user answers from OrganisationRcaspDetails"
-        )
-        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-      }
-  }
-
-  private def addSecondContactDetailsToUserAnswers(
-      secondContactDetails: RcaspContactDetails,
-      userAnswers: UserAnswers
-  ): Future[UserAnswers] =
-    for {
-      a              <- Future.fromTry(userAnswers.set(OrganisationSecondContactNamePage, secondContactDetails.ContactName))
-      b              <- Future.fromTry(a.set(OrganisationSecondContactEmailPage, secondContactDetails.EmailAddress))
-      c              <- Future.fromTry(b.set(OrganisationSecondContactHavePhonePage, secondContactDetails.PhoneNumber.nonEmpty))
-      updatedAnswers <-
-        Future.fromTry(
-          secondContactDetails.PhoneNumber.fold(Success(c))(c.set(OrganisationSecondContactPhoneNumberPage, _))
-        )
-    } yield updatedAnswers
-
-  private def populateUserAnswersForRegisteredBusiness(
-      organisationRcaspDetails: OrganisationRcaspDetails
-  )(implicit request: OptionalDataRequest[AnyContent]) = {
-    val emptyUserAnswers      = UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = true)
-    val haveTradingName       = organisationRcaspDetails.TradingName != organisationRcaspDetails.RCASPName
-    val cachedBusinessDetails =
-      CachedBusinessDetails(
-        name = organisationRcaspDetails.RCASPName,
-        address = organisationRcaspDetails.AddressDetails.toAddressRegistrationResponse,
-        countryName = "United Kingdom"
-      )
-
-    organisationRcaspDetails.TINDetails.flatMap(_.headOption.map(_.TIN)) match {
-      case Some(utr) =>
-        for {
-          a              <-
-            Future.fromTry(emptyUserAnswers.set(ReportForRegisteredBusinessPage, true))
-          b              <- Future.fromTry(a.set(OrganisationNamePage, organisationRcaspDetails.RCASPName))
-          c              <- Future.fromTry(b.set(OverwritableOrganisationName, organisationRcaspDetails.RCASPName))
-          d              <- Future.fromTry(c.set(HaveTradingNamePage, haveTradingName))
-          e              <- Future.fromTry {
-                              if (haveTradingName) d.set(TradingNamePage, organisationRcaspDetails.TradingName) else Success(d)
-                            }
-          f              <- Future.fromTry(e.set(UtrPage, utr))
-          g              <- Future.fromTry(f.set(RegisteredBusinessIsTheAddressCorrectPage, true))
-          h              <- Future.fromTry(g.set(CachedBusinessDetailsPage, cachedBusinessDetails))
-          updatedAnswers <- Future.fromTry(h.set(ChangeRcaspCachedDetails, organisationRcaspDetails))
-          _              <- sessionRepository.set(updatedAnswers)
-        } yield Redirect(
-          controllers.routes.PlaceholderController.onPageLoad(
-            s"Should nav to registered-business/change-answers/${organisationRcaspDetails.RCASPID} (CARF-350)"
-          )
-        )
-      case _         =>
-        logger.warn(
-          s"[ChangeDetailsRoutingController][populateUserAnswersForRegisteredBusiness] Unable to get UTR from OrganisationRcaspDetails"
-        )
-        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
     }
   }
 }

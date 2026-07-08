@@ -17,24 +17,23 @@
 package controllers.changeDetails
 
 import base.SpecBase
-import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.UserAnswers
 import models.errors.ApiError.{InternalServerError, NotFoundError}
-import models.responses.{IndividualRcaspDetails, OrganisationRcaspDetails}
-import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
+import models.responses.OrganisationRcaspDetails
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
-import pages.{SubmissionSucceededPage, UkAddressInUserAnswers}
+import pages.SubmissionSucceededPage
 import pages.changeDetails.ChangeRcaspCachedDetails
-import pages.combined.OrganisationOrIndividualPage
-import pages.individual.*
 import pages.organisation.*
 import play.api.Application
 import play.api.inject.bind
 import play.api.mvc.Result
+import play.api.mvc.Results.Redirect
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import services.AccountService
 import types.ResultT
+import utils.changeDetails.PopulateUserAnswersHelper
 
 import scala.concurrent.Future
 
@@ -191,455 +190,105 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
         verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
       }
 
-      "when an IndividualRcaspDetails is returned and IsRCASPUser = false" - {
-        "must populate user answers when all fields are present" in new Setup(emptyUserAnswers) {
-          val rcaspDetails: IndividualRcaspDetails = individualRcaspDetailsResponse
+      "must call PopulateUserAnswersHelper when an IndividualRcaspDetails is returned and IsRCASPUser = false" in new Setup(
+        emptyUserAnswers
+      ) {
+        when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any()))
+          .thenReturn(ResultT.fromValue(individualRcaspDetailsResponse))
+        when(
+          mockPopulateUserAnswersHelper.populateUserAnswersForIndividual(any(), eqTo(individualRcaspDetailsResponse))
+        ).thenReturn(
+          Future.successful(Redirect(controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId)))
+        )
 
-          when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any()))
-            .thenReturn(ResultT.fromValue(rcaspDetails))
-          when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+        val request                = FakeRequest(GET, changeDetailsRoutingRoute)
+        val result: Future[Result] = route(application, request).value
 
-          val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-          val result: Future[Result] = route(application, request).value
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsController
+          .onPageLoad(rcaspId)
+          .url
 
-          status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsController
-            .onPageLoad(rcaspId)
-            .url
-
-          verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          verify(mockSessionRepository, times(1)).set(
-            argThat { ua =>
-              !ua.rcaspIsRegisteredBusiness &&
-              ua.get(ReportForRegisteredBusinessPage).contains(false) &&
-              ua.get(OrganisationOrIndividualPage).contains(Individual) &&
-              ua.get(IndividualNamePage).contains(testIndividualName) &&
-              ua.get(NiNumberPage).contains(testNiNumber) &&
-              ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
-              ua.get(IndividualEmailPage).contains(testEmail) &&
-              ua.get(IndividualHavePhonePage).contains(true) &&
-              ua.get(IndividualPhonePage).contains(testPhone) &&
-              ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
-            }
-          )
-        }
-
-        "must populate user answers when phone number is absent" in new Setup(emptyUserAnswers) {
-          val rcaspDetails: IndividualRcaspDetails =
-            individualRcaspDetailsResponse.copy(
-              PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None))
-            )
-
-          when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any()))
-            .thenReturn(ResultT.fromValue(rcaspDetails))
-          when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-
-          val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-          val result: Future[Result] = route(application, request).value
-
-          status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsController
-            .onPageLoad(rcaspId)
-            .url
-
-          verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          verify(mockSessionRepository, times(1)).set(
-            argThat { ua =>
-              !ua.rcaspIsRegisteredBusiness &&
-              ua.get(ReportForRegisteredBusinessPage).contains(false) &&
-              ua.get(OrganisationOrIndividualPage).contains(Individual) &&
-              ua.get(IndividualNamePage).contains(testIndividualName) &&
-              ua.get(NiNumberPage).contains(testNiNumber) &&
-              ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
-              ua.get(IndividualEmailPage).contains(testEmail) &&
-              ua.get(IndividualHavePhonePage).contains(false) &&
-              ua.get(IndividualPhonePage).isEmpty &&
-              ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
-            }
-          )
-        }
-
-        "must redirect to journey recovery" - {
-          "when TINDetails is missing" in new Setup(emptyUserAnswers) {
-            when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any())).thenReturn(
-              ResultT.fromValue(individualRcaspDetailsResponse.copy(TINDetails = None))
-            )
-
-            val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-            val result: Future[Result] = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-
-            verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          }
-
-          "when TINDetails contains an empty list" in new Setup(emptyUserAnswers) {
-            when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any())).thenReturn(
-              ResultT.fromValue(individualRcaspDetailsResponse.copy(TINDetails = Some(List.empty)))
-            )
-
-            val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-            val result: Future[Result] = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-
-            verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          }
-
-          "when PrimaryContactDetails is missing" in new Setup(emptyUserAnswers) {
-            when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any())).thenReturn(
-              ResultT.fromValue(individualRcaspDetailsResponse.copy(PrimaryContactDetails = None))
-            )
-
-            val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-            val result: Future[Result] = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-
-            verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          }
-
-          "when address cannot be converted to AddressUk" in new Setup(emptyUserAnswers) {
-            when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any())).thenReturn(
-              ResultT.fromValue(individualRcaspDetailsResponse.copy(AddressDetails = rcaspAddressEmptyOptionals))
-            )
-
-            val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-            val result: Future[Result] = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-
-            verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          }
-        }
+        verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
+        verify(mockPopulateUserAnswersHelper, times(1))
+          .populateUserAnswersForIndividual(any(), eqTo(individualRcaspDetailsResponse))
       }
 
-      "when an OrganisationRcaspDetails is returned and IsRCASPUser = false" - {
-        "must populate user answers when all fields are present" in new Setup(emptyUserAnswers) {
-          val rcaspDetails: OrganisationRcaspDetails = organisationRcaspDetailsResponse
-
-          when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any()))
-            .thenReturn(ResultT.fromValue(rcaspDetails))
-          when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-
-          val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-          val result: Future[Result] = route(application, request).value
-
-          status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsController
-            .onPageLoad(rcaspId)
-            .url
-
-          verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          verify(mockSessionRepository, times(1)).set(
-            argThat { ua =>
-              !ua.rcaspIsRegisteredBusiness &&
-              ua.get(ReportForRegisteredBusinessPage).contains(false) &&
-              ua.get(OrganisationOrIndividualPage).contains(Organisation) &&
-              ua.get(OrganisationNamePage).contains(testOrgName) &&
-              ua.get(OverwritableOrganisationName).contains(testOrgName) &&
-              ua.get(HaveTradingNamePage).contains(true) &&
-              ua.get(TradingNamePage).contains(testTradingName) &&
-              ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
-              ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
-              ua.get(OrganisationFirstContactNamePage).contains(testIndividualName.fullName) &&
-              ua.get(OrganisationFirstContactEmailPage).contains(testEmail) &&
-              ua.get(OrganisationFirstContactHavePhonePage).contains(true) &&
-              ua.get(OrganisationFirstContactPhoneNumberPage).contains(testPhone) &&
-              ua.get(OrganisationHaveSecondContactPage).contains(true) &&
-              ua.get(OrganisationSecondContactNamePage).contains("Prof Turo") &&
-              ua.get(OrganisationSecondContactEmailPage).contains(testEmail) &&
-              ua.get(OrganisationSecondContactHavePhonePage).contains(true) &&
-              ua.get(OrganisationSecondContactPhoneNumberPage).contains(testPhone) &&
-              ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
-            }
+      "must call PopulateUserAnswersHelper when an OrganisationRcaspDetails is returned and IsRCASPUser = false" in new Setup(
+        emptyUserAnswers
+      ) {
+        when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any()))
+          .thenReturn(ResultT.fromValue(organisationRcaspDetailsResponse))
+        when(
+          mockPopulateUserAnswersHelper.populateUserAnswersForOrganisation(
+            any(),
+            eqTo(organisationRcaspDetailsResponse)
           )
-        }
+        ).thenReturn(
+          Future.successful(Redirect(controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId)))
+        )
 
-        "must populate user answers when separate trading name, first contact phone and second contact details are absent" in new Setup(
-          emptyUserAnswers
-        ) {
-          val rcaspDetails: OrganisationRcaspDetails =
-            organisationRcaspDetailsResponse.copy(
-              TradingName = testOrgName,
-              PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None)),
-              SecondaryContactDetails = None
-            )
+        val request                = FakeRequest(GET, changeDetailsRoutingRoute)
+        val result: Future[Result] = route(application, request).value
 
-          when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any()))
-            .thenReturn(ResultT.fromValue(rcaspDetails))
-          when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsController
+          .onPageLoad(rcaspId)
+          .url
 
-          val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-          val result: Future[Result] = route(application, request).value
-
-          status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsController
-            .onPageLoad(rcaspId)
-            .url
-
-          verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          verify(mockSessionRepository, times(1)).set(
-            argThat { ua =>
-              !ua.rcaspIsRegisteredBusiness &&
-              ua.get(ReportForRegisteredBusinessPage).contains(false) &&
-              ua.get(OrganisationOrIndividualPage).contains(Organisation) &&
-              ua.get(OrganisationNamePage).contains(testOrgName) &&
-              ua.get(OverwritableOrganisationName).contains(testOrgName) &&
-              ua.get(HaveTradingNamePage).contains(false) &&
-              ua.get(TradingNamePage).isEmpty &&
-              ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
-              ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
-              ua.get(OrganisationFirstContactNamePage).contains(testIndividualName.fullName) &&
-              ua.get(OrganisationFirstContactEmailPage).contains(testEmail) &&
-              ua.get(OrganisationFirstContactHavePhonePage).contains(false) &&
-              ua.get(OrganisationFirstContactPhoneNumberPage).isEmpty &&
-              ua.get(OrganisationHaveSecondContactPage).contains(false) &&
-              ua.get(OrganisationSecondContactNamePage).isEmpty &&
-              ua.get(OrganisationSecondContactEmailPage).isEmpty &&
-              ua.get(OrganisationSecondContactHavePhonePage).isEmpty &&
-              ua.get(OrganisationSecondContactPhoneNumberPage).isEmpty &&
-              ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
-            }
-          )
-        }
-
-        "must populate user answers when only second contact phone is absent" in new Setup(emptyUserAnswers) {
-          val rcaspDetails: OrganisationRcaspDetails =
-            organisationRcaspDetailsResponse.copy(
-              SecondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = "Prof Turo", PhoneNumber = None))
-            )
-
-          when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any()))
-            .thenReturn(ResultT.fromValue(rcaspDetails))
-          when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-
-          val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-          val result: Future[Result] = route(application, request).value
-
-          status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsController
-            .onPageLoad(rcaspId)
-            .url
-
-          verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          verify(mockSessionRepository, times(1)).set(
-            argThat { ua =>
-              !ua.rcaspIsRegisteredBusiness &&
-              ua.get(ReportForRegisteredBusinessPage).contains(false) &&
-              ua.get(OrganisationOrIndividualPage).contains(Organisation) &&
-              ua.get(OrganisationNamePage).contains(testOrgName) &&
-              ua.get(OverwritableOrganisationName).contains(testOrgName) &&
-              ua.get(HaveTradingNamePage).contains(true) &&
-              ua.get(TradingNamePage).contains(testTradingName) &&
-              ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
-              ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
-              ua.get(OrganisationFirstContactNamePage).contains(testIndividualName.fullName) &&
-              ua.get(OrganisationFirstContactEmailPage).contains(testEmail) &&
-              ua.get(OrganisationFirstContactHavePhonePage).contains(true) &&
-              ua.get(OrganisationFirstContactPhoneNumberPage).contains(testPhone) &&
-              ua.get(OrganisationHaveSecondContactPage).contains(true) &&
-              ua.get(OrganisationSecondContactNamePage).contains("Prof Turo") &&
-              ua.get(OrganisationSecondContactEmailPage).contains(testEmail) &&
-              ua.get(OrganisationSecondContactHavePhonePage).contains(false) &&
-              ua.get(OrganisationSecondContactPhoneNumberPage).isEmpty &&
-              ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
-            }
-          )
-        }
-
-        "must redirect to journey recovery" - {
-          "when TINDetails is missing" in new Setup(emptyUserAnswers) {
-            when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any())).thenReturn(
-              ResultT.fromValue(organisationRcaspDetailsResponse.copy(TINDetails = None))
-            )
-
-            val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-            val result: Future[Result] = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-
-            verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          }
-
-          "when TINDetails contains an empty list" in new Setup(emptyUserAnswers) {
-            when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any())).thenReturn(
-              ResultT.fromValue(organisationRcaspDetailsResponse.copy(TINDetails = Some(List.empty)))
-            )
-
-            val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-            val result: Future[Result] = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-
-            verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          }
-
-          "when PrimaryContactDetails is missing" in new Setup(emptyUserAnswers) {
-            when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any())).thenReturn(
-              ResultT.fromValue(organisationRcaspDetailsResponse.copy(PrimaryContactDetails = None))
-            )
-
-            val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-            val result: Future[Result] = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-
-            verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          }
-
-          "when address cannot be converted to AddressUk" in new Setup(emptyUserAnswers) {
-            when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any())).thenReturn(
-              ResultT.fromValue(organisationRcaspDetailsResponse.copy(AddressDetails = rcaspAddressEmptyOptionals))
-            )
-
-            val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-            val result: Future[Result] = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-
-            verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          }
-        }
+        verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
+        verify(mockPopulateUserAnswersHelper, times(1))
+          .populateUserAnswersForOrganisation(any(), eqTo(organisationRcaspDetailsResponse))
       }
 
-      "when an OrganisationRcaspDetails is returned and IsRCASPUser = true (registered business)" - {
-        "must populate user answers when trading name is different from RCASP name" in new Setup(emptyUserAnswers) {
-          val rcaspDetails: OrganisationRcaspDetails =
-            organisationRcaspDetailsResponse.copy(
-              IsRCASPUser = true,
-              PrimaryContactDetails = None,
-              SecondaryContactDetails = None
-            )
-
-          when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any()))
-            .thenReturn(ResultT.fromValue(rcaspDetails))
-          when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-
-          val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-          val result: Future[Result] = route(application, request).value
-
-          status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
-            .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
-            .url
-
-          verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          verify(mockSessionRepository, times(1)).set(
-            argThat { ua =>
-              ua.rcaspIsRegisteredBusiness &&
-              ua.get(ReportForRegisteredBusinessPage).contains(true) &&
-              ua.get(OrganisationNamePage).contains(testOrgName) &&
-              ua.get(OverwritableOrganisationName).contains(testOrgName) &&
-              ua.get(HaveTradingNamePage).contains(true) &&
-              ua.get(TradingNamePage).contains(testTradingName) &&
-              ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
-              ua.get(RegisteredBusinessIsTheAddressCorrectPage).contains(true) &&
-              ua.get(CachedBusinessDetailsPage).contains(cachedBusinessDetails) &&
-              ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
-            }
+      "when an OrganisationRcaspDetails is returned and IsRCASPUser = true (registered business)" in new Setup(
+        emptyUserAnswers
+      ) {
+        val rcaspDetails: OrganisationRcaspDetails =
+          organisationRcaspDetailsResponse.copy(
+            IsRCASPUser = true,
+            PrimaryContactDetails = None,
+            SecondaryContactDetails = None
           )
-        }
 
-        "must populate user answers when trading name is the same as RCASP name" in new Setup(emptyUserAnswers) {
-          val rcaspDetails: OrganisationRcaspDetails =
-            organisationRcaspDetailsResponse.copy(
-              IsRCASPUser = true,
-              TradingName = testOrgName,
-              PrimaryContactDetails = None,
-              SecondaryContactDetails = None
-            )
-
-          when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any()))
-            .thenReturn(ResultT.fromValue(rcaspDetails))
-          when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-
-          val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-          val result: Future[Result] = route(application, request).value
-
-          status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
-            .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
-            .url
-
-          verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          verify(mockSessionRepository, times(1)).set(
-            argThat { ua =>
-              ua.rcaspIsRegisteredBusiness &&
-              ua.get(ReportForRegisteredBusinessPage).contains(true) &&
-              ua.get(OrganisationNamePage).contains(testOrgName) &&
-              ua.get(OverwritableOrganisationName).contains(testOrgName) &&
-              ua.get(HaveTradingNamePage).contains(false) &&
-              ua.get(TradingNamePage).isEmpty &&
-              ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
-              ua.get(RegisteredBusinessIsTheAddressCorrectPage).contains(true) &&
-              ua.get(CachedBusinessDetailsPage).contains(cachedBusinessDetails) &&
-              ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
-            }
-          )
-        }
-
-        "must redirect to journey recovery" - {
-          "when TINDetails is missing" in new Setup(emptyUserAnswers) {
-            when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any())).thenReturn(
-              ResultT.fromValue(
-                organisationRcaspDetailsResponse.copy(
-                  IsRCASPUser = true,
-                  PrimaryContactDetails = None,
-                  SecondaryContactDetails = None,
-                  TINDetails = None
-                )
+        when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any()))
+          .thenReturn(ResultT.fromValue(rcaspDetails))
+        when(mockPopulateUserAnswersHelper.populateUserAnswersForRegisteredBusiness(any(), eqTo(rcaspDetails)))
+          .thenReturn(
+            Future.successful(
+              Redirect(
+                controllers.routes.PlaceholderController
+                  .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
               )
             )
+          )
 
-            val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-            val result: Future[Result] = route(application, request).value
+        val request                = FakeRequest(GET, changeDetailsRoutingRoute)
+        val result: Future[Result] = route(application, request).value
 
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
+          .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
+          .url
 
-            verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          }
-
-          "when TINDetails contains an empty list" in new Setup(emptyUserAnswers) {
-            when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any())).thenReturn(
-              ResultT.fromValue(
-                organisationRcaspDetailsResponse.copy(
-                  IsRCASPUser = true,
-                  PrimaryContactDetails = None,
-                  SecondaryContactDetails = None,
-                  TINDetails = Some(List.empty)
-                )
-              )
-            )
-
-            val request                = FakeRequest(GET, changeDetailsRoutingRoute)
-            val result: Future[Result] = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-
-            verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
-          }
-        }
+        verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
+        verify(mockPopulateUserAnswersHelper, times(1))
+          .populateUserAnswersForRegisteredBusiness(any(), eqTo(rcaspDetails))
       }
+
     }
   }
 
   class Setup(userAnswers: UserAnswers) {
-    val mockAccountService: AccountService = mock[AccountService]
+    val mockAccountService: AccountService                       = mock[AccountService]
+    val mockPopulateUserAnswersHelper: PopulateUserAnswersHelper = mock[PopulateUserAnswersHelper]
 
     val application: Application =
       applicationBuilder(userAnswers = Some(userAnswers))
-        .overrides(bind[AccountService].toInstance(mockAccountService))
+        .overrides(
+          bind[AccountService].toInstance(mockAccountService),
+          bind[PopulateUserAnswersHelper].toInstance(mockPopulateUserAnswersHelper)
+        )
         .build()
   }
 }
