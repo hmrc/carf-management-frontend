@@ -37,8 +37,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class RemoveUserAccessController @Inject() (
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
     sessionRepository: SessionRepository,
     formProvider: GenericYesNoPageFormProvider,
     rcaspConnector: RcaspConnector,
