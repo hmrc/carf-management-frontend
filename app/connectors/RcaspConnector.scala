@@ -75,7 +75,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
       Try(httpResponse.json.as[SubmitRcaspResponse]) match {
         case Success(data)      => Right(data)
         case Failure(exception) =>
-          logger.warn(s"Error parsing CreateRcaspResponse with endpoint: ${baseUrl.toURI}")
+          logParseWarning(baseUrl, "createRcasp")
           Left(JsonValidationError)
       }
     }
@@ -95,7 +95,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
       Try(httpResponse.json.as[SubmitRcaspResponse]) match {
         case Success(data)      => Right(data)
         case Failure(exception) =>
-          logger.warn(s"Error parsing UpdateRcaspResponse with endpoint: ${baseUrl.toURI}")
+          logParseWarning(baseUrl, "updateRcasp")
           Left(JsonValidationError)
       }
     }
@@ -115,7 +115,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
       Try(httpResponse.json.as[SubmitRcaspResponse]) match {
         case Success(data)      => Right(data)
         case Failure(exception) =>
-          logger.warn(s"Error parsing DeleteRcaspResponse with endpoint: ${baseUrl.toURI}")
+          logParseWarning(baseUrl, "deleteRcasp")
           Left(JsonValidationError)
       }
     }
@@ -139,4 +139,9 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
         }
     )
   }
+
+  private def logParseWarning(baseUrl: URL, originatingMethod: String): Unit =
+    logger.warn(
+      s"[RcaspConnector][$originatingMethod] Error parsing SubmitRcaspResponse with endpoint: ${baseUrl.toURI}"
+    )
 }
