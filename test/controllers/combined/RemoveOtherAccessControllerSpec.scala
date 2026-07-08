@@ -32,10 +32,12 @@ import types.ResultT
 import scala.concurrent.Future
 
 class RemoveOtherAccessControllerSpec extends SpecBase {
-  
-  lazy val onPageLoadRoute: String = controllers.combined.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId).url
 
-  lazy val onSubmitRoute: String = controllers.combined.routes.RemoveOtherAccessController.onSubmit(NormalMode, rcaspId).url
+  lazy val onPageLoadRoute: String =
+    controllers.combined.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId).url
+
+  lazy val onSubmitRoute: String =
+    controllers.combined.routes.RemoveOtherAccessController.onSubmit(NormalMode, rcaspId).url
 
   val mockRcaspConnector: RcaspConnector = mock[RcaspConnector]
 
