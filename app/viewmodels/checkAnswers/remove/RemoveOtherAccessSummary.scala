@@ -14,32 +14,32 @@
  * limitations under the License.
  */
 
-package viewmodels.checkAnswers.combined
+package viewmodels.checkAnswers.remove
 
-import controllers.combined.routes
+import controllers.remove.routes
 import models.{ChangeMode, UserAnswers}
-import pages.combined.RemoveUserAccessPage
+import pages.remove.RemoveOtherAccessPage
 import play.api.i18n.Messages
-import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
-object RemoveUserAccessSummary {
+object RemoveOtherAccessSummary {
 
   def row(answers: UserAnswers, rcaspId: String)(implicit messages: Messages): Option[SummaryListRow] =
-    answers.get(RemoveUserAccessPage).map { answer =>
+    answers.get(RemoveOtherAccessPage).map { answer =>
 
       val value = if (answer) "site.yes" else "site.no"
 
       SummaryListRowViewModel(
-        key = "removeUserAccess.checkYourAnswersLabel",
+        key = "removeOtherAccess.checkYourAnswersLabel",
         value = ValueViewModel(value),
         actions = Seq(
           ActionItemViewModel(
             content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
-            href = routes.RemoveUserAccessController.onPageLoad(ChangeMode, rcaspId).url
-          ).withVisuallyHiddenText(messages("removeUserAccess.change.hidden"))
+            href = routes.RemoveOtherAccessController.onPageLoad(ChangeMode, rcaspId).url
+          ).withVisuallyHiddenText(messages("removeOtherAccess.change.hidden"))
         )
       )
     }

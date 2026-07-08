@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package controllers.combined
+package controllers.remove
 
 import connectors.RcaspConnector
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import models.Mode
-import pages.combined.RemoveOtherAccessPage
+import pages.remove.RemoveOtherAccessPage
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -28,7 +28,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.combined.RemoveOtherAccessView
+import views.html.remove.RemoveOtherAccessView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}

@@ -23,7 +23,7 @@ import models.NormalMode
 import models.responses.*
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.combined.RemoveOtherAccessPage
+import pages.remove.RemoveOtherAccessPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
@@ -34,10 +34,10 @@ import scala.concurrent.Future
 class RemoveOtherAccessControllerSpec extends SpecBase {
 
   lazy val onPageLoadRoute: String =
-    controllers.combined.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId).url
+    controllers.remove.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId).url
 
   lazy val onSubmitRoute: String =
-    controllers.combined.routes.RemoveOtherAccessController.onSubmit(NormalMode, rcaspId).url
+    controllers.remove.routes.RemoveOtherAccessController.onSubmit(NormalMode, rcaspId).url
 
   val mockRcaspConnector: RcaspConnector = mock[RcaspConnector]
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package pages.combined
+package pages.remove
 
 import pages.QuestionPage
 import play.api.libs.json.JsPath

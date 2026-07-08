@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package controllers.combined
+package controllers.remove
 
 import connectors.RcaspConnector
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import models.{Mode, NormalMode, UserAnswers}
-import pages.combined.RemoveUserAccessPage
+import pages.remove.RemoveUserAccessPage
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -29,7 +29,7 @@ import repositories.SessionRepository
 import services.AccountService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.combined.RemoveUserAccessView
+import views.html.remove.RemoveUserAccessView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -188,7 +188,7 @@ class RemoveUserAccessController @Inject() (
                                  )
                   _           <- sessionRepository.set(userAnswers)
                 } yield Redirect(
-                  controllers.combined.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId)
+                  controllers.remove.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId)
                 )
             )
 

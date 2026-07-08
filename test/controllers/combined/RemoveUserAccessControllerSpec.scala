@@ -34,10 +34,10 @@ import scala.concurrent.Future
 class RemoveUserAccessControllerSpec extends SpecBase {
 
   lazy val onPageLoadRoute: String =
-    controllers.combined.routes.RemoveUserAccessController.onPageLoad(NormalMode, rcaspId).url
+    controllers.remove.routes.RemoveUserAccessController.onPageLoad(NormalMode, rcaspId).url
 
   lazy val onSubmitRoute: String =
-    controllers.combined.routes.RemoveUserAccessController.onSubmit(NormalMode, rcaspId).url
+    controllers.remove.routes.RemoveUserAccessController.onSubmit(NormalMode, rcaspId).url
 
   val mockRcaspConnector: RcaspConnector = mock[RcaspConnector]
   val mockAccountService: AccountService = mock[AccountService]
@@ -259,7 +259,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual
-            controllers.combined.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId).url
+            controllers.remove.routes.RemoveOtherAccessController.onPageLoad(NormalMode, rcaspId).url
         }
       }
 
