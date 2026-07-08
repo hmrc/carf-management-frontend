@@ -16,38 +16,41 @@
 
 package models.responses
 
-import models.errors.{CarfError, ConversionError}
+import config.Constants.acceptedUkCountryCode
+import models.errors.{CarfError, ConversionError, InvalidCountryCode}
 import models.{AddressAndUPRN, AddressUk}
 import play.api.libs.json.{Json, OFormat}
 
-case class AddressResponse(
+case class AddressLookupResponse(
     id: String,
     uprn: Long,
     address: AddressRecord
 )
 
-object AddressResponse {
-  implicit val format: OFormat[AddressResponse] = Json.format[AddressResponse]
+object AddressLookupResponse {
+  implicit val format: OFormat[AddressLookupResponse] = Json.format[AddressLookupResponse]
 
-  extension (addressResponse: AddressResponse)
-    def toDomainAddressUk: Either[CarfError, AddressAndUPRN] = {
+  extension (addressResponse: AddressLookupResponse)
+    def toDomainAddressAndUprn: Either[CarfError, AddressAndUPRN] = {
       val address = addressResponse.address
-      address.lines match {
-        case head :: next =>
-          Right(
-            AddressAndUPRN(
-              AddressUk(
-                addressLine1 = head,
-                addressLine2 = next.headOption,
-                addressLine3 = next.lift(1),
-                townOrCity = address.town,
-                postCode = address.postcode
-              ),
-              addressResponse.uprn
+      if !acceptedUkCountryCode.contains(address.country.code.toUpperCase) then Left(InvalidCountryCode)
+      else
+        address.lines match {
+          case head :: next =>
+            Right(
+              AddressAndUPRN(
+                AddressUk(
+                  addressLine1 = head,
+                  addressLine2 = next.headOption,
+                  addressLine3 = next.lift(1),
+                  townOrCity = address.town,
+                  postCode = address.postcode
+                ),
+                addressResponse.uprn
+              )
             )
-          )
-        case Nil          => Left(ConversionError)
-      }
+          case Nil          => Left(ConversionError)
+        }
     }
 }
 

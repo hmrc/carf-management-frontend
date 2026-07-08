@@ -57,8 +57,10 @@ trait TestData extends Generators {
 
   lazy val testPostcode: String = validPostcodes.sample.value
 
-  def oneAddressResponse: AddressResponse =
-    AddressResponse(
+  lazy val testNonCdPostcode: String = validGBOnlyNonCDPostcodes.sample.value
+
+  def oneAddressLookupResponse: AddressLookupResponse =
+    AddressLookupResponse(
       id = "123",
       uprn = testUPRN,
       address = AddressRecord(
@@ -66,6 +68,18 @@ trait TestData extends Generators {
         town = "Testingtown",
         postcode = testPostcode,
         country = CountryRecord(code = "GB", name = "United Kingdom")
+      )
+    )
+
+  def nonUkAddressLookupResponse: AddressLookupResponse =
+    AddressLookupResponse(
+      id = "123",
+      uprn = testUPRN,
+      address = AddressRecord(
+        lines = List("1 Test", "Test Street", "Test Region"),
+        town = "Testingtown",
+        postcode = testPostcode,
+        country = CountryRecord(code = "HR", name = "Croatia")
       )
     )
 
@@ -101,8 +115,8 @@ trait TestData extends Generators {
     AddressAndUPRN(testAddressUk, testUPRN)
   )
 
-  lazy val multipleAddressResponses: Seq[AddressResponse] =
-    Seq(oneAddressResponse, oneAddressResponse, oneAddressResponse)
+  lazy val multipleAddressResponses: Seq[AddressLookupResponse] =
+    Seq(oneAddressLookupResponse, oneAddressLookupResponse, oneAddressLookupResponse)
 
   val testSignOutUrl: String       = "http://localhost:9553/bas-gateway/sign-out-without-state"
   val testLoginContinueUrl: String = "http://localhost:17000/register-for-cryptoasset-reporting"

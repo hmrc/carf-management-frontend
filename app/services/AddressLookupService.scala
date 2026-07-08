@@ -22,7 +22,7 @@ import connectors.AddressLookupConnector
 import models.AddressAndUPRN
 import models.errors.ApiError
 import models.requests.SearchByPostcodeRequest
-import models.responses.AddressResponse
+import models.responses.AddressLookupResponse
 import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -39,8 +39,8 @@ class AddressLookupService @Inject() (addressLookupConnector: AddressLookupConne
     val initialRequest = SearchByPostcodeRequest(postcode = postcode, filter = propertyNameOrNumber)
     {
       for {
-        addressLookupResponse: Seq[AddressResponse]                    <- addressLookupConnector.searchByPostcode(initialRequest)
-        addressLookupCombinedResponse: (Seq[AddressResponse], Boolean) <-
+        addressLookupResponse: Seq[AddressLookupResponse]                    <- addressLookupConnector.searchByPostcode(initialRequest)
+        addressLookupCombinedResponse: (Seq[AddressLookupResponse], Boolean) <-
           if (addressLookupResponse.nonEmpty || propertyNameOrNumber.isEmpty) {
             EitherT.right[ApiError](Future.successful((addressLookupResponse, false)))
           } else {
@@ -50,9 +50,9 @@ class AddressLookupService @Inject() (addressLookupConnector: AddressLookupConne
                          )
             } yield (address, true)
           }
-        (lookupResponse, additionalCall)                                = addressLookupCombinedResponse
-        addressUkAndUPRN: Seq[AddressAndUPRN]                          <-
-          EitherT.fromEither[Future](lookupResponse.traverse(AddressResponse.toDomainAddressUk))
+        (lookupResponse, additionalCall)                                      = addressLookupCombinedResponse
+        addressUkAndUPRN: Seq[AddressAndUPRN]                                <-
+          EitherT.fromEither[Future](lookupResponse.traverse(AddressLookupResponse.toDomainAddressAndUprn))
       } yield (addressUkAndUPRN, additionalCall)
     }
   }

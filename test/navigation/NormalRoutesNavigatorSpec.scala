@@ -598,7 +598,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           ChooseAddressPage,
           NormalMode,
           userAnswers
-        ) mustBe controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
+        ) mustBe controllers.routes.AddressController.onPageLoad(NormalMode)
       }
 
       "Should redirect to JourneyRecovery when address is selected but OrganisationOrIndividual is missing" in {
@@ -661,6 +661,52 @@ class NormalRoutesNavigatorSpec extends SpecBase {
 
         navigator.nextPage(
           ReviewAddressPageForNavigatorOnly,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+      }
+    }
+
+    "When passed AddressPage" - {
+      "Should redirect to RegisteredBusinessCheckDetailsController the rcasp is the registered business" in {
+        val userAnswers = emptyUserAnswers.copy(rcaspIsRegisteredBusiness = true)
+
+        navigator.nextPage(
+          AddressPageForNavigatorOnly,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
+      }
+
+      "Should redirect to IndividualEmailPage when address is selected on individual journey and user is not an rcasp" in {
+        val userAnswers = emptyUserAnswers
+          .copy(rcaspIsRegisteredBusiness = false)
+          .withPage(OrganisationOrIndividualPage, Individual)
+
+        navigator.nextPage(
+          AddressPageForNavigatorOnly,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.individual.routes.IndividualEmailController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to OrganisationFirstContactNamePage when address is selected on organisation journey and user is not an rcasp" in {
+        val userAnswers = emptyUserAnswers
+          .copy(rcaspIsRegisteredBusiness = false)
+          .withPage(OrganisationOrIndividualPage, Organisation)
+
+        navigator.nextPage(
+          AddressPageForNavigatorOnly,
+          NormalMode,
+          userAnswers
+        ) mustBe controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
+      }
+
+      "Should redirect to JourneyRecovery when OrganisationOrIndividual is missing and user is not an rcasp" in {
+        val userAnswers = emptyUserAnswers.copy(rcaspIsRegisteredBusiness = false)
+
+        navigator.nextPage(
+          AddressPageForNavigatorOnly,
           NormalMode,
           userAnswers
         ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()

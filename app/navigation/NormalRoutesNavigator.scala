@@ -102,14 +102,16 @@ trait NormalRoutesNavigator {
     case ReviewAddressPageForNavigatorOnly =>
       userAnswers => successfulAddressNavigation(userAnswers)
 
+    case AddressPageForNavigatorOnly =>
+      userAnswers => successfulAddressNavigation(userAnswers)
+
     case _ => _ => controllers.routes.JourneyRecoveryController.onPageLoad()
   }
 
   private def navigateFromHaveTradingNamePage(userAnswers: UserAnswers): Call =
     userAnswers.get(HaveTradingNamePage) match {
       case Some(true) => controllers.organisation.routes.TradingNameController.onPageLoad(NormalMode)
-      case _          =>
-        tradingNamePagesRegisteredBusinessRedirects(userAnswers)
+      case _          => tradingNamePagesRegisteredBusinessRedirects(userAnswers)
     }
 
   private def tradingNamePagesRegisteredBusinessRedirects(userAnswers: UserAnswers): Call =
@@ -217,9 +219,8 @@ trait NormalRoutesNavigator {
       .fold {
         routes.JourneyRecoveryController.onPageLoad()
       } { answer =>
-        if (answer == noneOfTheseValue) {
-          controllers.routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)")
-        } else successfulAddressNavigation(userAnswers)
+        if answer == noneOfTheseValue then controllers.routes.AddressController.onPageLoad(NormalMode)
+        else successfulAddressNavigation(userAnswers)
       }
 
   private def successfulAddressNavigation(userAnswers: UserAnswers): Call =
