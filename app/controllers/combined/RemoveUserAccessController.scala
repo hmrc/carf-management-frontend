@@ -52,7 +52,8 @@ class RemoveUserAccessController @Inject() (
 
   private val IndividualPartyType = "Individual"
 
-  private val journeyRecovery: Result = Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+  private val journeyRecovery: Result =
+    Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
   private case class RemoveUserAccessViewData(
       titleKey: String,
@@ -129,7 +130,15 @@ class RemoveUserAccessController @Inject() (
 
   def onPageLoad(mode: Mode, rcaspId: String): Action[AnyContent] =
     identify().async { implicit request =>
-      buildViewData(request.carfId, rcaspId).map {
+      val freshAnswers = UserAnswers(
+        id = request.userId,
+        rcaspIsRegisteredBusiness = false
+      )
+
+      for {
+        _              <- sessionRepository.set(freshAnswers)
+        viewDataResult <- buildViewData(request.carfId, rcaspId)
+      } yield viewDataResult match {
         case Right(data) =>
           Ok(
             view(
@@ -174,8 +183,10 @@ class RemoveUserAccessController @Inject() (
               value =>
                 for {
                   userAnswers <- Future.fromTry(
-                                   UserAnswers(request.carfId, rcaspIsRegisteredBusiness = false)
-                                     .set(RemoveUserAccessPage, value)
+                                   UserAnswers(
+                                     id = request.userId,
+                                     rcaspIsRegisteredBusiness = false
+                                   ).set(RemoveUserAccessPage, value)
                                  )
                   _           <- sessionRepository.set(userAnswers)
                 } yield Redirect(
