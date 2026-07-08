@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor
 import itutil.ApplicationWithWiremock
 import models.errors.ApiError
 import models.requests.SearchByPostcodeRequest
-import models.responses.{AddressRecord, AddressResponse, CountryRecord}
+import models.responses.{AddressRecord, AddressLookupResponse, CountryRecord}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import play.api.http.Status.{NOT_FOUND, OK}
@@ -34,8 +34,8 @@ class AddressLookupConnectorISpec
 
   val connector: AddressLookupConnector = app.injector.instanceOf[AddressLookupConnector]
 
-  val searchByPostcodeValidResponse: Seq[AddressResponse] = Seq(
-    AddressResponse(
+  val searchByPostcodeValidResponse: Seq[AddressLookupResponse] = Seq(
+    AddressLookupResponse(
       id = "Test-Id",
       uprn = 123456,
       address = AddressRecord(

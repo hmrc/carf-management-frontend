@@ -33,9 +33,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class ReviewAddressController @Inject() (
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
-    ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     navigator: Navigator,
     sessionRepository: SessionRepository,
     val controllerComponents: MessagesControllerComponents,
@@ -45,30 +45,30 @@ class ReviewAddressController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val editAddressLink: String =
-        routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)").url
+        routes.AddressController.onPageLoad(mode).url
 
       request.userAnswers.get(AddressPagePrePop) match {
         case Some(address) =>
           request.userAnswers.retrieveRcaspName match {
-            case Some(name) => Future.successful(Ok(view(address, mode, editAddressLink, name)))
+            case Some(name) => Ok(view(address, mode, editAddressLink, name))
             case None       =>
               logger.warn(
-                "[ReviewAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onPageLoad"
+                "[ReviewAddressController][onPageLoad] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
               )
-              Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
+              Redirect(controllers.routes.InformationMissingController.onPageLoad())
           }
         case None          =>
-          logger.warn("No address found in user answers")
-          Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+          logger.warn("[ReviewAddressController][onPageLoad] No address found in user answers")
+          Redirect(routes.JourneyRecoveryController.onPageLoad())
       }
-  }
+    }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       request.userAnswers.get(AddressPagePrePop) match {
         case Some(address) =>
           for {
@@ -76,7 +76,7 @@ class ReviewAddressController @Inject() (
             _              <- sessionRepository.set(updatedAnswers)
           } yield Redirect(navigator.nextPage(ReviewAddressPageForNavigatorOnly, mode, updatedAnswers))
         case None          =>
-          logger.error("No address found in user answers")
+          logger.error("[ReviewAddressController][onSubmit] No address found in user answers")
           Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       }
     }

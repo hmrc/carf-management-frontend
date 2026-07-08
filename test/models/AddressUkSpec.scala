@@ -17,7 +17,7 @@
 package models
 
 import base.SpecBase
-import models.countries.CountryUk
+import config.Constants.ukCountryCode
 
 class AddressUkSpec extends SpecBase {
 
@@ -26,8 +26,7 @@ class AddressUkSpec extends SpecBase {
     addressLine2 = Some("Birmingham"),
     addressLine3 = Some("Hamingburm"),
     townOrCity = "Townington",
-    postCode = "B23 2AZ",
-    countryUk = CountryUk(code = "GB", name = "United Kingdom")
+    postCode = "B23 2AZ"
   )
 
   val ukAddressMinimal = AddressUk(
@@ -35,8 +34,7 @@ class AddressUkSpec extends SpecBase {
     addressLine2 = None,
     addressLine3 = None,
     townOrCity = "Townington",
-    postCode = "B23 2AZ",
-    countryUk = CountryUk(code = "GB", name = "United Kingdom")
+    postCode = "B23 2AZ"
   )
 
   val ukAddressAddressLine3 = AddressUk(
@@ -44,8 +42,7 @@ class AddressUkSpec extends SpecBase {
     addressLine2 = None,
     addressLine3 = Some("Address Line 3"),
     townOrCity = "Townington",
-    postCode = "B23 2AZ",
-    countryUk = CountryUk(code = "GB", name = "United Kingdom")
+    postCode = "B23 2AZ"
   )
 
   val ukAddressEmptyStrings = AddressUk(
@@ -53,8 +50,7 @@ class AddressUkSpec extends SpecBase {
     addressLine2 = Some(""),
     addressLine3 = Some(""),
     townOrCity = "Townington",
-    postCode = "B23 2AZ",
-    countryUk = CountryUk(code = "GB", name = "United Kingdom")
+    postCode = "B23 2AZ"
   )
 
   "AddressUk" - {
@@ -94,7 +90,7 @@ class AddressUkSpec extends SpecBase {
           AddressLine3 = ukAddressFull.addressLine3,
           AddressLine4 = Some(ukAddressFull.townOrCity),
           PostalCode = ukAddressFull.postCode,
-          CountryCode = ukAddressFull.countryUk.code
+          CountryCode = ukCountryCode
         )
         result mustBe expectedRcaspAddress
       }
@@ -107,7 +103,7 @@ class AddressUkSpec extends SpecBase {
           AddressLine3 = None,
           AddressLine4 = None,
           PostalCode = ukAddressMinimal.postCode,
-          CountryCode = ukAddressMinimal.countryUk.code
+          CountryCode = ukCountryCode
         )
         result mustBe expectedRcaspAddress
       }
@@ -120,7 +116,7 @@ class AddressUkSpec extends SpecBase {
           AddressLine3 = Some(ukAddressAddressLine3.townOrCity),
           AddressLine4 = None,
           PostalCode = ukAddressAddressLine3.postCode,
-          CountryCode = ukAddressAddressLine3.countryUk.code
+          CountryCode = ukCountryCode
         )
         result mustBe expectedRcaspAddress
       }

@@ -18,7 +18,6 @@ package common
 
 import generators.Generators
 import models.*
-import models.countries.CountryUk
 import models.individual.IndividualName
 import models.requests.*
 import models.responses.*
@@ -58,8 +57,10 @@ trait TestData extends Generators {
 
   lazy val testPostcode: String = validPostcodes.sample.value
 
-  def oneAddressResponse: AddressResponse =
-    AddressResponse(
+  lazy val testNonCdPostcode: String = validGBOnlyNonCDPostcodes.sample.value
+
+  def oneAddressLookupResponse: AddressLookupResponse =
+    AddressLookupResponse(
       id = "123",
       uprn = testUPRN,
       address = AddressRecord(
@@ -70,13 +71,24 @@ trait TestData extends Generators {
       )
     )
 
+  def nonUkAddressLookupResponse: AddressLookupResponse =
+    AddressLookupResponse(
+      id = "123",
+      uprn = testUPRN,
+      address = AddressRecord(
+        lines = List("1 Test", "Test Street", "Test Region"),
+        town = "Testingtown",
+        postcode = testPostcode,
+        country = CountryRecord(code = "HR", name = "Croatia")
+      )
+    )
+
   lazy val testAddressUk: AddressUk = AddressUk(
     addressLine1 = "1 Test",
     addressLine2 = Some("Test Street"),
     addressLine3 = Some("Test Region"),
     townOrCity = "Testingtown",
-    postCode = testPostcode,
-    countryUk = CountryUk("GB", "United Kingdom")
+    postCode = testPostcode
   )
 
   lazy val testAddressUkAlt: AddressUk = AddressUk(
@@ -84,8 +96,7 @@ trait TestData extends Generators {
     addressLine2 = Some("Test Road"),
     addressLine3 = Some("Test Area"),
     townOrCity = "Testingville",
-    postCode = testPostcode,
-    countryUk = CountryUk("GB", "United Kingdom")
+    postCode = testPostcode
   )
 
   lazy val testAddressAndUprns: Seq[AddressAndUPRN] = Seq(
@@ -94,8 +105,8 @@ trait TestData extends Generators {
     AddressAndUPRN(testAddressUk, testUPRN)
   )
 
-  lazy val multipleAddressResponses: Seq[AddressResponse] =
-    Seq(oneAddressResponse, oneAddressResponse, oneAddressResponse)
+  lazy val multipleAddressResponses: Seq[AddressLookupResponse] =
+    Seq(oneAddressLookupResponse, oneAddressLookupResponse, oneAddressLookupResponse)
 
   val testSignOutUrl: String       = "http://localhost:9553/bas-gateway/sign-out-without-state"
   val testLoginContinueUrl: String = "http://localhost:17000/register-for-cryptoasset-reporting"
