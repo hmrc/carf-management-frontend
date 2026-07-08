@@ -30,13 +30,15 @@ import play.api.Logging
 import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import repositories.SessionRepository
+import utils.CountryListFactory
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success
 
 class PopulateUserAnswersHelper @Inject() (
-    sessionRepository: SessionRepository
+    sessionRepository: SessionRepository,
+    countryListFactory: CountryListFactory
 )(implicit ec: ExecutionContext)
     extends Logging {
 
@@ -69,7 +71,7 @@ class PopulateUserAnswersHelper @Inject() (
       }
       .getOrElse {
         logger.warn(
-          s"[PopulateUserAnswersHelper][populateUserAnswersForIndividual] Unable to populate user answers from IndividualRcaspDetails"
+          "[PopulateUserAnswersHelper][populateUserAnswersForIndividual] Unable to populate user answers from IndividualRcaspDetails"
         )
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
@@ -118,7 +120,7 @@ class PopulateUserAnswersHelper @Inject() (
       }
       .getOrElse {
         logger.warn(
-          s"[PopulateUserAnswersHelper][populateUserAnswersForOrganisation] Unable to populate user answers from OrganisationRcaspDetails"
+          "[PopulateUserAnswersHelper][populateUserAnswersForOrganisation] Unable to populate user answers from OrganisationRcaspDetails"
         )
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
@@ -142,17 +144,20 @@ class PopulateUserAnswersHelper @Inject() (
       userId: String,
       organisationRcaspDetails: OrganisationRcaspDetails
   ): Future[Result] = {
-    val emptyUserAnswers      = UserAnswers(id = userId, rcaspIsRegisteredBusiness = true)
-    val haveTradingName       = organisationRcaspDetails.TradingName != organisationRcaspDetails.RCASPName
-    val cachedBusinessDetails =
-      CachedBusinessDetails(
-        name = organisationRcaspDetails.RCASPName,
-        address = organisationRcaspDetails.AddressDetails.toAddressRegistrationResponse,
-        countryName = "United Kingdom"
-      )
+    val emptyUserAnswers           = UserAnswers(id = userId, rcaspIsRegisteredBusiness = true)
+    val haveTradingName            = organisationRcaspDetails.TradingName != organisationRcaspDetails.RCASPName
+    val maybeUtr                   = organisationRcaspDetails.TINDetails.flatMap(_.headOption.map(_.TIN))
+    val maybeCachedBusinessDetails =
+      countryListFactory.getDescriptionFromCode(organisationRcaspDetails.AddressDetails.CountryCode).map { country =>
+        CachedBusinessDetails(
+          name = organisationRcaspDetails.RCASPName,
+          address = organisationRcaspDetails.AddressDetails.toAddressRegistrationResponse,
+          countryName = country
+        )
+      }
 
-    organisationRcaspDetails.TINDetails.flatMap(_.headOption.map(_.TIN)) match {
-      case Some(utr) =>
+    (maybeUtr, maybeCachedBusinessDetails)
+      .mapN { (utr, cachedBusinessDetails) =>
         for {
           a              <-
             Future.fromTry(emptyUserAnswers.set(ReportForRegisteredBusinessPage, true))
@@ -172,11 +177,12 @@ class PopulateUserAnswersHelper @Inject() (
             s"Should nav to registered-business/change-answers/${organisationRcaspDetails.RCASPID} (CARF-350)"
           )
         )
-      case _         =>
+      }
+      .getOrElse {
         logger.warn(
-          s"[PopulateUserAnswersHelper][populateUserAnswersForRegisteredBusiness] Unable to get UTR from OrganisationRcaspDetails"
+          "[PopulateUserAnswersHelper][populateUserAnswersForRegisteredBusiness] Unable to populate user answers from OrganisationRcaspDetails"
         )
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-    }
+      }
   }
 }

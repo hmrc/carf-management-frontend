@@ -19,8 +19,8 @@ package utils.changeDetails
 import base.SpecBase
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.responses.{IndividualRcaspDetails, OrganisationRcaspDetails}
-import org.mockito.ArgumentMatchers.{any, argThat}
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
+import org.mockito.Mockito.{reset, times, verify, when}
 import pages.UkAddressInUserAnswers
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
@@ -28,12 +28,20 @@ import pages.individual.*
 import pages.organisation.*
 import play.api.mvc.Result
 import play.api.test.Helpers.*
+import utils.CountryListFactory
 
 import scala.concurrent.Future
 
 class PopulateUserAnswersHelperSpec extends SpecBase {
 
-  val helper = new PopulateUserAnswersHelper(mockSessionRepository)
+  val mockCountryListFactory: CountryListFactory = mock[CountryListFactory]
+
+  val helper = new PopulateUserAnswersHelper(mockSessionRepository, mockCountryListFactory)
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockCountryListFactory)
+  }
 
   "PopulateUserAnswersHelper" - {
     ".populateUserAnswersForIndividual" - {
@@ -328,6 +336,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             SecondaryContactDetails = None
           )
 
+        when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(Some("United Kingdom"))
         when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
         val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
@@ -337,6 +346,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
           .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
           .url
 
+        verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("GB"))
         verify(mockSessionRepository, times(1)).set(
           argThat { ua =>
             ua.id == userAnswersId &&
@@ -363,6 +373,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             SecondaryContactDetails = None
           )
 
+        when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(Some("United Kingdom"))
         when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
         val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
@@ -372,6 +383,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
           .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
           .url
 
+        verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("GB"))
         verify(mockSessionRepository, times(1)).set(
           argThat { ua =>
             ua.id == userAnswersId &&
@@ -399,11 +411,14 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
               TINDetails = None
             )
 
+          when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(Some("United Kingdom"))
+
           val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
+          verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("GB"))
           verify(mockSessionRepository, times(0)).set(any())
         }
 
@@ -416,11 +431,34 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
               TINDetails = Some(List.empty)
             )
 
+          when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(Some("United Kingdom"))
+
           val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
+          verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("GB"))
+          verify(mockSessionRepository, times(0)).set(any())
+        }
+
+        "when country name cannot be found from country code in AddressDetails" in {
+          val rcaspDetails: OrganisationRcaspDetails =
+            organisationRcaspDetailsResponse.copy(
+              IsRCASPUser = true,
+              PrimaryContactDetails = None,
+              SecondaryContactDetails = None,
+              AddressDetails = testAddressUkRcaspAddress.copy(CountryCode = "NA")
+            )
+
+          when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(None)
+
+          val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+
+          verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("NA"))
           verify(mockSessionRepository, times(0)).set(any())
         }
       }
