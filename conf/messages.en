@@ -409,11 +409,3 @@ removeOtherAccess.heading.otherOrg = Could {0} or a representative need to acces
 removeOtherAccess.error.required.individual = Select yes if the RCASP or a representative may need to access or update any previous reports for them
 removeOtherAccess.error.required.rcaspIsUser = Select yes if anyone who may act on behalf of your business in the future may need to access or update any previous reports
 removeOtherAccess.error.required.otherOrg = Select yes if the RCASP or a representative may need to access or update any previous reports for them
-
-removeOtherAccess.checkYourAnswersLabel.individual = Could {0} or a representative need to access or update any previous reports for them?
-removeOtherAccess.checkYourAnswersLabel.rcaspIsUser = Could anyone who may act on behalf of {0} in the future need to access or update any previous reports?
-removeOtherAccess.checkYourAnswersLabel.otherOrg = Could {0} or a representative need to access or update any previous reports for them?
-
-removeOtherAccess.change.hidden.individual = Could {0} or a representative need to access or update any previous reports for them
-removeOtherAccess.change.hidden.rcaspIsUser = Could anyone who may act on behalf of {0} in the future need to access or update any previous reports
-removeOtherAccess.change.hidden.otherOrg = Could {0} or a representative need to access or update any previous reports for them
