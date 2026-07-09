@@ -40,7 +40,12 @@ object ReportForRegisteredBusinessSummary {
         actions = Seq(
           ActionItemViewModel(
             content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
-            href = routes.ReportForRegisteredBusinessController.onPageLoad(ChangeMode).url
+            href =
+              if (changeJourney)
+                controllers.routes.PlaceholderController
+                  .onPageLoad("Should nav to /registered-business/change-report-for-registered-business (CARF-351)")
+                  .url
+              else routes.ReportForRegisteredBusinessController.onPageLoad(ChangeMode).url
           ).withVisuallyHiddenText(
             if (changeJourney) messages("reportForRegisteredBusiness.changeDetails.change.hidden")
             else messages("reportForRegisteredBusiness.change.hidden")
