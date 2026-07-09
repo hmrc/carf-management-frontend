@@ -160,7 +160,7 @@ class RcaspController @Inject() (
             )
           } else {
             viewAndUpdateRcasp.OrganisationRcaspDetails(
-              SubscriptionID = "XCARF000000001",
+              SubscriptionID = subscriptionId,
               RCASPID = "ZMCAR0123456780",
               IsRCASPUser = true,
               PartyType = "Organisation",
