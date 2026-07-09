@@ -16,4 +16,6 @@ GET        /manage-your-rcasps/test-only/AuthAction                testOnly.cont
 
 GET        /manage-your-rcasps/test-only/view-rcasp/:carfId        testOnly.controllers.RcaspController.viewRcasp(carfId: String)
 
-GET        /manage-your-rcasps/test-only/create-rcasp/:email/isIndividual/:isIndividual     testOnly.controllers.RcaspController.createRcasp(email: String, isIndividual: String)
+GET        /manage-your-rcasps/test-only/create-rcasp/:subscriptionId/isIndividual/:isIndividual     testOnly.controllers.RcaspController.createRcasp(subscriptionId: String, isIndividual: String)
+GET        /manage-your-rcasps/test-only/update-rcasp/:subscriptionId/isIndividual/:isIndividual     testOnly.controllers.RcaspController.updateRcasp(subscriptionId: String, isIndividual: String)
+GET        /manage-your-rcasps/test-only/delete-rcasp/:subscriptionId                                testOnly.controllers.RcaspController.deleteRcasp(subscriptionId: String)

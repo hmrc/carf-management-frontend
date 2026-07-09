@@ -14,15 +14,24 @@
  * limitations under the License.
  */
 
-package pages.changeDetails
+package models.requests
 
-import models.viewAndUpdateRcasp.RcaspDetails
-import pages.QuestionPage
-import play.api.libs.json.JsPath
+import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
-case object ChangeRcaspCachedDetails extends QuestionPage[RcaspDetails] {
+case class RcaspRequestCommon(
+    OriginatingSystem: String,
+    TransmittingSystem: String,
+    RequestType: String,
+    Regime: String,
+    RequestParameters: Option[List[RequestParameter]]
+)
 
-  override def path: JsPath = JsPath \ toString
+object RcaspRequestCommon {
+  implicit val format: OFormat[RcaspRequestCommon] = Json.format[RcaspRequestCommon]
+}
 
-  override def toString: String = "changeRcaspCachedDetails"
+case class RequestParameter(ParamName: String, ParamValue: String)
+
+object RequestParameter {
+  implicit val format: OFormat[RequestParameter] = Json.format[RequestParameter]
 }

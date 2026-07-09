@@ -18,6 +18,7 @@ package utils
 
 import config.Constants.ukCountryCode
 import models.OrganisationOrIndividual.{Individual, Organisation}
+import models.requests.createRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails, RcaspDetails, RcaspManagementRequest, RcaspRequest as CreateRcaspRequest}
 import models.requests.*
 import models.{toRcaspAddress, OrganisationOrIndividual, RcaspContactDetails, TinDetails, UniqueTaxpayerReference, UserAnswers}
 import pages.UkAddressInUserAnswers
@@ -27,8 +28,8 @@ import pages.organisation.*
 
 class RcaspSubmissionHelper {
 
-  val rcaspCreateRequestCommon: RcaspCreateRequestCommon =
-    RcaspCreateRequestCommon(
+  val rcaspCreateRequestCommon: RcaspRequestCommon =
+    RcaspRequestCommon(
       OriginatingSystem = "MDTP",
       TransmittingSystem = "EIS",
       RequestType = "CREATE",
@@ -56,9 +57,9 @@ class RcaspSubmissionHelper {
                                   userAnswers.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
                                 }
     } yield CreateRcaspRequest(
-      RCASPManagement = RCASPManagementRequest(
+      RCASPManagement = RcaspManagementRequest(
         RequestCommon = rcaspCreateRequestCommon,
-        RequestDetails = OrganisationRcaspDetails(
+        RequestDetails = createRcasp.OrganisationRcaspDetails(
           SubscriptionID = carfId,
           IsRCASPUser = isRcaspUser,
           PartyType = "Organisation",
@@ -85,7 +86,7 @@ class RcaspSubmissionHelper {
       organisationOrIndividual <- userAnswers.get(OrganisationOrIndividualPage)
       rcaspDetails             <- createRcaspDetails(carfId, userAnswers, organisationOrIndividual)
     } yield CreateRcaspRequest(
-      RCASPManagement = RCASPManagementRequest(
+      RCASPManagement = RcaspManagementRequest(
         RequestCommon = rcaspCreateRequestCommon,
         RequestDetails = rcaspDetails
       )

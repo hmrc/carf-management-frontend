@@ -19,7 +19,7 @@ package controllers.changeDetails
 import base.SpecBase
 import models.UserAnswers
 import models.errors.ApiError.{InternalServerError, NotFoundError}
-import models.responses.OrganisationRcaspDetails
+import models.viewAndUpdateRcasp.OrganisationRcaspDetails
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
 import pages.SubmissionSucceededPage

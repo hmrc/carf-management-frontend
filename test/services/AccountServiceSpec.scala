@@ -20,7 +20,8 @@ import base.SpecBase
 import connectors.{RcaspConnector, SubscriptionConnector}
 import models.HomePageSubscriptionData
 import models.errors.ApiError.{InternalServerError, NotFoundError}
-import models.responses.{RcaspDetails, RcaspResponseDetails, ViewRcasp, ViewRcaspResponse}
+import models.responses.{RcaspResponseDetails, ViewRcasp, ViewRcaspResponse}
+import models.viewAndUpdateRcasp.RcaspDetails
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import types.ResultT

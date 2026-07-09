@@ -19,7 +19,7 @@ package utils.changeDetails
 import cats.syntax.all.*
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.individual.IndividualName
-import models.responses.{IndividualRcaspDetails, OrganisationRcaspDetails}
+import models.viewAndUpdateRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails}
 import models.{CachedBusinessDetails, RcaspContactDetails, UserAnswers}
 import pages.UkAddressInUserAnswers
 import pages.changeDetails.ChangeRcaspCachedDetails

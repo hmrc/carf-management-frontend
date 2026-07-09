@@ -20,7 +20,10 @@ import config.FrontendAppConfig
 import models.errors.ApiError.{InternalServerError, JsonValidationError}
 import models.errors.CarfError
 import models.responses.*
-import models.requests.CreateRcaspRequest
+import models.requests.createRcasp
+import models.requests.createRcasp.RcaspRequest as CreateRcaspRequest
+import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
+import models.requests.deleteRcasp.RcaspRequest as DeleteRcaspRequest
 import play.api.Logging
 import play.api.http.Status.*
 import play.api.libs.json.*
@@ -72,7 +75,47 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
       Try(httpResponse.json.as[SubmitRcaspResponse]) match {
         case Success(data)      => Right(data)
         case Failure(exception) =>
-          logger.warn(s"Error parsing SubmitRcaspResponse with endpoint: ${baseUrl.toURI}")
+          logParseWarning(baseUrl, "createRcasp")
+          Left(JsonValidationError)
+      }
+    }
+  }
+
+  def updateRcasp(
+      updateRcaspRequest: UpdateRcaspRequest
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] = {
+    val baseUrl = url"${config.carfManagementBaseUrl}/update"
+
+    logger.debug("[RcaspConnector] Updating RCASP")
+
+    sendRequest(
+      url = baseUrl,
+      requestBuilder = http.post(baseUrl).withBody(Json.toJson(updateRcaspRequest))
+    ) { httpResponse =>
+      Try(httpResponse.json.as[SubmitRcaspResponse]) match {
+        case Success(data)      => Right(data)
+        case Failure(exception) =>
+          logParseWarning(baseUrl, "updateRcasp")
+          Left(JsonValidationError)
+      }
+    }
+  }
+
+  def deleteRcasp(
+      deleteRcaspRequest: DeleteRcaspRequest
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] = {
+    val baseUrl = url"${config.carfManagementBaseUrl}/delete"
+
+    logger.debug("[RcaspConnector] Deleting RCASP")
+
+    sendRequest(
+      url = baseUrl,
+      requestBuilder = http.delete(baseUrl).withBody(Json.toJson(deleteRcaspRequest))
+    ) { httpResponse =>
+      Try(httpResponse.json.as[SubmitRcaspResponse]) match {
+        case Success(data)      => Right(data)
+        case Failure(exception) =>
+          logParseWarning(baseUrl, "deleteRcasp")
           Left(JsonValidationError)
       }
     }
@@ -96,4 +139,9 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
         }
     )
   }
+
+  private def logParseWarning(baseUrl: URL, originatingMethod: String): Unit =
+    logger.warn(
+      s"[RcaspConnector][$originatingMethod] Error parsing SubmitRcaspResponse with endpoint: ${baseUrl.toURI}"
+    )
 }

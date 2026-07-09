@@ -18,7 +18,7 @@ package utils.changeDetails
 
 import base.SpecBase
 import models.OrganisationOrIndividual.{Individual, Organisation}
-import models.responses.{IndividualRcaspDetails, OrganisationRcaspDetails}
+import models.viewAndUpdateRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails}
 import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import pages.UkAddressInUserAnswers

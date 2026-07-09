@@ -86,14 +86,14 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         verify(mockRcaspConnector, times(1)).createRcasp(eqTo(createRcaspRequestRegisteredBusiness))(any(), any())
       }
 
-      "when the helper fails to build the CreateRcaspRequest" in {
+      "when the helper fails to build the RcaspRequest" in {
         when(mockRcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(None)
 
         val result =
           rcaspSubmissionService.submitRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
 
         result mustBe Left(
-          MandatoryInformationMissingError("Error building the CreateRcaspRequest from userAnswers")
+          MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers")
         )
 
         verify(mockRcaspSubmissionHelper, times(1))
@@ -137,13 +137,13 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         verify(mockRcaspConnector, times(1)).createRcasp(eqTo(createRcaspRequestIndividual))(any(), any())
       }
 
-      "when the helper fails to build the CreateRcaspRequest" in {
+      "when the helper fails to build the RcaspRequest" in {
         when(mockRcaspSubmissionHelper.createRcaspRequest(any(), any())).thenReturn(None)
 
         val result = rcaspSubmissionService.submitRcasp(carfId, testUserAnswers).value.futureValue
 
         result mustBe Left(
-          MandatoryInformationMissingError("Error building the CreateRcaspRequest from userAnswers")
+          MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers")
         )
 
         verify(mockRcaspSubmissionHelper, times(1)).createRcaspRequest(eqTo(carfId), eqTo(testUserAnswers))

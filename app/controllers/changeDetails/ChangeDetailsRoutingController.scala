@@ -17,7 +17,7 @@
 package controllers.changeDetails
 
 import controllers.actions.{DataRetrievalAction, IdentifierAction}
-import models.responses.{IndividualRcaspDetails, OrganisationRcaspDetails}
+import models.viewAndUpdateRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails}
 import pages.SubmissionSucceededPage
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.*
