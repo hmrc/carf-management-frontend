@@ -19,7 +19,10 @@ package common
 import generators.Generators
 import models.*
 import models.individual.IndividualName
-import models.requests.*
+import models.requests.{createRcasp, deleteRcasp, updateRcasp, RcaspRequestCommon}
+import models.requests.createRcasp.RcaspRequest as CreateRcaspRequest
+import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
+import models.requests.deleteRcasp.RcaspRequest as DeleteRcaspRequest
 import models.responses.*
 import org.scalatest.OptionValues.convertOptionToValuable
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
@@ -162,8 +165,8 @@ trait TestData extends Generators {
       CountryCode = "GB"
     )
 
-  val individualRcaspDetailsResponse: responses.IndividualRcaspDetails =
-    responses.IndividualRcaspDetails(
+  val individualRcaspDetailsResponse: viewAndUpdateRcasp.IndividualRcaspDetails =
+    viewAndUpdateRcasp.IndividualRcaspDetails(
       SubscriptionID = "XCARF000000001",
       RCASPID = rcaspId,
       IsRCASPUser = true,
@@ -175,8 +178,8 @@ trait TestData extends Generators {
       PrimaryContactDetails = Some(rcaspContactDetails)
     )
 
-  val organisationRcaspDetailsResponse: responses.OrganisationRcaspDetails =
-    responses.OrganisationRcaspDetails(
+  val organisationRcaspDetailsResponse: viewAndUpdateRcasp.OrganisationRcaspDetails =
+    viewAndUpdateRcasp.OrganisationRcaspDetails(
       SubscriptionID = carfId,
       RCASPID = rcaspId,
       IsRCASPUser = true,
@@ -201,8 +204,8 @@ trait TestData extends Generators {
       )
     )
 
-  val individualRcaspDetailsRequest: requests.IndividualRcaspDetails =
-    requests.IndividualRcaspDetails(
+  val individualRcaspDetailsRequest: createRcasp.IndividualRcaspDetails =
+    createRcasp.IndividualRcaspDetails(
       SubscriptionID = carfId,
       IsRCASPUser = true,
       PartyType = "Individual",
@@ -213,8 +216,27 @@ trait TestData extends Generators {
       PrimaryContactDetails = Some(rcaspContactDetails)
     )
 
-  val registeredBusinessRcaspDetailsRequest: requests.OrganisationRcaspDetails =
-    requests.OrganisationRcaspDetails(
+  val updateIndividualRcaspDetailsRequest: viewAndUpdateRcasp.IndividualRcaspDetails =
+    viewAndUpdateRcasp.IndividualRcaspDetails(
+      RCASPID = rcaspId,
+      SubscriptionID = carfId,
+      IsRCASPUser = true,
+      PartyType = "Individual",
+      FirstName = "Penny",
+      LastName = "Cassiopeia",
+      TINDetails = Some(List(TinDetails(TINType = "OTHER", TIN = "6893649", IssuedBy = "GB"))),
+      AddressDetails = rcaspAddress,
+      PrimaryContactDetails = Some(rcaspContactDetails)
+    )
+
+  val deleteRcaspDetailsRequest: deleteRcasp.RcaspDetails =
+    deleteRcasp.RcaspDetails(
+      RCASPID = rcaspId,
+      SubscriptionID = carfId
+    )
+
+  val registeredBusinessRcaspDetailsRequest: createRcasp.OrganisationRcaspDetails =
+    createRcasp.OrganisationRcaspDetails(
       SubscriptionID = carfId,
       IsRCASPUser = true,
       PartyType = "Organisation",
@@ -226,8 +248,8 @@ trait TestData extends Generators {
       SecondaryContactDetails = None
     )
 
-  val rcaspCreateRequestCommon: RcaspCreateRequestCommon =
-    RcaspCreateRequestCommon(
+  val rcaspRequestCommon: RcaspRequestCommon =
+    RcaspRequestCommon(
       OriginatingSystem = "MDTP",
       TransmittingSystem = "EIS",
       RequestType = "CREATE",
@@ -237,16 +259,32 @@ trait TestData extends Generators {
 
   val createRcaspRequestIndividual: CreateRcaspRequest =
     CreateRcaspRequest(
-      RCASPManagementRequest(
-        RequestCommon = rcaspCreateRequestCommon,
+      createRcasp.RcaspManagementRequest(
+        RequestCommon = rcaspRequestCommon,
         RequestDetails = individualRcaspDetailsRequest
+      )
+    )
+
+  val updateRcaspRequestIndividual: UpdateRcaspRequest =
+    UpdateRcaspRequest(
+      updateRcasp.RcaspManagementRequest(
+        RequestCommon = rcaspRequestCommon,
+        RequestDetails = updateIndividualRcaspDetailsRequest
+      )
+    )
+
+  val deleteRcaspRequest: DeleteRcaspRequest =
+    DeleteRcaspRequest(
+      deleteRcasp.RcaspManagementRequest(
+        RequestCommon = rcaspRequestCommon,
+        RequestDetails = deleteRcaspDetailsRequest
       )
     )
 
   val createRcaspRequestRegisteredBusiness: CreateRcaspRequest =
     CreateRcaspRequest(
-      RCASPManagementRequest(
-        RequestCommon = rcaspCreateRequestCommon,
+      createRcasp.RcaspManagementRequest(
+        RequestCommon = rcaspRequestCommon,
         RequestDetails = registeredBusinessRcaspDetailsRequest
       )
     )
