@@ -64,7 +64,7 @@ class ReportForRegisteredBusinessController @Inject() (
       implicit request =>
         request.utr match {
           case Some(utr) =>
-            registrationService.getBusinessWithUtr(utr.uniqueTaxPayerReference).value.flatMap {
+            registrationService.getBusinessWithCtUtr(utr.uniqueTaxPayerReference).value.flatMap {
               case Right(businessDetails) =>
                 countryListFactory.getDescriptionFromCode(businessDetails.address.countryCode) match {
                   case Some(countryName) =>
