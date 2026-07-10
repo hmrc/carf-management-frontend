@@ -20,7 +20,7 @@ import base.SpecBase
 import models.viewAndUpdateRcasp.RcaspDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.remove.{RemoveOtherAccessPage, SelectedRcaspDetailsPage}
+import pages.remove.{RemoveOtherAccessPage, RemoveRcaspCachedDetails}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 
@@ -46,7 +46,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
     "onPageLoad" - {
 
       "must return OK for an individual RCASP" in {
-        val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, individualDetails)
+        val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, individualDetails)
 
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -59,7 +59,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
       }
 
       "must return OK for a rcaspIsUser RCASP" in {
-        val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, rcaspIsUserDetails)
+        val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
 
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -72,7 +72,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
       }
 
       "must return OK for an otherOrg RCASP" in {
-        val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, otherOrgDetails)
+        val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, otherOrgDetails)
 
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -86,7 +86,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
       "must populate the view correctly on GET when question has previously been answered" in {
         val userAnswers = emptyUserAnswers
-          .withPage(SelectedRcaspDetailsPage, rcaspIsUserDetails)
+          .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
           .withPage(RemoveOtherAccessPage, true)
 
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
@@ -99,7 +99,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect to Journey Recovery when SelectedRcaspDetailsPage not in UserAnswers" in {
+      "must redirect to Journey Recovery when RemoveRcaspCachedDetails not in UserAnswers" in {
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
         running(application) {
@@ -130,7 +130,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
         when(mockSessionRepository.set(any()))
           .thenReturn(Future.successful(true))
 
-        val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, rcaspIsUserDetails)
+        val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
 
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -146,7 +146,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
       }
 
       "must return BadRequest when invalid data is submitted" in {
-        val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, rcaspIsUserDetails)
+        val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
 
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -161,7 +161,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect to Journey Recovery when SelectedRcaspDetailsPage not in UserAnswers" in {
+      "must redirect to Journey Recovery when RemoveRcaspCachedDetails not in UserAnswers" in {
         val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
         running(application) {

@@ -20,7 +20,7 @@ import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import models.UserAnswers
 import models.viewAndUpdateRcasp.RcaspDetails
-import pages.remove.{RemoveUserAccessPage, SelectedRcaspDetailsPage}
+import pages.remove.{RemoveUserAccessPage, RemoveRcaspCachedDetails}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
@@ -65,7 +65,7 @@ class RemoveUserAccessController @Inject() (
     (identify() andThen getData()).async { implicit request =>
 
       val cachedDetails = request.userAnswers
-        .flatMap(_.get(SelectedRcaspDetailsPage))
+        .flatMap(_.get(RemoveRcaspCachedDetails))
         .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase)
 
       cachedDetails match {
@@ -102,7 +102,7 @@ class RemoveUserAccessController @Inject() (
                                         UserAnswers(
                                           id = request.userId,
                                           rcaspIsRegisteredBusiness = false
-                                        ).set(SelectedRcaspDetailsPage, details)
+                                        ).set(RemoveRcaspCachedDetails, details)
                                       )
                 _                  <- sessionRepository.set(userAnswers)
               } yield buildViewModel(details, userBusinessNameOpt) match {
@@ -132,7 +132,7 @@ class RemoveUserAccessController @Inject() (
     (identify() andThen getData()).async { implicit request =>
 
       val cachedDetails = request.userAnswers
-        .flatMap(_.get(SelectedRcaspDetailsPage))
+        .flatMap(_.get(RemoveRcaspCachedDetails))
         .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase)
 
       cachedDetails match {
@@ -180,7 +180,7 @@ class RemoveUserAccessController @Inject() (
           }
 
         case None =>
-          logger.warn("[RemoveUserAccessController][onSubmit] SelectedRcaspDetailsPage not found in cache")
+          logger.warn("[RemoveUserAccessController][onSubmit] RemoveRcaspCachedDetails not found in cache")
           Future.successful(journeyRecovery)
       }
     }

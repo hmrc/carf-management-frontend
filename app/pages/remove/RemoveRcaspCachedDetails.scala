@@ -20,7 +20,7 @@ import models.viewAndUpdateRcasp.RcaspDetails
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 
-case object SelectedRcaspDetailsPage extends QuestionPage[RcaspDetails] {
+case object RemoveRcaspCachedDetails extends QuestionPage[RcaspDetails] {
 
   override def path: JsPath = JsPath \ toString
 

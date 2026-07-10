@@ -21,7 +21,7 @@ import models.errors.ApiError.NotFoundError
 import models.viewAndUpdateRcasp.RcaspDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.remove.SelectedRcaspDetailsPage
+import pages.remove.RemoveRcaspCachedDetails
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
@@ -169,7 +169,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           when(mockAccountService.getUserBusinessName(any())(any(), any()))
             .thenReturn(ResultT.fromValue(Some("My Business")))
 
-          val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, rcaspIsUserDetails)
+          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -187,7 +187,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           when(mockAccountService.getUserBusinessName(any())(any(), any()))
             .thenReturn(ResultT.fromError(NotFoundError))
 
-          val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, rcaspIsUserDetails)
+          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -206,7 +206,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           when(mockAccountService.getUserBusinessName(any())(any(), any()))
             .thenReturn(ResultT.fromValue(None))
 
-          val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, otherOrgDetails)
+          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, otherOrgDetails)
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -231,7 +231,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           when(mockSessionRepository.set(any()))
             .thenReturn(Future.successful(true))
 
-          val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, rcaspIsUserDetails)
+          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -254,7 +254,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           when(mockAccountService.getUserBusinessName(any())(any(), any()))
             .thenReturn(ResultT.fromValue(Some("My Business")))
 
-          val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, rcaspIsUserDetails)
+          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -271,7 +271,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           }
         }
 
-        "must redirect to Journey Recovery when SelectedRcaspDetailsPage not in cache" in {
+        "must redirect to Journey Recovery when RemoveRcaspCachedDetails not in cache" in {
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
             .build()
@@ -292,7 +292,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           when(mockAccountService.getUserBusinessName(any())(any(), any()))
             .thenReturn(ResultT.fromError(NotFoundError))
 
-          val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, rcaspIsUserDetails)
+          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -314,7 +314,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           when(mockAccountService.getUserBusinessName(any())(any(), any()))
             .thenReturn(ResultT.fromValue(None))
 
-          val userAnswers = emptyUserAnswers.withPage(SelectedRcaspDetailsPage, otherOrgDetails)
+          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, otherOrgDetails)
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))

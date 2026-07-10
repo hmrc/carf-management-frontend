@@ -18,7 +18,7 @@ package controllers.remove
 
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import pages.remove.{RemoveOtherAccessPage, SelectedRcaspDetailsPage}
+import pages.remove.{RemoveOtherAccessPage, RemoveRcaspCachedDetails}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
@@ -49,7 +49,7 @@ class RemoveOtherAccessController @Inject() (
 
   def onPageLoad(): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
-      request.userAnswers.get(SelectedRcaspDetailsPage) match {
+      request.userAnswers.get(RemoveRcaspCachedDetails) match {
         case Some(details) =>
           val vm           = RemoveOtherAccessViewModel.from(details, formProvider)
           val preparedForm = request.userAnswers.get(RemoveOtherAccessPage).fold(vm.form)(vm.form.fill)
@@ -67,14 +67,14 @@ class RemoveOtherAccessController @Inject() (
           )
 
         case None =>
-          logger.warn("[RemoveOtherAccessController][onPageLoad] SelectedRcaspDetailsPage not found in UserAnswers")
+          logger.warn("[RemoveOtherAccessController][onPageLoad] RemoveRcaspCachedDetails not found in UserAnswers")
           Future.successful(journeyRecovery)
       }
     }
 
   def onSubmit(): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
-      request.userAnswers.get(SelectedRcaspDetailsPage) match {
+      request.userAnswers.get(RemoveRcaspCachedDetails) match {
         case Some(details) =>
           val vm = RemoveOtherAccessViewModel.from(details, formProvider)
 
@@ -103,7 +103,7 @@ class RemoveOtherAccessController @Inject() (
             )
 
         case None =>
-          logger.warn("[RemoveOtherAccessController][onSubmit] SelectedRcaspDetailsPage not found in UserAnswers")
+          logger.warn("[RemoveOtherAccessController][onSubmit] RemoveRcaspCachedDetails not found in UserAnswers")
           Future.successful(journeyRecovery)
       }
     }
