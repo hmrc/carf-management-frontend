@@ -18,7 +18,6 @@ package viewmodels
 
 import base.SpecBase
 import models.viewAndUpdateRcasp.RcaspDetails
-import models.{Mode, NormalMode}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.{HtmlContent, Text}
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.listwithactions.{ListWithActions, ListWithActionsAction}
@@ -60,7 +59,7 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
             ),
             ListWithActionsAction(
               href = controllers.remove.routes.RemoveUserAccessController
-                .onPageLoad("RCASP2")
+                .onPageLoad("RCASP1")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove Timmy Jimmison from the list")
@@ -74,7 +73,7 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
             ),
             ListWithActionsAction(
               href = controllers.remove.routes.RemoveUserAccessController
-                .onPageLoad("RCASP1")
+                .onPageLoad("RCASP2")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove Timmy Ltd from the list")
