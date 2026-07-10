@@ -246,7 +246,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
             status(result)                 mustEqual SEE_OTHER
             redirectLocation(result).value mustEqual
-              controllers.remove.routes.RemoveOtherAccessController.onPageLoad().url
+              controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId).url
           }
         }
 
