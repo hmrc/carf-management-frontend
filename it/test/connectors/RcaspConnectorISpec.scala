@@ -261,4 +261,166 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
     }
   }
 
+  "updateRcasp" should {
+
+    val testUrl = "/carf-management/update"
+
+    val updateStubResponse =
+      """
+        |{
+        |  "ResponseDetails": {
+        |    "ReturnParameters": {
+        |      "Key": "RCASPID",
+        |      "Value": "ZMCAR0123456789"
+        |    }
+        |  }
+        |}
+        |""".stripMargin
+
+    "successfully retrieve a UpdateRcaspResponse" in {
+
+      stubFor(
+        post(urlPathMatching(testUrl))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(updateStubResponse)
+          )
+      )
+
+      val result = connector.updateRcasp(updateRcaspRequestIndividual).value.futureValue
+      result shouldBe Right(submitRcaspResponse)
+    }
+
+    "return JsonValidationError when response JSON is invalid" in {
+      stubFor(
+        post(urlPathMatching(testUrl))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody("""{"incorrect": "structure"}""")
+          )
+      )
+
+      val result = connector.updateRcasp(updateRcaspRequestIndividual).value.futureValue
+      result shouldBe Left(JsonValidationError)
+    }
+
+    "return InternalServerError when backend returns 400" in {
+
+      val errorResponse = Json.obj(
+        "status"  -> "Unprocessable Entity",
+        "message" -> "Invalid ID"
+      )
+
+      stubFor(
+        post(urlPathMatching(testUrl))
+          .willReturn(
+            aResponse()
+              .withStatus(UNPROCESSABLE_ENTITY)
+              .withBody(errorResponse.toString)
+          )
+      )
+
+      val result = connector.updateRcasp(updateRcaspRequestIndividual).value.futureValue
+      result shouldBe Left(InternalServerError)
+    }
+
+    "return InternalServerError when backend returns 500" in {
+
+      stubFor(
+        post(urlPathMatching(testUrl))
+          .willReturn(
+            aResponse()
+              .withStatus(INTERNAL_SERVER_ERROR)
+              .withBody(Json.obj("message" -> "Internal server error").toString)
+          )
+      )
+
+      val result = connector.updateRcasp(updateRcaspRequestIndividual).value.futureValue
+      result shouldBe Left(InternalServerError)
+    }
+  }
+
+  "deleteRcasp" should {
+
+    val testUrl = "/carf-management/delete"
+
+    val deleteStubResponse =
+      """
+        |{
+        |  "ResponseDetails": {
+        |    "ReturnParameters": {
+        |      "Key": "RCASPID",
+        |      "Value": "ZMCAR0123456789"
+        |    }
+        |  }
+        |}
+        |""".stripMargin
+
+    "successfully retrieve a DeleteRcaspResponse" in {
+
+      stubFor(
+        delete(urlPathMatching(testUrl))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(deleteStubResponse)
+          )
+      )
+
+      val result = connector.deleteRcasp(deleteRcaspRequest).value.futureValue
+      result shouldBe Right(submitRcaspResponse)
+    }
+
+    "return JsonValidationError when response JSON is invalid" in {
+      stubFor(
+        delete(urlPathMatching(testUrl))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody("""{"incorrect": "structure"}""")
+          )
+      )
+
+      val result = connector.deleteRcasp(deleteRcaspRequest).value.futureValue
+      result shouldBe Left(JsonValidationError)
+    }
+
+    "return InternalServerError when backend returns 400" in {
+
+      val errorResponse = Json.obj(
+        "status"  -> "Unprocessable Entity",
+        "message" -> "Invalid ID"
+      )
+
+      stubFor(
+        delete(urlPathMatching(testUrl))
+          .willReturn(
+            aResponse()
+              .withStatus(UNPROCESSABLE_ENTITY)
+              .withBody(errorResponse.toString)
+          )
+      )
+
+      val result = connector.deleteRcasp(deleteRcaspRequest).value.futureValue
+      result shouldBe Left(InternalServerError)
+    }
+
+    "return InternalServerError when backend returns 500" in {
+
+      stubFor(
+        post(urlPathMatching(testUrl))
+          .willReturn(
+            aResponse()
+              .withStatus(INTERNAL_SERVER_ERROR)
+              .withBody(Json.obj("message" -> "Internal server error").toString)
+          )
+      )
+
+      val result = connector.deleteRcasp(deleteRcaspRequest).value.futureValue
+      result shouldBe Left(InternalServerError)
+    }
+  }
+
 }

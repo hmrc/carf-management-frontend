@@ -20,9 +20,9 @@ import base.SpecBase
 import cats.data.EitherT
 import connectors.AddressLookupConnector
 import models.AddressAndUPRN
-import models.errors.{ApiError, CarfError, ConversionError}
+import models.errors.{ApiError, CarfError, ConversionError, InvalidCountryCode}
 import models.requests.SearchByPostcodeRequest
-import models.responses.AddressResponse
+import models.responses.AddressLookupResponse
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.*
 
@@ -49,7 +49,7 @@ class AddressLookupServiceSpec extends SpecBase {
           mockAddressLookupConnector
             .searchByPostcode(eqTo(SearchByPostcodeRequest("TE1 1ST", Some("Flat 1"))))(any())
         )
-          .thenReturn(EitherT.rightT[Future, CarfError](Seq(oneAddressResponse)))
+          .thenReturn(EitherT.rightT[Future, CarfError](Seq(oneAddressLookupResponse)))
 
         val (result, retry) = service.postcodeSearch("TE1 1ST", Some("Flat 1")).value.futureValue.toOption.get
 
@@ -132,7 +132,7 @@ class AddressLookupServiceSpec extends SpecBase {
 
       "must return API error when initial search returns API error" in {
         when(mockAddressLookupConnector.searchByPostcode(eqTo(SearchByPostcodeRequest("INVALID", None)))(any()))
-          .thenReturn(EitherT.leftT[Future, Seq[AddressResponse]](ApiError.BadRequestError))
+          .thenReturn(EitherT.leftT[Future, Seq[AddressLookupResponse]](ApiError.BadRequestError))
 
         val result = service.postcodeSearch("INVALID", None).value.futureValue
 
@@ -147,7 +147,7 @@ class AddressLookupServiceSpec extends SpecBase {
           mockAddressLookupConnector
             .searchByPostcode(eqTo(SearchByPostcodeRequest("INVALID", Some("Flat 1"))))(any())
         )
-          .thenReturn(EitherT.leftT[Future, Seq[AddressResponse]](ApiError.BadRequestError))
+          .thenReturn(EitherT.leftT[Future, Seq[AddressLookupResponse]](ApiError.BadRequestError))
 
         val result = service.postcodeSearch("INVALID", Some("Flat 1")).value.futureValue
 
@@ -163,7 +163,7 @@ class AddressLookupServiceSpec extends SpecBase {
         )
           .thenReturn(EitherT.rightT[Future, ApiError](Seq.empty))
         when(mockAddressLookupConnector.searchByPostcode(eqTo(SearchByPostcodeRequest("TE1 1ST", None)))(any()))
-          .thenReturn(EitherT.leftT[Future, Seq[AddressResponse]](ApiError.BadRequestError))
+          .thenReturn(EitherT.leftT[Future, Seq[AddressLookupResponse]](ApiError.BadRequestError))
 
         val result = service.postcodeSearch("TE1 1ST", Some("Flat 555")).value.futureValue
 
@@ -178,7 +178,7 @@ class AddressLookupServiceSpec extends SpecBase {
         when(mockAddressLookupConnector.searchByPostcode(eqTo(SearchByPostcodeRequest("TE1 1ST", None)))(any()))
           .thenReturn(
             EitherT.rightT[Future, CarfError](
-              Seq(oneAddressResponse.copy(address = oneAddressResponse.address.copy(lines = List.empty)))
+              Seq(oneAddressLookupResponse.copy(address = oneAddressLookupResponse.address.copy(lines = List.empty)))
             )
           )
 
@@ -188,6 +188,22 @@ class AddressLookupServiceSpec extends SpecBase {
         verify(mockAddressLookupConnector, times(1))
           .searchByPostcode(eqTo(SearchByPostcodeRequest("TE1 1ST", None)))(any())
       }
+
+      "must return a InvalidCountryCode error when an address response contains a non-uk address" in {
+
+        when(
+          mockAddressLookupConnector
+            .searchByPostcode(eqTo(SearchByPostcodeRequest("TE1 1ST", Some("Flat 1"))))(any())
+        )
+          .thenReturn(EitherT.rightT[Future, CarfError](Seq(nonUkAddressLookupResponse)))
+
+        val result = service.postcodeSearch("TE1 1ST", Some("Flat 1")).value.futureValue
+
+        result mustBe Left(InvalidCountryCode)
+        verify(mockAddressLookupConnector, times(1))
+          .searchByPostcode(eqTo(SearchByPostcodeRequest("TE1 1ST", Some("Flat 1"))))(any())
+      }
+
     }
   }
 }

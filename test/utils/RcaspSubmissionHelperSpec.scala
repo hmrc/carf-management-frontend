@@ -19,7 +19,7 @@ package utils
 import base.SpecBase
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.{RcaspAddress, RcaspContactDetails, TinDetails}
-import models.requests.{CreateRcaspRequest, IndividualRcaspDetails, OrganisationRcaspDetails, RCASPManagementRequest}
+import models.requests.createRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails, RcaspManagementRequest, RcaspRequest as CreateRcaspRequest}
 import pages.UkAddressInUserAnswers
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
@@ -111,8 +111,8 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
         result mustBe Some(
           CreateRcaspRequest(
-            RCASPManagementRequest(
-              RequestCommon = rcaspCreateRequestCommon,
+            RcaspManagementRequest(
+              RequestCommon = rcaspRequestCommon,
               RequestDetails = registeredBusinessRcaspDetails
             )
           )
@@ -132,8 +132,8 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
         result mustBe Some(
           CreateRcaspRequest(
-            RCASPManagementRequest(
-              RequestCommon = rcaspCreateRequestCommon,
+            RcaspManagementRequest(
+              RequestCommon = rcaspRequestCommon,
               RequestDetails = registeredBusinessRcaspDetails.copy(TradingName = testOrgName)
             )
           )
@@ -245,8 +245,8 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
           result mustBe Some(
             CreateRcaspRequest(
-              RCASPManagementRequest(
-                RequestCommon = rcaspCreateRequestCommon,
+              RcaspManagementRequest(
+                RequestCommon = rcaspRequestCommon,
                 RequestDetails = individualRcaspDetails
               )
             )
@@ -266,8 +266,8 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
           result mustBe Some(
             CreateRcaspRequest(
-              RCASPManagementRequest(
-                RequestCommon = rcaspCreateRequestCommon,
+              RcaspManagementRequest(
+                RequestCommon = rcaspRequestCommon,
                 RequestDetails = individualRcaspDetails.copy(
                   PrimaryContactDetails = Some(individualContactDetails.copy(PhoneNumber = None))
                 )
@@ -361,8 +361,8 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
           result mustBe Some(
             CreateRcaspRequest(
-              RCASPManagementRequest(
-                RequestCommon = rcaspCreateRequestCommon,
+              RcaspManagementRequest(
+                RequestCommon = rcaspRequestCommon,
                 RequestDetails = organisationRcaspDetails
               )
             )
@@ -390,8 +390,8 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
           result mustBe Some(
             CreateRcaspRequest(
-              RCASPManagementRequest(
-                RequestCommon = rcaspCreateRequestCommon,
+              RcaspManagementRequest(
+                RequestCommon = rcaspRequestCommon,
                 RequestDetails = organisationRcaspDetails.copy(
                   SecondaryContactDetails = Some(organisationContactDetails.copy(PhoneNumber = None))
                 )
@@ -416,8 +416,8 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
           result mustBe Some(
             CreateRcaspRequest(
-              RCASPManagementRequest(
-                RequestCommon = rcaspCreateRequestCommon,
+              RcaspManagementRequest(
+                RequestCommon = rcaspRequestCommon,
                 RequestDetails = organisationRcaspDetails.copy(
                   TradingName = testOrgName,
                   PrimaryContactDetails = Some(organisationContactDetails.copy(PhoneNumber = None)),

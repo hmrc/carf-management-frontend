@@ -17,7 +17,6 @@
 package models
 
 import config.Constants.ukCountryCode
-import models.countries.CountryUk
 import play.api.libs.json.{Json, OFormat}
 
 import scala.collection.immutable.Seq
@@ -27,8 +26,7 @@ case class AddressUk(
     addressLine2: Option[String],
     addressLine3: Option[String],
     townOrCity: String,
-    postCode: String,
-    countryUk: CountryUk
+    postCode: String
 )
 
 extension (address: AddressUk) {
@@ -60,11 +58,7 @@ extension (address: AddressUk) {
       address.addressLine3,
       Some(address.townOrCity),
       Some(address.postCode)
-    ).flatten ++ {
-      if (address.countryUk.code == ukCountryCode) {
-        Seq.empty
-      } else Seq(address.countryUk.name)
-    }
+    ).flatten
     addressLines.mkString(", ")
   }
 
@@ -76,7 +70,7 @@ extension (address: AddressUk) {
       AddressLine3 = addressSubsequentLines.lift(1),
       AddressLine4 = addressSubsequentLines.lift(2),
       PostalCode = address.postCode,
-      CountryCode = address.countryUk.code
+      CountryCode = ukCountryCode
     )
   }
 }

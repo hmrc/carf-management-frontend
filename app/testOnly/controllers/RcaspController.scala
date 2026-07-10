@@ -17,8 +17,13 @@
 package testOnly.controllers
 
 import connectors.RcaspConnector
-import models.requests.*
+import models.requests.{createRcasp as createRcaspPackage, deleteRcasp as deleteRcaspPackage, updateRcasp as updateRcaspPackage, RcaspRequestCommon, *}
 import models.responses.{SubmitRcaspResponse, ViewRcaspResponse}
+import models.requests.createRcasp.RcaspManagementRequest as CreateRcaspManagementRequest
+import models.requests.createRcasp.RcaspRequest as CreateRcaspRequest
+import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
+import models.requests.deleteRcasp.RcaspRequest as DeleteRcaspRequest
+import models.viewAndUpdateRcasp
 import models.{RcaspAddress, RcaspContactDetails, TinDetails}
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
@@ -36,31 +41,31 @@ class RcaspController @Inject() (
 ) extends FrontendBaseController
     with I18nSupport {
 
+  private lazy val tinDetails = TinDetails(
+    TINType = "UTR",
+    TIN = "6893649",
+    IssuedBy = "GB"
+  )
+
+  private lazy val fullAddress = RcaspAddress(
+    AddressLine1 = "2 High Street",
+    AddressLine2 = Some("Birmingham"),
+    AddressLine3 = Some("Nowhereshire"),
+    AddressLine4 = Some("Down the road"),
+    PostalCode = "B23 2AZ",
+    CountryCode = "GB"
+  )
+
   def viewRcasp(carfId: String): Action[AnyContent] = Action.async { implicit request =>
     connector.viewRcasp(carfId).processResponse(data => Ok(Json.prettyPrint(Json.toJson(data))))
   }
 
-  def createRcasp(email: String, isIndividual: String): Action[AnyContent] = Action.async { implicit request =>
-
-    val fullAddress = RcaspAddress(
-      AddressLine1 = "2 High Street",
-      AddressLine2 = Some("Birmingham"),
-      AddressLine3 = Some("Nowhereshire"),
-      AddressLine4 = Some("Down the road"),
-      PostalCode = "B23 2AZ",
-      CountryCode = "GB"
-    )
-
-    val tinDetails = TinDetails(
-      TINType = "UTR",
-      TIN = "6893649",
-      IssuedBy = "GB"
-    )
+  def createRcasp(subscriptionId: String, isIndividual: String): Action[AnyContent] = Action.async { implicit request =>
 
     val createRcaspRequest: CreateRcaspRequest =
       CreateRcaspRequest(
-        RCASPManagementRequest(
-          RcaspCreateRequestCommon(
+        CreateRcaspManagementRequest(
+          RcaspRequestCommon(
             OriginatingSystem = "MDTP",
             TransmittingSystem = "EIS",
             RequestType = "CREATE",
@@ -68,8 +73,8 @@ class RcaspController @Inject() (
             RequestParameters = None
           ),
           if (isIndividual.toBoolean) {
-            IndividualRcaspDetails(
-              SubscriptionID = "XCARF000000001",
+            createRcaspPackage.IndividualRcaspDetails(
+              SubscriptionID = subscriptionId,
               IsRCASPUser = true,
               PartyType = "Individual",
               FirstName = "Penny",
@@ -83,14 +88,14 @@ class RcaspController @Inject() (
               PrimaryContactDetails = Some(
                 RcaspContactDetails(
                   ContactName = "Penny Cassiopeia",
-                  EmailAddress = email,
+                  EmailAddress = "bob@gmail.com",
                   PhoneNumber = Some("07123412345")
                 )
               )
             )
           } else {
-            OrganisationRcaspDetails(
-              SubscriptionID = "XCARF000000001",
+            createRcaspPackage.OrganisationRcaspDetails(
+              SubscriptionID = subscriptionId,
               IsRCASPUser = true,
               PartyType = "Organisation",
               RCASPName = "Mesagoza",
@@ -100,7 +105,7 @@ class RcaspController @Inject() (
               PrimaryContactDetails = Some(
                 RcaspContactDetails(
                   ContactName = "Clavell",
-                  EmailAddress = email,
+                  EmailAddress = "bob@gmail.com",
                   PhoneNumber = Some("07123412344")
                 )
               ),
@@ -117,6 +122,93 @@ class RcaspController @Inject() (
       )
 
     connector.createRcasp(createRcaspRequest).processResponse(data => Ok(Json.prettyPrint(Json.toJson(data))))
+  }
+
+  def updateRcasp(subscriptionId: String, isIndividual: String): Action[AnyContent] = Action.async { implicit request =>
+
+    val updateRcaspRequest: UpdateRcaspRequest =
+      UpdateRcaspRequest(
+        updateRcaspPackage.RcaspManagementRequest(
+          RcaspRequestCommon(
+            OriginatingSystem = "MDTP",
+            TransmittingSystem = "EIS",
+            RequestType = "UPDATE",
+            Regime = "CARF",
+            RequestParameters = None
+          ),
+          if (isIndividual.toBoolean) {
+            viewAndUpdateRcasp.IndividualRcaspDetails(
+              SubscriptionID = subscriptionId,
+              RCASPID = "ZMCAR0123456780",
+              IsRCASPUser = true,
+              PartyType = "Individual",
+              FirstName = "Penny",
+              LastName = "Cassiopeia",
+              TINDetails = Some(
+                List(
+                  tinDetails
+                )
+              ),
+              AddressDetails = fullAddress,
+              PrimaryContactDetails = Some(
+                RcaspContactDetails(
+                  ContactName = "Penny Cassiopeia",
+                  EmailAddress = "bob@gmail.com",
+                  PhoneNumber = Some("07123412345")
+                )
+              )
+            )
+          } else {
+            viewAndUpdateRcasp.OrganisationRcaspDetails(
+              SubscriptionID = subscriptionId,
+              RCASPID = "ZMCAR0123456780",
+              IsRCASPUser = true,
+              PartyType = "Organisation",
+              RCASPName = "Mesagoza",
+              TradingName = "Uva Academy",
+              TINDetails = Some(List(tinDetails)),
+              AddressDetails = fullAddress,
+              PrimaryContactDetails = Some(
+                RcaspContactDetails(
+                  ContactName = "Clavell",
+                  EmailAddress = "bob@gmail.com",
+                  PhoneNumber = Some("07123412344")
+                )
+              ),
+              SecondaryContactDetails = Some(
+                RcaspContactDetails(
+                  ContactName = "Jacq",
+                  EmailAddress = "jacq@uva.edu.org",
+                  PhoneNumber = Some("07123412345")
+                )
+              )
+            )
+          }
+        )
+      )
+
+    connector.updateRcasp(updateRcaspRequest).processResponse(data => Ok(Json.prettyPrint(Json.toJson(data))))
+  }
+
+  def deleteRcasp(subscriptionId: String): Action[AnyContent] = Action.async { implicit request =>
+    val deleteRcaspRequest: DeleteRcaspRequest =
+      DeleteRcaspRequest(
+        deleteRcaspPackage.RcaspManagementRequest(
+          RcaspRequestCommon(
+            OriginatingSystem = "MDTP",
+            TransmittingSystem = "EIS",
+            RequestType = "DELETE",
+            Regime = "CARF",
+            RequestParameters = None
+          ),
+          deleteRcaspPackage.RcaspDetails(
+            SubscriptionID = subscriptionId,
+            RCASPID = "ZMCAR0123456780"
+          )
+        )
+      )
+
+    connector.deleteRcasp(deleteRcaspRequest).processResponse(data => Ok(Json.prettyPrint(Json.toJson(data))))
   }
 
   extension [T](result: ResultT[T]) {

@@ -42,9 +42,9 @@ class ChooseAddressController @Inject() (
     sessionRepository: SessionRepository,
     navigator: Navigator,
     identify: IdentifierAction,
-    ctUtrRetrievalAction: CtUtrRetrievalAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     formProvider: ChooseAddressFormProvider,
     val controllerComponents: MessagesControllerComponents,
     view: ChooseAddressView
@@ -58,7 +58,7 @@ class ChooseAddressController @Inject() (
   val form: Form[String] = formProvider()
 
   private lazy val addressControllerRedirect: Mode => Result = mode =>
-    Redirect(controllers.routes.PlaceholderController.onPageLoad("Should redirect to /address - (CARF-203)"))
+    Redirect(controllers.routes.AddressController.onPageLoad(mode))
 
   private def additionalLine(property: String, postcode: String)(implicit request: DataRequest[AnyContent]): String = {
     val messages: Messages = implicitly[Messages]
@@ -75,8 +75,8 @@ class ChooseAddressController @Inject() (
         )}"""
     }
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
-    implicit request =>
+  def onPageLoad(mode: Mode): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       lazy val preparedForm: Form[String] = request.userAnswers.get(ChooseAddressPage).fold(form)(form.fill)
 
       val WithRadiosResult(result, _) = resultWithRadios(mode) { (radios, maybeFindAddress) =>
@@ -84,17 +84,17 @@ class ChooseAddressController @Inject() (
           case Some(name) => Ok(view(preparedForm, mode, radios, generateHtml(maybeFindAddress), name))
           case None       =>
             logger.warn(
-              "[ChooseAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onPageLoad"
+              "[ChooseAddressController][onPageLoad] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
             )
             Redirect(controllers.routes.InformationMissingController.onPageLoad())
         }
       }
 
-      Future.successful(result)
-  }
+      result
+    }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen requireData).async { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
@@ -104,7 +104,7 @@ class ChooseAddressController @Inject() (
                 case Some(name) => BadRequest(view(formWithErrors, mode, radios, generateHtml(maybeFindAddress), name))
                 case None       =>
                   logger.warn(
-                    "[ChooseAddressController] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName onSubmit"
+                    "[ChooseAddressController][onSubmit] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
                   )
                   Redirect(controllers.routes.InformationMissingController.onPageLoad())
               }

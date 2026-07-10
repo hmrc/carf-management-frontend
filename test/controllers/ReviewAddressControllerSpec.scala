@@ -65,7 +65,7 @@ class ReviewAddressControllerSpec extends SpecBase {
 
         val view            = application.injector.instanceOf[ReviewAddressView]
         val editAddressLink =
-          routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)").url
+          routes.AddressController.onPageLoad(NormalMode).url
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(testAddressUk, NormalMode, editAddressLink, testOrgName)(
@@ -94,7 +94,7 @@ class ReviewAddressControllerSpec extends SpecBase {
 
         val view            = application.injector.instanceOf[ReviewAddressView]
         val editAddressLink =
-          routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)").url
+          routes.AddressController.onPageLoad(NormalMode).url
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(testAddressUk, NormalMode, editAddressLink, testIndividualName.fullName)(
@@ -122,7 +122,7 @@ class ReviewAddressControllerSpec extends SpecBase {
 
         val view            = application.injector.instanceOf[ReviewAddressView]
         val editAddressLink =
-          routes.PlaceholderController.onPageLoad("Should nav to /address (CARF-203)").url
+          routes.AddressController.onPageLoad(NormalMode).url
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(testAddressUk, NormalMode, editAddressLink, testOrgName)(

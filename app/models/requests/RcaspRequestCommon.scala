@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package models.errors
+package models.requests
 
-sealed trait CarfError
+import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
-case object ConversionError extends CarfError
+case class RcaspRequestCommon(
+    OriginatingSystem: String,
+    TransmittingSystem: String,
+    RequestType: String,
+    Regime: String,
+    RequestParameters: Option[List[RequestParameter]]
+)
 
-case class MandatoryInformationMissingError(value: String = "") extends CarfError
+object RcaspRequestCommon {
+  implicit val format: OFormat[RcaspRequestCommon] = Json.format[RcaspRequestCommon]
+}
 
-case object InvalidCountryCode extends CarfError
+case class RequestParameter(ParamName: String, ParamValue: String)
 
-sealed trait ApiError extends CarfError
-
-object ApiError {
-
-  case object BadRequestError extends ApiError
-
-  case object NotFoundError extends ApiError
-
-  case object InternalServerError extends ApiError
-
-  case object JsonValidationError extends ApiError
+object RequestParameter {
+  implicit val format: OFormat[RequestParameter] = Json.format[RequestParameter]
 }

@@ -19,7 +19,6 @@ package services
 import connectors.RcaspConnector
 import models.{UniqueTaxpayerReference, UserAnswers}
 import models.errors.MandatoryInformationMissingError
-import models.requests.CreateRcaspRequest
 import models.responses.SubmitRcaspResponse
 import play.api.Logging
 import types.ResultT
