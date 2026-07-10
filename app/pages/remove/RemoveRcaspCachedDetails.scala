@@ -24,5 +24,5 @@ case object RemoveRcaspCachedDetails extends QuestionPage[RcaspDetails] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "selectedRcaspDetails"
+  override def toString: String = "removeRcaspCachedDetails"
 }
