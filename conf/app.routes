@@ -162,8 +162,8 @@ GET         /change-review-address-submit                                 contro
 GET         /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onPageLoad(rcaspId: String)
 POST        /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onSubmit(rcaspId: String)
 
-GET         /remove/other-access/:rcaspId                                 controllers.remove.RemoveOtherAccessController.onPageLoad(rcaspId: String)
-POST        /remove/other-access/:rcaspId                                 controllers.remove.RemoveOtherAccessController.onSubmit(rcaspId: String)
+GET         /remove/other-access                                          controllers.remove.RemoveOtherAccessController.onPageLoad()
+POST        /remove/other-access                                          controllers.remove.RemoveOtherAccessController.onSubmit()
 
 GET         /address                                                      controllers.AddressController.onPageLoad(mode: Mode = NormalMode)
 POST        /address                                                      controllers.AddressController.onSubmit(mode: Mode = NormalMode)

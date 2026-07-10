@@ -16,17 +16,15 @@
 
 package controllers.remove
 
-import connectors.RcaspConnector
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import pages.remove.RemoveOtherAccessPage
+import pages.remove.{RemoveOtherAccessPage, SelectedRcaspDetailsPage}
 import play.api.Logging
-import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import viewmodels.remove.RemoveOtherAccessViewModel
 import views.html.remove.RemoveOtherAccessView
 
 import javax.inject.Inject
@@ -39,7 +37,6 @@ class RemoveOtherAccessController @Inject() (
     requireData: DataRequiredAction,
     sessionRepository: SessionRepository,
     formProvider: GenericYesNoPageFormProvider,
-    rcaspConnector: RcaspConnector,
     val controllerComponents: MessagesControllerComponents,
     view: RemoveOtherAccessView
 )(implicit ec: ExecutionContext)
@@ -47,95 +44,41 @@ class RemoveOtherAccessController @Inject() (
     with I18nSupport
     with Logging {
 
-  private val IndividualPartyType = "Individual"
-
   private val journeyRecovery: Result =
     Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
-  private case class RemoveOtherAccessViewData(
-      titleKey: String,
-      headingKey: String,
-      errorKey: String,
-      rcaspName: String,
-      form: Form[Boolean]
-  )
-
-  private def buildViewData(
-      carfId: String,
-      rcaspId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, RemoveOtherAccessViewData]] =
-    for {
-      rcaspResult <- rcaspConnector.viewRcasp(carfId).value
-    } yield rcaspResult match {
-      case Right(viewRcaspResponse) =>
-        val rcaspList        = viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList
-        val selectedRcaspOpt = rcaspList.find(_.RCASPID == rcaspId)
-
-        selectedRcaspOpt match {
-          case Some(selectedRcasp) =>
-            val rcaspName   = selectedRcasp.getName
-            val isRcaspUser = selectedRcasp.IsRCASPUser
-            val partyType   = selectedRcasp.PartyType
-
-            val suffix =
-              if (partyType == IndividualPartyType) "individual"
-              else if (isRcaspUser) "rcaspIsUser"
-              else "otherOrg"
-
-            val titleKey   = s"removeOtherAccess.title.$suffix"
-            val headingKey = s"removeOtherAccess.heading.$suffix"
-            val errorKey   = s"removeOtherAccess.error.required.$suffix"
-
-            Right(
-              RemoveOtherAccessViewData(
-                titleKey = titleKey,
-                headingKey = headingKey,
-                errorKey = errorKey,
-                rcaspName = rcaspName,
-                form = formProvider(errorKey)
-              )
-            )
-
-          case None =>
-            logger.warn(
-              s"[RemoveOtherAccessController][buildViewData] Could not find selected RCASP for rcaspId=$rcaspId"
-            )
-            Left(journeyRecovery)
-        }
-
-      case Left(_) =>
-        logger.warn("[RemoveOtherAccessController][buildViewData] Failed to retrieve RCASP details")
-        Left(journeyRecovery)
-    }
-
-  def onPageLoad(rcaspId: String): Action[AnyContent] =
+  def onPageLoad(): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
-      buildViewData(request.carfId, rcaspId).map {
-        case Right(data) =>
-          val preparedForm =
-            request.userAnswers.get(RemoveOtherAccessPage).fold(data.form)(data.form.fill)
+      request.userAnswers.get(SelectedRcaspDetailsPage) match {
+        case Some(details) =>
+          val vm           = RemoveOtherAccessViewModel.from(details, formProvider)
+          val preparedForm = request.userAnswers.get(RemoveOtherAccessPage).fold(vm.form)(vm.form.fill)
 
-          Ok(
-            view(
-              preparedForm,
-              rcaspId,
-              data.titleKey,
-              data.headingKey,
-              data.errorKey,
-              data.rcaspName
+          Future.successful(
+            Ok(
+              view(
+                preparedForm,
+                vm.titleKey,
+                vm.headingKey,
+                vm.errorKey,
+                vm.rcaspName
+              )
             )
           )
 
-        case Left(recovery) =>
-          recovery
+        case None =>
+          logger.warn("[RemoveOtherAccessController][onPageLoad] SelectedRcaspDetailsPage not found in UserAnswers")
+          Future.successful(journeyRecovery)
       }
     }
 
-  def onSubmit(rcaspId: String): Action[AnyContent] =
+  def onSubmit(): Action[AnyContent] =
     (identify() andThen getData() andThen requireData).async { implicit request =>
-      buildViewData(request.carfId, rcaspId).flatMap {
-        case Right(data) =>
-          data.form
+      request.userAnswers.get(SelectedRcaspDetailsPage) match {
+        case Some(details) =>
+          val vm = RemoveOtherAccessViewModel.from(details, formProvider)f
+
+          vm.form
             .bindFromRequest()
             .fold(
               formWithErrors =>
@@ -143,11 +86,10 @@ class RemoveOtherAccessController @Inject() (
                   BadRequest(
                     view(
                       formWithErrors,
-                      rcaspId,
-                      data.titleKey,
-                      data.headingKey,
-                      data.errorKey,
-                      data.rcaspName
+                      vm.titleKey,
+                      vm.headingKey,
+                      vm.errorKey,
+                      vm.rcaspName
                     )
                   )
                 ),
@@ -160,8 +102,9 @@ class RemoveOtherAccessController @Inject() (
                 )
             )
 
-        case Left(recovery) =>
-          Future.successful(recovery)
+        case None =>
+          logger.warn("[RemoveOtherAccessController][onSubmit] SelectedRcaspDetailsPage not found in UserAnswers")
+          Future.successful(journeyRecovery)
       }
     }
 }

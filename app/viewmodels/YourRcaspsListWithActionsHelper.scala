@@ -17,7 +17,6 @@
 package viewmodels
 
 import models.viewAndUpdateRcasp.RcaspDetails
-import models.NormalMode
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.{HtmlContent, Text}
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.listwithactions.{ListWithActions, ListWithActionsAction, ListWithActionsItem}
