@@ -20,6 +20,7 @@ import base.SpecBase
 import connectors.RcaspConnector
 import models.errors.ApiError.InternalServerError
 import models.responses.*
+import models.viewAndUpdateRcasp.RcaspDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import pages.remove.RemoveOtherAccessPage

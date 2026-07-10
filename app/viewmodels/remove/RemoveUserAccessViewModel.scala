@@ -17,7 +17,8 @@
 package viewmodels.remove
 
 import forms.GenericYesNoPageFormProvider
-import models.responses.{RcaspDetails, ViewRcaspResponse}
+import models.viewAndUpdateRcasp.RcaspDetails
+import models.responses.ViewRcaspResponse
 import play.api.data.Form
 
 case class RemoveUserAccessViewModel(

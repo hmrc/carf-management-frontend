@@ -21,6 +21,7 @@ import forms.GenericYesNoPageFormProvider
 import models.responses.*
 import org.scalatest.EitherValues.convertEitherToValuable
 import viewmodels.remove.RemoveUserAccessViewModel
+import models.viewAndUpdateRcasp.RcaspDetails
 
 class RemoveUserAccessViewModelSpec extends SpecBase {
 
