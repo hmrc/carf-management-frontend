@@ -31,7 +31,7 @@ case class RemoveUserAccessViewModel(
 
 object RemoveUserAccessViewModel {
 
-  private val IndividualPartyType = "Individual"
+  private val individualPartyType = "Individual"
 
   def from(
       details: RcaspDetails,
@@ -44,7 +44,7 @@ object RemoveUserAccessViewModel {
     val partyType   = details.PartyType
 
     val suffix =
-      if (partyType == IndividualPartyType) "individual"
+      if (partyType == individualPartyType) "individual"
       else if (isRcaspUser) "rcaspIsUser"
       else "otherOrg"
 
@@ -53,11 +53,11 @@ object RemoveUserAccessViewModel {
     val errorKey   = s"removeUserAccess.error.required.$suffix"
 
     val userBusinessName: Option[String] =
-      if (partyType == IndividualPartyType) None
+      if (partyType == individualPartyType) None
       else if (isRcaspUser) Some(rcaspName)
       else userBusinessNameOpt
 
-    if (userBusinessName.isEmpty && partyType != IndividualPartyType && !isRcaspUser) {
+    if (userBusinessName.isEmpty && partyType != individualPartyType && !isRcaspUser) {
       Left(
         s"[RemoveUserAccessViewModel][from] User business name was missing for RCASP ${details.RCASPID}"
       )
