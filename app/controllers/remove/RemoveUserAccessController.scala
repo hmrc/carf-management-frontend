@@ -168,7 +168,7 @@ class RemoveUserAccessController @Inject() (
                             )
                           _           <- sessionRepository.set(userAnswers)
                         } yield Redirect(
-                          controllers.remove.routes.RemoveOtherAccessController.onPageLoad()
+                          controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId)
                         )
                     )
                 case Left(recovery) =>

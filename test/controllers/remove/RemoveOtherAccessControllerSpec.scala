@@ -28,9 +28,9 @@ import scala.concurrent.Future
 
 class RemoveOtherAccessControllerSpec extends SpecBase {
 
-  lazy val onPageLoadRoute: String = controllers.remove.routes.RemoveOtherAccessController.onPageLoad().url
+  lazy val onPageLoadRoute: String = controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId).url
 
-  lazy val onSubmitRoute: String = controllers.remove.routes.RemoveOtherAccessController.onSubmit().url
+  lazy val onSubmitRoute: String = controllers.remove.routes.RemoveOtherAccessController.onSubmit(rcaspId).url
 
   private val individualDetails: RcaspDetails =
     individualRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = false)
@@ -185,6 +185,21 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
               .withFormUrlEncodedBody(("value", "true"))
 
           val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
+        val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
+        val userAnswers      = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, differentDetails)
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+        running(application) {
+          val request = FakeRequest(GET, onPageLoadRoute)
+          val result  = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url

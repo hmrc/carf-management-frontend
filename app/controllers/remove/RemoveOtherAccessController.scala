@@ -43,48 +43,56 @@ class RemoveOtherAccessController @Inject() (
     extends FrontendBaseController
     with I18nSupport
     with Logging {
-  
-    private val journeyRecovery: Result = Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
-    def onPageLoad(rcaspId: String): Action[AnyContent] =
-      (identify() andThen getData() andThen requireData).async { implicit request =>
-        request.userAnswers.get(RemoveRcaspCachedDetails)
-          .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase) match {
-          case Some(details) =>
-            val vm           = RemoveOtherAccessViewModel.from(details, formProvider)
-            val preparedForm = request.userAnswers.get(RemoveOtherAccessPage).fold(vm.form)(vm.form.fill)
+  private val journeyRecovery: Result = Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
-            Future.successful(
-              Ok(
-                view(
-                  preparedForm,
-                  vm.titleKey,
-                  vm.headingKey,
-                  vm.errorKey,
-                  vm.rcaspName
-                )
+  def onPageLoad(rcaspId: String): Action[AnyContent] =
+    (identify() andThen getData() andThen requireData).async { implicit request =>
+      request.userAnswers
+        .get(RemoveRcaspCachedDetails)
+        .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase) match {
+        case Some(details) =>
+          val vm           = RemoveOtherAccessViewModel.from(details, formProvider)
+          val preparedForm = request.userAnswers.get(RemoveOtherAccessPage).fold(vm.form)(vm.form.fill)
+
+          Future.successful(
+            Ok(
+              view(
+                preparedForm,
+                rcaspId,
+                vm.titleKey,
+                vm.headingKey,
+                vm.errorKey,
+                vm.rcaspName
               )
             )
+          )
 
-          case None =>
-            logger.warn("[RemoveOtherAccessController][onPageLoad] RemoveRcaspCachedDetails not found or rcaspId mismatch")
-            Future.successful(journeyRecovery)
-        }
+        case None =>
+          logger.warn(
+            "[RemoveOtherAccessController][onPageLoad] RemoveRcaspCachedDetails not found or rcaspId mismatch"
+          )
+          Future.successful(journeyRecovery)
       }
+    }
 
-    def onSubmit(rcaspId: String): Action[AnyContent] =
-      (identify() andThen getData() andThen requireData).async { implicit request =>
-        request.userAnswers.get(RemoveRcaspCachedDetails)
-          .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase) match {
-          case Some(details) =>
-            val vm = RemoveOtherAccessViewModel.from(details, formProvider)
+  def onSubmit(rcaspId: String): Action[AnyContent] =
+    (identify() andThen getData() andThen requireData).async { implicit request =>
+      request.userAnswers
+        .get(RemoveRcaspCachedDetails)
+        .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase) match {
+        case Some(details) =>
+          val vm = RemoveOtherAccessViewModel.from(details, formProvider)
 
-            vm.form.bindFromRequest().fold(
+          vm.form
+            .bindFromRequest()
+            .fold(
               formWithErrors =>
                 Future.successful(
                   BadRequest(
                     view(
                       formWithErrors,
+                      rcaspId,
                       vm.titleKey,
                       vm.headingKey,
                       vm.errorKey,
@@ -101,9 +109,9 @@ class RemoveOtherAccessController @Inject() (
                 )
             )
 
-          case None =>
-            logger.warn("[RemoveOtherAccessController][onSubmit] RemoveRcaspCachedDetails not found or rcaspId mismatch")
-            Future.successful(journeyRecovery)
-        }
+        case None =>
+          logger.warn("[RemoveOtherAccessController][onSubmit] RemoveRcaspCachedDetails not found or rcaspId mismatch")
+          Future.successful(journeyRecovery)
       }
-  }
+    }
+}
