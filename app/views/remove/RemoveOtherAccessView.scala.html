@@ -40,10 +40,7 @@
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(
-                ErrorSummaryViewModel(
-                    form,
-                    errorLinkOverrides = Map("value" -> "value")
-                )
+                ErrorSummaryViewModel(form)
             )
         }
 
