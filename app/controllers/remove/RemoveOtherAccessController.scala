@@ -76,7 +76,7 @@ class RemoveOtherAccessController @Inject() (
     (identify() andThen getData() andThen requireData).async { implicit request =>
       request.userAnswers.get(SelectedRcaspDetailsPage) match {
         case Some(details) =>
-          val vm = RemoveOtherAccessViewModel.from(details, formProvider) f
+          val vm = RemoveOtherAccessViewModel.from(details, formProvider)
 
           vm.form
             .bindFromRequest()
