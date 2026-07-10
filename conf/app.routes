@@ -159,12 +159,6 @@ GET         /review-address-submit                                        contro
 GET         /change-review-address                                        controllers.ReviewAddressController.onPageLoad(mode: Mode = ChangeMode)
 GET         /change-review-address-submit                                 controllers.ReviewAddressController.onSubmit(mode: Mode = ChangeMode)
 
-GET         /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onPageLoad(rcaspId: String)
-POST        /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onSubmit(rcaspId: String)
-
-GET         /remove/other-access                                          controllers.remove.RemoveOtherAccessController.onPageLoad()
-POST        /remove/other-access                                          controllers.remove.RemoveOtherAccessController.onSubmit()
-
 GET         /address                                                      controllers.AddressController.onPageLoad(mode: Mode = NormalMode)
 POST        /address                                                      controllers.AddressController.onSubmit(mode: Mode = NormalMode)
 GET         /change-address                                               controllers.AddressController.onPageLoad(mode: Mode = ChangeMode)
@@ -174,3 +168,9 @@ GET         /change/:rcaspId                                              contro
 
 GET         /change-answers/:rcaspId                                      controllers.changeDetails.ChangeDetailsController.onPageLoad(rcaspId: String)
 POST        /change-answers/:rcaspId                                      controllers.changeDetails.ChangeDetailsController.onSubmit(rcaspId: String)
+
+GET         /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onPageLoad(rcaspId: String)
+POST        /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onSubmit(rcaspId: String)
+
+GET         /remove/other-access                                          controllers.remove.RemoveOtherAccessController.onPageLoad()
+POST        /remove/other-access                                          controllers.remove.RemoveOtherAccessController.onSubmit()
