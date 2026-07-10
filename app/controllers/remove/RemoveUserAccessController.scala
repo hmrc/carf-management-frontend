@@ -20,7 +20,7 @@ import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import models.UserAnswers
 import models.viewAndUpdateRcasp.RcaspDetails
-import pages.remove.{RemoveUserAccessPage, RemoveRcaspCachedDetails}
+import pages.remove.{RemoveRcaspCachedDetails, RemoveUserAccessPage}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
