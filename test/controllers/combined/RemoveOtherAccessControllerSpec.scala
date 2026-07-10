@@ -19,7 +19,6 @@ package controllers.combined
 import base.SpecBase
 import connectors.RcaspConnector
 import models.errors.ApiError.InternalServerError
-import models.NormalMode
 import models.responses.*
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
