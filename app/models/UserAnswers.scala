@@ -16,10 +16,13 @@
 
 package models
 
+import cats.syntax.all.*
 import models.OrganisationOrIndividual.Individual
+import models.changeDetails.{IndividualRcaspDetailsForComparison, OrganisationRcaspDetailsForComparison, RcaspDetailsForComparison}
+import pages.UkAddressInUserAnswers
 import pages.combined.OrganisationOrIndividualPage
-import pages.individual.IndividualNamePage
-import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsThisYourBusinessNamePage}
+import pages.individual.*
+import pages.organisation.*
 import play.api.libs.json.*
 import queries.{Gettable, Settable}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
@@ -88,6 +91,58 @@ final case class UserAnswers(
     this.get(OrganisationOrIndividualPage) match {
       case Some(Individual) => this.get(IndividualNamePage).map(_.fullName)
       case _                => this.get(OverwritableOrganisationName)
+    }
+
+  def getRcaspDetailsForComparison: Option[RcaspDetailsForComparison] =
+    if (this.get(OrganisationOrIndividualPage).contains(Individual)) {
+      for {
+        isRcaspUser    <- this.get(ReportForRegisteredBusinessPage)
+        individualName <- this.get(IndividualNamePage)
+        nino           <- this.get(NiNumberPage)
+        address        <- this.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
+        email          <- this.get(IndividualEmailPage)
+        phone           = this.get(IndividualPhonePage)
+      } yield IndividualRcaspDetailsForComparison(
+        isRcaspUser,
+        individualName.firstName,
+        individualName.lastName,
+        nino,
+        address,
+        email,
+        phone
+      )
+    } else {
+      for {
+        isRcaspUser           <- this.get(ReportForRegisteredBusinessPage)
+        rcaspName             <- this.get(OverwritableOrganisationName)
+        tradingName            = this.get(TradingNamePage).getOrElse(rcaspName)
+        utr                   <- this.get(UtrPage)
+        isCachedAddressCorrect = this.get(RegisteredBusinessIsTheAddressCorrectPage).contains(true)
+        address               <- if (isRcaspUser && isCachedAddressCorrect) {
+                                   import models.responses.toRcaspAddress
+                                   this.get(CachedBusinessDetailsPage).flatMap(_.address.toRcaspAddress)
+                                 } else {
+                                   this.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
+                                 }
+        firstContactName       = this.get(OrganisationFirstContactNamePage)
+        firstContactEmail      = this.get(OrganisationFirstContactEmailPage)
+        firstContactPhone      = this.get(OrganisationFirstContactPhoneNumberPage)
+        secondContactName      = this.get(OrganisationSecondContactNamePage)
+        secondContactEmail     = this.get(OrganisationSecondContactEmailPage)
+        secondContactPhone     = this.get(OrganisationSecondContactPhoneNumberPage)
+      } yield OrganisationRcaspDetailsForComparison(
+        isRcaspUser,
+        rcaspName,
+        tradingName,
+        utr,
+        address,
+        primaryContactDetails = (firstContactName, firstContactEmail).mapN { (name, email) =>
+          RcaspContactDetails(name, email, firstContactPhone)
+        },
+        secondaryContactDetails = (secondContactName, secondContactEmail).mapN { (name, email) =>
+          RcaspContactDetails(name, email, secondContactPhone)
+        }
+      )
     }
 }
 

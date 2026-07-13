@@ -99,6 +99,8 @@ reportForRegisteredBusiness.legend = Is {0} an RCASP?
 reportForRegisteredBusiness.error.required = Select yes if the registered business is an RCASP
 reportForRegisteredBusiness.checkYourAnswersLabel = Is the business you registered as a reporting cryptoasset service provider (RCASP)?
 reportForRegisteredBusiness.change.hidden = Change if the business you registered as is a reporting cryptoasset service provider
+reportForRegisteredBusiness.changeDetails.checkYourAnswersLabel = Is this reporting cryptoasset service provider (RCASP) the business you registered as?
+reportForRegisteredBusiness.changeDetails.change.hidden = Change if this reporting cryptoasset service provider is the business you registered as
 
 registeredBusinessIsThisYourBusinessName.title = Is this still the correct name for the business?
 registeredBusinessIsThisYourBusinessName.heading = Is {0} still the correct name for the business?
@@ -114,6 +116,9 @@ organisationOrIndividual.error.required = Select whether you would like to add a
 organisationOrIndividual.checkYourAnswersLabel.acronymOnly = Would you like to add an organisation or individual as an RCASP?
 organisationOrIndividual.checkYourAnswersLabel.full = Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?
 organisationOrIndividual.change.hidden = Change if you would like to add an organisation or individual as a reporting cryptoasset service provider
+organisationOrIndividual.changeDetailsLabel.acronymOnly = Is this RCASP an organisation or individual?
+organisationOrIndividual.changeDetailsLabel.full = Is this reporting cryptoasset service provider (RCASP) an organisation or individual?
+organisationOrIndividual.changeDetails.change.hidden = Change if this reporting cryptoasset service provider is an organisation or individual
 
 individualName.title = What is the name of the reporting cryptoasset service provider (RCASP)?
 individualName.heading = What is the name of the reporting cryptoasset service provider (RCASP)?
@@ -362,3 +367,12 @@ address.postcode.error.invalid = Postcode must only include letters a to z, numb
 address.postcode.error.invalidFormat = Enter postcode in the right format
 address.postcode.error.notReal = Enter a real postcode
 address.postcode.error.notUK = Enter a UK postcode
+
+changeDetails.title.noChange = Change the details for the reporting cryptoasset service provider (RCASP)
+changeDetails.title.hasChanged = Check the details for the reporting cryptoasset service provider (RCASP)
+changeDetails.heading.noChange = Change the details for {0}
+changeDetails.heading.hasChanged = Check the details for {0}
+changeDetails.declaration.subtitle = Now change these details for this RCASP
+changeDetails.declaration.p1 = By changing these details, you are confirming that the information is correct and complete to the best of your knowledge.
+changeDetails.back.link = Back to manage your RCASPs
+rcaspId.checkYourAnswersLabel = RCASP ID

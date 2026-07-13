@@ -94,6 +94,16 @@ trait TestData extends Generators {
     postCode = testPostcode
   )
 
+  val testAddressUkRcaspAddress: RcaspAddress =
+    RcaspAddress(
+      AddressLine1 = "1 Test",
+      AddressLine2 = Some("Test Street"),
+      AddressLine3 = Some("Test Region"),
+      AddressLine4 = Some("Testingtown"),
+      PostalCode = testPostcode,
+      CountryCode = "GB"
+    )
+
   lazy val testAddressUkAlt: AddressUk = AddressUk(
     addressLine1 = "2 Test",
     addressLine2 = Some("Test Road"),
@@ -125,7 +135,7 @@ trait TestData extends Generators {
 
   val cachedBusinessDetails: CachedBusinessDetails =
     CachedBusinessDetails(
-      name = "Test Business Ltd",
+      name = "Timmy Ltd",
       address = AddressRegistrationResponse(
         addressLine1 = "1 Test",
         addressLine2 = Some("Test Street"),
@@ -142,10 +152,11 @@ trait TestData extends Generators {
 
   val rcaspContactDetails: RcaspContactDetails =
     RcaspContactDetails(
-      ContactName = "Prof Sada",
-      EmailAddress = "test@example.com",
-      PhoneNumber = Some("07123412345")
+      ContactName = testIndividualName.fullName,
+      EmailAddress = testEmail,
+      PhoneNumber = Some(testPhone)
     )
+
   val rcaspResponseCommon: RcaspResponseCommon =
     RcaspResponseCommon(
       OriginatingSystem = "CADX",
@@ -155,7 +166,7 @@ trait TestData extends Generators {
       ResponseParameters = None
     )
 
-  def rcaspAddress: RcaspAddress =
+  val rcaspAddress: RcaspAddress =
     RcaspAddress(
       AddressLine1 = "64",
       AddressLine2 = Some("Zoo"),
@@ -165,16 +176,26 @@ trait TestData extends Generators {
       CountryCode = "GB"
     )
 
+  val rcaspAddressEmptyOptionals: RcaspAddress =
+    RcaspAddress(
+      AddressLine1 = "64",
+      AddressLine2 = None,
+      AddressLine3 = None,
+      AddressLine4 = None,
+      PostalCode = "G66 2AZ",
+      CountryCode = "GB"
+    )
+
   val individualRcaspDetailsResponse: viewAndUpdateRcasp.IndividualRcaspDetails =
     viewAndUpdateRcasp.IndividualRcaspDetails(
       SubscriptionID = "XCARF000000001",
       RCASPID = rcaspId,
-      IsRCASPUser = true,
+      IsRCASPUser = false,
       PartyType = "Individual",
-      FirstName = "Penny",
-      LastName = "Cassiopeia",
-      TINDetails = Some(List(TinDetails(TINType = "OTHER", TIN = "6893649", IssuedBy = "GB"))),
-      AddressDetails = rcaspAddress,
+      FirstName = testIndividualName.firstName,
+      LastName = testIndividualName.lastName,
+      TINDetails = Some(List(TinDetails(TINType = "OTHER", TIN = testNiNumber, IssuedBy = "GB"))),
+      AddressDetails = testAddressUkRcaspAddress,
       PrimaryContactDetails = Some(rcaspContactDetails)
     )
 
@@ -182,12 +203,12 @@ trait TestData extends Generators {
     viewAndUpdateRcasp.OrganisationRcaspDetails(
       SubscriptionID = carfId,
       RCASPID = rcaspId,
-      IsRCASPUser = true,
+      IsRCASPUser = false,
       PartyType = "Organisation",
-      RCASPName = "Mesagoza",
-      TradingName = "Uva Academy",
-      TINDetails = Some(List(TinDetails(TINType = "UTR", TIN = "68936493", IssuedBy = "GB"))),
-      AddressDetails = rcaspAddress,
+      RCASPName = testOrgName,
+      TradingName = testTradingName,
+      TINDetails = Some(List(TinDetails(TINType = "UTR", TIN = testUtr.uniqueTaxPayerReference, IssuedBy = "GB"))),
+      AddressDetails = testAddressUkRcaspAddress,
       PrimaryContactDetails = Some(rcaspContactDetails),
       SecondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = "Prof Turo"))
     )

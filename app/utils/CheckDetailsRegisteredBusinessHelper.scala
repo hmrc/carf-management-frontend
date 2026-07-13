@@ -31,7 +31,7 @@ class CheckDetailsRegisteredBusinessHelper @Inject() extends Logging {
     (for {
       reportForRegisteredBusinessAnswer <- userAnswers.get(ReportForRegisteredBusinessPage)
       if reportForRegisteredBusinessAnswer
-      reportForRegisteredBusiness       <- ReportForRegisteredBusinessSummary.row(userAnswers)
+      reportForRegisteredBusiness       <- ReportForRegisteredBusinessSummary.row(userAnswers, changeJourney = false)
       organisationName                  <- OverwritableOrganisationNameSummary.row(userAnswers, true)
       haveTradingRow                    <- HaveTradingNameSummary.row(userAnswers)
       haveTrading                       <- userAnswers.get(HaveTradingNamePage)

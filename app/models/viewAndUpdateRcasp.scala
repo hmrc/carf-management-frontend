@@ -16,6 +16,7 @@
 
 package models
 
+import models.changeDetails.{IndividualRcaspDetailsForComparison, OrganisationRcaspDetailsForComparison, RcaspDetailsForComparison}
 import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
 object viewAndUpdateRcasp {
@@ -28,8 +29,43 @@ object viewAndUpdateRcasp {
     val TINDetails: Option[List[TinDetails]]
     val AddressDetails: RcaspAddress
     val PrimaryContactDetails: Option[RcaspContactDetails]
+  }
 
-    def getName: String
+  extension (rcaspDetails: RcaspDetails) {
+    def getName: String =
+      rcaspDetails match {
+        case individual: IndividualRcaspDetails     => s"${individual.FirstName} ${individual.LastName}"
+        case organisation: OrganisationRcaspDetails => organisation.RCASPName
+      }
+
+    def forComparison: Option[RcaspDetailsForComparison] =
+      rcaspDetails match {
+        case individual: IndividualRcaspDetails     =>
+          for {
+            nino  <- individual.TINDetails.flatMap(_.headOption.map(_.TIN))
+            email <- individual.PrimaryContactDetails.map(_.EmailAddress)
+          } yield IndividualRcaspDetailsForComparison(
+            individual.IsRCASPUser,
+            individual.FirstName,
+            individual.LastName,
+            nino,
+            individual.AddressDetails,
+            email,
+            individual.PrimaryContactDetails.flatMap(_.PhoneNumber)
+          )
+        case organisation: OrganisationRcaspDetails =>
+          organisation.TINDetails.flatMap(_.headOption.map(_.TIN)).map { utr =>
+            OrganisationRcaspDetailsForComparison(
+              organisation.IsRCASPUser,
+              organisation.RCASPName,
+              organisation.TradingName,
+              utr,
+              organisation.AddressDetails,
+              organisation.PrimaryContactDetails,
+              organisation.SecondaryContactDetails
+            )
+          }
+      }
   }
 
   case class IndividualRcaspDetails(
@@ -42,11 +78,7 @@ object viewAndUpdateRcasp {
       TINDetails: Option[List[TinDetails]],
       AddressDetails: RcaspAddress,
       PrimaryContactDetails: Option[RcaspContactDetails]
-  ) extends RcaspDetails {
-
-    def getName: String = s"$FirstName $LastName"
-
-  }
+  ) extends RcaspDetails
 
   case class OrganisationRcaspDetails(
       RCASPID: String,
@@ -59,11 +91,7 @@ object viewAndUpdateRcasp {
       AddressDetails: RcaspAddress,
       PrimaryContactDetails: Option[RcaspContactDetails],
       SecondaryContactDetails: Option[RcaspContactDetails]
-  ) extends RcaspDetails {
-
-    def getName: String = RCASPName
-
-  }
+  ) extends RcaspDetails
 
   object RcaspDetails {
 

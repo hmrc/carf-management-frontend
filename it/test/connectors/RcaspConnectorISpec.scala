@@ -45,14 +45,14 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
       |        {
       |          "SubscriptionID": "XCCAR0024000102",
       |          "RCASPID": "ZMCAR0123456789",
-      |          "IsRCASPUser": true,
+      |          "IsRCASPUser": false,
       |          "PartyType": "Organisation",
-      |          "RCASPName": "Mesagoza",
-      |          "TradingName": "Uva Academy",
+      |          "RCASPName": "Timmy Ltd",
+      |          "TradingName": "Trading Name",
       |          "TINDetails": [
       |            {
       |              "TINType": "UTR",
-      |              "TIN": "68936493",
+      |              "TIN": "1234567890",
       |              "IssuedBy": "GB"
       |            }
       |          ],
@@ -65,14 +65,14 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
       |            "CountryCode": "GB"
       |          },
       |          "PrimaryContactDetails": {
-      |            "ContactName": "Prof Sada",
-      |            "EmailAddress": "test@example.com",
-      |            "PhoneNumber": "07123412345"
+      |            "ContactName": "Timmy Jimmison",
+      |            "EmailAddress": "hi@example.com",
+      |            "PhoneNumber": "07123456789"
       |          },
       |          "SecondaryContactDetails": {
       |            "ContactName": "Prof Turo",
-      |            "EmailAddress": "test@example.com",
-      |            "PhoneNumber": "07123412345"
+      |            "EmailAddress": "hi@example.com",
+      |            "PhoneNumber": "07123456789"
       |          }
       |        }
       |      ]
@@ -95,7 +95,18 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
       )
 
       val result = connector.viewRcasp(testCarfId).value.futureValue
-      result shouldBe Right(testViewRcaspResponse)
+      result shouldBe Right(
+        ViewRcaspResponse(
+          ViewRCASP = ViewRcasp(
+            ResponseCommon = rcaspResponseCommon,
+            ResponseDetails = RcaspResponseDetails(
+              RCASPList = List(
+                organisationRcaspDetailsResponse.copy(AddressDetails = rcaspAddress)
+              )
+            )
+          )
+        )
+      )
     }
 
     "return JsonValidationError when response JSON is invalid" in {

@@ -16,6 +16,8 @@
 
 package models
 
+import config.Constants
+import models.responses.AddressRegistrationResponse
 import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
 case class TinDetails(TINType: String, TIN: String, IssuedBy: String)
@@ -29,7 +31,35 @@ case class RcaspAddress(
     AddressLine4: Option[String],
     PostalCode: String,
     CountryCode: String
-)
+) {
+  def toAddressRegistrationResponse: AddressRegistrationResponse =
+    AddressRegistrationResponse(
+      AddressLine1,
+      AddressLine2,
+      AddressLine3,
+      AddressLine4,
+      Some(PostalCode),
+      CountryCode
+    )
+
+  def toAddressUk: Option[AddressUk] =
+    if (Constants.acceptedUkCountryCode.contains(CountryCode)) {
+      val lines2To4       = Seq(AddressLine2, AddressLine3, AddressLine4).flatten
+      val maybeTownOrCity = lines2To4.lastOption
+      maybeTownOrCity.map { townOrCity =>
+        val intermediateLines = lines2To4.dropRight(1)
+        AddressUk(
+          AddressLine1,
+          addressLine2 = intermediateLines.headOption,
+          addressLine3 = intermediateLines.lift(1),
+          townOrCity,
+          PostalCode
+        )
+      }
+    } else {
+      None
+    }
+}
 
 object TinDetails {
   implicit val format: OFormat[TinDetails] = Json.format[TinDetails]

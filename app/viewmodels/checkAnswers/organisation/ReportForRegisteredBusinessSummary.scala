@@ -27,19 +27,29 @@ import viewmodels.implicits.*
 
 object ReportForRegisteredBusinessSummary {
 
-  def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(answers: UserAnswers, changeJourney: Boolean)(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(ReportForRegisteredBusinessPage).map { answer =>
 
       val value = if (answer) "site.yes" else "site.no"
 
       SummaryListRowViewModel(
-        key = "reportForRegisteredBusiness.checkYourAnswersLabel",
+        key =
+          if (changeJourney) "reportForRegisteredBusiness.changeDetails.checkYourAnswersLabel"
+          else "reportForRegisteredBusiness.checkYourAnswersLabel",
         value = ValueViewModel(value),
         actions = Seq(
           ActionItemViewModel(
             content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
-            href = routes.ReportForRegisteredBusinessController.onPageLoad(ChangeMode).url
-          ).withVisuallyHiddenText(messages("reportForRegisteredBusiness.change.hidden"))
+            href =
+              if (changeJourney)
+                controllers.routes.PlaceholderController
+                  .onPageLoad("Should nav to /registered-business/change-report-for-registered-business (CARF-351)")
+                  .url
+              else routes.ReportForRegisteredBusinessController.onPageLoad(ChangeMode).url
+          ).withVisuallyHiddenText(
+            if (changeJourney) messages("reportForRegisteredBusiness.changeDetails.change.hidden")
+            else messages("reportForRegisteredBusiness.change.hidden")
+          )
         )
       )
     }

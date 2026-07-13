@@ -17,86 +17,420 @@
 package utils
 
 import base.SpecBase
-import generators.Generators
 import models.ChangeMode
 import models.OrganisationOrIndividual.{Individual, Organisation}
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.UkAddressInUserAnswers
+import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
 import play.api.i18n.Messages
 import viewmodels.Section
 
-class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with Generators {
+class CheckDetailsHelperSpec extends SpecBase {
 
   val testHelper                  = new CheckDetailsHelper()
   implicit val messages: Messages = messages(app)
 
   "CheckDetailsHelperSpec" - {
-    "getIndividualSectionMaybe" - {
-      "must return a section when relevant pages are present" - {
-        "when ReportForRegisteredBusiness is answered" in {
+    "haveAnswersChangedFromApi" - {
+      "must return None when ChangeRcaspCachedDetails is missing" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, false)
+          .withPage(OrganisationOrIndividualPage, Individual)
+          .withPage(IndividualNamePage, testIndividualName)
+          .withPage(NiNumberPage, testNiNumber)
+          .withPage(UkAddressInUserAnswers, testAddressUk)
+          .withPage(IndividualEmailPage, testEmail)
+          .withPage(IndividualHavePhonePage, true)
+          .withPage(IndividualPhonePage, testPhone)
+
+        val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+        result mustBe None
+      }
+
+      "must return None when RcaspDetails .forComparison returns None" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, false)
+          .withPage(OrganisationOrIndividualPage, Individual)
+          .withPage(IndividualNamePage, testIndividualName)
+          .withPage(NiNumberPage, testNiNumber)
+          .withPage(UkAddressInUserAnswers, testAddressUk)
+          .withPage(IndividualEmailPage, testEmail)
+          .withPage(IndividualPhonePage, testPhone)
+          .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse.copy(TINDetails = None))
+
+        val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+        result mustBe None
+      }
+
+      "must return None when UserAnswers .getRcaspDetailsForComparison returns None" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, false)
+          .withPage(OrganisationOrIndividualPage, Individual)
+          .withPage(IndividualNamePage, testIndividualName)
+          .withPage(UkAddressInUserAnswers, testAddressUk)
+          .withPage(IndividualEmailPage, testEmail)
+          .withPage(IndividualPhonePage, testPhone)
+          .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+
+        val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+        result mustBe None
+      }
+
+      "when the answers have not changed" - {
+        "when OrganisationOrIndividual is Individual" in {
           val userAnswers = emptyUserAnswers
             .withPage(ReportForRegisteredBusinessPage, false)
             .withPage(OrganisationOrIndividualPage, Individual)
             .withPage(IndividualNamePage, testIndividualName)
             .withPage(NiNumberPage, testNiNumber)
             .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(IndividualEmailPage, testEmail)
+            .withPage(IndividualPhonePage, testPhone)
+            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
 
-          val section: Section          = testHelper.getIndividualSectionMaybe(userAnswers).get
-          val expectedTitle             = ""
-          val expectedKeys: Seq[String] = Seq(
-            "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
-            "Would you like to add an organisation or individual as an RCASP?",
-            "What is the name of the RCASP?",
-            "National Insurance number",
-            "Main business address"
-          )
-
-          compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+          result mustBe Some(false)
         }
 
-        "when ReportForRegisteredBusiness is not answered" in {
+        "when OrganisationOrIndividual is Organisation" in {
           val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, false)
+            .withPage(OrganisationOrIndividualPage, Organisation)
+            .withPage(OverwritableOrganisationName, testOrgName)
+            .withPage(TradingNamePage, testTradingName)
+            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
+            .withPage(OrganisationFirstContactEmailPage, testEmail)
+            .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
+            .withPage(OrganisationSecondContactNamePage, "Prof Turo")
+            .withPage(OrganisationSecondContactEmailPage, testEmail)
+            .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+
+          val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+          result mustBe Some(false)
+        }
+
+        "when OrganisationOrIndividual is None (registered business)" in {
+          val cachedRcaspDetails = organisationRcaspDetailsResponse.copy(
+            IsRCASPUser = true,
+            PrimaryContactDetails = None,
+            SecondaryContactDetails = None
+          )
+
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, true)
+            .withPage(OrganisationOrIndividualPage, Organisation)
+            .withPage(OverwritableOrganisationName, testOrgName)
+            .withPage(TradingNamePage, testTradingName)
+            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+            .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+            .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+            .withPage(ChangeRcaspCachedDetails, cachedRcaspDetails)
+
+          val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+          result mustBe Some(false)
+        }
+      }
+
+      "when the answers have changed" - {
+        "when the API returns Individual but userAnswers have Organisation" in {
+          val cachedRcaspDetails = individualRcaspDetailsResponse
+
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, false)
+            .withPage(OrganisationOrIndividualPage, Organisation)
+            .withPage(OverwritableOrganisationName, testOrgName)
+            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
+            .withPage(OrganisationFirstContactEmailPage, testEmail)
+            .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
+            .withPage(ChangeRcaspCachedDetails, cachedRcaspDetails)
+
+          val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+          result mustBe Some(true)
+        }
+
+        "when the API returns Organisation but userAnswers have Individual" - {
+          "when the API returns the registered business" in {
+            val cachedRcaspDetails = organisationRcaspDetailsResponse.copy(
+              IsRCASPUser = true,
+              PrimaryContactDetails = None,
+              SecondaryContactDetails = None
+            )
+
+            val userAnswers = emptyUserAnswers
+              .withPage(ReportForRegisteredBusinessPage, false)
+              .withPage(OrganisationOrIndividualPage, Individual)
+              .withPage(IndividualNamePage, testIndividualName)
+              .withPage(NiNumberPage, testNiNumber)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
+              .withPage(IndividualEmailPage, testEmail)
+              .withPage(ChangeRcaspCachedDetails, cachedRcaspDetails)
+
+            val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+            result mustBe Some(true)
+          }
+
+          "when the API returns a standard organisation" in {
+            val userAnswers = emptyUserAnswers
+              .withPage(ReportForRegisteredBusinessPage, false)
+              .withPage(OrganisationOrIndividualPage, Individual)
+              .withPage(IndividualNamePage, testIndividualName)
+              .withPage(NiNumberPage, testNiNumber)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
+              .withPage(IndividualEmailPage, testEmail)
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+
+            val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+            result mustBe Some(true)
+          }
+        }
+
+        "when one field has changed for an Individual" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, false)
+            .withPage(OrganisationOrIndividualPage, Individual)
+            .withPage(IndividualNamePage, testIndividualName)
+            .withPage(NiNumberPage, testNiNumber)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(IndividualEmailPage, "test@example.com")
+            .withPage(IndividualPhonePage, testPhone)
+            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+
+          val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+          result mustBe Some(true)
+        }
+
+        "when multiple fields have changed for an Individual" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, false)
+            .withPage(OrganisationOrIndividualPage, Individual)
+            .withPage(IndividualNamePage, testIndividualName)
+            .withPage(NiNumberPage, "AA123456C")
+            .withPage(UkAddressInUserAnswers, testAddressUkAlt)
+            .withPage(IndividualEmailPage, "test@example.com")
+            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+
+          val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+          result mustBe Some(true)
+        }
+
+        "when one field has changed for an Organisation" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, false)
+            .withPage(OrganisationOrIndividualPage, Organisation)
+            .withPage(OverwritableOrganisationName, testOrgName)
+            .withPage(TradingNamePage, "New Trading Name")
+            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
+            .withPage(OrganisationFirstContactEmailPage, testEmail)
+            .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
+            .withPage(OrganisationSecondContactNamePage, "Prof Turo")
+            .withPage(OrganisationSecondContactEmailPage, testEmail)
+            .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+
+          val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+          result mustBe Some(true)
+        }
+
+        "when multiple fields have changed for an Organisation" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, false)
+            .withPage(OrganisationOrIndividualPage, Organisation)
+            .withPage(OverwritableOrganisationName, "New Org Name")
+            .withPage(TradingNamePage, "New Trading Name")
+            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+            .withPage(UkAddressInUserAnswers, testAddressUkAlt)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
+            .withPage(OrganisationFirstContactEmailPage, "test@example.com")
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+
+          val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+          result mustBe Some(true)
+        }
+
+        "when an Organisation has changed from registered business to standard organisation" in {
+          val cachedRcaspDetails = organisationRcaspDetailsResponse.copy(
+            IsRCASPUser = true,
+            PrimaryContactDetails = None,
+            SecondaryContactDetails = None
+          )
+
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, false)
+            .withPage(OrganisationOrIndividualPage, Organisation)
+            .withPage(OverwritableOrganisationName, testOrgName)
+            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
+            .withPage(OrganisationFirstContactEmailPage, testEmail)
+            .withPage(ChangeRcaspCachedDetails, cachedRcaspDetails)
+
+          val result = testHelper.haveAnswersChangedFromApi(userAnswers)
+          result mustBe Some(true)
+        }
+      }
+    }
+
+    "getIndividualSectionMaybe" - {
+      "for the add journey" - {
+        "must return a section when relevant pages are present" - {
+          "when ReportForRegisteredBusiness is answered" in {
+            val userAnswers = emptyUserAnswers
+              .withPage(ReportForRegisteredBusinessPage, false)
+              .withPage(OrganisationOrIndividualPage, Individual)
+              .withPage(IndividualNamePage, testIndividualName)
+              .withPage(NiNumberPage, testNiNumber)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
+
+            val section: Section          = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = false).get
+            val expectedTitle             = ""
+            val expectedKeys: Seq[String] = Seq(
+              "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
+              "Would you like to add an organisation or individual as an RCASP?",
+              "What is the name of the RCASP?",
+              "National Insurance number",
+              "Main business address"
+            )
+
+            compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          }
+
+          "when ReportForRegisteredBusiness is not answered" in {
+            val userAnswers = emptyUserAnswers
+              .withPage(OrganisationOrIndividualPage, Individual)
+              .withPage(IndividualNamePage, testIndividualName)
+              .withPage(NiNumberPage, testNiNumber)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
+
+            val section: Section          = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = false).get
+            val expectedTitle             = ""
+            val expectedKeys: Seq[String] = Seq(
+              "Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?",
+              "What is the name of the RCASP?",
+              "National Insurance number",
+              "Main business address"
+            )
+
+            compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          }
+        }
+
+        "must return None when pages are missing" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(IndividualNamePage, testIndividualName)
+
+          val section = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = false)
+
+          section mustBe None
+        }
+
+        "must return None when ReportForRegisteredBusiness is true" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, true)
             .withPage(OrganisationOrIndividualPage, Individual)
             .withPage(IndividualNamePage, testIndividualName)
             .withPage(NiNumberPage, testNiNumber)
             .withPage(UkAddressInUserAnswers, testAddressUk)
 
-          val section: Section          = testHelper.getIndividualSectionMaybe(userAnswers).get
-          val expectedTitle             = ""
-          val expectedKeys: Seq[String] = Seq(
-            "Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?",
-            "What is the name of the RCASP?",
-            "National Insurance number",
-            "Main business address"
-          )
+          val section = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = false)
 
-          compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          section mustBe None
         }
       }
 
-      "must return None when pages are missing" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(IndividualNamePage, testIndividualName)
+      "for the change journey" - {
+        "must return a section when relevant pages are present" - {
+          "when isRcaspUser = true from API" in {
+            val userAnswers = emptyUserAnswers
+              .withPage(ReportForRegisteredBusinessPage, false)
+              .withPage(OrganisationOrIndividualPage, Individual)
+              .withPage(IndividualNamePage, testIndividualName)
+              .withPage(NiNumberPage, testNiNumber)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse.copy(IsRCASPUser = true))
 
-        val section = testHelper.getIndividualSectionMaybe(userAnswers)
+            val section: Section          = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = true).get
+            val expectedTitle             = ""
+            val expectedKeys: Seq[String] = Seq(
+              "RCASP ID",
+              "Is this reporting cryptoasset service provider (RCASP) the business you registered as?",
+              "Is this RCASP an organisation or individual?",
+              "What is the name of the RCASP?",
+              "National Insurance number",
+              "Main business address"
+            )
 
-        section mustBe None
-      }
+            compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          }
 
-      "must return None when ReportForRegisteredBusiness is true" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(ReportForRegisteredBusinessPage, true)
-          .withPage(OrganisationOrIndividualPage, Individual)
-          .withPage(IndividualNamePage, testIndividualName)
-          .withPage(NiNumberPage, testNiNumber)
-          .withPage(UkAddressInUserAnswers, testAddressUk)
+          "when isRcaspUser = false from API" in {
+            val userAnswers = emptyUserAnswers
+              .withPage(ReportForRegisteredBusinessPage, false)
+              .withPage(OrganisationOrIndividualPage, Individual)
+              .withPage(IndividualNamePage, testIndividualName)
+              .withPage(NiNumberPage, testNiNumber)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
+              .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
 
-        val section = testHelper.getIndividualSectionMaybe(userAnswers)
+            val section: Section          = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = true).get
+            val expectedTitle             = ""
+            val expectedKeys: Seq[String] = Seq(
+              "RCASP ID",
+              "Is this reporting cryptoasset service provider (RCASP) an organisation or individual?",
+              "What is the name of the RCASP?",
+              "National Insurance number",
+              "Main business address"
+            )
 
-        section mustBe None
+            compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          }
+        }
+
+        "must return None when pages are missing" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, false)
+            .withPage(OrganisationOrIndividualPage, Individual)
+            .withPage(IndividualNamePage, testIndividualName)
+
+          val section = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = true)
+
+          section mustBe None
+        }
+
+        "must return None when ReportForRegisteredBusiness is true" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, true)
+            .withPage(OrganisationOrIndividualPage, Individual)
+            .withPage(IndividualNamePage, testIndividualName)
+            .withPage(NiNumberPage, testNiNumber)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+
+          val section = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = true)
+
+          section mustBe None
+        }
+
+        "must return None when ReportForRegisteredBusiness is missing" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(OrganisationOrIndividualPage, Individual)
+            .withPage(IndividualNamePage, testIndividualName)
+            .withPage(NiNumberPage, testNiNumber)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+
+          val section = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = true)
+
+          section mustBe None
+        }
       }
     }
 
@@ -148,10 +482,84 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
     }
 
     "getOrganisationSectionMaybe" - {
-      "must return a section with the correct name row url when relevant pages are present" - {
-        "when ReportForRegisteredBusiness is answered and haveTradingName is true" in {
+      "for the add journey" - {
+        "must return a section with the correct name row url when relevant pages are present" - {
+          "when ReportForRegisteredBusiness is answered and haveTradingName is true" in {
+            val userAnswers = emptyUserAnswers
+              .withPage(ReportForRegisteredBusinessPage, false)
+              .withPage(OrganisationOrIndividualPage, Organisation)
+              .withPage(OverwritableOrganisationName, testOrgName)
+              .withPage(HaveTradingNamePage, true)
+              .withPage(TradingNamePage, testTradingName)
+              .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
+
+            val section: Section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = false).get
+
+            val expectedOrganisationNameUrl: String =
+              controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode).url
+            val expectedTitle                       = ""
+            val expectedKeys: Seq[String]           = Seq(
+              "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
+              "Would you like to add an organisation or individual as an RCASP?",
+              "What is the name of the organisation?",
+              "Does the organisation trade under a different name?",
+              "What is the trading name for the organisation?",
+              "Unique Taxpayer Reference",
+              "Main business address"
+            )
+
+            compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+            section.rows(2).actions.get.items.head.href mustBe expectedOrganisationNameUrl
+          }
+
+          "when ReportForRegisteredBusiness is not answered and and haveTradingName is false" in {
+            val userAnswers = emptyUserAnswers
+              .withPage(OrganisationOrIndividualPage, Organisation)
+              .withPage(OverwritableOrganisationName, testOrgName)
+              .withPage(HaveTradingNamePage, false)
+              .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
+
+            val section: Section          = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = false).get
+            val expectedTitle             = ""
+            val expectedKeys: Seq[String] = Seq(
+              "Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?",
+              "What is the name of the organisation?",
+              "Does the organisation trade under a different name?",
+              "Unique Taxpayer Reference",
+              "Main business address"
+            )
+
+            compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          }
+        }
+
+        "must return None when haveTradingName is true but trading name is missing" in {
           val userAnswers = emptyUserAnswers
-            .withPage(ReportForRegisteredBusinessPage, false)
+            .withPage(OrganisationOrIndividualPage, Organisation)
+            .withPage(OverwritableOrganisationName, testOrgName)
+            .withPage(HaveTradingNamePage, true)
+            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+
+          val section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = false)
+
+          section mustBe None
+        }
+
+        "must return None when pages are missing" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(OverwritableOrganisationName, testOrgName)
+
+          val section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = false)
+
+          section mustBe None
+        }
+
+        "must return None when ReportForRegisteredBusiness is true" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, true)
             .withPage(OrganisationOrIndividualPage, Organisation)
             .withPage(OverwritableOrganisationName, testOrgName)
             .withPage(HaveTradingNamePage, true)
@@ -159,82 +567,124 @@ class CheckDetailsHelperSpec extends SpecBase with ScalaCheckPropertyChecks with
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
 
-          val section: Section = testHelper.getOrganisationSectionMaybe(userAnswers).get
+          val section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = false)
 
-          val expectedOrganisationNameUrl: String =
-            controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode).url
-          val expectedTitle                       = ""
-          val expectedKeys: Seq[String]           = Seq(
-            "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
-            "Would you like to add an organisation or individual as an RCASP?",
-            "What is the name of the organisation?",
-            "Does the organisation trade under a different name?",
-            "What is the trading name for the organisation?",
-            "Unique Taxpayer Reference",
-            "Main business address"
-          )
+          section mustBe None
+        }
+      }
 
-          compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
-          section.rows(2).actions.get.items.head.href mustBe expectedOrganisationNameUrl
+      "for the change journey" - {
+        "must return a section with the correct name row url when relevant pages are present" - {
+          "when isRcaspUser = true from API and haveTradingName is true" in {
+            val userAnswers = emptyUserAnswers
+              .withPage(ReportForRegisteredBusinessPage, false)
+              .withPage(OrganisationOrIndividualPage, Organisation)
+              .withPage(OverwritableOrganisationName, testOrgName)
+              .withPage(HaveTradingNamePage, true)
+              .withPage(TradingNamePage, testTradingName)
+              .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse.copy(IsRCASPUser = true))
+
+            val section: Section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true).get
+
+            val expectedOrganisationNameUrl: String =
+              controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode).url
+            val expectedTitle                       = ""
+            val expectedKeys: Seq[String]           = Seq(
+              "RCASP ID",
+              "Is this reporting cryptoasset service provider (RCASP) the business you registered as?",
+              "Is this RCASP an organisation or individual?",
+              "What is the name of the organisation?",
+              "Does the organisation trade under a different name?",
+              "What is the trading name for the organisation?",
+              "Unique Taxpayer Reference",
+              "Main business address"
+            )
+
+            compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+            section.rows(3).actions.get.items.head.href mustBe expectedOrganisationNameUrl
+          }
+
+          "when isRcaspUser = false from API and haveTradingName is false" in {
+            val userAnswers = emptyUserAnswers
+              .withPage(ReportForRegisteredBusinessPage, false)
+              .withPage(OrganisationOrIndividualPage, Organisation)
+              .withPage(OverwritableOrganisationName, testOrgName)
+              .withPage(HaveTradingNamePage, false)
+              .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+
+            val section: Section          = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true).get
+            val expectedTitle             = ""
+            val expectedKeys: Seq[String] = Seq(
+              "RCASP ID",
+              "Is this reporting cryptoasset service provider (RCASP) an organisation or individual?",
+              "What is the name of the organisation?",
+              "Does the organisation trade under a different name?",
+              "Unique Taxpayer Reference",
+              "Main business address"
+            )
+
+            compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          }
         }
 
-        "when ReportForRegisteredBusiness is not answered and and haveTradingName is false" in {
+        "must return None when haveTradingName is true but trading name is missing" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, false)
+            .withPage(OrganisationOrIndividualPage, Organisation)
+            .withPage(OverwritableOrganisationName, testOrgName)
+            .withPage(HaveTradingNamePage, true)
+            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+
+          val section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true)
+
+          section mustBe None
+        }
+
+        "must return None when pages are missing" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, false)
+            .withPage(OrganisationOrIndividualPage, Organisation)
+            .withPage(OverwritableOrganisationName, testOrgName)
+
+          val section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true)
+
+          section mustBe None
+        }
+
+        "must return None when ReportForRegisteredBusiness is true" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(ReportForRegisteredBusinessPage, true)
+            .withPage(OrganisationOrIndividualPage, Organisation)
+            .withPage(OverwritableOrganisationName, testOrgName)
+            .withPage(HaveTradingNamePage, false)
+            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+
+          val section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true)
+
+          section mustBe None
+        }
+
+        "must return None when ReportForRegisteredBusiness is missing" in {
           val userAnswers = emptyUserAnswers
             .withPage(OrganisationOrIndividualPage, Organisation)
             .withPage(OverwritableOrganisationName, testOrgName)
             .withPage(HaveTradingNamePage, false)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
 
-          val section: Section          = testHelper.getOrganisationSectionMaybe(userAnswers).get
-          val expectedTitle             = ""
-          val expectedKeys: Seq[String] = Seq(
-            "Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?",
-            "What is the name of the organisation?",
-            "Does the organisation trade under a different name?",
-            "Unique Taxpayer Reference",
-            "Main business address"
-          )
+          val section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true)
 
-          compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          section mustBe None
         }
-      }
-
-      "must return None when haveTradingName is true but trading name is missing" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(OrganisationOrIndividualPage, Organisation)
-          .withPage(OverwritableOrganisationName, testOrgName)
-          .withPage(HaveTradingNamePage, true)
-          .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
-          .withPage(UkAddressInUserAnswers, testAddressUk)
-
-        val section = testHelper.getOrganisationSectionMaybe(userAnswers)
-
-        section mustBe None
-      }
-
-      "must return None when pages are missing" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(OverwritableOrganisationName, testOrgName)
-
-        val section = testHelper.getOrganisationSectionMaybe(userAnswers)
-
-        section mustBe None
-      }
-
-      "must return None when ReportForRegisteredBusiness is true" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(ReportForRegisteredBusinessPage, true)
-          .withPage(OrganisationOrIndividualPage, Organisation)
-          .withPage(OverwritableOrganisationName, testOrgName)
-          .withPage(HaveTradingNamePage, true)
-          .withPage(TradingNamePage, testTradingName)
-          .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
-          .withPage(UkAddressInUserAnswers, testAddressUk)
-
-        val section = testHelper.getOrganisationSectionMaybe(userAnswers)
-
-        section mustBe None
       }
     }
 

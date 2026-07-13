@@ -163,3 +163,8 @@ GET         /address                                                      contro
 POST        /address                                                      controllers.AddressController.onSubmit(mode: Mode = NormalMode)
 GET         /change-address                                               controllers.AddressController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-address                                               controllers.AddressController.onSubmit(mode: Mode = ChangeMode)
+
+GET         /change/:rcaspId                                              controllers.changeDetails.ChangeDetailsRoutingController.onPageLoad(rcaspId: String)
+
+GET         /change-answers/:rcaspId                                      controllers.changeDetails.ChangeDetailsController.onPageLoad(rcaspId: String)
+POST        /change-answers/:rcaspId                                      controllers.changeDetails.ChangeDetailsController.onSubmit(rcaspId: String)

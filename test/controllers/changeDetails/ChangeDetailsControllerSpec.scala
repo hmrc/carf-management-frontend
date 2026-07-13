@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.changeDetails
 
 import base.SpecBase
 import controllers.actions.*
@@ -23,10 +23,11 @@ import models.UserAnswers
 import models.errors.ApiError.InternalServerError
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
+import pages.SubmissionSucceededPage
+import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
-import pages.organisation.OverwritableOrganisationName
-import pages.{RcaspIdPage, SubmissionSucceededPage}
+import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -39,56 +40,83 @@ import types.ResultT
 import uk.gov.hmrc.auth.core.AffinityGroup
 import utils.CheckDetailsHelper
 import viewmodels.Section
-import views.html.CheckDetailsView
+import views.html.changeDetails.ChangeDetailsView
 
 import scala.concurrent.Future
 
-class CheckDetailsControllerSpec extends SpecBase {
+class ChangeDetailsControllerSpec extends SpecBase {
 
   private val individualCompleteUserAnswers   = emptyUserAnswers
+    .withPage(ReportForRegisteredBusinessPage, false)
     .withPage(OrganisationOrIndividualPage, Individual)
     .withPage(IndividualNamePage, testIndividualName)
+    .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
   private val organisationCompleteUserAnswers = emptyUserAnswers
+    .withPage(ReportForRegisteredBusinessPage, false)
     .withPage(OrganisationOrIndividualPage, Organisation)
     .withPage(OverwritableOrganisationName, testOrgName)
+    .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
 
-  lazy val checkDetailsRoute: String = routes.CheckDetailsController.onPageLoad.url
+  lazy val changeDetailsRoute: String = controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId).url
 
-  "CheckDetails Controller" - {
+  "ChangeDetails Controller" - {
     "onPageLoad" - {
-      "when Individual as RCASP" - {
+      "when changing details for an Individual RCASP" - {
         "must return OK and the correct view for a GET when all required questions have been answered" in new Setup(
           individualCompleteUserAnswers
         ) {
+          when(mockCdHelper.haveAnswersChangedFromApi(eqTo(individualCompleteUserAnswers))).thenReturn(Some(true))
 
-          when(mockCdHelper.getIndividualSectionMaybe(eqTo(individualCompleteUserAnswers), eqTo(false))(any()))
+          when(mockCdHelper.getIndividualSectionMaybe(eqTo(individualCompleteUserAnswers), eqTo(true))(any()))
             .thenReturn(Some(testSection))
 
           when(mockCdHelper.getIndividualContactDetailsMaybe(eqTo(individualCompleteUserAnswers))(any()))
             .thenReturn(Some(testSection))
 
-          val request                = FakeRequest(GET, checkDetailsRoute)
-          val view: CheckDetailsView = application.injector.instanceOf[CheckDetailsView]
-          val result: Future[Result] = route(application, request).value
+          val request                 = FakeRequest(GET, changeDetailsRoute)
+          val view: ChangeDetailsView = application.injector.instanceOf[ChangeDetailsView]
+          val result: Future[Result]  = route(application, request).value
 
           status(result)          mustEqual OK
-          contentAsString(result) mustEqual view(Seq(testSection, testSection), testIndividualName.fullName)(
-            request,
-            messages(application)
-          ).toString
+          contentAsString(result) mustEqual view(
+            sections = Seq(testSection, testSection),
+            testIndividualName.fullName,
+            rcaspId,
+            hasDataChanged = true
+          )(request, messages(application)).toString
         }
 
         "must redirect to information is missing page for a GET when a section is none (answers missing)" in new Setup(
           individualCompleteUserAnswers
         ) {
+          when(mockCdHelper.haveAnswersChangedFromApi(eqTo(individualCompleteUserAnswers))).thenReturn(Some(true))
 
-          when(mockCdHelper.getIndividualSectionMaybe(eqTo(individualCompleteUserAnswers), eqTo(false))(any()))
+          when(mockCdHelper.getIndividualSectionMaybe(eqTo(individualCompleteUserAnswers), eqTo(true))(any()))
             .thenReturn(None)
 
           when(mockCdHelper.getIndividualContactDetailsMaybe(eqTo(individualCompleteUserAnswers))(any()))
             .thenReturn(Some(testSection))
 
-          val request                = FakeRequest(GET, checkDetailsRoute)
+          val request                = FakeRequest(GET, changeDetailsRoute)
+          val result: Future[Result] = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual
+            controllers.routes.InformationMissingController.onPageLoad().url
+        }
+
+        "must redirect to information is missing page for a GET when haveAnswersChangedFromApi returns None (answers missing)" in new Setup(
+          individualCompleteUserAnswers
+        ) {
+          when(mockCdHelper.haveAnswersChangedFromApi(eqTo(individualCompleteUserAnswers))).thenReturn(None)
+
+          when(mockCdHelper.getIndividualSectionMaybe(eqTo(individualCompleteUserAnswers), eqTo(true))(any()))
+            .thenReturn(Some(testSection))
+
+          when(mockCdHelper.getIndividualContactDetailsMaybe(eqTo(individualCompleteUserAnswers))(any()))
+            .thenReturn(Some(testSection))
+
+          val request                = FakeRequest(GET, changeDetailsRoute)
           val result: Future[Result] = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
@@ -97,11 +125,13 @@ class CheckDetailsControllerSpec extends SpecBase {
         }
       }
 
-      "when Organisation as RCASP" - {
+      "when changing details for an Organisation RCASP" - {
         "must return OK and the correct view for a GET when all required questions have been answered" in new Setup(
           organisationCompleteUserAnswers
         ) {
-          when(mockCdHelper.getOrganisationSectionMaybe(eqTo(organisationCompleteUserAnswers), eqTo(false))(any()))
+          when(mockCdHelper.haveAnswersChangedFromApi(eqTo(organisationCompleteUserAnswers))).thenReturn(Some(false))
+
+          when(mockCdHelper.getOrganisationSectionMaybe(eqTo(organisationCompleteUserAnswers), eqTo(true))(any()))
             .thenReturn(Some(testSection))
 
           when(mockCdHelper.getOrganisationFirstContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
@@ -110,21 +140,25 @@ class CheckDetailsControllerSpec extends SpecBase {
           when(mockCdHelper.getOrganisationSecondContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
             .thenReturn(Some(testSection))
 
-          val request                = FakeRequest(GET, checkDetailsRoute)
-          val view: CheckDetailsView = application.injector.instanceOf[CheckDetailsView]
-          val result: Future[Result] = route(application, request).value
+          val request                 = FakeRequest(GET, changeDetailsRoute)
+          val view: ChangeDetailsView = application.injector.instanceOf[ChangeDetailsView]
+          val result: Future[Result]  = route(application, request).value
 
           status(result)          mustEqual OK
-          contentAsString(result) mustEqual view(Seq(testSection, testSection, testSection), testOrgName)(
-            request,
-            messages(application)
-          ).toString
+          contentAsString(result) mustEqual view(
+            sections = Seq(testSection, testSection, testSection),
+            testOrgName,
+            rcaspId,
+            hasDataChanged = false
+          )(request, messages(application)).toString
         }
 
         "must redirect to information is missing page for a GET when a section is none (answers missing)" in new Setup(
           organisationCompleteUserAnswers
         ) {
-          when(mockCdHelper.getOrganisationSectionMaybe(eqTo(organisationCompleteUserAnswers), eqTo(false))(any()))
+          when(mockCdHelper.haveAnswersChangedFromApi(eqTo(organisationCompleteUserAnswers))).thenReturn(Some(false))
+
+          when(mockCdHelper.getOrganisationSectionMaybe(eqTo(organisationCompleteUserAnswers), eqTo(true))(any()))
             .thenReturn(Some(testSection))
 
           when(mockCdHelper.getOrganisationFirstContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
@@ -133,7 +167,28 @@ class CheckDetailsControllerSpec extends SpecBase {
           when(mockCdHelper.getOrganisationSecondContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
             .thenReturn(None)
 
-          val request                = FakeRequest(GET, checkDetailsRoute)
+          val request                = FakeRequest(GET, changeDetailsRoute)
+          val result: Future[Result] = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+        }
+
+        "must redirect to information is missing page for a GET when a haveAnswersChangedFromApi returns None (answers missing)" in new Setup(
+          organisationCompleteUserAnswers
+        ) {
+          when(mockCdHelper.haveAnswersChangedFromApi(eqTo(organisationCompleteUserAnswers))).thenReturn(None)
+
+          when(mockCdHelper.getOrganisationSectionMaybe(eqTo(organisationCompleteUserAnswers), eqTo(true))(any()))
+            .thenReturn(Some(testSection))
+
+          when(mockCdHelper.getOrganisationFirstContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
+            .thenReturn(Some(testSection))
+
+          when(mockCdHelper.getOrganisationSecondContactDetailsMaybe(eqTo(organisationCompleteUserAnswers))(any()))
+            .thenReturn(Some(testSection))
+
+          val request                = FakeRequest(GET, changeDetailsRoute)
           val result: Future[Result] = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
@@ -142,10 +197,33 @@ class CheckDetailsControllerSpec extends SpecBase {
       }
 
       "must redirect to information is missing page for a GET when OrganisationOrIndividualPage is missing" in new Setup(
-        emptyUserAnswers
+        emptyUserAnswers.withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
       ) {
+        val request                = FakeRequest(GET, changeDetailsRoute)
+        val result: Future[Result] = route(application, request).value
 
-        val request                = FakeRequest(GET, checkDetailsRoute)
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual
+          controllers.routes.InformationMissingController.onPageLoad().url
+      }
+
+      "must redirect to information is missing page for a GET when ChangeRcaspCachedDetails is missing" in new Setup(
+        emptyUserAnswers.withPage(OrganisationOrIndividualPage, Individual)
+      ) {
+        val request                = FakeRequest(GET, changeDetailsRoute)
+        val result: Future[Result] = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual
+          controllers.routes.InformationMissingController.onPageLoad().url
+      }
+
+      "must redirect to information is missing page for a GET when ChangeRcaspCachedDetails contains the wrong RCASPID" in new Setup(
+        emptyUserAnswers
+          .withPage(OrganisationOrIndividualPage, Individual)
+          .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse.copy(RCASPID = "other"))
+      ) {
+        val request                = FakeRequest(GET, changeDetailsRoute)
         val result: Future[Result] = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
@@ -156,7 +234,7 @@ class CheckDetailsControllerSpec extends SpecBase {
       "must redirect to Journey Recovery for a GET if no existing data is found" in {
         val application = applicationBuilder(userAnswers = None).build()
         running(application) {
-          val request = FakeRequest(GET, checkDetailsRoute)
+          val request = FakeRequest(GET, changeDetailsRoute)
           val result  = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
@@ -178,11 +256,11 @@ class CheckDetailsControllerSpec extends SpecBase {
           .build()
 
         running(application) {
-          val request = FakeRequest(GET, checkDetailsRoute)
+          val request = FakeRequest(GET, changeDetailsRoute)
           val result  = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.PlaceholderController
+          redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
             .onPageLoad("Should nav to /problem/page-unavailable (CARF-308)")
             .url
         }
@@ -190,47 +268,45 @@ class CheckDetailsControllerSpec extends SpecBase {
     }
 
     "onSubmit" - {
-      "must set the SubmissionSucceededPage flag as true and redirect to the RCASP added page if submission is successful" in new Setup(
+      "must set the SubmissionSucceededPage flag as true and redirect to the details updated page if submission is successful" in new Setup(
         individualCompleteUserAnswers
       ) {
-        when(mockRcaspService.submitRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
+        when(mockRcaspService.updateRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
           .thenReturn(ResultT.fromValue(submitRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-        val request                = FakeRequest(POST, checkDetailsRoute)
+        val request                = FakeRequest(POST, changeDetailsRoute)
         val result: Future[Result] = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.RcaspAddedConfirmationController.onPageLoad().url
+        redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
+          .onPageLoad(s"Successful submission for $rcaspId. Should redirect to /details-updated (CARF-353)")
+          .url
 
-        verify(mockRcaspService, times(1)).submitRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
+        verify(mockRcaspService, times(1)).updateRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
         verify(mockSessionRepository, times(1)).set(
-          eqTo(
-            individualCompleteUserAnswers
-              .withPage(RcaspIdPage, rcaspId)
-              .withPage(SubmissionSucceededPage, true)
-          )
+          eqTo(individualCompleteUserAnswers.withPage(SubmissionSucceededPage, true))
         )
       }
 
       "must redirect to Journey Recovery if submission failed" in new Setup(individualCompleteUserAnswers) {
-        when(mockRcaspService.submitRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
+        when(mockRcaspService.updateRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
           .thenReturn(ResultT.fromError(InternalServerError))
 
-        val request                = FakeRequest(POST, checkDetailsRoute)
+        val request                = FakeRequest(POST, changeDetailsRoute)
         val result: Future[Result] = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-        verify(mockRcaspService, times(1)).submitRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
+        verify(mockRcaspService, times(1)).updateRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
         verify(mockSessionRepository, times(0)).set(any())
       }
 
       "must redirect to Journey Recovery for a POST if no existing data is found" in {
         val application = applicationBuilder(userAnswers = None).build()
         running(application) {
-          val request = FakeRequest(POST, checkDetailsRoute)
+          val request = FakeRequest(POST, changeDetailsRoute)
 
           val result = route(application, request).value
 
@@ -253,11 +329,11 @@ class CheckDetailsControllerSpec extends SpecBase {
           .build()
 
         running(application) {
-          val request = FakeRequest(POST, checkDetailsRoute)
+          val request = FakeRequest(POST, changeDetailsRoute)
           val result  = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.PlaceholderController
+          redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
             .onPageLoad("Should nav to /problem/page-unavailable (CARF-308)")
             .url
         }

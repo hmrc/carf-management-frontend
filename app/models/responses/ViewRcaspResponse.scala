@@ -16,8 +16,8 @@
 
 package models.responses
 
-import play.api.libs.json.*
 import models.viewAndUpdateRcasp.RcaspDetails
+import play.api.libs.json.*
 
 case class RcaspResponseDetails(RCASPList: List[RcaspDetails])
 

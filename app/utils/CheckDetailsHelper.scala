@@ -16,38 +16,69 @@
 
 package utils
 
+import cats.syntax.all.*
 import models.UserAnswers
+import models.viewAndUpdateRcasp.forComparison
+import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.individual.IndividualHavePhonePage
-import pages.organisation.{HaveTradingNamePage, OrganisationFirstContactHavePhonePage, OrganisationHaveSecondContactPage, OrganisationSecondContactHavePhonePage, ReportForRegisteredBusinessPage}
-import play.api.Logging
+import pages.organisation.*
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.Section
+import viewmodels.changeDetails.RcaspIdSummary
 import viewmodels.checkAnswers.combined.{OrganisationOrIndividualSummary, UkAddressSummary}
 import viewmodels.checkAnswers.individual.*
 import viewmodels.checkAnswers.organisation.*
 
-import javax.inject.Inject
+class CheckDetailsHelper {
 
-class CheckDetailsHelper @Inject() extends Logging {
+  def haveAnswersChangedFromApi(userAnswers: UserAnswers): Option[Boolean] =
+    (
+      userAnswers.get(ChangeRcaspCachedDetails).flatMap(_.forComparison),
+      userAnswers.getRcaspDetailsForComparison
+    ).mapN((cachedDetails, answerDetails) => cachedDetails != answerDetails)
 
-  private def getSharedQuestionRows(
+  private def getSharedRowsAddJourney(
       userAnswers: UserAnswers
   )(implicit messages: Messages): Option[Seq[SummaryListRow]] =
     userAnswers.get(ReportForRegisteredBusinessPage) match {
       case Some(true)  => None
       case Some(false) =>
         for {
-          reportForRegisteredBusiness <- ReportForRegisteredBusinessSummary.row(userAnswers)
-          organisationOrIndividual    <- OrganisationOrIndividualSummary.row(userAnswers, showAcronymOnly = true)
+          reportForRegisteredBusiness <- ReportForRegisteredBusinessSummary.row(userAnswers, changeJourney = false)
+          organisationOrIndividual    <-
+            OrganisationOrIndividualSummary.row(userAnswers, changeJourney = false, showAcronymOnly = true)
         } yield Seq(reportForRegisteredBusiness, organisationOrIndividual)
       case None        =>
-        OrganisationOrIndividualSummary.row(userAnswers, showAcronymOnly = false).map(Seq(_))
+        OrganisationOrIndividualSummary.row(userAnswers, changeJourney = false, showAcronymOnly = false).map(Seq(_))
     }
 
-  def getIndividualSectionMaybe(userAnswers: UserAnswers)(implicit messages: Messages): Option[Section] =
+  private def getSharedRowsChangeJourney(
+      userAnswers: UserAnswers
+  )(implicit messages: Messages): Option[Seq[SummaryListRow]] = {
     for {
-      sharedRows <- getSharedQuestionRows(userAnswers)
+      isRcaspUserAnswer        <- userAnswers.get(ReportForRegisteredBusinessPage)
+      if !isRcaspUserAnswer
+      isRcaspUserFromApi       <- userAnswers.get(ChangeRcaspCachedDetails).map(_.IsRCASPUser)
+      rcaspIdRow               <- RcaspIdSummary.row(userAnswers)
+      organisationOrIndividual <-
+        OrganisationOrIndividualSummary.row(userAnswers, changeJourney = true, showAcronymOnly = isRcaspUserFromApi)
+    } yield
+      if (isRcaspUserFromApi) {
+        ReportForRegisteredBusinessSummary.row(userAnswers, changeJourney = true).map {
+          Seq(rcaspIdRow, _, organisationOrIndividual)
+        }
+      } else {
+        Some(Seq(rcaspIdRow, organisationOrIndividual))
+      }
+  }.flatten
+
+  def getIndividualSectionMaybe(
+      userAnswers: UserAnswers,
+      changeJourney: Boolean
+  )(implicit messages: Messages): Option[Section] =
+    for {
+      sharedRows <- if (changeJourney) getSharedRowsChangeJourney(userAnswers) else getSharedRowsAddJourney(userAnswers)
       rcaspName  <- IndividualNameSummary.row(userAnswers)
       ni         <- NiNumberSummary.row(userAnswers)
       address    <- UkAddressSummary.row(userAnswers)
@@ -69,9 +100,12 @@ class CheckDetailsHelper @Inject() extends Logging {
       }
     }).flatten.map(Section(messages("checkDetails.summaryListTitle.individualDetails"), _))
 
-  def getOrganisationSectionMaybe(userAnswers: UserAnswers)(implicit messages: Messages): Option[Section] = {
+  def getOrganisationSectionMaybe(
+      userAnswers: UserAnswers,
+      changeJourney: Boolean
+  )(implicit messages: Messages): Option[Section] = {
     for {
-      sharedRows            <- getSharedQuestionRows(userAnswers)
+      sharedRows            <- if (changeJourney) getSharedRowsChangeJourney(userAnswers) else getSharedRowsAddJourney(userAnswers)
       organisationName      <- OverwritableOrganisationNameSummary.row(userAnswers, false)
       haveTradingName       <- HaveTradingNameSummary.row(userAnswers)
       haveTradingNameAnswer <- userAnswers.get(HaveTradingNamePage)

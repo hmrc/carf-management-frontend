@@ -27,18 +27,29 @@ import viewmodels.implicits.*
 
 object OrganisationOrIndividualSummary {
 
-  def row(answers: UserAnswers, showAcronymOnly: Boolean)(implicit messages: Messages): Option[SummaryListRow] =
+  def row(
+      answers: UserAnswers,
+      changeJourney: Boolean,
+      showAcronymOnly: Boolean
+  )(implicit messages: Messages): Option[SummaryListRow] =
     answers.get(OrganisationOrIndividualPage).map { answer =>
       SummaryListRowViewModel(
-        key =
+        key = if (changeJourney) {
+          if (showAcronymOnly) "organisationOrIndividual.changeDetailsLabel.acronymOnly"
+          else "organisationOrIndividual.changeDetailsLabel.full"
+        } else {
           if (showAcronymOnly) "organisationOrIndividual.checkYourAnswersLabel.acronymOnly"
-          else "organisationOrIndividual.checkYourAnswersLabel.full",
+          else "organisationOrIndividual.checkYourAnswersLabel.full"
+        },
         value = ValueViewModel(messages(s"organisationOrIndividual.${answer.toString.toLowerCase}")),
         actions = Seq(
           ActionItemViewModel(
             content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
             href = routes.OrganisationOrIndividualController.onPageLoad(ChangeMode).url
-          ).withVisuallyHiddenText(messages("organisationOrIndividual.change.hidden"))
+          ).withVisuallyHiddenText(
+            if (changeJourney) messages("organisationOrIndividual.changeDetails.change.hidden")
+            else messages("organisationOrIndividual.change.hidden")
+          )
         )
       )
     }

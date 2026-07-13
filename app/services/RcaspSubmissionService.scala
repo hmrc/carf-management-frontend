@@ -17,9 +17,10 @@
 package services
 
 import connectors.RcaspConnector
+import models.errors.ApiError.InternalServerError
 import models.{UniqueTaxpayerReference, UserAnswers}
 import models.errors.MandatoryInformationMissingError
-import models.responses.SubmitRcaspResponse
+import models.responses.{SubmitRcaspResponse, SubmitResponseDetails, SubmitReturnParameters}
 import play.api.Logging
 import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
@@ -48,9 +49,9 @@ class RcaspSubmissionService @Inject (
           }
       case None          =>
         logger.warn(
-          "[RcaspSubmissionService][submitRegisteredBusinessRcasp] Error building the CreateRcaspRequest from userAnswers"
+          "[RcaspSubmissionService][submitRegisteredBusinessRcasp] Error building the RcaspRequest from userAnswers"
         )
-        ResultT.fromError(MandatoryInformationMissingError("Error building the CreateRcaspRequest from userAnswers"))
+        ResultT.fromError(MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers"))
     }
 
   def submitRcasp(
@@ -66,7 +67,20 @@ class RcaspSubmissionService @Inject (
             error
           }
       case None          =>
-        logger.warn("[RcaspSubmissionService][submitRcasp] Error building the CreateRcaspRequest from userAnswers")
-        ResultT.fromError(MandatoryInformationMissingError("Error building the CreateRcaspRequest from userAnswers"))
+        logger.warn("[RcaspSubmissionService][submitRcasp] Error building the RcaspRequest from userAnswers")
+        ResultT.fromError(MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers"))
+    }
+
+  // TODO: Replace with actual call to update RCASP (CARF-353)
+  def updateRcasp(
+      carfId: String,
+      userAnswers: UserAnswers
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
+    carfId.takeRight(1) match {
+      case "4" | "5" | "6" | "7" | "8" | "9" => ResultT.fromError(InternalServerError)
+      case _                                 =>
+        ResultT.fromValue(
+          SubmitRcaspResponse(SubmitResponseDetails(SubmitReturnParameters(Key = "RCASPID", Value = "ZMCAR0123456789")))
+        )
     }
 }

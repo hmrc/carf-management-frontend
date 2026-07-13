@@ -52,7 +52,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
   val businessDetailsFromService =
     BusinessDetails(
-      name = "Test Business Ltd",
+      name = "Timmy Ltd",
       address = AddressRegistrationResponse(
         addressLine1 = "1 Test Street",
         addressLine2 = Some("Testville"),
