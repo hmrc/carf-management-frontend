@@ -16,11 +16,10 @@
 
 package pages.remove
 
-import models.remove.RemoveUserBusinessName
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 
-case object RemoveUserBusinessNameCached extends QuestionPage[RemoveUserBusinessName] {
+case object RemoveUserBusinessNameCached extends QuestionPage[String] {
 
   override def path: JsPath = JsPath \ toString
 

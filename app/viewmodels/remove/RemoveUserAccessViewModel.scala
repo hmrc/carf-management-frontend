@@ -36,8 +36,7 @@ object RemoveUserAccessViewModel {
   def from(
       details: RcaspDetails,
       userBusinessNameOpt: Option[String],
-      formProvider: GenericYesNoPageFormProvider,
-      fallbackBusinessName: String
+      formProvider: GenericYesNoPageFormProvider
   ): RemoveUserAccessViewModel = {
 
     val rcaspName   = details.getName
@@ -58,10 +57,8 @@ object RemoveUserAccessViewModel {
     val errorKey   = s"removeUserAccess.error.required.$suffix"
 
     val userBusinessName: Option[String] =
-      if (partyType != individualPartyType && !isRcaspUser)
-        Some(userBusinessNameOpt.getOrElse(fallbackBusinessName))
-      else
-        None
+      if (partyType != individualPartyType && !isRcaspUser) userBusinessNameOpt
+      else None
 
     RemoveUserAccessViewModel(
       titleKey = titleKey,

@@ -19,7 +19,6 @@ package controllers.remove
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import models.UserAnswers
-import models.remove.RemoveUserBusinessName
 import models.viewAndUpdateRcasp.RcaspDetails
 import pages.remove.{RemoveRcaspCachedDetails, RemoveUserAccessPage, RemoveUserBusinessNameCached}
 import play.api.Logging
@@ -56,13 +55,8 @@ class RemoveUserAccessController @Inject() (
   private def buildViewModel(
       details: RcaspDetails,
       userBusinessNameOpt: Option[String]
-  )(implicit messages: Messages): RemoveUserAccessViewModel =
-    RemoveUserAccessViewModel.from(
-      details,
-      userBusinessNameOpt,
-      formProvider,
-      messages("homePage.contactDetails.org.fallbackBusinessName")
-    )
+  ): RemoveUserAccessViewModel =
+    RemoveUserAccessViewModel.from(details, userBusinessNameOpt, formProvider)
 
   private def render(
       form: Form[Boolean],
@@ -76,17 +70,20 @@ class RemoveUserAccessController @Inject() (
       details: RcaspDetails,
       userBusinessNameOpt: Option[String]
   )(implicit request: OptionalDataRequest[AnyContent], messages: Messages): Future[Result] = {
+    val resolvedBusinessName: String =
+      userBusinessNameOpt.getOrElse(messages("homePage.contactDetails.org.fallbackBusinessName"))
+
     val userAnswersTry =
       request.userAnswers
         .getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
         .set(RemoveRcaspCachedDetails, details)
-        .flatMap(_.set(RemoveUserBusinessNameCached, RemoveUserBusinessName(userBusinessNameOpt)))
+        .flatMap(_.set(RemoveUserBusinessNameCached, resolvedBusinessName))
 
     Future
       .fromTry(userAnswersTry)
       .flatMap { ua =>
         sessionRepository.set(ua).map { _ =>
-          val vm = buildViewModel(details, userBusinessNameOpt)
+          val vm = buildViewModel(details, Some(resolvedBusinessName))
           Ok(render(vm.form, rcaspId, vm))
         }
       }
@@ -100,13 +97,13 @@ class RemoveUserAccessController @Inject() (
           .flatMap(_.get(RemoveRcaspCachedDetails))
           .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
 
-      val cachedBusinessName: Option[Option[String]] =
-        request.userAnswers.flatMap(_.get(RemoveUserBusinessNameCached)).map(_.cachedUserBusinessName)
+      val cachedBusinessName: Option[String] =
+        request.userAnswers.flatMap(_.get(RemoveUserBusinessNameCached))
 
       (cachedDetails, cachedBusinessName) match {
 
-        case (Some(details), Some(userBusinessNameOpt)) =>
-          val vm           = buildViewModel(details, userBusinessNameOpt)
+        case (Some(details), Some(userBusinessName)) =>
+          val vm           = buildViewModel(details, Some(userBusinessName))
           val preparedForm = request.userAnswers.flatMap(_.get(RemoveUserAccessPage)).fold(vm.form)(vm.form.fill)
           Future.successful(Ok(render(preparedForm, rcaspId, vm)))
 
@@ -118,7 +115,7 @@ class RemoveUserAccessController @Inject() (
                   cacheAndRender(rcaspId, details, userBusinessNameOpt)
                 case Left(error)                =>
                   logger.warn(
-                    s"[RemoveUserAccessController][onPageLoad] Failed to get user business name: $error — continuing with None"
+                    s"[RemoveUserAccessController][onPageLoad] Failed to get user business name: $error — continuing with fallback"
                   )
                   cacheAndRender(rcaspId, details, None)
               }
@@ -137,13 +134,13 @@ class RemoveUserAccessController @Inject() (
           .flatMap(_.get(RemoveRcaspCachedDetails))
           .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
 
-      val cachedBusinessName: Option[Option[String]] =
-        request.userAnswers.flatMap(_.get(RemoveUserBusinessNameCached)).map(_.cachedUserBusinessName)
+      val cachedBusinessName: Option[String] =
+        request.userAnswers.flatMap(_.get(RemoveUserBusinessNameCached))
 
       (cachedDetails, cachedBusinessName) match {
 
-        case (Some(details), Some(userBusinessNameOpt)) =>
-          val vm = buildViewModel(details, userBusinessNameOpt)
+        case (Some(details), Some(userBusinessName)) =>
+          val vm = buildViewModel(details, Some(userBusinessName))
 
           vm.form
             .bindFromRequest()
