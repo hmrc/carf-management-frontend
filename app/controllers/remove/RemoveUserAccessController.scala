@@ -70,7 +70,8 @@ class RemoveUserAccessController @Inject() (
       details: RcaspDetails,
       userBusinessNameOpt: Option[String]
   )(implicit request: OptionalDataRequest[AnyContent], messages: Messages): Future[Result] = {
-    val resolvedBusinessName = userBusinessNameOpt.getOrElse(messages("homePage.contactDetails.org.fallbackBusinessName"))
+    val resolvedBusinessName =
+      userBusinessNameOpt.getOrElse(messages("homePage.contactDetails.org.fallbackBusinessName"))
 
     for {
       ua <- Future.fromTry(

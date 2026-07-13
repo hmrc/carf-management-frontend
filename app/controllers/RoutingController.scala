@@ -58,8 +58,8 @@ class RoutingController @Inject() (
                 .flatMap(ua =>
                   if (
                     ua.get(SubmissionSucceededPage).contains(true) ||
-                      ua.get(ChangeRcaspCachedDetails).isDefined ||
-                      ua.get(RemoveRcaspCachedDetails).isDefined
+                    ua.get(ChangeRcaspCachedDetails).isDefined ||
+                    ua.get(RemoveRcaspCachedDetails).isDefined
                   ) None
                   else request.userAnswers
                 )

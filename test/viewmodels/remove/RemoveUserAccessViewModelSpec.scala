@@ -40,10 +40,10 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
       "must return correct keys and no userBusinessName" in {
         val vm = RemoveUserAccessViewModel.from(individualDetails, Some("My Business"), formProvider)
 
-        vm.titleKey         mustEqual "removeUserAccess.title.individual"
-        vm.headingKey       mustEqual "removeUserAccess.heading.individual"
-        vm.errorKey         mustEqual "removeUserAccess.error.required.individual"
-        vm.rcaspName        mustEqual "Timmy Jimmison"
+        vm.titleKey      mustEqual "removeUserAccess.title.individual"
+        vm.headingKey    mustEqual "removeUserAccess.heading.individual"
+        vm.errorKey      mustEqual "removeUserAccess.error.required.individual"
+        vm.rcaspName     mustEqual "Timmy Jimmison"
         vm.userBusinessName mustBe None
       }
     }
@@ -53,10 +53,10 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
       "must return correct keys and no userBusinessName" in {
         val vm = RemoveUserAccessViewModel.from(rcaspIsUserDetails, Some("My Business"), formProvider)
 
-        vm.titleKey         mustEqual "removeUserAccess.title.rcaspIsUser"
-        vm.headingKey       mustEqual "removeUserAccess.heading.rcaspIsUser"
-        vm.errorKey         mustEqual "removeUserAccess.error.required.rcaspIsUser"
-        vm.rcaspName        mustEqual testOrgName
+        vm.titleKey      mustEqual "removeUserAccess.title.rcaspIsUser"
+        vm.headingKey    mustEqual "removeUserAccess.heading.rcaspIsUser"
+        vm.errorKey      mustEqual "removeUserAccess.error.required.rcaspIsUser"
+        vm.rcaspName     mustEqual testOrgName
         vm.userBusinessName mustBe None
       }
     }
@@ -66,21 +66,21 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
       "must return correct keys and user business name when provided" in {
         val vm = RemoveUserAccessViewModel.from(otherOrgDetails, Some("My Business"), formProvider)
 
-        vm.titleKey         mustEqual "removeUserAccess.title.otherOrg"
-        vm.headingKey       mustEqual "removeUserAccess.heading.otherOrg"
-        vm.errorKey         mustEqual "removeUserAccess.error.required.otherOrg"
-        vm.rcaspName        mustEqual testOrgName
+        vm.titleKey      mustEqual "removeUserAccess.title.otherOrg"
+        vm.headingKey    mustEqual "removeUserAccess.heading.otherOrg"
+        vm.errorKey      mustEqual "removeUserAccess.error.required.otherOrg"
+        vm.rcaspName     mustEqual testOrgName
         vm.userBusinessName mustBe Some("My Business")
-        vm.form             mustEqual formProvider("removeUserAccess.error.required.otherOrg")
+        vm.form          mustEqual formProvider("removeUserAccess.error.required.otherOrg")
       }
 
       "must return None for userBusinessName when not provided" in {
         val vm = RemoveUserAccessViewModel.from(otherOrgDetails, None, formProvider)
 
-        vm.titleKey         mustEqual "removeUserAccess.title.otherOrg"
-        vm.headingKey       mustEqual "removeUserAccess.heading.otherOrg"
-        vm.errorKey         mustEqual "removeUserAccess.error.required.otherOrg"
-        vm.rcaspName        mustEqual testOrgName
+        vm.titleKey      mustEqual "removeUserAccess.title.otherOrg"
+        vm.headingKey    mustEqual "removeUserAccess.heading.otherOrg"
+        vm.errorKey      mustEqual "removeUserAccess.error.required.otherOrg"
+        vm.rcaspName     mustEqual testOrgName
         vm.userBusinessName mustBe None
       }
     }

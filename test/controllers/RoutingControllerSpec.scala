@@ -232,9 +232,7 @@ class RoutingControllerSpec extends SpecBase {
         status(result) mustEqual SEE_OTHER
 
         verify(mockSessionRepository).set(
-          argThat((answers: UserAnswers) =>
-            answers.get(RemoveRcaspCachedDetails).isEmpty
-          )
+          argThat((answers: UserAnswers) => answers.get(RemoveRcaspCachedDetails).isEmpty)
         )
       }
     }
