@@ -27,7 +27,7 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import repositories.SessionRepository
-import models.requests.{DataRequest, OptionalDataRequest}
+import models.requests.OptionalDataRequest
 import services.AccountService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.remove.RemoveUserAccessViewModel
@@ -56,8 +56,13 @@ class RemoveUserAccessController @Inject() (
   private def buildViewModel(
       details: RcaspDetails,
       userBusinessNameOpt: Option[String]
-  ): RemoveUserAccessViewModel =
-    RemoveUserAccessViewModel.from(details, userBusinessNameOpt, formProvider)
+  )(implicit messages: Messages): RemoveUserAccessViewModel =
+    RemoveUserAccessViewModel.from(
+      details,
+      userBusinessNameOpt,
+      formProvider,
+      messages("homePage.contactDetails.org.fallbackBusinessName")
+    )
 
   private def render(
       form: Form[Boolean],
@@ -70,7 +75,7 @@ class RemoveUserAccessController @Inject() (
       rcaspId: String,
       details: RcaspDetails,
       userBusinessNameOpt: Option[String]
-  )(implicit request: OptionalDataRequest[AnyContent]): Future[Result] = {
+  )(implicit request: OptionalDataRequest[AnyContent], messages: Messages): Future[Result] = {
     val userAnswersTry =
       request.userAnswers
         .getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
