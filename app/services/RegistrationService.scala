@@ -16,46 +16,27 @@
 
 package services
 
+import connectors.RegistrationConnector
 import models.BusinessDetails
-import models.errors.ApiError.InternalServerError
-import models.responses.AddressRegistrationResponse
+import models.IdentifierType.UTR
+import models.requests.RegisterWithIdRequest
 import types.ResultT
+import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
-class RegistrationService @Inject() {
+class RegistrationService @Inject (connector: RegistrationConnector)(implicit ec: ExecutionContext) {
 
-  // TODO link up register-with-id - CARF-519
-  def getBusinessWithUtr(utr: String): ResultT[BusinessDetails] =
-    if (utr.startsWith("9")) {
-      ResultT.fromError(InternalServerError)
-    } else if (utr.startsWith("6")) {
-      ResultT.fromValue(
-        BusinessDetails(
-          name = "Test Business Ltd",
-          address = AddressRegistrationResponse(
-            addressLine1 = "3 Apple Street",
-            addressLine2 = Some("New York"),
-            addressLine3 = None,
-            addressLine4 = None,
-            postalCode = Some("11722"),
-            countryCode = "US"
-          )
-        )
-      )
-    } else {
-      ResultT.fromValue(
-        BusinessDetails(
-          name = "Test Business Ltd",
-          address = AddressRegistrationResponse(
-            addressLine1 = "1 Test Street",
-            addressLine2 = Some("Testville"),
-            addressLine3 = None,
-            addressLine4 = None,
-            postalCode = Some("TE1 1ST"),
-            countryCode = "GB"
-          )
-        )
-      )
-    }
+  def getBusinessWithCtUtr(utr: String)(implicit hc: HeaderCarrier): ResultT[BusinessDetails] = {
+    val request = RegisterWithIdRequest(
+      requiresNameMatch = false,
+      IDNumber = utr,
+      IDType = UTR
+    )
+
+    connector
+      .registerOrganisationWithUtrCtAutoMatch(request)
+      .map(result => BusinessDetails(name = result.organisationName, address = result.address))
+  }
 }
