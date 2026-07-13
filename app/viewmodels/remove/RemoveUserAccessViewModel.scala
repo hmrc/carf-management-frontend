@@ -37,41 +37,41 @@ object RemoveUserAccessViewModel {
       details: RcaspDetails,
       userBusinessNameOpt: Option[String],
       formProvider: GenericYesNoPageFormProvider
-  ): Either[String, RemoveUserAccessViewModel] = {
+  ): RemoveUserAccessViewModel = {
 
     val rcaspName   = details.getName
     val isRcaspUser = details.IsRCASPUser
     val partyType   = details.PartyType
 
     val suffix =
-      if (partyType == individualPartyType) "individual"
-      else if (isRcaspUser) "rcaspIsUser"
-      else "otherOrg"
+      if (partyType == individualPartyType) {
+        "individual"
+      } else if (isRcaspUser) {
+        "rcaspIsUser"
+      } else {
+        "otherOrg"
+      }
 
     val titleKey   = s"removeUserAccess.title.$suffix"
     val headingKey = s"removeUserAccess.heading.$suffix"
     val errorKey   = s"removeUserAccess.error.required.$suffix"
 
-    val userBusinessName: Option[String] =
-      if (partyType == individualPartyType) None
-      else if (isRcaspUser) Some(rcaspName)
-      else userBusinessNameOpt
+    val userBusinessName =
+      if (partyType == individualPartyType) {
+        None
+      } else if (isRcaspUser) {
+        Some(rcaspName)
+      } else {
+        userBusinessNameOpt
+      }
 
-    if (userBusinessName.isEmpty && partyType != individualPartyType && !isRcaspUser) {
-      Left(
-        s"[RemoveUserAccessViewModel][from] User business name was missing for RCASP ${details.RCASPID}"
-      )
-    } else {
-      Right(
-        RemoveUserAccessViewModel(
-          titleKey = titleKey,
-          headingKey = headingKey,
-          errorKey = errorKey,
-          rcaspName = rcaspName,
-          userBusinessName = userBusinessName,
-          form = formProvider(errorKey)
-        )
-      )
-    }
+    RemoveUserAccessViewModel(
+      titleKey = titleKey,
+      headingKey = headingKey,
+      errorKey = errorKey,
+      rcaspName = rcaspName,
+      userBusinessName = userBusinessName,
+      form = formProvider(errorKey)
+    )
   }
 }

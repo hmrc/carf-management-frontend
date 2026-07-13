@@ -36,8 +36,16 @@
 )(implicit request: Request[_], messages: Messages)
 
 @headingText = @{
-    if (userBusinessName.isDefined) messages(headingKey, userBusinessName.get, rcaspName)
-    else messages(headingKey, rcaspName)
+    userBusinessName match {
+        case Some(name) =>
+            messages(headingKey, name, rcaspName)
+        case None =>
+            messages(
+                headingKey,
+                messages("homePage.contactDetails.org.fallbackBusinessName"),
+                rcaspName
+            )
+    }
 }
 
 @layout(pageTitle = title(form, messages(titleKey, rcaspName))) {
