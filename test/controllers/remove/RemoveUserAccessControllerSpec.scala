@@ -84,7 +84,15 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val vm   = RemoveUserAccessViewModel.from(individualDetails, None, formProvider)
 
             status(result)          mustEqual OK
-            contentAsString(result) mustEqual view(vm.form, rcaspId, vm.titleKey, vm.headingKey, vm.errorKey, vm.rcaspName, vm.userBusinessName)(request, messages(application)).toString
+            contentAsString(result) mustEqual view(
+              vm.form,
+              rcaspId,
+              vm.titleKey,
+              vm.headingKey,
+              vm.errorKey,
+              vm.rcaspName,
+              vm.userBusinessName
+            )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
             verify(mockAccountService).getUserBusinessName(any())(any(), any())
@@ -113,7 +121,15 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, Some("My Business"), formProvider)
 
             status(result)          mustEqual OK
-            contentAsString(result) mustEqual view(vm.form, rcaspId, vm.titleKey, vm.headingKey, vm.errorKey, vm.rcaspName, vm.userBusinessName)(request, messages(application)).toString
+            contentAsString(result) mustEqual view(
+              vm.form,
+              rcaspId,
+              vm.titleKey,
+              vm.headingKey,
+              vm.errorKey,
+              vm.rcaspName,
+              vm.userBusinessName
+            )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
             verify(mockAccountService).getUserBusinessName(any())(any(), any())
@@ -142,7 +158,15 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val vm   = RemoveUserAccessViewModel.from(otherOrgDetails, Some("My Business"), formProvider)
 
             status(result)          mustEqual OK
-            contentAsString(result) mustEqual view(vm.form, rcaspId, vm.titleKey, vm.headingKey, vm.errorKey, vm.rcaspName, vm.userBusinessName)(request, messages(application)).toString
+            contentAsString(result) mustEqual view(
+              vm.form,
+              rcaspId,
+              vm.titleKey,
+              vm.headingKey,
+              vm.errorKey,
+              vm.rcaspName,
+              vm.userBusinessName
+            )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
             verify(mockAccountService).getUserBusinessName(any())(any(), any())
@@ -164,15 +188,23 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             .build()
 
           running(application) {
-            val request  = FakeRequest(GET, onPageLoadRoute)
-            val result   = route(application, request).value
+            val request = FakeRequest(GET, onPageLoadRoute)
+            val result  = route(application, request).value
 
             val view     = application.injector.instanceOf[RemoveUserAccessView]
             val fallback = messages(application)("homePage.contactDetails.org.fallbackBusinessName")
             val vm       = RemoveUserAccessViewModel.from(otherOrgDetails, Some(fallback), formProvider)
 
             status(result)          mustEqual OK
-            contentAsString(result) mustEqual view(vm.form, rcaspId, vm.titleKey, vm.headingKey, vm.errorKey, vm.rcaspName, vm.userBusinessName)(request, messages(application)).toString
+            contentAsString(result) mustEqual view(
+              vm.form,
+              rcaspId,
+              vm.titleKey,
+              vm.headingKey,
+              vm.errorKey,
+              vm.rcaspName,
+              vm.userBusinessName
+            )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
             verify(mockAccountService).getUserBusinessName(any())(any(), any())
@@ -253,7 +285,15 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, Some("My Business"), formProvider)
 
             status(result)          mustEqual OK
-            contentAsString(result) mustEqual view(vm.form, rcaspId, vm.titleKey, vm.headingKey, vm.errorKey, vm.rcaspName, vm.userBusinessName)(request, messages(application)).toString
+            contentAsString(result) mustEqual view(
+              vm.form,
+              rcaspId,
+              vm.titleKey,
+              vm.headingKey,
+              vm.errorKey,
+              vm.rcaspName,
+              vm.userBusinessName
+            )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
             verify(mockAccountService).getUserBusinessName(any())(any(), any())
@@ -280,7 +320,15 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, Some("My Business"), formProvider)
 
             status(result)          mustEqual OK
-            contentAsString(result) mustEqual view(vm.form, rcaspId, vm.titleKey, vm.headingKey, vm.errorKey, vm.rcaspName, vm.userBusinessName)(request, messages(application)).toString
+            contentAsString(result) mustEqual view(
+              vm.form,
+              rcaspId,
+              vm.titleKey,
+              vm.headingKey,
+              vm.errorKey,
+              vm.rcaspName,
+              vm.userBusinessName
+            )(request, messages(application)).toString
 
             verify(mockAccountService, never).getRcaspDetails(any(), any())(any(), any())
             verify(mockAccountService, never).getUserBusinessName(any())(any(), any())
@@ -304,7 +352,15 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val vm   = RemoveUserAccessViewModel.from(individualDetails, Some("My Business"), formProvider)
 
             status(result)          mustEqual OK
-            contentAsString(result) mustEqual view(vm.form, rcaspId, vm.titleKey, vm.headingKey, vm.errorKey, vm.rcaspName, vm.userBusinessName)(request, messages(application)).toString
+            contentAsString(result) mustEqual view(
+              vm.form,
+              rcaspId,
+              vm.titleKey,
+              vm.headingKey,
+              vm.errorKey,
+              vm.rcaspName,
+              vm.userBusinessName
+            )(request, messages(application)).toString
 
             verify(mockAccountService, never).getRcaspDetails(any(), any())(any(), any())
             verify(mockAccountService, never).getUserBusinessName(any())(any(), any())
@@ -328,7 +384,15 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val vm   = RemoveUserAccessViewModel.from(otherOrgDetails, Some("My Business"), formProvider)
 
             status(result)          mustEqual OK
-            contentAsString(result) mustEqual view(vm.form, rcaspId, vm.titleKey, vm.headingKey, vm.errorKey, vm.rcaspName, vm.userBusinessName)(request, messages(application)).toString
+            contentAsString(result) mustEqual view(
+              vm.form,
+              rcaspId,
+              vm.titleKey,
+              vm.headingKey,
+              vm.errorKey,
+              vm.rcaspName,
+              vm.userBusinessName
+            )(request, messages(application)).toString
 
             verify(mockAccountService, never).getRcaspDetails(any(), any())(any(), any())
             verify(mockAccountService, never).getUserBusinessName(any())(any(), any())
@@ -385,7 +449,15 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           val boundForm = vm.form.bindFromRequest()(request, implicitly)
 
           status(result)          mustEqual BAD_REQUEST
-          contentAsString(result) mustEqual view(boundForm, rcaspId, vm.titleKey, vm.headingKey, vm.errorKey, vm.rcaspName, vm.userBusinessName)(request, messages(application)).toString
+          contentAsString(result) mustEqual view(
+            boundForm,
+            rcaspId,
+            vm.titleKey,
+            vm.headingKey,
+            vm.errorKey,
+            vm.rcaspName,
+            vm.userBusinessName
+          )(request, messages(application)).toString
         }
       }
 

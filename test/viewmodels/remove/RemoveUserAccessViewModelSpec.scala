@@ -19,7 +19,6 @@ package viewmodels.remove
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
 import models.viewAndUpdateRcasp.RcaspDetails
-import org.scalatest.EitherValues.convertEitherToValuable
 
 class RemoveUserAccessViewModelSpec extends SpecBase {
 
@@ -39,73 +38,50 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
     "individual scenario" - {
 
       "must return correct keys and no userBusinessName" in {
-        val result = RemoveUserAccessViewModel.from(
-          individualDetails,
-          Some("My Business"),
-          formProvider
-        )
+        val vm = RemoveUserAccessViewModel.from(individualDetails, Some("My Business"), formProvider)
 
-        result.isRight mustBe true
-
-        val vm = result.value
-
-        vm.titleKey      mustEqual "removeUserAccess.title.individual"
-        vm.headingKey    mustEqual "removeUserAccess.heading.individual"
-        vm.errorKey      mustEqual "removeUserAccess.error.required.individual"
-        vm.rcaspName     mustEqual "Timmy Jimmison"
+        vm.titleKey         mustEqual "removeUserAccess.title.individual"
+        vm.headingKey       mustEqual "removeUserAccess.heading.individual"
+        vm.errorKey         mustEqual "removeUserAccess.error.required.individual"
+        vm.rcaspName        mustEqual "Timmy Jimmison"
         vm.userBusinessName mustBe None
       }
     }
 
     "rcaspIsUser scenario" - {
 
-      "must return correct keys and rcaspName as userBusinessName" in {
-        val result = RemoveUserAccessViewModel.from(
-          rcaspIsUserDetails,
-          Some("My Business"),
-          formProvider
-        )
+      "must return correct keys and no userBusinessName" in {
+        val vm = RemoveUserAccessViewModel.from(rcaspIsUserDetails, Some("My Business"), formProvider)
 
-        result.isRight mustBe true
-
-        val vm = result.value
-
-        vm.titleKey      mustEqual "removeUserAccess.title.rcaspIsUser"
-        vm.headingKey    mustEqual "removeUserAccess.heading.rcaspIsUser"
-        vm.errorKey      mustEqual "removeUserAccess.error.required.rcaspIsUser"
-        vm.rcaspName     mustEqual testOrgName
-        vm.userBusinessName mustBe Some(testOrgName)
+        vm.titleKey         mustEqual "removeUserAccess.title.rcaspIsUser"
+        vm.headingKey       mustEqual "removeUserAccess.heading.rcaspIsUser"
+        vm.errorKey         mustEqual "removeUserAccess.error.required.rcaspIsUser"
+        vm.rcaspName        mustEqual testOrgName
+        vm.userBusinessName mustBe None
       }
     }
 
     "otherOrg scenario" - {
 
-      "must return correct keys and user business name" in {
-        val result = RemoveUserAccessViewModel.from(
-          otherOrgDetails,
-          Some("My Business"),
-          formProvider
-        )
+      "must return correct keys and user business name when provided" in {
+        val vm = RemoveUserAccessViewModel.from(otherOrgDetails, Some("My Business"), formProvider)
 
-        result.isRight mustBe true
-
-        val vm = result.value
-
-        vm.titleKey      mustEqual "removeUserAccess.title.otherOrg"
-        vm.headingKey    mustEqual "removeUserAccess.heading.otherOrg"
-        vm.errorKey      mustEqual "removeUserAccess.error.required.otherOrg"
-        vm.rcaspName     mustEqual testOrgName
+        vm.titleKey         mustEqual "removeUserAccess.title.otherOrg"
+        vm.headingKey       mustEqual "removeUserAccess.heading.otherOrg"
+        vm.errorKey         mustEqual "removeUserAccess.error.required.otherOrg"
+        vm.rcaspName        mustEqual testOrgName
         vm.userBusinessName mustBe Some("My Business")
+        vm.form             mustEqual formProvider("removeUserAccess.error.required.otherOrg")
       }
 
-      "must return Left when user business name is missing" in {
-        val result = RemoveUserAccessViewModel.from(
-          otherOrgDetails,
-          None,
-          formProvider
-        )
+      "must return None for userBusinessName when not provided" in {
+        val vm = RemoveUserAccessViewModel.from(otherOrgDetails, None, formProvider)
 
-        result.isLeft mustBe true
+        vm.titleKey         mustEqual "removeUserAccess.title.otherOrg"
+        vm.headingKey       mustEqual "removeUserAccess.heading.otherOrg"
+        vm.errorKey         mustEqual "removeUserAccess.error.required.otherOrg"
+        vm.rcaspName        mustEqual testOrgName
+        vm.userBusinessName mustBe None
       }
     }
   }
