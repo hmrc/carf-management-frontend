@@ -380,32 +380,19 @@ rcaspId.checkYourAnswersLabel = RCASP ID
 removeUserAccess.title.individual = Will you need to access or update any previous reports for the reporting cryptoasset service provider (RCASP)?
 removeUserAccess.title.rcaspIsUser = Will anyone at your business need to access or update any previous reports for the business?
 removeUserAccess.title.otherOrg = Will anyone at your business need to access or update any previous reports for the reporting cryptoasset service provider (RCASP)?
-
 removeUserAccess.heading.individual = Will you need to access or update any previous reports for {0}?
 removeUserAccess.heading.rcaspIsUser = Will anyone at {0} need to access or update any previous reports for the business?
 removeUserAccess.heading.otherOrg = Will anyone at {0} need to access or update any previous reports for {1}?
-
 removeUserAccess.error.required.individual = Select yes if you’ll need to access or update any previous reports for the RCASP
 removeUserAccess.error.required.rcaspIsUser = Select yes if anyone at your business will need to access or update any previous reports for the business
 removeUserAccess.error.required.otherOrg = Select yes if anyone at your business will need to access or update any previous reports for the RCASP
 
-removeUserAccess.checkYourAnswersLabel.individual = Will you need to access or update any previous reports for the RCASP?
-removeUserAccess.checkYourAnswersLabel.rcaspIsUser = Will anyone at {0} need to access or update any previous reports for the business?
-removeUserAccess.checkYourAnswersLabel.otherOrg = Will anyone at {0} need to access or update any previous reports for {1}?
-
-removeUserAccess.change.hidden.individual = Will you need to access or update any previous reports for {0}
-removeUserAccess.change.hidden.rcaspIsUser = Will anyone at {0} need to access or update any previous reports for the business
-removeUserAccess.change.hidden.otherOrg = Will anyone at {0} need to access or update any previous reports for {1}
-
-
 removeOtherAccess.title.individual = Could the reporting cryptoasset service provider (RCASP) or a representative need to access or update any previous reports for them?
 removeOtherAccess.title.rcaspIsUser = Could anyone who may act on behalf of your business in the future need to access or update any previous reports?
 removeOtherAccess.title.otherOrg = Could the reporting cryptoasset service provider (RCASP) or a representative need to access or update any previous reports for them?
-
 removeOtherAccess.heading.individual = Could {0} or a representative need to access or update any previous reports for them?
 removeOtherAccess.heading.rcaspIsUser = Could anyone who may act on behalf of {0} in the future need to access or update any previous reports?
 removeOtherAccess.heading.otherOrg = Could {0} or a representative need to access or update any previous reports for them?
-
 removeOtherAccess.error.required.individual = Select yes if the RCASP or a representative may need to access or update any previous reports for them
 removeOtherAccess.error.required.rcaspIsUser = Select yes if anyone who may act on behalf of your business in the future may need to access or update any previous reports
 removeOtherAccess.error.required.otherOrg = Select yes if the RCASP or a representative may need to access or update any previous reports for them
