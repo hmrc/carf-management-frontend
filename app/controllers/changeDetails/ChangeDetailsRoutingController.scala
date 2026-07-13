@@ -50,8 +50,7 @@ class ChangeDetailsRoutingController @Inject() (
           if cachedDetails.RCASPID.toUpperCase == rcaspId.toUpperCase && !submissionFlagSet =>
         val redirectCall: Call =
           if (isRcaspUserAnswer)
-            controllers.routes.PlaceholderController
-              .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
+            controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(rcaspId)
           else controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId)
         Future.successful(Redirect(redirectCall))
       case _ =>

@@ -174,7 +174,7 @@ class ChangeDetailsControllerSpec extends SpecBase {
           redirectLocation(result).value mustEqual controllers.routes.InformationMissingController.onPageLoad().url
         }
 
-        "must redirect to information is missing page for a GET when a haveAnswersChangedFromApi returns None (answers missing)" in new Setup(
+        "must redirect to information is missing page for a GET when haveAnswersChangedFromApi returns None (answers missing)" in new Setup(
           organisationCompleteUserAnswers
         ) {
           when(mockCdHelper.haveAnswersChangedFromApi(eqTo(organisationCompleteUserAnswers))).thenReturn(None)

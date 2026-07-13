@@ -58,7 +58,8 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
               emptyUserAnswers
                 .withPage(ReportForRegisteredBusinessPage, true)
                 .withPage(OverwritableOrganisationName, "Test Business Ltd")
-            )
+            ),
+            eqTo(false)
           )(any())
         )
           .thenReturn(Some(testSection))
@@ -80,8 +81,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
           .withPage(ReportForRegisteredBusinessPage, true)
           .withPage(OverwritableOrganisationName, "Test Business Ltd")
       ) {
-        when(mockHelper.getRegisteredBusinessSection(any())(any()))
-          .thenReturn(None)
+        when(mockHelper.getRegisteredBusinessSection(any(), any())(any())).thenReturn(None)
 
         val request                = FakeRequest(GET, cdRoute)
         val result: Future[Result] = route(application, request).value

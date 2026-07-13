@@ -496,10 +496,13 @@ class DetailsHelperSpec extends SpecBase {
 
             val section: Section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = false).get
 
-            val expectedOrganisationNameUrl: String =
+            val expectedReportForRegisteredBusinessUrl: String =
+              controllers.organisation.routes.ReportForRegisteredBusinessController.onPageLoad(ChangeMode).url
+            val expectedOrganisationNameUrl: String            =
               controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode).url
-            val expectedTitle                       = ""
-            val expectedKeys: Seq[String]           = Seq(
+
+            val expectedTitle             = ""
+            val expectedKeys: Seq[String] = Seq(
               "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
               "Would you like to add an organisation or individual as an RCASP?",
               "What is the name of the organisation?",
@@ -510,7 +513,8 @@ class DetailsHelperSpec extends SpecBase {
             )
 
             compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
-            section.rows(2).actions.get.items.head.href mustBe expectedOrganisationNameUrl
+            section.rows.head.actions.get.items.head.href mustBe expectedReportForRegisteredBusinessUrl
+            section.rows(2).actions.get.items.head.href   mustBe expectedOrganisationNameUrl
           }
 
           "when ReportForRegisteredBusiness is not answered and and haveTradingName is false" in {
@@ -588,10 +592,15 @@ class DetailsHelperSpec extends SpecBase {
 
             val section: Section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true).get
 
-            val expectedOrganisationNameUrl: String =
+            val expectedReportForRegisteredBusinessUrl: String =
+              controllers.routes.PlaceholderController
+                .onPageLoad("Should nav to /registered-business/change-report-for-registered-business (CARF-351)")
+                .url
+            val expectedOrganisationNameUrl: String            =
               controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode).url
-            val expectedTitle                       = ""
-            val expectedKeys: Seq[String]           = Seq(
+
+            val expectedTitle             = ""
+            val expectedKeys: Seq[String] = Seq(
               "RCASP ID",
               "Is this reporting cryptoasset service provider (RCASP) the business you registered as?",
               "Is this RCASP an organisation or individual?",
@@ -603,6 +612,7 @@ class DetailsHelperSpec extends SpecBase {
             )
 
             compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+            section.rows(1).actions.get.items.head.href mustBe expectedReportForRegisteredBusinessUrl
             section.rows(3).actions.get.items.head.href mustBe expectedOrganisationNameUrl
           }
 

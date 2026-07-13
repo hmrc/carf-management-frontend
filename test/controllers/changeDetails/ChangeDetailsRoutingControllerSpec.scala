@@ -53,9 +53,8 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
         val result: Future[Result] = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
-          .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
-          .url
+        redirectLocation(result).value mustEqual
+          controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(rcaspId).url
 
         verify(mockAccountService, times(0)).getRcaspDetails(any(), any())(any(), any())
       }
@@ -241,7 +240,7 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
           .populateUserAnswersForOrganisation(any(), eqTo(organisationRcaspDetailsResponse))
       }
 
-      "when an OrganisationRcaspDetails is returned and IsRCASPUser = true (registered business)" in new Setup(
+      "must call PopulateUserAnswersHelper when an OrganisationRcaspDetails is returned and IsRCASPUser = true (registered business)" in new Setup(
         emptyUserAnswers
       ) {
         val rcaspDetails: OrganisationRcaspDetails =
@@ -256,10 +255,7 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
         when(mockPopulateUserAnswersHelper.populateUserAnswersForRegisteredBusiness(any(), eqTo(rcaspDetails)))
           .thenReturn(
             Future.successful(
-              Redirect(
-                controllers.routes.PlaceholderController
-                  .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
-              )
+              Redirect(controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(rcaspId))
             )
           )
 
@@ -267,9 +263,8 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
         val result: Future[Result] = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
-          .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
-          .url
+        redirectLocation(result).value mustEqual
+          controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(rcaspId).url
 
         verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
         verify(mockPopulateUserAnswersHelper, times(1))

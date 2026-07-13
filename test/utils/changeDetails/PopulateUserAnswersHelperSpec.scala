@@ -342,9 +342,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
         val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
-          .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
-          .url
+        redirectLocation(result).value mustEqual
+          controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(rcaspId).url
 
         verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("GB"))
         verify(mockSessionRepository, times(1)).set(
@@ -354,6 +353,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(ReportForRegisteredBusinessPage).contains(true) &&
             ua.get(OrganisationNamePage).contains(testOrgName) &&
             ua.get(OverwritableOrganisationName).contains(testOrgName) &&
+            ua.get(RegisteredBusinessIsThisYourBusinessNamePage).contains(true) &&
             ua.get(HaveTradingNamePage).contains(true) &&
             ua.get(TradingNamePage).contains(testTradingName) &&
             ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
@@ -379,9 +379,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
         val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
-          .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
-          .url
+        redirectLocation(result).value mustEqual
+          controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(rcaspId).url
 
         verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("GB"))
         verify(mockSessionRepository, times(1)).set(
@@ -391,6 +390,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(ReportForRegisteredBusinessPage).contains(true) &&
             ua.get(OrganisationNamePage).contains(testOrgName) &&
             ua.get(OverwritableOrganisationName).contains(testOrgName) &&
+            ua.get(RegisteredBusinessIsThisYourBusinessNamePage).contains(true) &&
             ua.get(HaveTradingNamePage).contains(false) &&
             ua.get(TradingNamePage).isEmpty &&
             ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&

@@ -163,19 +163,19 @@ class PopulateUserAnswersHelper @Inject() (
             Future.fromTry(emptyUserAnswers.set(ReportForRegisteredBusinessPage, true))
           b              <- Future.fromTry(a.set(OrganisationNamePage, organisationRcaspDetails.RCASPName))
           c              <- Future.fromTry(b.set(OverwritableOrganisationName, organisationRcaspDetails.RCASPName))
-          d              <- Future.fromTry(c.set(HaveTradingNamePage, haveTradingName))
-          e              <- Future.fromTry {
-                              if (haveTradingName) d.set(TradingNamePage, organisationRcaspDetails.TradingName) else Success(d)
+          d              <- Future.fromTry(c.set(RegisteredBusinessIsThisYourBusinessNamePage, true))
+          e              <- Future.fromTry(d.set(HaveTradingNamePage, haveTradingName))
+          f              <- Future.fromTry {
+                              if (haveTradingName) e.set(TradingNamePage, organisationRcaspDetails.TradingName) else Success(e)
                             }
-          f              <- Future.fromTry(e.set(UtrPage, utr))
-          g              <- Future.fromTry(f.set(RegisteredBusinessIsTheAddressCorrectPage, true))
-          h              <- Future.fromTry(g.set(CachedBusinessDetailsPage, cachedBusinessDetails))
-          updatedAnswers <- Future.fromTry(h.set(ChangeRcaspCachedDetails, organisationRcaspDetails))
+          g              <- Future.fromTry(f.set(UtrPage, utr))
+          h              <- Future.fromTry(g.set(RegisteredBusinessIsTheAddressCorrectPage, true))
+          i              <- Future.fromTry(h.set(CachedBusinessDetailsPage, cachedBusinessDetails))
+          updatedAnswers <- Future.fromTry(i.set(ChangeRcaspCachedDetails, organisationRcaspDetails))
           _              <- sessionRepository.set(updatedAnswers)
         } yield Redirect(
-          controllers.routes.PlaceholderController.onPageLoad(
-            s"Should nav to registered-business/change-answers/${organisationRcaspDetails.RCASPID} (CARF-350)"
-          )
+          controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController
+            .onPageLoad(organisationRcaspDetails.RCASPID)
         )
       }
       .getOrElse {
