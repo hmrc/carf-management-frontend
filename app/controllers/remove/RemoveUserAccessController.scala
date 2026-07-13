@@ -117,7 +117,7 @@ class RemoveUserAccessController @Inject() (
                   logger.warn(
                     s"[RemoveUserAccessController][onPageLoad] Failed to get user business name: $error — continuing with fallback"
                   )
-                  cacheAndRender(rcaspId, details, None)
+                  Future.successful(journeyRecovery)
               }
             case Left(error)    =>
               logger.warn(s"[RemoveUserAccessController][onPageLoad] Failed to get RCASP details: $error")
