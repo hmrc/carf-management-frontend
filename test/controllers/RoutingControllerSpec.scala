@@ -24,6 +24,7 @@ import org.mockito.Mockito.{verify, when}
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.OverwritableOrganisationName
 import pages.{RcaspIdPage, SubmissionSucceededPage}
+import pages.remove.RemoveRcaspCachedDetails
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
@@ -206,6 +207,34 @@ class RoutingControllerSpec extends SpecBase {
 
         verify(mockSessionRepository).set(
           argThat((answers: UserAnswers) => answers.get(ChangeRcaspCachedDetails).isEmpty)
+        )
+      }
+    }
+
+    "must save fresh UserAnswers in NormalMode when RemoveRcaspCachedDetails is present (switching journeys)" in {
+      val staleUserAnswers =
+        emptyUserAnswers.withPage(RemoveRcaspCachedDetails, individualRcaspDetailsResponse)
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
+        .thenReturn(ResultT.fromValue(0))
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(staleUserAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        ).overrides(bind[AccountService].toInstance(mockAccountService)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
+        verify(mockSessionRepository).set(
+          argThat((answers: UserAnswers) =>
+            answers.get(RemoveRcaspCachedDetails).isEmpty
+          )
         )
       }
     }
