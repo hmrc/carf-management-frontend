@@ -21,7 +21,7 @@ import models.errors.ApiError.NotFoundError
 import models.viewAndUpdateRcasp.RcaspDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import pages.remove.RemoveRcaspCachedDetails
+import pages.remove.{RemoveRcaspCachedDetails, RemoveUserBusinessNameCached}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
@@ -119,6 +119,28 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           }
         }
 
+        "must return OK for an otherOrg RCASP when getUserBusinessName returns None, using fallback" in {
+          when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
+            .thenReturn(ResultT.fromValue(otherOrgDetails))
+
+          when(mockAccountService.getUserBusinessName(any())(any(), any()))
+            .thenReturn(ResultT.fromValue(None))
+
+          when(mockSessionRepository.set(any()))
+            .thenReturn(Future.successful(true))
+
+          val application = applicationBuilder()
+            .overrides(bind[AccountService].toInstance(mockAccountService))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(GET, onPageLoadRoute)
+            val result  = route(application, request).value
+
+            status(result) mustEqual OK
+          }
+        }
+
         "must redirect to Journey Recovery when getRcaspDetails returns an error" in {
           when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
             .thenReturn(ResultT.fromError(NotFoundError))
@@ -139,12 +161,12 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           }
         }
 
-        "must redirect to Journey Recovery when user business name is missing for otherOrg" in {
+        "must redirect to Journey Recovery when getUserBusinessName returns an error" in {
           when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
             .thenReturn(ResultT.fromValue(otherOrgDetails))
 
           when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(None))
+            .thenReturn(ResultT.fromError(NotFoundError))
 
           when(mockSessionRepository.set(any()))
             .thenReturn(Future.successful(true))
@@ -161,15 +183,39 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
           }
         }
-      }
 
-      "cache hit" - {
+        "must call APIs and return OK when cached RCASP details exist but business name is missing" in {
+          when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
+            .thenReturn(ResultT.fromValue(rcaspIsUserDetails))
 
-        "must return OK using cached details without calling API" in {
           when(mockAccountService.getUserBusinessName(any())(any(), any()))
             .thenReturn(ResultT.fromValue(Some("My Business")))
 
-          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+          when(mockSessionRepository.set(any()))
+            .thenReturn(Future.successful(true))
+
+          val userAnswers =
+            emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+
+          val application = applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(bind[AccountService].toInstance(mockAccountService))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(GET, onPageLoadRoute)
+            val result = route(application, request).value
+
+            status(result) mustEqual OK
+          }
+        }
+      }
+
+      "cache hit" - {
+        
+        "must return OK using cached details without calling APIs" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+            .withPage(RemoveUserBusinessNameCached, "My Business")
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -183,11 +229,10 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           }
         }
 
-        "must redirect to Journey Recovery when getUserBusinessName returns an error" in {
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromError(NotFoundError))
-
-          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+        "must return OK for an individual RCASP using cached details" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(RemoveRcaspCachedDetails, individualDetails)
+            .withPage(RemoveUserBusinessNameCached, "My Business")
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -197,16 +242,14 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val request = FakeRequest(GET, onPageLoadRoute)
             val result  = route(application, request).value
 
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+            status(result) mustEqual OK
           }
         }
 
-        "must redirect to Journey Recovery when user business name is missing for otherOrg (cache hit)" in {
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(None))
-
-          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, otherOrgDetails)
+        "must return OK for an otherOrg RCASP using cached details" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(RemoveRcaspCachedDetails, otherOrgDetails)
+            .withPage(RemoveUserBusinessNameCached, "My Business")
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -216,137 +259,110 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val request = FakeRequest(GET, onPageLoadRoute)
             val result  = route(application, request).value
 
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+            status(result) mustEqual OK
           }
         }
       }
+    }
 
-      "onSubmit" - {
+    "onSubmit" - {
 
-        "must redirect to RemoveOtherAccess when valid data is submitted" in {
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(Some("My Business")))
+      "must redirect to RemoveOtherAccess when valid data is submitted" in {
+        when(mockSessionRepository.set(any()))
+          .thenReturn(Future.successful(true))
 
-          when(mockSessionRepository.set(any()))
-            .thenReturn(Future.successful(true))
+        val userAnswers = emptyUserAnswers
+          .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+          .withPage(RemoveUserBusinessNameCached, "My Business")
 
-          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(bind[AccountService].toInstance(mockAccountService))
+          .build()
 
-          val application = applicationBuilder(userAnswers = Some(userAnswers))
-            .overrides(bind[AccountService].toInstance(mockAccountService))
-            .build()
+        running(application) {
+          val request =
+            FakeRequest(POST, onSubmitRoute)
+              .withFormUrlEncodedBody(("value", "true"))
 
-          running(application) {
-            val request =
-              FakeRequest(POST, onSubmitRoute)
-                .withFormUrlEncodedBody(("value", "true"))
+          val result = route(application, request).value
 
-            val result = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual
-              controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId).url
-          }
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual
+            controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId).url
         }
+      }
 
-        "must return BadRequest when invalid data is submitted" in {
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(Some("My Business")))
+      "must return BadRequest when invalid data is submitted" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+          .withPage(RemoveUserBusinessNameCached, "My Business")
 
-          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(bind[AccountService].toInstance(mockAccountService))
+          .build()
 
-          val application = applicationBuilder(userAnswers = Some(userAnswers))
-            .overrides(bind[AccountService].toInstance(mockAccountService))
-            .build()
+        running(application) {
+          val request =
+            FakeRequest(POST, onSubmitRoute)
+              .withFormUrlEncodedBody(("value", ""))
 
-          running(application) {
-            val request =
-              FakeRequest(POST, onSubmitRoute)
-                .withFormUrlEncodedBody(("value", ""))
+          val result = route(application, request).value
 
-            val result = route(application, request).value
-
-            status(result) mustEqual BAD_REQUEST
-          }
+          status(result) mustEqual BAD_REQUEST
         }
+      }
 
-        "must redirect to Journey Recovery when RemoveRcaspCachedDetails not in cache" in {
-          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-            .overrides(bind[AccountService].toInstance(mockAccountService))
-            .build()
+      "must redirect to Journey Recovery when RemoveRcaspCachedDetails not in cache" in {
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(bind[AccountService].toInstance(mockAccountService))
+          .build()
 
-          running(application) {
-            val request =
-              FakeRequest(POST, onSubmitRoute)
-                .withFormUrlEncodedBody(("value", "true"))
+        running(application) {
+          val request =
+            FakeRequest(POST, onSubmitRoute)
+              .withFormUrlEncodedBody(("value", "true"))
 
-            val result = route(application, request).value
+          val result = route(application, request).value
 
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-          }
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
         }
+      }
 
-        "must redirect to Journey Recovery when getUserBusinessName returns an error on submit" in {
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromError(NotFoundError))
+      "must redirect to Journey Recovery when RemoveUserBusinessNameCached not in cache" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
 
-          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(bind[AccountService].toInstance(mockAccountService))
+          .build()
 
-          val application = applicationBuilder(userAnswers = Some(userAnswers))
-            .overrides(bind[AccountService].toInstance(mockAccountService))
-            .build()
+        running(application) {
+          val request =
+            FakeRequest(POST, onSubmitRoute)
+              .withFormUrlEncodedBody(("value", "true"))
 
-          running(application) {
-            val request =
-              FakeRequest(POST, onSubmitRoute)
-                .withFormUrlEncodedBody(("value", "true"))
+          val result = route(application, request).value
 
-            val result = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-          }
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
         }
+      }
 
-        "must redirect to Journey Recovery when buildViewModel returns Left on submit" in {
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(None))
+      "must redirect to Journey Recovery when no userAnswers exist on submit" in {
+        val application = applicationBuilder(userAnswers = None)
+          .overrides(bind[AccountService].toInstance(mockAccountService))
+          .build()
 
-          val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, otherOrgDetails)
+        running(application) {
+          val request =
+            FakeRequest(POST, onSubmitRoute)
+              .withFormUrlEncodedBody(("value", "true"))
 
-          val application = applicationBuilder(userAnswers = Some(userAnswers))
-            .overrides(bind[AccountService].toInstance(mockAccountService))
-            .build()
+          val result = route(application, request).value
 
-          running(application) {
-            val request =
-              FakeRequest(POST, onSubmitRoute)
-                .withFormUrlEncodedBody(("value", "true"))
-
-            val result = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-          }
-        }
-
-        "must redirect to Journey Recovery when no userAnswers exist on submit" in {
-          val application = applicationBuilder(userAnswers = None)
-            .overrides(bind[AccountService].toInstance(mockAccountService))
-            .build()
-
-          running(application) {
-            val request =
-              FakeRequest(POST, onSubmitRoute)
-                .withFormUrlEncodedBody(("value", "true"))
-
-            val result = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-          }
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
         }
       }
     }
