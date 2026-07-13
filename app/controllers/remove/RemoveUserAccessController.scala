@@ -74,8 +74,7 @@ class RemoveUserAccessController @Inject() (
 
     for {
       ua <- Future.fromTry(
-              request.userAnswers
-                .getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
+              UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false)
                 .set(RemoveRcaspCachedDetails, details)
                 .flatMap(_.set(RemoveUserBusinessNameCached, resolvedBusinessName))
             )
