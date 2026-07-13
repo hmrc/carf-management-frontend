@@ -19,13 +19,15 @@ package controllers.remove
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import models.UserAnswers
+import models.remove.RemoveUserBusinessName
 import models.viewAndUpdateRcasp.RcaspDetails
 import pages.remove.{RemoveRcaspCachedDetails, RemoveUserAccessPage, RemoveUserBusinessNameCached}
 import play.api.Logging
 import play.api.data.Form
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
 import repositories.SessionRepository
+import models.requests.{DataRequest, OptionalDataRequest}
 import services.AccountService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.remove.RemoveUserAccessViewModel
@@ -61,19 +63,19 @@ class RemoveUserAccessController @Inject() (
       form: Form[Boolean],
       rcaspId: String,
       vm: RemoveUserAccessViewModel
-  ) =
+  )(implicit request: Request[_], messages: Messages) =
     view(form, rcaspId, vm.titleKey, vm.headingKey, vm.errorKey, vm.rcaspName, vm.userBusinessName)
 
   private def cacheAndRender(
       rcaspId: String,
       details: RcaspDetails,
       userBusinessNameOpt: Option[String]
-  )(implicit request: DataRequest[AnyContent]): Future[Result] = {
+  )(implicit request: OptionalDataRequest[AnyContent]): Future[Result] = {
     val userAnswersTry =
       request.userAnswers
         .getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
         .set(RemoveRcaspCachedDetails, details)
-        .flatMap(_.set(RemoveUserBusinessNameCached, userBusinessNameOpt))
+        .flatMap(_.set(RemoveUserBusinessNameCached, RemoveUserBusinessName(userBusinessNameOpt)))
 
     Future
       .fromTry(userAnswersTry)
@@ -93,8 +95,8 @@ class RemoveUserAccessController @Inject() (
           .flatMap(_.get(RemoveRcaspCachedDetails))
           .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
 
-      val cachedBusinessName =
-        request.userAnswers.flatMap(_.get(RemoveUserBusinessNameCached))
+      val cachedBusinessName: Option[Option[String]] =
+        request.userAnswers.flatMap(_.get(RemoveUserBusinessNameCached)).map(_.cachedUserBusinessName)
 
       (cachedDetails, cachedBusinessName) match {
 
@@ -130,8 +132,8 @@ class RemoveUserAccessController @Inject() (
           .flatMap(_.get(RemoveRcaspCachedDetails))
           .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
 
-      val cachedBusinessName =
-        request.userAnswers.flatMap(_.get(RemoveUserBusinessNameCached))
+      val cachedBusinessName: Option[Option[String]] =
+        request.userAnswers.flatMap(_.get(RemoveUserBusinessNameCached)).map(_.cachedUserBusinessName)
 
       (cachedDetails, cachedBusinessName) match {
 
