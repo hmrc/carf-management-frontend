@@ -29,7 +29,7 @@ import scala.concurrent.Future
 class RemoveOtherAccessControllerSpec extends SpecBase {
 
   lazy val onPageLoadRoute: String = controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId).url
-
+  
   lazy val onSubmitRoute: String = controllers.remove.routes.RemoveOtherAccessController.onSubmit(rcaspId).url
 
   private val individualDetails: RcaspDetails =
@@ -47,7 +47,6 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
       "must return OK for an individual RCASP" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, individualDetails)
-
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
         running(application) {
@@ -60,7 +59,6 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
       "must return OK for a rcaspIsUser RCASP" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
-
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
         running(application) {
@@ -73,7 +71,6 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
       "must return OK for an otherOrg RCASP" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, otherOrgDetails)
-
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
         running(application) {
@@ -122,6 +119,20 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
         }
       }
+
+      "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
+        val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
+        val userAnswers      = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, differentDetails)
+        val application      = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+        running(application) {
+          val request = FakeRequest(GET, onPageLoadRoute)
+          val result  = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
     }
 
     "onSubmit" - {
@@ -131,7 +142,6 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
           .thenReturn(Future.successful(true))
 
         val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
-
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
         running(application) {
@@ -147,7 +157,6 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
       "must return BadRequest when invalid data is submitted" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
-
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
         running(application) {
@@ -194,12 +203,14 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
       "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
         val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
         val userAnswers      = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, differentDetails)
-
-        val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+        val application      = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
         running(application) {
-          val request = FakeRequest(GET, onPageLoadRoute)
-          val result  = route(application, request).value
+          val request =
+            FakeRequest(POST, onSubmitRoute)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
