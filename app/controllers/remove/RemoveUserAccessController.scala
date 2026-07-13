@@ -70,23 +70,20 @@ class RemoveUserAccessController @Inject() (
       details: RcaspDetails,
       userBusinessNameOpt: Option[String]
   )(implicit request: OptionalDataRequest[AnyContent], messages: Messages): Future[Result] = {
-    val resolvedBusinessName: String =
-      userBusinessNameOpt.getOrElse(messages("homePage.contactDetails.org.fallbackBusinessName"))
+    val resolvedBusinessName = userBusinessNameOpt.getOrElse(messages("homePage.contactDetails.org.fallbackBusinessName"))
 
-    val userAnswersTry =
-      request.userAnswers
-        .getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
-        .set(RemoveRcaspCachedDetails, details)
-        .flatMap(_.set(RemoveUserBusinessNameCached, resolvedBusinessName))
-
-    Future
-      .fromTry(userAnswersTry)
-      .flatMap { ua =>
-        sessionRepository.set(ua).map { _ =>
-          val vm = buildViewModel(details, Some(resolvedBusinessName))
-          Ok(render(vm.form, rcaspId, vm))
-        }
-      }
+    for {
+      ua <- Future.fromTry(
+              request.userAnswers
+                .getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
+                .set(RemoveRcaspCachedDetails, details)
+                .flatMap(_.set(RemoveUserBusinessNameCached, resolvedBusinessName))
+            )
+      _  <- sessionRepository.set(ua)
+    } yield {
+      val vm = buildViewModel(details, Some(resolvedBusinessName))
+      Ok(render(vm.form, rcaspId, vm))
+    }
   }
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
