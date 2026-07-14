@@ -40,6 +40,7 @@ class RemoveUserAccessController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     sessionRepository: SessionRepository,
     formProvider: GenericYesNoPageFormProvider,
     accountService: AccountService,
@@ -90,7 +91,7 @@ class RemoveUserAccessController @Inject() (
   }
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData()).async { implicit request =>
+    (identify() andThen getData() andThen submissionLock).async { implicit request =>
 
       val cachedDetails =
         request.userAnswers
@@ -127,7 +128,7 @@ class RemoveUserAccessController @Inject() (
     }
 
   def onSubmit(rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData() andThen requireData).async { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
 
       val cachedDetails =
         request.userAnswers
