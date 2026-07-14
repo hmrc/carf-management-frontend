@@ -33,7 +33,7 @@ import scala.concurrent.Future
 class RemoveOtherAccessControllerSpec extends SpecBase {
 
   lazy val onPageLoadRoute: String = controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId).url
-  
+
   lazy val onSubmitRoute: String = controllers.remove.routes.RemoveOtherAccessController.onSubmit(rcaspId).url
 
   private val formProvider = new GenericYesNoPageFormProvider()
