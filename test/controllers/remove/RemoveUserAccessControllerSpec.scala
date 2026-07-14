@@ -399,6 +399,28 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             verify(mockAccountService, never).getUserBusinessName(any())(any(), any())
           }
         }
+
+        "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
+          when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
+            .thenReturn(ResultT.fromError(NotFoundError))
+
+          val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
+          val userAnswers      = emptyUserAnswers
+            .withPage(RemoveRcaspCachedDetails, differentDetails)
+            .withPage(RemoveUserBusinessNameCached, "My Business")
+
+          val application = applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(bind[AccountService].toInstance(mockAccountService))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(GET, onPageLoadRoute)
+            val result  = route(application, request).value
+
+            status(result)                 mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+          }
+        }
       }
     }
 
@@ -501,6 +523,26 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
       "must redirect to Journey Recovery when no userAnswers exist on submit" in {
         val application = applicationBuilder(userAnswers = None)
+          .overrides(bind[AccountService].toInstance(mockAccountService))
+          .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, onSubmitRoute)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
+        val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
+        val userAnswers      = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, differentDetails)
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(bind[AccountService].toInstance(mockAccountService))
           .build()
 
