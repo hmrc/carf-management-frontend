@@ -35,6 +35,7 @@ class RemoveOtherAccessController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    submissionLock: SubmissionLockAction,
     sessionRepository: SessionRepository,
     formProvider: GenericYesNoPageFormProvider,
     val controllerComponents: MessagesControllerComponents,
@@ -47,7 +48,7 @@ class RemoveOtherAccessController @Inject() (
   private val journeyRecovery: Result = Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData() andThen requireData).async { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       request.userAnswers
         .get(RemoveRcaspCachedDetails)
         .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase) match {
@@ -77,7 +78,7 @@ class RemoveOtherAccessController @Inject() (
     }
 
   def onSubmit(rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData() andThen requireData).async { implicit request =>
+    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       request.userAnswers
         .get(RemoveRcaspCachedDetails)
         .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase) match {
