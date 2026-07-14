@@ -573,7 +573,9 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
       "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
         val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
-        val userAnswers      = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, differentDetails)
+        val userAnswers      = emptyUserAnswers
+          .withPage(RemoveRcaspCachedDetails, differentDetails)
+          .withPage(RemoveUserBusinessNameCached, "My Business")
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(bind[AccountService].toInstance(mockAccountService))
