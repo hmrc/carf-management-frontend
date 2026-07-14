@@ -39,6 +39,7 @@ class RemoveUserAccessController @Inject() (
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
+    requireData: DataRequiredAction,
     sessionRepository: SessionRepository,
     formProvider: GenericYesNoPageFormProvider,
     accountService: AccountService,
@@ -126,15 +127,15 @@ class RemoveUserAccessController @Inject() (
     }
 
   def onSubmit(rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData()).async { implicit request =>
+    (identify() andThen getData() andThen requireData).async { implicit request =>
 
       val cachedDetails =
         request.userAnswers
-          .flatMap(_.get(RemoveRcaspCachedDetails))
+          .get(RemoveRcaspCachedDetails)
           .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
 
       val cachedBusinessName: Option[String] =
-        request.userAnswers.flatMap(_.get(RemoveUserBusinessNameCached))
+        request.userAnswers.get(RemoveUserBusinessNameCached)
 
       (cachedDetails, cachedBusinessName) match {
 
@@ -148,9 +149,7 @@ class RemoveUserAccessController @Inject() (
               value =>
                 for {
                   updatedAnswers <- Future.fromTry(
-                                      request.userAnswers
-                                        .getOrElse(UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false))
-                                        .set(RemoveUserAccessPage, value)
+                                      request.userAnswers.set(RemoveUserAccessPage, value)
                                     )
                   _              <- sessionRepository.set(updatedAnswers)
                 } yield Redirect(controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId))
@@ -163,4 +162,5 @@ class RemoveUserAccessController @Inject() (
           Future.successful(journeyRecovery)
       }
     }
+
 }
