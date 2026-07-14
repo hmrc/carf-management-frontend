@@ -40,10 +40,10 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
       "must return correct keys and no userBusinessName" in {
         val vm = RemoveUserAccessViewModel.from(individualDetails, "My Business", formProvider)
 
-        vm.titleKey      mustEqual "removeUserAccess.title.individual"
-        vm.headingKey    mustEqual "removeUserAccess.heading.individual"
-        vm.rcaspName     mustEqual "Timmy Jimmison"
-        vm.userBusinessName mustBe None
+        vm.titleKey         mustEqual "removeUserAccess.title.individual"
+        vm.headingKey       mustEqual "removeUserAccess.heading.individual"
+        vm.rcaspName        mustEqual "Timmy Jimmison"
+        vm.userBusinessNameOpt mustBe None
       }
     }
 
@@ -52,10 +52,10 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
       "must return correct keys and no userBusinessName" in {
         val vm = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
 
-        vm.titleKey      mustEqual "removeUserAccess.title.rcaspIsUser"
-        vm.headingKey    mustEqual "removeUserAccess.heading.rcaspIsUser"
-        vm.rcaspName     mustEqual testOrgName
-        vm.userBusinessName mustBe None
+        vm.titleKey         mustEqual "removeUserAccess.title.rcaspIsUser"
+        vm.headingKey       mustEqual "removeUserAccess.heading.rcaspIsUser"
+        vm.rcaspName        mustEqual testOrgName
+        vm.userBusinessNameOpt mustBe None
       }
     }
 
@@ -64,11 +64,11 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
       "must return correct keys and user business name when provided" in {
         val vm = RemoveUserAccessViewModel.from(otherOrgDetails, "My Business", formProvider)
 
-        vm.titleKey      mustEqual "removeUserAccess.title.otherOrg"
-        vm.headingKey    mustEqual "removeUserAccess.heading.otherOrg"
-        vm.rcaspName     mustEqual testOrgName
-        vm.userBusinessName mustBe Some("My Business")
-        vm.form          mustEqual formProvider("removeUserAccess.error.required.otherOrg")
+        vm.titleKey         mustEqual "removeUserAccess.title.otherOrg"
+        vm.headingKey       mustEqual "removeUserAccess.heading.otherOrg"
+        vm.rcaspName        mustEqual testOrgName
+        vm.userBusinessNameOpt mustBe Some("My Business")
+        vm.form             mustEqual formProvider("removeUserAccess.error.required.otherOrg")
       }
     }
   }

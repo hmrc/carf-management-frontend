@@ -24,7 +24,7 @@ case class RemoveUserAccessViewModel(
     titleKey: String,
     headingKey: String,
     rcaspName: String,
-    userBusinessName: Option[String],
+    userBusinessNameOpt: Option[String],
     form: Form[Boolean]
 )
 
@@ -59,7 +59,7 @@ object RemoveUserAccessViewModel {
       titleKey = titleKey,
       headingKey = headingKey,
       rcaspName = rcaspName,
-      userBusinessName = maybeUserBusinessName,
+      userBusinessNameOpt = maybeUserBusinessName,
       form = formProvider(errorKey)
     )
   }

@@ -91,7 +91,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               vm.titleKey,
               vm.headingKey,
               vm.rcaspName,
-              vm.userBusinessName
+              vm.userBusinessNameOpt
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
@@ -128,7 +128,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               vm.titleKey,
               vm.headingKey,
               vm.rcaspName,
-              vm.userBusinessName
+              vm.userBusinessNameOpt
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
@@ -164,7 +164,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               vm.titleKey,
               vm.headingKey,
               vm.rcaspName,
-              vm.userBusinessName
+              vm.userBusinessNameOpt
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
@@ -201,7 +201,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               vm.titleKey,
               vm.headingKey,
               vm.rcaspName,
-              vm.userBusinessName
+              vm.userBusinessNameOpt
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
@@ -289,7 +289,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               vm.titleKey,
               vm.headingKey,
               vm.rcaspName,
-              vm.userBusinessName
+              vm.userBusinessNameOpt
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
@@ -323,7 +323,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               vm.titleKey,
               vm.headingKey,
               vm.rcaspName,
-              vm.userBusinessName
+              vm.userBusinessNameOpt
             )(request, messages(application)).toString
 
             verify(mockAccountService, never).getRcaspDetails(any(), any())(any(), any())
@@ -354,7 +354,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               vm.titleKey,
               vm.headingKey,
               vm.rcaspName,
-              vm.userBusinessName
+              vm.userBusinessNameOpt
             )(request, messages(application)).toString
 
             verify(mockAccountService, never).getRcaspDetails(any(), any())(any(), any())
@@ -385,7 +385,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               vm.titleKey,
               vm.headingKey,
               vm.rcaspName,
-              vm.userBusinessName
+              vm.userBusinessNameOpt
             )(request, messages(application)).toString
 
             verify(mockAccountService, never).getRcaspDetails(any(), any())(any(), any())
@@ -471,7 +471,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             vm.titleKey,
             vm.headingKey,
             vm.rcaspName,
-            vm.userBusinessName
+            vm.userBusinessNameOpt
           )(request, messages(application)).toString
         }
       }
