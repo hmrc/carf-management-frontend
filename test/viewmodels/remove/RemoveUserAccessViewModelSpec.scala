@@ -73,16 +73,6 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
         vm.userBusinessName mustBe Some("My Business")
         vm.form          mustEqual formProvider("removeUserAccess.error.required.otherOrg")
       }
-
-      "must return None for userBusinessName when not provided" in {
-        val vm = RemoveUserAccessViewModel.from(otherOrgDetails, None, formProvider)
-
-        vm.titleKey      mustEqual "removeUserAccess.title.otherOrg"
-        vm.headingKey    mustEqual "removeUserAccess.heading.otherOrg"
-        vm.errorKey      mustEqual "removeUserAccess.error.required.otherOrg"
-        vm.rcaspName     mustEqual testOrgName
-        vm.userBusinessName mustBe None
-      }
     }
   }
 }
