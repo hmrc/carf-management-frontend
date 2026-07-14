@@ -82,7 +82,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(individualDetails, None, formProvider)
+            val vm   = RemoveUserAccessViewModel.from(individualDetails, "My Business", formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -96,7 +96,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService).getUserBusinessName(any(), any())(any(), any())
           }
         }
 
@@ -119,7 +119,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, Some("My Business"), formProvider)
+            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -156,7 +156,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(otherOrgDetails, Some("My Business"), formProvider)
+            val vm   = RemoveUserAccessViewModel.from(otherOrgDetails, "My Business", formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -194,7 +194,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
             val view     = application.injector.instanceOf[RemoveUserAccessView]
             val fallback = messages(application)("homePage.contactDetails.org.fallbackBusinessName")
-            val vm       = RemoveUserAccessViewModel.from(otherOrgDetails, Some(fallback), formProvider)
+            val vm       = RemoveUserAccessViewModel.from(otherOrgDetails, fallback, formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -283,7 +283,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, Some("My Business"), formProvider)
+            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -318,7 +318,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, Some("My Business"), formProvider)
+            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -350,7 +350,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(individualDetails, Some("My Business"), formProvider)
+            val vm   = RemoveUserAccessViewModel.from(individualDetails, "My Business", formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -382,7 +382,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(otherOrgDetails, Some("My Business"), formProvider)
+            val vm   = RemoveUserAccessViewModel.from(otherOrgDetails, "My Business", formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -446,7 +446,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           val view      = application.injector.instanceOf[RemoveUserAccessView]
-          val vm        = RemoveUserAccessViewModel.from(rcaspIsUserDetails, Some("My Business"), formProvider)
+          val vm        = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
           val boundForm = vm.form.bindFromRequest()(request, implicitly)
 
           status(result)          mustEqual BAD_REQUEST

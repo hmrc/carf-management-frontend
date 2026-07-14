@@ -55,9 +55,9 @@ class RemoveUserAccessController @Inject() (
 
   private def buildViewModel(
       details: RcaspDetails,
-      userBusinessNameOpt: Option[String]
+      userBusinessName: String
   ): RemoveUserAccessViewModel =
-    RemoveUserAccessViewModel.from(details, userBusinessNameOpt, formProvider)
+    RemoveUserAccessViewModel.from(details, userBusinessName, formProvider)
 
   private def render(
       form: Form[Boolean],
@@ -84,7 +84,7 @@ class RemoveUserAccessController @Inject() (
                         )
       _              <- sessionRepository.set(updatedAnswers)
     } yield {
-      val vm = buildViewModel(details, Some(resolvedBusinessName))
+      val vm = buildViewModel(details, resolvedBusinessName)
       Ok(render(vm.form, rcaspId, vm))
     }
   }
@@ -103,7 +103,7 @@ class RemoveUserAccessController @Inject() (
       (cachedDetails, cachedBusinessName) match {
 
         case (Some(details), Some(userBusinessName)) =>
-          val vm           = buildViewModel(details, Some(userBusinessName))
+          val vm           = buildViewModel(details, userBusinessName)
           val preparedForm = request.userAnswers.flatMap(_.get(RemoveUserAccessPage)).fold(vm.form)(vm.form.fill)
           Future.successful(Ok(render(preparedForm, rcaspId, vm)))
 
@@ -140,7 +140,7 @@ class RemoveUserAccessController @Inject() (
       (cachedDetails, cachedBusinessName) match {
 
         case (Some(details), Some(userBusinessName)) =>
-          val vm = buildViewModel(details, Some(userBusinessName))
+          val vm = buildViewModel(details, userBusinessName)
 
           vm.form
             .bindFromRequest()
@@ -162,5 +162,4 @@ class RemoveUserAccessController @Inject() (
           Future.successful(journeyRecovery)
       }
     }
-
 }
