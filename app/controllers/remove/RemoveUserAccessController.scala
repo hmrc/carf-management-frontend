@@ -74,12 +74,14 @@ class RemoveUserAccessController @Inject() (
       userBusinessNameOpt.getOrElse(messages("homePage.contactDetails.org.fallbackBusinessName"))
 
     for {
-      ua <- Future.fromTry(
-              UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false)
-                .set(RemoveRcaspCachedDetails, details)
-                .flatMap(_.set(RemoveUserBusinessNameCached, resolvedBusinessName))
-            )
-      _  <- sessionRepository.set(ua)
+      answers        <- Future.fromTry(
+                          UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false)
+                            .set(RemoveRcaspCachedDetails, details)
+                        )
+      updatedAnswers <- Future.fromTry(
+                          answers.set(RemoveUserBusinessNameCached, resolvedBusinessName)
+                        )
+      _              <- sessionRepository.set(updatedAnswers)
     } yield {
       val vm = buildViewModel(details, Some(resolvedBusinessName))
       Ok(render(vm.form, rcaspId, vm))
