@@ -96,7 +96,8 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService).getUserBusinessName(any(), any())(any(), any())
+            verify(mockAccountService).getUserBusinessName(any())(any(), any())
+
           }
         }
 

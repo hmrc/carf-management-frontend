@@ -38,7 +38,7 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
     "individual scenario" - {
 
       "must return correct keys and no userBusinessName" in {
-        val vm = RemoveUserAccessViewModel.from(individualDetails, Some("My Business"), formProvider)
+        val vm = RemoveUserAccessViewModel.from(individualDetails, "My Business", formProvider)
 
         vm.titleKey      mustEqual "removeUserAccess.title.individual"
         vm.headingKey    mustEqual "removeUserAccess.heading.individual"
@@ -51,7 +51,7 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
     "rcaspIsUser scenario" - {
 
       "must return correct keys and no userBusinessName" in {
-        val vm = RemoveUserAccessViewModel.from(rcaspIsUserDetails, Some("My Business"), formProvider)
+        val vm = RemoveUserAccessViewModel.from(individualDetails, "My Business", formProvider)
 
         vm.titleKey      mustEqual "removeUserAccess.title.rcaspIsUser"
         vm.headingKey    mustEqual "removeUserAccess.heading.rcaspIsUser"
@@ -64,7 +64,7 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
     "otherOrg scenario" - {
 
       "must return correct keys and user business name when provided" in {
-        val vm = RemoveUserAccessViewModel.from(otherOrgDetails, Some("My Business"), formProvider)
+        val vm = RemoveUserAccessViewModel.from(individualDetails, "My Business", formProvider)
 
         vm.titleKey      mustEqual "removeUserAccess.title.otherOrg"
         vm.headingKey    mustEqual "removeUserAccess.heading.otherOrg"
