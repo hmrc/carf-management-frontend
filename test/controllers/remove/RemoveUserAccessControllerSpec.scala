@@ -338,6 +338,49 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             verify(mockSessionRepository).set(any())
           }
         }
+
+        "must ignore cached details when cached rcaspId does not match URL rcaspId" in {
+          val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
+
+          val userAnswers = emptyUserAnswers
+            .withPage(RemoveRcaspCachedDetails, differentDetails)
+            .withPage(RemoveUserBusinessNameCached, "Old Cached Business")
+
+          when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
+            .thenReturn(ResultT.fromValue(rcaspIsUserDetails))
+
+          when(mockAccountService.getUserBusinessName(any())(any(), any()))
+            .thenReturn(ResultT.fromValue(Some("Fresh API Business")))
+
+          when(mockSessionRepository.set(any()))
+            .thenReturn(Future.successful(true))
+
+          val application = applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(bind[AccountService].toInstance(mockAccountService))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(GET, onPageLoadRoute)
+            val result  = route(application, request).value
+
+            val view = application.injector.instanceOf[RemoveUserAccessView]
+            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "Fresh API Business", formProvider)
+
+            status(result)          mustEqual OK
+            contentAsString(result) mustEqual view(
+              vm.form,
+              rcaspId,
+              vm.titleKey,
+              vm.headingKey,
+              vm.rcaspName,
+              vm.userBusinessNameOpt
+            )(request, messages(application)).toString
+
+            verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
+            verify(mockAccountService).getUserBusinessName(any())(any(), any())
+            verify(mockSessionRepository).set(any())
+          }
+        }
       }
 
       "cache hit" - {
@@ -432,27 +475,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
             verify(mockAccountService, never).getRcaspDetails(any(), any())(any(), any())
             verify(mockAccountService, never).getUserBusinessName(any())(any(), any())
-          }
-        }
-
-        "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
-          when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
-            .thenReturn(ResultT.fromError(NotFoundError))
-          val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
-          val userAnswers      = emptyUserAnswers
-            .withPage(RemoveRcaspCachedDetails, differentDetails)
-            .withPage(RemoveUserBusinessNameCached, "My Business")
-
-          val application = applicationBuilder(userAnswers = Some(userAnswers))
-            .overrides(bind[AccountService].toInstance(mockAccountService))
-            .build()
-
-          running(application) {
-            val request = FakeRequest(GET, onPageLoadRoute)
-            val result  = route(application, request).value
-
-            status(result)                 mustEqual SEE_OTHER
-            redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
           }
         }
       }
