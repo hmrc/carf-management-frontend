@@ -115,7 +115,6 @@ class AccountService @Inject (
               displaySubscriptionResponse.success.carfSubscriptionDetails.primaryContact.individual.map { individual =>
                 s"${individual.firstName} ${individual.lastName}"
               }
-
             }
 
           Right(name)
