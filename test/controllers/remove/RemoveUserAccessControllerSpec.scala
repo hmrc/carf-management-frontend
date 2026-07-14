@@ -90,7 +90,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               rcaspId,
               vm.titleKey,
               vm.headingKey,
-              vm.errorKey,
               vm.rcaspName,
               vm.userBusinessName
             )(request, messages(application)).toString
@@ -128,7 +127,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               rcaspId,
               vm.titleKey,
               vm.headingKey,
-              vm.errorKey,
               vm.rcaspName,
               vm.userBusinessName
             )(request, messages(application)).toString
@@ -165,7 +163,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               rcaspId,
               vm.titleKey,
               vm.headingKey,
-              vm.errorKey,
               vm.rcaspName,
               vm.userBusinessName
             )(request, messages(application)).toString
@@ -203,7 +200,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               rcaspId,
               vm.titleKey,
               vm.headingKey,
-              vm.errorKey,
               vm.rcaspName,
               vm.userBusinessName
             )(request, messages(application)).toString
@@ -292,7 +288,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               rcaspId,
               vm.titleKey,
               vm.headingKey,
-              vm.errorKey,
               vm.rcaspName,
               vm.userBusinessName
             )(request, messages(application)).toString
@@ -327,7 +322,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               rcaspId,
               vm.titleKey,
               vm.headingKey,
-              vm.errorKey,
               vm.rcaspName,
               vm.userBusinessName
             )(request, messages(application)).toString
@@ -359,7 +353,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               rcaspId,
               vm.titleKey,
               vm.headingKey,
-              vm.errorKey,
               vm.rcaspName,
               vm.userBusinessName
             )(request, messages(application)).toString
@@ -391,7 +384,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
               rcaspId,
               vm.titleKey,
               vm.headingKey,
-              vm.errorKey,
               vm.rcaspName,
               vm.userBusinessName
             )(request, messages(application)).toString
@@ -478,7 +470,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             rcaspId,
             vm.titleKey,
             vm.headingKey,
-            vm.errorKey,
             vm.rcaspName,
             vm.userBusinessName
           )(request, messages(application)).toString

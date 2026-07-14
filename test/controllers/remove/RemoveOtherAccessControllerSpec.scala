@@ -68,7 +68,6 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
             rcaspId,
             vm.titleKey,
             vm.headingKey,
-            vm.errorKey,
             vm.rcaspName
           )(request, messages(application)).toString
         }
@@ -91,7 +90,6 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
             rcaspId,
             vm.titleKey,
             vm.headingKey,
-            vm.errorKey,
             vm.rcaspName
           )(request, messages(application)).toString
         }
@@ -114,7 +112,6 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
             rcaspId,
             vm.titleKey,
             vm.headingKey,
-            vm.errorKey,
             vm.rcaspName
           )(request, messages(application)).toString
         }
@@ -140,7 +137,6 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
             rcaspId,
             vm.titleKey,
             vm.headingKey,
-            vm.errorKey,
             vm.rcaspName
           )(request, messages(application)).toString
         }
@@ -226,7 +222,6 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
             rcaspId,
             vm.titleKey,
             vm.headingKey,
-            vm.errorKey,
             vm.rcaspName
           )(request, messages(application)).toString
         }

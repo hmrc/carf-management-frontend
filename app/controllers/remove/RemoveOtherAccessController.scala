@@ -63,7 +63,6 @@ class RemoveOtherAccessController @Inject() (
                 rcaspId,
                 vm.titleKey,
                 vm.headingKey,
-                vm.errorKey,
                 vm.rcaspName
               )
             )
@@ -96,7 +95,6 @@ class RemoveOtherAccessController @Inject() (
                       rcaspId,
                       vm.titleKey,
                       vm.headingKey,
-                      vm.errorKey,
                       vm.rcaspName
                     )
                   )

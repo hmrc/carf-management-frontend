@@ -42,7 +42,6 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
 
         vm.titleKey      mustEqual "removeUserAccess.title.individual"
         vm.headingKey    mustEqual "removeUserAccess.heading.individual"
-        vm.errorKey      mustEqual "removeUserAccess.error.required.individual"
         vm.rcaspName     mustEqual "Timmy Jimmison"
         vm.userBusinessName mustBe None
       }
@@ -55,7 +54,6 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
 
         vm.titleKey      mustEqual "removeUserAccess.title.rcaspIsUser"
         vm.headingKey    mustEqual "removeUserAccess.heading.rcaspIsUser"
-        vm.errorKey      mustEqual "removeUserAccess.error.required.rcaspIsUser"
         vm.rcaspName     mustEqual testOrgName
         vm.userBusinessName mustBe None
       }
@@ -68,7 +66,6 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
 
         vm.titleKey      mustEqual "removeUserAccess.title.otherOrg"
         vm.headingKey    mustEqual "removeUserAccess.heading.otherOrg"
-        vm.errorKey      mustEqual "removeUserAccess.error.required.otherOrg"
         vm.rcaspName     mustEqual testOrgName
         vm.userBusinessName mustBe Some("My Business")
         vm.form          mustEqual formProvider("removeUserAccess.error.required.otherOrg")

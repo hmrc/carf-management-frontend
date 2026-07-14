@@ -65,7 +65,7 @@ class RemoveUserAccessController @Inject() (
       rcaspId: String,
       vm: RemoveUserAccessViewModel
   )(implicit request: Request[_], messages: Messages) =
-    view(form, rcaspId, vm.titleKey, vm.headingKey, vm.errorKey, vm.rcaspName, vm.userBusinessName)
+    view(form, rcaspId, vm.titleKey, vm.headingKey, vm.rcaspName, vm.userBusinessName)
 
   private def cacheAndRender(
       rcaspId: String,
