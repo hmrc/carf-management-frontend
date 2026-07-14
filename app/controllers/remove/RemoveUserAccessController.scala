@@ -20,6 +20,7 @@ import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import models.UserAnswers
 import models.viewAndUpdateRcasp.RcaspDetails
+import pages.SubmissionSucceededPage
 import pages.remove.{RemoveRcaspCachedDetails, RemoveUserAccessPage, RemoveUserBusinessNameCached}
 import play.api.Logging
 import play.api.data.Form
@@ -91,19 +92,20 @@ class RemoveUserAccessController @Inject() (
   }
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock).async { implicit request =>
+    (identify() andThen getData()).async { implicit request =>
+
+      val submissionFlagSet = request.userAnswers.flatMap(_.get(SubmissionSucceededPage)).contains(true)
 
       val cachedDetails =
-        request.userAnswers
-          .flatMap(_.get(RemoveRcaspCachedDetails))
-          .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
+        request.userAnswers.flatMap(_.get(RemoveRcaspCachedDetails))
 
       val cachedBusinessName: Option[String] =
         request.userAnswers.flatMap(_.get(RemoveUserBusinessNameCached))
 
       (cachedDetails, cachedBusinessName) match {
 
-        case (Some(details), Some(userBusinessName)) =>
+        case (Some(details), Some(userBusinessName))
+            if details.RCASPID.equalsIgnoreCase(rcaspId) && !submissionFlagSet =>
           val vm           = buildViewModel(details, userBusinessName)
           val preparedForm = request.userAnswers.flatMap(_.get(RemoveUserAccessPage)).fold(vm.form)(vm.form.fill)
           Future.successful(Ok(render(preparedForm, rcaspId, vm)))

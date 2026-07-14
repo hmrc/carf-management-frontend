@@ -22,7 +22,8 @@ import models.errors.ApiError.NotFoundError
 import models.viewAndUpdateRcasp.RcaspDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{never, reset, verify, when}
-import pages.remove.{RemoveRcaspCachedDetails, RemoveUserBusinessNameCached}
+import pages.SubmissionSucceededPage
+import pages.remove.{RemoveRcaspCachedDetails, RemoveUserAccessPage, RemoveUserBusinessNameCached}
 import play.api.data.FormBinding.Implicits.formBinding
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -96,7 +97,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
             verify(mockAccountService).getUserBusinessName(any())(any(), any())
-
           }
         }
 
@@ -296,6 +296,48 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             verify(mockAccountService).getUserBusinessName(any())(any(), any())
           }
         }
+
+        "must ignore cached answers and call the APIs when SubmissionSucceededPage is set" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(SubmissionSucceededPage, true)
+            .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+            .withPage(RemoveUserBusinessNameCached, "My Business")
+
+          when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
+            .thenReturn(ResultT.fromValue(rcaspIsUserDetails))
+
+          when(mockAccountService.getUserBusinessName(any())(any(), any()))
+            .thenReturn(ResultT.fromValue(Some("My Business")))
+
+          when(mockSessionRepository.set(any()))
+            .thenReturn(Future.successful(true))
+
+          val application = applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(bind[AccountService].toInstance(mockAccountService))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(GET, onPageLoadRoute)
+            val result  = route(application, request).value
+
+            val view = application.injector.instanceOf[RemoveUserAccessView]
+            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
+
+            status(result)          mustEqual OK
+            contentAsString(result) mustEqual view(
+              vm.form,
+              rcaspId,
+              vm.titleKey,
+              vm.headingKey,
+              vm.rcaspName,
+              vm.userBusinessNameOpt
+            )(request, messages(application)).toString
+
+            verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
+            verify(mockAccountService).getUserBusinessName(any())(any(), any())
+            verify(mockSessionRepository).set(any())
+          }
+        }
       }
 
       "cache hit" - {
@@ -396,7 +438,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
         "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
           when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
             .thenReturn(ResultT.fromError(NotFoundError))
-
           val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
           val userAnswers      = emptyUserAnswers
             .withPage(RemoveRcaspCachedDetails, differentDetails)
