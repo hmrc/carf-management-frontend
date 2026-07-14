@@ -17,20 +17,26 @@
 package controllers.remove
 
 import base.SpecBase
+import forms.GenericYesNoPageFormProvider
 import models.viewAndUpdateRcasp.RcaspDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import pages.remove.{RemoveOtherAccessPage, RemoveRcaspCachedDetails}
+import play.api.data.FormBinding.Implicits.formBinding
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import viewmodels.remove.RemoveOtherAccessViewModel
+import views.html.remove.RemoveOtherAccessView
 
 import scala.concurrent.Future
 
 class RemoveOtherAccessControllerSpec extends SpecBase {
 
   lazy val onPageLoadRoute: String = controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId).url
-
+  
   lazy val onSubmitRoute: String = controllers.remove.routes.RemoveOtherAccessController.onSubmit(rcaspId).url
+
+  private val formProvider = new GenericYesNoPageFormProvider()
 
   private val individualDetails: RcaspDetails =
     individualRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = false)
@@ -45,7 +51,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
     "onPageLoad" - {
 
-      "must return OK for an individual RCASP" in {
+      "must return OK and render the correct view for an individual RCASP" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, individualDetails)
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -53,11 +59,22 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
           val request = FakeRequest(GET, onPageLoadRoute)
           val result  = route(application, request).value
 
-          status(result) mustEqual OK
+          val view = application.injector.instanceOf[RemoveOtherAccessView]
+          val vm   = RemoveOtherAccessViewModel.from(individualDetails, formProvider)
+
+          status(result)          mustEqual OK
+          contentAsString(result) mustEqual view(
+            vm.form,
+            rcaspId,
+            vm.titleKey,
+            vm.headingKey,
+            vm.errorKey,
+            vm.rcaspName
+          )(request, messages(application)).toString
         }
       }
 
-      "must return OK for a rcaspIsUser RCASP" in {
+      "must return OK and render the correct view for a rcaspIsUser RCASP" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -65,11 +82,22 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
           val request = FakeRequest(GET, onPageLoadRoute)
           val result  = route(application, request).value
 
-          status(result) mustEqual OK
+          val view = application.injector.instanceOf[RemoveOtherAccessView]
+          val vm   = RemoveOtherAccessViewModel.from(rcaspIsUserDetails, formProvider)
+
+          status(result)          mustEqual OK
+          contentAsString(result) mustEqual view(
+            vm.form,
+            rcaspId,
+            vm.titleKey,
+            vm.headingKey,
+            vm.errorKey,
+            vm.rcaspName
+          )(request, messages(application)).toString
         }
       }
 
-      "must return OK for an otherOrg RCASP" in {
+      "must return OK and render the correct view for an otherOrg RCASP" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, otherOrgDetails)
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -77,7 +105,18 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
           val request = FakeRequest(GET, onPageLoadRoute)
           val result  = route(application, request).value
 
-          status(result) mustEqual OK
+          val view = application.injector.instanceOf[RemoveOtherAccessView]
+          val vm   = RemoveOtherAccessViewModel.from(otherOrgDetails, formProvider)
+
+          status(result)          mustEqual OK
+          contentAsString(result) mustEqual view(
+            vm.form,
+            rcaspId,
+            vm.titleKey,
+            vm.headingKey,
+            vm.errorKey,
+            vm.rcaspName
+          )(request, messages(application)).toString
         }
       }
 
@@ -92,7 +131,18 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
           val request = FakeRequest(GET, onPageLoadRoute)
           val result  = route(application, request).value
 
-          status(result) mustEqual OK
+          val view = application.injector.instanceOf[RemoveOtherAccessView]
+          val vm   = RemoveOtherAccessViewModel.from(rcaspIsUserDetails, formProvider)
+
+          status(result)          mustEqual OK
+          contentAsString(result) mustEqual view(
+            vm.form.fill(true),
+            rcaspId,
+            vm.titleKey,
+            vm.headingKey,
+            vm.errorKey,
+            vm.rcaspName
+          )(request, messages(application)).toString
         }
       }
 
@@ -155,7 +205,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
         }
       }
 
-      "must return BadRequest when invalid data is submitted" in {
+      "must return BadRequest and render the view with errors when invalid data is submitted" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
@@ -166,7 +216,19 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
           val result = route(application, request).value
 
-          status(result) mustEqual BAD_REQUEST
+          val view      = application.injector.instanceOf[RemoveOtherAccessView]
+          val vm        = RemoveOtherAccessViewModel.from(rcaspIsUserDetails, formProvider)
+          val boundForm = vm.form.bindFromRequest()(request, implicitly)
+
+          status(result)          mustEqual BAD_REQUEST
+          contentAsString(result) mustEqual view(
+            boundForm,
+            rcaspId,
+            vm.titleKey,
+            vm.headingKey,
+            vm.errorKey,
+            vm.rcaspName
+          )(request, messages(application)).toString
         }
       }
 
