@@ -37,7 +37,7 @@ class CheckDetailsRegisteredBusinessHelper {
       haveTradingRow                    <- HaveTradingNameSummary.row(userAnswers)
       haveTrading                       <- userAnswers.get(HaveTradingNamePage)
       address                           <- RegisteredBusinessAddressSummary.row(userAnswers)
-      maybeRcaspIdRow                   <- if (changeJourney) RcaspIdSummary.row(userAnswers).map(Some(_)) else Some(None)
+      maybeRcaspIdRow                   <- if changeJourney then RcaspIdSummary.row(userAnswers).map(Some(_)) else Some(None)
     } yield {
       val topBaseRows = maybeRcaspIdRow.fold {
         Seq(reportForRegisteredBusiness, organisationName, haveTradingRow)

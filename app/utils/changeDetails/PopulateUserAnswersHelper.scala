@@ -96,7 +96,7 @@ class PopulateUserAnswersHelper @Inject() (
           d              <- Future.fromTry(c.set(OverwritableOrganisationName, organisationRcaspDetails.RCASPName))
           e              <- Future.fromTry(d.set(HaveTradingNamePage, haveTradingName))
           f              <- Future.fromTry {
-                              if (haveTradingName) e.set(TradingNamePage, organisationRcaspDetails.TradingName) else Success(e)
+                              if haveTradingName then e.set(TradingNamePage, organisationRcaspDetails.TradingName) else Success(e)
                             }
           g              <- Future.fromTry(f.set(UtrPage, utr))
           h              <- Future.fromTry(g.set(UkAddressInUserAnswers, address))
@@ -166,7 +166,7 @@ class PopulateUserAnswersHelper @Inject() (
           d              <- Future.fromTry(c.set(RegisteredBusinessIsThisYourBusinessNamePage, true))
           e              <- Future.fromTry(d.set(HaveTradingNamePage, haveTradingName))
           f              <- Future.fromTry {
-                              if (haveTradingName) e.set(TradingNamePage, organisationRcaspDetails.TradingName) else Success(e)
+                              if haveTradingName then e.set(TradingNamePage, organisationRcaspDetails.TradingName) else Success(e)
                             }
           g              <- Future.fromTry(f.set(UtrPage, utr))
           h              <- Future.fromTry(g.set(RegisteredBusinessIsTheAddressCorrectPage, true))
