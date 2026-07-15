@@ -23,7 +23,6 @@ import play.api.data.Form
 case class RemoveOtherAccessViewModel(
     titleKey: String,
     headingKey: String,
-    errorKey: String,
     rcaspName: String,
     form: Form[Boolean]
 )
@@ -53,7 +52,6 @@ object RemoveOtherAccessViewModel {
     RemoveOtherAccessViewModel(
       titleKey = titleKey,
       headingKey = headingKey,
-      errorKey = errorKey,
       rcaspName = rcaspName,
       form = formProvider(errorKey)
     )

@@ -42,7 +42,6 @@ class RemoveOtherAccessViewModelSpec extends SpecBase {
 
         vm.titleKey   mustEqual "removeOtherAccess.title.individual"
         vm.headingKey mustEqual "removeOtherAccess.heading.individual"
-        vm.errorKey   mustEqual "removeOtherAccess.error.required.individual"
         vm.rcaspName  mustEqual "Timmy Jimmison"
         vm.form       mustEqual formProvider("removeOtherAccess.error.required.individual")
       }
@@ -55,7 +54,6 @@ class RemoveOtherAccessViewModelSpec extends SpecBase {
 
         vm.titleKey   mustEqual "removeOtherAccess.title.rcaspIsUser"
         vm.headingKey mustEqual "removeOtherAccess.heading.rcaspIsUser"
-        vm.errorKey   mustEqual "removeOtherAccess.error.required.rcaspIsUser"
         vm.rcaspName  mustEqual testOrgName
         vm.form       mustEqual formProvider("removeOtherAccess.error.required.rcaspIsUser")
       }
@@ -68,7 +66,6 @@ class RemoveOtherAccessViewModelSpec extends SpecBase {
 
         vm.titleKey   mustEqual "removeOtherAccess.title.otherOrg"
         vm.headingKey mustEqual "removeOtherAccess.heading.otherOrg"
-        vm.errorKey   mustEqual "removeOtherAccess.error.required.otherOrg"
         vm.rcaspName  mustEqual testOrgName
         vm.form       mustEqual formProvider("removeOtherAccess.error.required.otherOrg")
       }
