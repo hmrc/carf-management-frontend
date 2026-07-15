@@ -146,7 +146,7 @@ trait NormalRoutesNavigator {
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
-  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call            =
+  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call =
     userAnswers.get(OrganisationOrIndividualPage) match {
       case Some(OrganisationOrIndividual.Organisation) =>
         controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
@@ -155,6 +155,7 @@ trait NormalRoutesNavigator {
       case None                                        =>
         controllers.routes.JourneyRecoveryController.onPageLoad()
     }
+
   private def navigateFromOrganisationHaveSecondContactController(userAnswers: UserAnswers): Call =
     userAnswers.get(OrganisationHaveSecondContactPage) match {
       case Some(true)  =>

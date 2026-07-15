@@ -20,9 +20,9 @@ import base.SpecBase
 import forms.GenericYesNoPageFormProvider
 import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import pages.individual.{IndividualHavePhonePage, IndividualNamePage}
+import org.mockito.ArgumentMatchers.{any, argThat}
+import org.mockito.Mockito.{verify, when}
+import pages.individual.{IndividualHavePhonePage, IndividualNamePage, IndividualPhonePage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -102,11 +102,39 @@ class IndividualHavePhoneControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
+    "must redirect to the next page when valid data is submitted and clear individual phone page when answer is false" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
+      val userAnswers = emptyUserAnswers.withPage(IndividualPhonePage, testPhone)
+
       val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+          )
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, individualHavePhoneRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual onwardRoute.url
+
+        verify(mockSessionRepository).set(argThat(_.get(IndividualPhonePage).isEmpty))
+      }
+    }
+
+    "must redirect to the next page when valid data is submitted and not clear individual phone page when answer is true" in {
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      val userAnswers = emptyUserAnswers.withPage(IndividualPhonePage, testPhone)
+
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
             bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
           )
@@ -121,6 +149,8 @@ class IndividualHavePhoneControllerSpec extends SpecBase {
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual onwardRoute.url
+
+        verify(mockSessionRepository).set(argThat(_.get(IndividualPhonePage).isDefined))
       }
     }
 

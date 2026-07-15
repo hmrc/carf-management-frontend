@@ -20,9 +20,9 @@ import base.SpecBase
 import forms.GenericYesNoPageFormProvider
 import models.NormalMode
 import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import pages.organisation.{HaveTradingNamePage, OverwritableOrganisationName}
+import org.mockito.ArgumentMatchers.{any, argThat}
+import org.mockito.Mockito.{verify, when}
+import pages.organisation.*
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -94,14 +94,18 @@ class HaveTradingNameControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect via Navigator when valid data is submitted with value true" in {
+    "must redirect via Navigator and NOT clear data when answer is true" in {
+      val userAnswers = emptyUserAnswers
+        .withPage(TradingNamePage, testTradingName)
+
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
-
-      val application = applicationBuilder(userAnswers = Some(ua))
-        .overrides(bind[Navigator].toInstance(new FakeNavigator(onwardRoute)))
-        .build()
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+          )
+          .build()
 
       running(application) {
         val request =
@@ -112,6 +116,41 @@ class HaveTradingNameControllerSpec extends SpecBase {
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual onwardRoute.url
+
+        verify(mockSessionRepository).set(argThat { ua =>
+          ua.get(HaveTradingNamePage).contains(true) &&
+          ua.get(TradingNamePage).isDefined
+        })
+      }
+    }
+
+    "must redirect via Navigator and clear data when answer is false" in {
+      val userAnswers = emptyUserAnswers
+        .withPage(TradingNamePage, testTradingName)
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+          )
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, haveTradingNameRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual onwardRoute.url
+
+        verify(mockSessionRepository).set(argThat { ua =>
+          ua.get(HaveTradingNamePage).contains(false) &&
+          ua.get(TradingNamePage).isEmpty
+        })
       }
     }
 

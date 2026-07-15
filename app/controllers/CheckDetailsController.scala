@@ -29,7 +29,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.RcaspSubmissionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.CheckDetailsHelper
+import utils.DetailsHelper
 import views.html.CheckDetailsView
 
 import javax.inject.Inject
@@ -44,7 +44,7 @@ class CheckDetailsController @Inject() (
     sessionRepository: SessionRepository,
     view: CheckDetailsView,
     val controllerComponents: MessagesControllerComponents,
-    helper: CheckDetailsHelper,
+    helper: DetailsHelper,
     rcaspSubmissionService: RcaspSubmissionService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController

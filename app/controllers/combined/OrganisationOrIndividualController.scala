@@ -17,14 +17,17 @@
 package controllers.combined
 
 import controllers.actions.*
+import controllers.routes
 import forms.combined.OrganisationOrIndividualFormProvider
-import models.{Mode, OrganisationOrIndividual}
+import models.{ChangeMode, Mode, NormalMode, OrganisationOrIndividual, UserAnswers}
 import navigation.Navigator
+import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
+import types.ResultT
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.combined.OrganisationOrIndividualView
 
@@ -47,6 +50,7 @@ class OrganisationOrIndividualController @Inject() (
     with I18nSupport {
 
   val form: Form[OrganisationOrIndividual] = formProvider("organisationOrIndividual.error.required")
+  private lazy val recovery: Call          = routes.JourneyRecoveryController.onPageLoad()
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
@@ -56,6 +60,10 @@ class OrganisationOrIndividualController @Inject() (
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+      val userAnswers                                               = request.userAnswers
+      lazy val hasValueChanged: OrganisationOrIndividual => Boolean =
+        newValue => !userAnswers.get(OrganisationOrIndividualPage).contains(newValue)
+
       form
         .bindFromRequest()
         .fold(
@@ -64,7 +72,34 @@ class OrganisationOrIndividualController @Inject() (
             for {
               updatedAnswers <- Future.fromTry(request.userAnswers.set(OrganisationOrIndividualPage, value))
               _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(OrganisationOrIndividualPage, mode, updatedAnswers))
+            } yield mode match {
+              case NormalMode => Redirect(navigator.nextPage(OrganisationOrIndividualPage, mode, updatedAnswers))
+              case ChangeMode =>
+                Redirect {
+                  if (hasValueChanged(value)) {
+                    navigateFromOrganisationOrIndividualPage(updatedAnswers)
+                  } else {
+                    changeDetailsNavigation(updatedAnswers)
+                  }
+                }
+            }
         )
     }
+
+  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call =
+    userAnswers.get(OrganisationOrIndividualPage) match {
+      case Some(OrganisationOrIndividual.Organisation) =>
+        controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
+      case Some(OrganisationOrIndividual.Individual)   =>
+        controllers.individual.routes.IndividualNameController.onPageLoad(NormalMode)
+      case None                                        => recovery // Code coverage will never be met here. TODO configure to ignore this line [CARF-525]
+    }
+
+  private def changeDetailsNavigation(userAnswers: UserAnswers): Call = {
+    val maybeRcaspId = userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
+
+    maybeRcaspId.fold(routes.JourneyRecoveryController.onPageLoad()) { rcaspId =>
+      controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId)
+    }
+  }
 }

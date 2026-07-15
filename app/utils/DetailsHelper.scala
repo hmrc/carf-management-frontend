@@ -30,7 +30,7 @@ import viewmodels.checkAnswers.combined.{OrganisationOrIndividualSummary, UkAddr
 import viewmodels.checkAnswers.individual.*
 import viewmodels.checkAnswers.organisation.*
 
-class CheckDetailsHelper {
+class DetailsHelper {
 
   def haveAnswersChangedFromApi(userAnswers: UserAnswers): Option[Boolean] =
     (

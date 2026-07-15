@@ -38,7 +38,7 @@ import repositories.SessionRepository
 import services.RcaspSubmissionService
 import types.ResultT
 import uk.gov.hmrc.auth.core.AffinityGroup
-import utils.CheckDetailsHelper
+import utils.DetailsHelper
 import viewmodels.Section
 import views.html.changeDetails.ChangeDetailsView
 
@@ -342,13 +342,13 @@ class ChangeDetailsControllerSpec extends SpecBase {
   }
 
   class Setup(userAnswers: UserAnswers) {
-    final val mockCdHelper     = mock[CheckDetailsHelper]
+    final val mockCdHelper     = mock[DetailsHelper]
     final val mockRcaspService = mock[RcaspSubmissionService]
 
     val application: Application =
       applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
-          bind[CheckDetailsHelper].toInstance(mockCdHelper),
+          bind[DetailsHelper].toInstance(mockCdHelper),
           bind[RcaspSubmissionService].toInstance(mockRcaspService)
         )
         .build()

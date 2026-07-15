@@ -16,11 +16,54 @@
 
 package pages.combined
 
-import models.OrganisationOrIndividual
-import pages.QuestionPage
+import models.{OrganisationOrIndividual, UserAnswers}
 import play.api.libs.json.JsPath
+import pages.QuestionPage
+import pages.individual.*
+import pages.organisation.*
+import models.OrganisationOrIndividual.{Individual, Organisation}
+
+import scala.util.{Success, Try}
 
 case object OrganisationOrIndividualPage extends QuestionPage[OrganisationOrIndividual] {
   override def path: JsPath     = JsPath \ toString
   override def toString: String = "organisationOrIndividual"
+
+  override def cleanup(
+      newValue: OrganisationOrIndividual,
+      userAnswers: UserAnswers,
+      hasChanged: Boolean
+  ): Try[UserAnswers] =
+    if (hasChanged) {
+      val pagesToRemove = newValue match {
+        case Organisation =>
+          List(
+            IndividualNamePage,
+            NiNumberPage,
+            IndividualEmailPage,
+            IndividualHavePhonePage,
+            IndividualPhonePage
+          )
+        case Individual   =>
+          List(
+            OrganisationNamePage,
+            OverwritableOrganisationName,
+            HaveTradingNamePage,
+            TradingNamePage,
+            UtrPage,
+            OrganisationFirstContactNamePage,
+            OrganisationFirstContactEmailPage,
+            OrganisationFirstContactHavePhonePage,
+            OrganisationFirstContactPhoneNumberPage,
+            OrganisationHaveSecondContactPage,
+            OrganisationSecondContactNamePage,
+            OrganisationSecondContactEmailPage,
+            OrganisationSecondContactHavePhonePage,
+            OrganisationSecondContactPhoneNumberPage
+          )
+      }
+      userAnswers.remove(pagesToRemove)
+    } else {
+      Success(userAnswers)
+    }
 }
