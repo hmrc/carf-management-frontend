@@ -37,6 +37,8 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
     .withPage(HaveTradingNamePage, false)
     .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
+  val expectedEmptySectionTitle = ""
+
   "CheckDetailsRegisteredBusinessHelper" - {
     "getRegisteredBusinessSection" - {
       "for the add journey" - {
@@ -52,7 +54,6 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
 
           val section = helper.getRegisteredBusinessSection(userAnswers, changeJourney = false).get
 
-          val expectedTitle             = ""
           val expectedKeys: Seq[String] = Seq(
             "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
             "What is the name of the organisation?",
@@ -61,7 +62,7 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
             "Main business address"
           )
 
-          compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          compareRowsAndTitleToExpected(expectedEmptySectionTitle, expectedKeys, section)
         }
 
         "must return an alternative section with no trading name, non cached address or business name and correct name row url" - {
@@ -83,7 +84,6 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
                 .onPageLoad(ChangeMode)
                 .url
 
-            val expectedTitle             = ""
             val expectedKeys: Seq[String] = Seq(
               "Is the business you registered as a reporting cryptoasset service provider (RCASP)?",
               "What is the name of the organisation?",
@@ -91,7 +91,7 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
               "Main business address"
             )
 
-            compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+            compareRowsAndTitleToExpected(expectedEmptySectionTitle, expectedKeys, section)
             section.rows.head.actions.get.items.head.href mustBe expectedReportForRegisteredBusinessUrl
             section.rows(1).actions.get.items.head.href   mustBe expectedOrganisationNameUrl
           }
@@ -142,7 +142,6 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
 
           val section = helper.getRegisteredBusinessSection(userAnswers, changeJourney = true).get
 
-          val expectedTitle             = ""
           val expectedKeys: Seq[String] = Seq(
             "RCASP ID",
             "Is this reporting cryptoasset service provider (RCASP) the business you registered as?",
@@ -152,7 +151,7 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
             "Main business address"
           )
 
-          compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+          compareRowsAndTitleToExpected(expectedEmptySectionTitle, expectedKeys, section)
         }
 
         "must return an alternative section with no trading name, non cached address or business name and correct name row url" - {
@@ -177,7 +176,6 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
                 .onPageLoad(ChangeMode)
                 .url
 
-            val expectedTitle             = ""
             val expectedKeys: Seq[String] = Seq(
               "RCASP ID",
               "Is this reporting cryptoasset service provider (RCASP) the business you registered as?",
@@ -186,7 +184,7 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
               "Main business address"
             )
 
-            compareRowsAndTitleToExpected(expectedTitle, expectedKeys, section)
+            compareRowsAndTitleToExpected(expectedEmptySectionTitle, expectedKeys, section)
             section.rows(1).actions.get.items.head.href mustBe expectedReportForRegisteredBusinessUrl
             section.rows(2).actions.get.items.head.href mustBe expectedOrganisationNameUrl
           }
