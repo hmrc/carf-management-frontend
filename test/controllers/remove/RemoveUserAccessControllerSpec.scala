@@ -23,7 +23,7 @@ import models.viewAndUpdateRcasp.RcaspDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{never, reset, verify, when}
 import pages.SubmissionSucceededPage
-import pages.remove.{RemoveRcaspCachedDetails, RemoveUserAccessPage, RemoveUserBusinessNameCached}
+import pages.remove.{RemoveRcaspCachedDetails, RemoveUserBusinessNameCached}
 import play.api.data.FormBinding.Implicits.formBinding
 import play.api.inject.bind
 import play.api.test.FakeRequest
