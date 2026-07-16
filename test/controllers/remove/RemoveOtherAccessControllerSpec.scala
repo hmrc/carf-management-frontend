@@ -227,7 +227,11 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
           val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual
+            controllers.routes.PlaceholderController
+              .onPageLoad("Should nav to /remove/remove-rcasp (CARF-549)")
+              .url
         }
       }
 
