@@ -27,7 +27,6 @@ import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
-import types.ResultT
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.combined.OrganisationOrIndividualView
 
@@ -99,7 +98,7 @@ class OrganisationOrIndividualController @Inject() (
     val maybeRcaspId = userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
 
     maybeRcaspId.fold(routes.JourneyRecoveryController.onPageLoad()) { rcaspId =>
-      controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId)
+      controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
     }
   }
 }

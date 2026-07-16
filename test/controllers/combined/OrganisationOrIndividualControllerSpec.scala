@@ -258,7 +258,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect to ChangeDetailsController and NOT clear Organisation pages when answer remains unchanged [Organisation -> Organisation]" in {
+      "must redirect to ChangeDetailsRoutingController and NOT clear Organisation pages when answer remains unchanged [Organisation -> Organisation]" in {
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         val userAnswers = emptyUserAnswers
           .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
@@ -293,7 +293,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsController
+          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
             .onPageLoad(rcaspId)
             .url
 
@@ -317,7 +317,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect to ChangeDetailsController and NOT clear Individual pages when answer remains unchanged [Individual -> Individual]" in {
+      "must redirect to ChangeDetailsRoutingController and NOT clear Individual pages when answer remains unchanged [Individual -> Individual]" in {
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         val userAnswers = emptyUserAnswers
           .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
@@ -343,7 +343,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsController
+          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
             .onPageLoad(rcaspId)
             .url
 

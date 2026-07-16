@@ -83,7 +83,7 @@ trait ChangeRoutesNavigator {
     val maybeRcaspId = userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
 
     maybeRcaspId.fold(recovery) { rcaspId =>
-      controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId)
+      controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
     }
   }
 
