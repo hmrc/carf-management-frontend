@@ -18,13 +18,16 @@ package controllers.remove
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
+import models.UserBusinessSubscriptionData
 import models.errors.ApiError.NotFoundError
 import models.viewAndUpdateRcasp.RcaspDetails
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{never, reset, verify, when}
 import pages.SubmissionSucceededPage
-import pages.remove.{RemoveRcaspCachedDetails, RemoveUserBusinessNameCached}
+import pages.remove.RemoveRcaspCachedDetails
+import pages.remove.RemoveUserBusinessInfoCached
 import play.api.data.FormBinding.Implicits.formBinding
+import play.api.i18n.Messages
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
@@ -42,6 +45,8 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
   val mockAccountService: AccountService = mock[AccountService]
 
+  implicit val messages: Messages = messages(app)
+
   private val formProvider = new GenericYesNoPageFormProvider()
 
   private val individualDetails: RcaspDetails =
@@ -52,6 +57,11 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
   private val otherOrgDetails: RcaspDetails =
     organisationRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = false)
+
+  private val individualUserInfo   =
+    UserBusinessSubscriptionData(hasOrganisationContactDetails = false, organisationName = None)
+  private val organisationUserInfo =
+    UserBusinessSubscriptionData(hasOrganisationContactDetails = true, organisationName = Some("My Business"))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -64,12 +74,12 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
       "cache miss" - {
 
-        "must return OK and render the correct view for an individual RCASP" in {
+        "must return OK and render the correct view for an individual user" in {
           when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
             .thenReturn(ResultT.fromValue(individualDetails))
 
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(Some("My Business")))
+          when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
+            .thenReturn(ResultT.fromValue(individualUserInfo))
 
           when(mockSessionRepository.set(any()))
             .thenReturn(Future.successful(true))
@@ -83,7 +93,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(individualDetails, "My Business", formProvider)
+            val vm   = RemoveUserAccessViewModel.from(individualDetails, individualUserInfo, formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -96,7 +106,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
           }
         }
 
@@ -104,8 +114,8 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
             .thenReturn(ResultT.fromValue(rcaspIsUserDetails))
 
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(Some("My Business")))
+          when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
+            .thenReturn(ResultT.fromValue(organisationUserInfo))
 
           when(mockSessionRepository.set(any()))
             .thenReturn(Future.successful(true))
@@ -119,7 +129,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
+            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, organisationUserInfo, formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -132,7 +142,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
           }
         }
 
@@ -140,8 +150,8 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
             .thenReturn(ResultT.fromValue(otherOrgDetails))
 
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(Some("My Business")))
+          when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
+            .thenReturn(ResultT.fromValue(organisationUserInfo))
 
           when(mockSessionRepository.set(any()))
             .thenReturn(Future.successful(true))
@@ -155,7 +165,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(otherOrgDetails, "My Business", formProvider)
+            val vm   = RemoveUserAccessViewModel.from(otherOrgDetails, organisationUserInfo, formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -168,44 +178,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService).getUserBusinessName(any())(any(), any())
-          }
-        }
-
-        "must return OK using fallback business name when getUserBusinessName returns None" in {
-          when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
-            .thenReturn(ResultT.fromValue(otherOrgDetails))
-
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(None))
-
-          when(mockSessionRepository.set(any()))
-            .thenReturn(Future.successful(true))
-
-          val application = applicationBuilder()
-            .overrides(bind[AccountService].toInstance(mockAccountService))
-            .build()
-
-          running(application) {
-            val request = FakeRequest(GET, onPageLoadRoute)
-            val result  = route(application, request).value
-
-            val view     = application.injector.instanceOf[RemoveUserAccessView]
-            val fallback = messages(application)("homePage.contactDetails.org.fallbackBusinessName")
-            val vm       = RemoveUserAccessViewModel.from(otherOrgDetails, fallback, formProvider)
-
-            status(result)          mustEqual OK
-            contentAsString(result) mustEqual view(
-              vm.form,
-              rcaspId,
-              vm.titleKey,
-              vm.headingKey,
-              vm.rcaspName,
-              vm.userBusinessNameOpt
-            )(request, messages(application)).toString
-
-            verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
           }
         }
 
@@ -228,15 +201,15 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService, never).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService, never).getUserBusinessSubscriptionData(any())(any(), any())
           }
         }
 
-        "must redirect to Journey Recovery when getUserBusinessName returns an error" in {
+        "must redirect to Journey Recovery when getUserBusinessSubscriptionData returns an error" in {
           when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
             .thenReturn(ResultT.fromValue(otherOrgDetails))
 
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
+          when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
             .thenReturn(ResultT.fromError(NotFoundError))
 
           when(mockSessionRepository.set(any()))
@@ -254,16 +227,16 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
           }
         }
 
-        "must call APIs and return OK when cached RCASP details exist but business name is missing" in {
+        "must call APIs and return OK when cached RCASP details exist but user business info is missing" in {
           when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
             .thenReturn(ResultT.fromValue(rcaspIsUserDetails))
 
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(Some("My Business")))
+          when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
+            .thenReturn(ResultT.fromValue(organisationUserInfo))
 
           when(mockSessionRepository.set(any()))
             .thenReturn(Future.successful(true))
@@ -280,7 +253,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
+            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, organisationUserInfo, formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -293,7 +266,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
           }
         }
 
@@ -301,13 +274,13 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           val userAnswers = emptyUserAnswers
             .withPage(SubmissionSucceededPage, true)
             .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
-            .withPage(RemoveUserBusinessNameCached, "My Business")
+            .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
 
           when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
             .thenReturn(ResultT.fromValue(rcaspIsUserDetails))
 
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(Some("My Business")))
+          when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
+            .thenReturn(ResultT.fromValue(organisationUserInfo))
 
           when(mockSessionRepository.set(any()))
             .thenReturn(Future.successful(true))
@@ -321,7 +294,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
+            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, organisationUserInfo, formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -334,7 +307,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
             verify(mockSessionRepository).set(any())
           }
         }
@@ -344,13 +317,26 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
           val userAnswers = emptyUserAnswers
             .withPage(RemoveRcaspCachedDetails, differentDetails)
-            .withPage(RemoveUserBusinessNameCached, "Old Cached Business")
+            .withPage(
+              RemoveUserBusinessInfoCached,
+              UserBusinessSubscriptionData(
+                hasOrganisationContactDetails = true,
+                organisationName = Some("Old Cached Business")
+              )
+            )
 
           when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
             .thenReturn(ResultT.fromValue(rcaspIsUserDetails))
 
-          when(mockAccountService.getUserBusinessName(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(Some("Fresh API Business")))
+          when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
+            .thenReturn(
+              ResultT.fromValue(
+                UserBusinessSubscriptionData(
+                  hasOrganisationContactDetails = true,
+                  organisationName = Some("Fresh API Business")
+                )
+              )
+            )
 
           when(mockSessionRepository.set(any()))
             .thenReturn(Future.successful(true))
@@ -364,7 +350,14 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "Fresh API Business", formProvider)
+            val vm   = RemoveUserAccessViewModel.from(
+              rcaspIsUserDetails,
+              UserBusinessSubscriptionData(
+                hasOrganisationContactDetails = true,
+                organisationName = Some("Fresh API Business")
+              ),
+              formProvider
+            )
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -377,7 +370,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             )(request, messages(application)).toString
 
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
             verify(mockSessionRepository).set(any())
           }
         }
@@ -388,7 +381,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
         "must return OK using cached details without calling APIs" in {
           val userAnswers = emptyUserAnswers
             .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
-            .withPage(RemoveUserBusinessNameCached, "My Business")
+            .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -399,7 +392,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
+            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, organisationUserInfo, formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -412,14 +405,14 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             )(request, messages(application)).toString
 
             verify(mockAccountService, never).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService, never).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService, never).getUserBusinessSubscriptionData(any())(any(), any())
           }
         }
 
-        "must return OK for an individual RCASP using cached details" in {
+        "must return OK for an individual user using cached details" in {
           val userAnswers = emptyUserAnswers
             .withPage(RemoveRcaspCachedDetails, individualDetails)
-            .withPage(RemoveUserBusinessNameCached, "My Business")
+            .withPage(RemoveUserBusinessInfoCached, individualUserInfo)
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -430,7 +423,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(individualDetails, "My Business", formProvider)
+            val vm   = RemoveUserAccessViewModel.from(individualDetails, individualUserInfo, formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -443,14 +436,14 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             )(request, messages(application)).toString
 
             verify(mockAccountService, never).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService, never).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService, never).getUserBusinessSubscriptionData(any())(any(), any())
           }
         }
 
         "must return OK for an otherOrg RCASP using cached details" in {
           val userAnswers = emptyUserAnswers
             .withPage(RemoveRcaspCachedDetails, otherOrgDetails)
-            .withPage(RemoveUserBusinessNameCached, "My Business")
+            .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
 
           val application = applicationBuilder(userAnswers = Some(userAnswers))
             .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -461,7 +454,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             val result  = route(application, request).value
 
             val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(otherOrgDetails, "My Business", formProvider)
+            val vm   = RemoveUserAccessViewModel.from(otherOrgDetails, organisationUserInfo, formProvider)
 
             status(result)          mustEqual OK
             contentAsString(result) mustEqual view(
@@ -474,7 +467,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             )(request, messages(application)).toString
 
             verify(mockAccountService, never).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService, never).getUserBusinessName(any())(any(), any())
+            verify(mockAccountService, never).getUserBusinessSubscriptionData(any())(any(), any())
           }
         }
       }
@@ -488,7 +481,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
         val userAnswers = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
-          .withPage(RemoveUserBusinessNameCached, "My Business")
+          .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -510,7 +503,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
       "must return BadRequest and render the view with errors when invalid data is submitted" in {
         val userAnswers = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
-          .withPage(RemoveUserBusinessNameCached, "My Business")
+          .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(bind[AccountService].toInstance(mockAccountService))
@@ -524,7 +517,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           val view      = application.injector.instanceOf[RemoveUserAccessView]
-          val vm        = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
+          val vm        = RemoveUserAccessViewModel.from(rcaspIsUserDetails, organisationUserInfo, formProvider)
           val boundForm = vm.form.bindFromRequest()(request, implicitly)
 
           status(result)          mustEqual BAD_REQUEST
@@ -556,7 +549,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect to Journey Recovery when RemoveUserBusinessNameCached not in cache" in {
+      "must redirect to Journey Recovery when RemoveUserBusinessInfoCached not in cache" in {
         val userAnswers = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
 
@@ -597,7 +590,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
         val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
         val userAnswers      = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, differentDetails)
-          .withPage(RemoveUserBusinessNameCached, "My Business")
+          .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(bind[AccountService].toInstance(mockAccountService))

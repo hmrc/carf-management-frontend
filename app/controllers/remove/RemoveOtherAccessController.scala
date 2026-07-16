@@ -18,7 +18,7 @@ package controllers.remove
 
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import pages.remove.{RemoveOtherAccessPage, RemoveRcaspCachedDetails}
+import pages.remove.{RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveUserBusinessInfoCached}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
@@ -49,28 +49,25 @@ class RemoveOtherAccessController @Inject() (
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
-      request.userAnswers
-        .get(RemoveRcaspCachedDetails)
-        .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase) match {
-        case Some(details) =>
-          val vm           = RemoveOtherAccessViewModel.from(details, formProvider)
+      val cachedDetails =
+        request.userAnswers
+          .get(RemoveRcaspCachedDetails)
+          .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase)
+
+      val cachedUserInfo = request.userAnswers.get(RemoveUserBusinessInfoCached)
+
+      (cachedDetails, cachedUserInfo) match {
+        case (Some(details), Some(userInfo)) =>
+          val vm           = RemoveOtherAccessViewModel.from(details, userInfo.hasOrganisationContactDetails, formProvider)
           val preparedForm = request.userAnswers.get(RemoveOtherAccessPage).fold(vm.form)(vm.form.fill)
 
           Future.successful(
-            Ok(
-              view(
-                preparedForm,
-                rcaspId,
-                vm.titleKey,
-                vm.headingKey,
-                vm.rcaspName
-              )
-            )
+            Ok(view(preparedForm, rcaspId, vm.titleKey, vm.headingKey, vm.rcaspName))
           )
 
-        case None =>
+        case _ =>
           logger.warn(
-            "[RemoveOtherAccessController][onPageLoad] RemoveRcaspCachedDetails not found or rcaspId mismatch"
+            "[RemoveOtherAccessController][onPageLoad] RemoveRcaspCachedDetails or user business info not found or rcaspId mismatch"
           )
           Future.successful(journeyRecovery)
       }
@@ -78,27 +75,22 @@ class RemoveOtherAccessController @Inject() (
 
   def onSubmit(rcaspId: String): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
-      request.userAnswers
-        .get(RemoveRcaspCachedDetails)
-        .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase) match {
-        case Some(details) =>
-          val vm = RemoveOtherAccessViewModel.from(details, formProvider)
+      val cachedDetails =
+        request.userAnswers
+          .get(RemoveRcaspCachedDetails)
+          .filter(_.RCASPID.toUpperCase == rcaspId.toUpperCase)
+
+      val cachedUserInfo = request.userAnswers.get(RemoveUserBusinessInfoCached)
+
+      (cachedDetails, cachedUserInfo) match {
+        case (Some(details), Some(userInfo)) =>
+          val vm = RemoveOtherAccessViewModel.from(details, userInfo.hasOrganisationContactDetails, formProvider)
 
           vm.form
             .bindFromRequest()
             .fold(
               formWithErrors =>
-                Future.successful(
-                  BadRequest(
-                    view(
-                      formWithErrors,
-                      rcaspId,
-                      vm.titleKey,
-                      vm.headingKey,
-                      vm.rcaspName
-                    )
-                  )
-                ),
+                Future.successful(BadRequest(view(formWithErrors, rcaspId, vm.titleKey, vm.headingKey, vm.rcaspName))),
               value =>
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(RemoveOtherAccessPage, value))
@@ -108,8 +100,10 @@ class RemoveOtherAccessController @Inject() (
                 )
             )
 
-        case None =>
-          logger.warn("[RemoveOtherAccessController][onSubmit] RemoveRcaspCachedDetails not found or rcaspId mismatch")
+        case _ =>
+          logger.warn(
+            "[RemoveOtherAccessController][onSubmit] RemoveRcaspCachedDetails or user business info not found or rcaspId mismatch"
+          )
           Future.successful(journeyRecovery)
       }
     }

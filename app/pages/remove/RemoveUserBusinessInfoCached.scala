@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
-package models
+package pages.remove
 
-case class HomePageSubscriptionData(hasOrganisationContactDetails: Boolean, organisationName: Option[String])
+import models.UserBusinessSubscriptionData
+import pages.QuestionPage
+import play.api.libs.json.JsPath
+
+case object RemoveUserBusinessInfoCached extends QuestionPage[UserBusinessSubscriptionData] {
+
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "removeUserBusinessInfoCached"
+}

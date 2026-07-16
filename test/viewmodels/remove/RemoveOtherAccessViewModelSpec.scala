@@ -37,20 +37,27 @@ class RemoveOtherAccessViewModelSpec extends SpecBase {
 
     "individual scenario" - {
 
-      "must return correct keys and rcaspName" in {
-        val vm = RemoveOtherAccessViewModel.from(individualDetails, formProvider)
+      "must return correct keys and rcaspName when the user is an individual" in {
+        val vm = RemoveOtherAccessViewModel.from(otherOrgDetails, isUserOrganisation = false, formProvider)
 
         vm.titleKey   mustEqual "removeOtherAccess.title.individual"
         vm.headingKey mustEqual "removeOtherAccess.heading.individual"
-        vm.rcaspName  mustEqual "Timmy Jimmison"
+        vm.rcaspName  mustEqual testOrgName
         vm.form       mustEqual formProvider("removeOtherAccess.error.required.individual")
+      }
+
+      "must return individual wording even when the RCASP itself is registered to the individual" in {
+        val vm = RemoveOtherAccessViewModel.from(individualDetails, isUserOrganisation = false, formProvider)
+
+        vm.titleKey   mustEqual "removeOtherAccess.title.individual"
+        vm.headingKey mustEqual "removeOtherAccess.heading.individual"
       }
     }
 
     "rcaspIsUser scenario" - {
 
       "must return correct keys and rcaspName" in {
-        val vm = RemoveOtherAccessViewModel.from(rcaspIsUserDetails, formProvider)
+        val vm = RemoveOtherAccessViewModel.from(rcaspIsUserDetails, isUserOrganisation = true, formProvider)
 
         vm.titleKey   mustEqual "removeOtherAccess.title.rcaspIsUser"
         vm.headingKey mustEqual "removeOtherAccess.heading.rcaspIsUser"
@@ -62,7 +69,7 @@ class RemoveOtherAccessViewModelSpec extends SpecBase {
     "otherOrg scenario" - {
 
       "must return correct keys and rcaspName" in {
-        val vm = RemoveOtherAccessViewModel.from(otherOrgDetails, formProvider)
+        val vm = RemoveOtherAccessViewModel.from(otherOrgDetails, isUserOrganisation = true, formProvider)
 
         vm.titleKey   mustEqual "removeOtherAccess.title.otherOrg"
         vm.headingKey mustEqual "removeOtherAccess.heading.otherOrg"

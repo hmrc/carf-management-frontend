@@ -19,7 +19,7 @@ package controllers.home
 import base.SpecBase
 import config.FrontendAppConfig
 import models.errors.ApiError.InternalServerError
-import models.{HomePageSubscriptionData, UserAnswers}
+import models.{UserAnswers, UserBusinessSubscriptionData}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
 import play.api.Application
@@ -67,8 +67,8 @@ class HomePageControllerSpec extends SpecBase {
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
-      when(mockAccountService.getHomePageSubscriptionData(any())(any(), any())).thenReturn(
-        ResultT.fromValue(HomePageSubscriptionData(hasOrganisationContactDetails = true, Some("Timmy Ltd")))
+      when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
+        ResultT.fromValue(UserBusinessSubscriptionData(hasOrganisationContactDetails = true, Some("Timmy Ltd")))
       )
 
       running(application) {
@@ -94,8 +94,8 @@ class HomePageControllerSpec extends SpecBase {
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
-      when(mockAccountService.getHomePageSubscriptionData(any())(any(), any())).thenReturn(
-        ResultT.fromValue(HomePageSubscriptionData(hasOrganisationContactDetails = true, None))
+      when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
+        ResultT.fromValue(UserBusinessSubscriptionData(hasOrganisationContactDetails = true, None))
       )
 
       val expectedViewModel: HomePageViewModel = basicViewModel.copy(organisationName = None)
@@ -123,8 +123,8 @@ class HomePageControllerSpec extends SpecBase {
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(false))
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(2))
-      when(mockAccountService.getHomePageSubscriptionData(any())(any(), any())).thenReturn(
-        ResultT.fromValue(HomePageSubscriptionData(hasOrganisationContactDetails = false, None))
+      when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
+        ResultT.fromValue(UserBusinessSubscriptionData(hasOrganisationContactDetails = false, None))
       )
 
       running(application) {
@@ -149,8 +149,8 @@ class HomePageControllerSpec extends SpecBase {
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromError(InternalServerError))
-      when(mockAccountService.getHomePageSubscriptionData(any())(any(), any())).thenReturn(
-        ResultT.fromValue(HomePageSubscriptionData(hasOrganisationContactDetails = true, Some("Timmy Ltd")))
+      when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
+        ResultT.fromValue(UserBusinessSubscriptionData(hasOrganisationContactDetails = true, Some("Timmy Ltd")))
       )
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
@@ -162,12 +162,12 @@ class HomePageControllerSpec extends SpecBase {
         status(result)              mustEqual SEE_OTHER
         redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
         verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
-        verify(mockAccountService, times(0)).getHomePageSubscriptionData(any())(any(), any())
+        verify(mockAccountService, times(0)).getUserBusinessSubscriptionData(any())(any(), any())
         verify(mockUploadInformationService, times(0)).hasUserUploadedFilesInLast28Days(any())
       }
     }
 
-    "must redirect to journey recovery when the call to getHomePageSubscriptionData fails" in new Setup(
+    "must redirect to journey recovery when the call to getUserBusinessSubscriptionData fails" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
@@ -175,7 +175,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
-      when(mockAccountService.getHomePageSubscriptionData(any())(any(), any()))
+      when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
         .thenReturn(ResultT.fromError(InternalServerError))
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
@@ -187,7 +187,7 @@ class HomePageControllerSpec extends SpecBase {
         status(result)              mustEqual SEE_OTHER
         redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
         verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
-        verify(mockAccountService).getHomePageSubscriptionData(any())(any(), any())
+        verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
         verify(mockUploadInformationService, times(0)).hasUserUploadedFilesInLast28Days(any())
       }
     }
@@ -200,8 +200,8 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
-      when(mockAccountService.getHomePageSubscriptionData(any())(any(), any())).thenReturn(
-        ResultT.fromValue(HomePageSubscriptionData(hasOrganisationContactDetails = true, Some("Timmy Ltd")))
+      when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
+        ResultT.fromValue(UserBusinessSubscriptionData(hasOrganisationContactDetails = true, Some("Timmy Ltd")))
       )
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any()))
@@ -214,7 +214,7 @@ class HomePageControllerSpec extends SpecBase {
         status(result)              mustEqual SEE_OTHER
         redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
         verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
-        verify(mockAccountService).getHomePageSubscriptionData(any())(any(), any())
+        verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
         verify(mockUploadInformationService).hasUserUploadedFilesInLast28Days(any())
       }
     }

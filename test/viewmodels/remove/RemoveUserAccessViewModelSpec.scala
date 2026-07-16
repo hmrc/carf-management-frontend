@@ -18,9 +18,13 @@ package viewmodels.remove
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
+import models.UserBusinessSubscriptionData
 import models.viewAndUpdateRcasp.RcaspDetails
+import play.api.i18n.Messages
 
 class RemoveUserAccessViewModelSpec extends SpecBase {
+
+  implicit val messages: Messages = messages(app)
 
   val formProvider = new GenericYesNoPageFormProvider()
 
@@ -37,12 +41,26 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
 
     "individual scenario" - {
 
-      "must return correct keys and no userBusinessName" in {
-        val vm = RemoveUserAccessViewModel.from(individualDetails, "My Business", formProvider)
+      "must return correct keys and no userBusinessName when the user is an individual" in {
+        val userInfo =
+          UserBusinessSubscriptionData(hasOrganisationContactDetails = false, organisationName = None)
+        val vm       = RemoveUserAccessViewModel.from(individualDetails, userInfo, formProvider)
 
         vm.titleKey         mustEqual "removeUserAccess.title.individual"
         vm.headingKey       mustEqual "removeUserAccess.heading.individual"
         vm.rcaspName        mustEqual "Timmy Jimmison"
+        vm.userBusinessNameOpt mustBe None
+        vm.form             mustEqual formProvider("removeUserAccess.error.required.individual")
+      }
+
+      "must return individual wording even when removing an organisation RCASP" in {
+        val userInfo =
+          UserBusinessSubscriptionData(hasOrganisationContactDetails = false, organisationName = None)
+        val vm       = RemoveUserAccessViewModel.from(otherOrgDetails, userInfo, formProvider)
+
+        vm.titleKey         mustEqual "removeUserAccess.title.individual"
+        vm.headingKey       mustEqual "removeUserAccess.heading.individual"
+        vm.rcaspName        mustEqual "Timmy Ltd"
         vm.userBusinessNameOpt mustBe None
         vm.form             mustEqual formProvider("removeUserAccess.error.required.individual")
       }
@@ -51,7 +69,9 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
     "rcaspIsUser scenario" - {
 
       "must return correct keys and no userBusinessName" in {
-        val vm = RemoveUserAccessViewModel.from(rcaspIsUserDetails, "My Business", formProvider)
+        val userInfo =
+          UserBusinessSubscriptionData(hasOrganisationContactDetails = true, organisationName = Some("My Business"))
+        val vm       = RemoveUserAccessViewModel.from(rcaspIsUserDetails, userInfo, formProvider)
 
         vm.titleKey         mustEqual "removeUserAccess.title.rcaspIsUser"
         vm.headingKey       mustEqual "removeUserAccess.heading.rcaspIsUser"
@@ -64,12 +84,27 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
     "otherOrg scenario" - {
 
       "must return correct keys and user business name when provided" in {
-        val vm = RemoveUserAccessViewModel.from(otherOrgDetails, "My Business", formProvider)
+        val userInfo =
+          UserBusinessSubscriptionData(hasOrganisationContactDetails = true, organisationName = Some("My Business"))
+        val vm       = RemoveUserAccessViewModel.from(otherOrgDetails, userInfo, formProvider)
 
         vm.titleKey         mustEqual "removeUserAccess.title.otherOrg"
         vm.headingKey       mustEqual "removeUserAccess.heading.otherOrg"
         vm.rcaspName        mustEqual testOrgName
         vm.userBusinessNameOpt mustBe Some("My Business")
+        vm.form             mustEqual formProvider("removeUserAccess.error.required.otherOrg")
+      }
+
+      "must return fallback business name when missing from API" in {
+        val userInfo =
+          UserBusinessSubscriptionData(hasOrganisationContactDetails = true, organisationName = None)
+
+        val vm = RemoveUserAccessViewModel.from(otherOrgDetails, userInfo, formProvider)
+
+        vm.titleKey         mustEqual "removeUserAccess.title.otherOrg"
+        vm.headingKey       mustEqual "removeUserAccess.heading.otherOrg"
+        vm.rcaspName        mustEqual testOrgName
+        vm.userBusinessNameOpt mustBe Some(messages("homePage.contactDetails.org.fallbackBusinessName"))
         vm.form             mustEqual formProvider("removeUserAccess.error.required.otherOrg")
       }
     }

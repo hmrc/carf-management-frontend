@@ -17,8 +17,10 @@
 package viewmodels.remove
 
 import forms.GenericYesNoPageFormProvider
+import models.UserBusinessSubscriptionData
 import models.viewAndUpdateRcasp.RcaspDetails
 import play.api.data.Form
+import play.api.i18n.Messages
 
 case class RemoveUserAccessViewModel(
     titleKey: String,
@@ -30,20 +32,17 @@ case class RemoveUserAccessViewModel(
 
 object RemoveUserAccessViewModel {
 
-  private val individualPartyType = "Individual"
-
   def from(
       details: RcaspDetails,
-      userBusinessName: String,
+      userInfo: UserBusinessSubscriptionData,
       formProvider: GenericYesNoPageFormProvider
-  ): RemoveUserAccessViewModel = {
+  )(implicit messages: Messages): RemoveUserAccessViewModel = {
 
     val rcaspName   = details.getName
     val isRcaspUser = details.IsRCASPUser
-    val partyType   = details.PartyType
 
     val suffix =
-      if (partyType == individualPartyType) "individual"
+      if (!userInfo.hasOrganisationContactDetails) "individual"
       else if (isRcaspUser) "rcaspIsUser"
       else "otherOrg"
 
@@ -52,7 +51,8 @@ object RemoveUserAccessViewModel {
     val errorKey   = s"removeUserAccess.error.required.$suffix"
 
     val maybeUserBusinessName: Option[String] =
-      if (partyType != individualPartyType && !isRcaspUser) Some(userBusinessName)
+      if (userInfo.hasOrganisationContactDetails && !isRcaspUser)
+        userInfo.organisationName.orElse(Some(messages("homePage.contactDetails.org.fallbackBusinessName")))
       else None
 
     RemoveUserAccessViewModel(

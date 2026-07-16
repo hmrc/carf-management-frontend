@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package pages.remove
+package models
 
-import pages.QuestionPage
-import play.api.libs.json.JsPath
+import play.api.libs.json.{Json, OFormat}
 
-case object RemoveUserBusinessNameCached extends QuestionPage[String] {
+case class UserBusinessSubscriptionData(hasOrganisationContactDetails: Boolean, organisationName: Option[String])
 
-  override def path: JsPath = JsPath \ toString
-
-  override def toString: String = "removeUserBusinessNameCached"
+object UserBusinessSubscriptionData {
+  implicit val format: OFormat[UserBusinessSubscriptionData] = Json.format[UserBusinessSubscriptionData]
 }

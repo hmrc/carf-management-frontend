@@ -17,8 +17,7 @@
 package services
 
 import connectors.{RcaspConnector, SubscriptionConnector}
-import models.HomePageSubscriptionData
-import models.errors.ApiError
+import models.UserBusinessSubscriptionData
 import models.errors.ApiError.{InternalServerError, NotFoundError}
 import models.viewAndUpdateRcasp.RcaspDetails
 import play.api.Logging
@@ -64,24 +63,24 @@ class AccountService @Inject (
           }(Right(_))
       }
 
-  def getHomePageSubscriptionData(
+  def getUserBusinessSubscriptionData(
       carfId: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[HomePageSubscriptionData] =
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[UserBusinessSubscriptionData] =
     subscriptionConnector
       .displaySubscription(carfId)
       .leftMap { error =>
-        logger.warn(s"[AccountService][getHomePageSubscriptionData] Error calling displaySubscription: $error")
+        logger.warn(s"[AccountService][getUserBusinessSubscriptionData] Error calling displaySubscription: $error")
         error
       }
       .subflatMap { displaySubscriptionResponse =>
         displaySubscriptionResponse.hasOrganisationContactDetailsMaybe.fold {
           logger.warn(
-            s"[AccountService][getHomePageSubscriptionData] DisplaySubscriptionResponse has contact details for neither or both individual and organisation"
+            "[AccountService][getUserBusinessSubscriptionData] DisplaySubscriptionResponse has contact details for neither or both individual and organisation"
           )
           Left(InternalServerError)
         } { hasOrganisationContactDetails =>
           Right(
-            HomePageSubscriptionData(
+            UserBusinessSubscriptionData(
               hasOrganisationContactDetails = hasOrganisationContactDetails,
               organisationName =
                 if (hasOrganisationContactDetails)
@@ -89,35 +88,6 @@ class AccountService @Inject (
                 else None
             )
           )
-        }
-      }
-
-  def getUserBusinessName(
-      carfId: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[Option[String]] =
-    subscriptionConnector
-      .displaySubscription(carfId)
-      .leftMap { error =>
-        logger.warn(s"[AccountService][getUserBusinessName] Error calling displaySubscription: $error")
-        error
-      }
-      .subflatMap { displaySubscriptionResponse =>
-        displaySubscriptionResponse.hasOrganisationContactDetailsMaybe.fold {
-          logger.warn(
-            "[AccountService][getUserBusinessName] DisplaySubscriptionResponse has contact details for neither or both individual and organisation"
-          )
-          Left(InternalServerError)
-        } { hasOrganisationContactDetails =>
-          val name =
-            if (hasOrganisationContactDetails) {
-              displaySubscriptionResponse.success.carfSubscriptionDetails.tradingName
-            } else {
-              displaySubscriptionResponse.success.carfSubscriptionDetails.primaryContact.individual.map { individual =>
-                s"${individual.firstName} ${individual.lastName}"
-              }
-            }
-
-          Right(name)
         }
       }
 }

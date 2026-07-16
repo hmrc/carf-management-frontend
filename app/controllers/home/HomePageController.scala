@@ -51,7 +51,7 @@ class HomePageController @Inject() (
 
       val viewModelFuture = for {
         numberOfRcaspsCurrentlyAdded     <- accountService.getNumberOfRcaspsCurrentlyAdded(carfId)
-        subscriptionData                 <- accountService.getHomePageSubscriptionData(carfId)
+        subscriptionData                 <- accountService.getUserBusinessSubscriptionData(carfId)
         hasUserUploadedFilesInLast28Days <- uploadInformationService.hasUserUploadedFilesInLast28Days(carfId)
       } yield HomePageViewModel(
         isBusiness = subscriptionData.hasOrganisationContactDetails,

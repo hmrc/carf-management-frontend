@@ -29,19 +29,17 @@ case class RemoveOtherAccessViewModel(
 
 object RemoveOtherAccessViewModel {
 
-  private val individualPartyType = "Individual"
-
   def from(
       details: RcaspDetails,
+      isUserOrganisation: Boolean,
       formProvider: GenericYesNoPageFormProvider
   ): RemoveOtherAccessViewModel = {
 
     val rcaspName   = details.getName
     val isRcaspUser = details.IsRCASPUser
-    val partyType   = details.PartyType
 
     val suffix =
-      if (partyType == individualPartyType) "individual"
+      if (!isUserOrganisation) "individual"
       else if (isRcaspUser) "rcaspIsUser"
       else "otherOrg"
 

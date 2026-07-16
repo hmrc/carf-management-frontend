@@ -18,10 +18,10 @@ package controllers.remove
 
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import models.UserAnswers
+import models.{UserAnswers, UserBusinessSubscriptionData}
 import models.viewAndUpdateRcasp.RcaspDetails
 import pages.SubmissionSucceededPage
-import pages.remove.{RemoveRcaspCachedDetails, RemoveUserAccessPage, RemoveUserBusinessNameCached}
+import pages.remove.{RemoveRcaspCachedDetails, RemoveUserAccessPage, RemoveUserBusinessInfoCached}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
@@ -55,12 +55,6 @@ class RemoveUserAccessController @Inject() (
   private val journeyRecovery: Result =
     Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
-  private def buildViewModel(
-      details: RcaspDetails,
-      userBusinessName: String
-  ): RemoveUserAccessViewModel =
-    RemoveUserAccessViewModel.from(details, userBusinessName, formProvider)
-
   private def render(
       form: Form[Boolean],
       rcaspId: String,
@@ -71,25 +65,21 @@ class RemoveUserAccessController @Inject() (
   private def cacheAndRender(
       rcaspId: String,
       details: RcaspDetails,
-      userBusinessNameOpt: Option[String]
-  )(implicit request: OptionalDataRequest[AnyContent], messages: Messages): Future[Result] = {
-    val resolvedBusinessName =
-      userBusinessNameOpt.getOrElse(messages("homePage.contactDetails.org.fallbackBusinessName"))
-
+      userInfo: UserBusinessSubscriptionData
+  )(implicit request: OptionalDataRequest[AnyContent], messages: Messages): Future[Result] =
     for {
       answers        <- Future.fromTry(
                           UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false)
                             .set(RemoveRcaspCachedDetails, details)
                         )
       updatedAnswers <- Future.fromTry(
-                          answers.set(RemoveUserBusinessNameCached, resolvedBusinessName)
+                          answers.set(RemoveUserBusinessInfoCached, userInfo)
                         )
       _              <- sessionRepository.set(updatedAnswers)
     } yield {
-      val vm = buildViewModel(details, resolvedBusinessName)
+      val vm = RemoveUserAccessViewModel.from(details, userInfo, formProvider)
       Ok(render(vm.form, rcaspId, vm))
     }
-  }
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
     (identify() andThen getData()).async { implicit request =>
@@ -99,26 +89,25 @@ class RemoveUserAccessController @Inject() (
       val cachedDetails =
         request.userAnswers.flatMap(_.get(RemoveRcaspCachedDetails))
 
-      val cachedBusinessName: Option[String] =
-        request.userAnswers.flatMap(_.get(RemoveUserBusinessNameCached))
+      val cachedUserInfo: Option[UserBusinessSubscriptionData] =
+        request.userAnswers.flatMap(_.get(RemoveUserBusinessInfoCached))
 
-      (cachedDetails, cachedBusinessName) match {
+      (cachedDetails, cachedUserInfo) match {
 
-        case (Some(details), Some(userBusinessName))
-            if details.RCASPID.equalsIgnoreCase(rcaspId) && !submissionFlagSet =>
-          val vm           = buildViewModel(details, userBusinessName)
+        case (Some(details), Some(userInfo)) if details.RCASPID.equalsIgnoreCase(rcaspId) && !submissionFlagSet =>
+          val vm           = RemoveUserAccessViewModel.from(details, userInfo, formProvider)
           val preparedForm = request.userAnswers.flatMap(_.get(RemoveUserAccessPage)).fold(vm.form)(vm.form.fill)
           Future.successful(Ok(render(preparedForm, rcaspId, vm)))
 
         case _ =>
           accountService.getRcaspDetails(request.carfId, rcaspId).value.flatMap {
             case Right(details) =>
-              accountService.getUserBusinessName(request.carfId).value.flatMap {
-                case Right(userBusinessNameOpt) =>
-                  cacheAndRender(rcaspId, details, userBusinessNameOpt)
-                case Left(error)                =>
+              accountService.getUserBusinessSubscriptionData(request.carfId).value.flatMap {
+                case Right(userInfo) =>
+                  cacheAndRender(rcaspId, details, userInfo)
+                case Left(error)     =>
                   logger.warn(
-                    s"[RemoveUserAccessController][onPageLoad] Failed to get user business name: $error"
+                    s"[RemoveUserAccessController][onPageLoad] Failed to get user business info: $error"
                   )
                   Future.successful(journeyRecovery)
               }
@@ -137,13 +126,13 @@ class RemoveUserAccessController @Inject() (
           .get(RemoveRcaspCachedDetails)
           .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
 
-      val cachedBusinessName: Option[String] =
-        request.userAnswers.get(RemoveUserBusinessNameCached)
+      val cachedUserInfo: Option[UserBusinessSubscriptionData] =
+        request.userAnswers.get(RemoveUserBusinessInfoCached)
 
-      (cachedDetails, cachedBusinessName) match {
+      (cachedDetails, cachedUserInfo) match {
 
-        case (Some(details), Some(userBusinessName)) =>
-          val vm = buildViewModel(details, userBusinessName)
+        case (Some(details), Some(userInfo)) =>
+          val vm = RemoveUserAccessViewModel.from(details, userInfo, formProvider)
 
           vm.form
             .bindFromRequest()
@@ -160,7 +149,7 @@ class RemoveUserAccessController @Inject() (
 
         case _ =>
           logger.warn(
-            "[RemoveUserAccessController][onSubmit] RemoveRcaspCachedDetails or user business name not found in cache"
+            "[RemoveUserAccessController][onSubmit] RemoveRcaspCachedDetails or user business info not found in cache"
           )
           Future.successful(journeyRecovery)
       }
