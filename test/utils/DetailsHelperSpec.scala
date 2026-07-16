@@ -32,7 +32,7 @@ class DetailsHelperSpec extends SpecBase {
   val testHelper                  = new DetailsHelper()
   implicit val messages: Messages = messages(app)
 
-  "CheckDetailsHelperSpec" - {
+  "DetailsHelperSpec" - {
     "haveAnswersChangedFromApi" - {
       "must return None when ChangeRcaspCachedDetails is missing" in {
         val userAnswers = emptyUserAnswers
@@ -58,7 +58,7 @@ class DetailsHelperSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
           .withPage(IndividualEmailPage, testEmail)
           .withPage(IndividualPhonePage, testPhone)
-          .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse.copy(TINDetails = None))
+          .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate.copy(TINDetails = None))
 
         val result = testHelper.haveAnswersChangedFromApi(userAnswers)
         result mustBe None
@@ -72,7 +72,7 @@ class DetailsHelperSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
           .withPage(IndividualEmailPage, testEmail)
           .withPage(IndividualPhonePage, testPhone)
-          .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
 
         val result = testHelper.haveAnswersChangedFromApi(userAnswers)
         result mustBe None
@@ -88,7 +88,7 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(UkAddressInUserAnswers, testAddressUk)
             .withPage(IndividualEmailPage, testEmail)
             .withPage(IndividualPhonePage, testPhone)
-            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
 
           val result = testHelper.haveAnswersChangedFromApi(userAnswers)
           result mustBe Some(false)
@@ -108,14 +108,14 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(OrganisationSecondContactNamePage, "Prof Turo")
             .withPage(OrganisationSecondContactEmailPage, testEmail)
             .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
-            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
           val result = testHelper.haveAnswersChangedFromApi(userAnswers)
           result mustBe Some(false)
         }
 
         "when OrganisationOrIndividual is None (registered business)" in {
-          val cachedRcaspDetails = organisationRcaspDetailsResponse.copy(
+          val cachedRcaspDetails = organisationRcaspDetailsViewUpdate.copy(
             IsRCASPUser = true,
             PrimaryContactDetails = None,
             SecondaryContactDetails = None
@@ -127,8 +127,7 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(OverwritableOrganisationName, testOrgName)
             .withPage(TradingNamePage, testTradingName)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
-            .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
-            .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
             .withPage(ChangeRcaspCachedDetails, cachedRcaspDetails)
 
           val result = testHelper.haveAnswersChangedFromApi(userAnswers)
@@ -138,7 +137,7 @@ class DetailsHelperSpec extends SpecBase {
 
       "when the answers have changed" - {
         "when the API returns Individual but userAnswers have Organisation" in {
-          val cachedRcaspDetails = individualRcaspDetailsResponse
+          val cachedRcaspDetails = individualRcaspDetailsViewUpdate
 
           val userAnswers = emptyUserAnswers
             .withPage(ReportForRegisteredBusinessPage, false)
@@ -157,7 +156,7 @@ class DetailsHelperSpec extends SpecBase {
 
         "when the API returns Organisation but userAnswers have Individual" - {
           "when the API returns the registered business" in {
-            val cachedRcaspDetails = organisationRcaspDetailsResponse.copy(
+            val cachedRcaspDetails = organisationRcaspDetailsViewUpdate.copy(
               IsRCASPUser = true,
               PrimaryContactDetails = None,
               SecondaryContactDetails = None
@@ -184,7 +183,7 @@ class DetailsHelperSpec extends SpecBase {
               .withPage(NiNumberPage, testNiNumber)
               .withPage(UkAddressInUserAnswers, testAddressUk)
               .withPage(IndividualEmailPage, testEmail)
-              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
             val result = testHelper.haveAnswersChangedFromApi(userAnswers)
             result mustBe Some(true)
@@ -200,7 +199,7 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(UkAddressInUserAnswers, testAddressUk)
             .withPage(IndividualEmailPage, "test@example.com")
             .withPage(IndividualPhonePage, testPhone)
-            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
 
           val result = testHelper.haveAnswersChangedFromApi(userAnswers)
           result mustBe Some(true)
@@ -214,7 +213,7 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(NiNumberPage, "AA123456C")
             .withPage(UkAddressInUserAnswers, testAddressUkAlt)
             .withPage(IndividualEmailPage, "test@example.com")
-            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
 
           val result = testHelper.haveAnswersChangedFromApi(userAnswers)
           result mustBe Some(true)
@@ -234,7 +233,7 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(OrganisationSecondContactNamePage, "Prof Turo")
             .withPage(OrganisationSecondContactEmailPage, testEmail)
             .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
-            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
           val result = testHelper.haveAnswersChangedFromApi(userAnswers)
           result mustBe Some(true)
@@ -250,14 +249,14 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(UkAddressInUserAnswers, testAddressUkAlt)
             .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationFirstContactEmailPage, "test@example.com")
-            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
           val result = testHelper.haveAnswersChangedFromApi(userAnswers)
           result mustBe Some(true)
         }
 
         "when an Organisation has changed from registered business to standard organisation" in {
-          val cachedRcaspDetails = organisationRcaspDetailsResponse.copy(
+          val cachedRcaspDetails = organisationRcaspDetailsViewUpdate.copy(
             IsRCASPUser = true,
             PrimaryContactDetails = None,
             SecondaryContactDetails = None
@@ -355,7 +354,7 @@ class DetailsHelperSpec extends SpecBase {
               .withPage(IndividualNamePage, testIndividualName)
               .withPage(NiNumberPage, testNiNumber)
               .withPage(UkAddressInUserAnswers, testAddressUk)
-              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse.copy(IsRCASPUser = true))
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
 
             val section: Section          = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = true).get
             val expectedTitle             = ""
@@ -378,7 +377,7 @@ class DetailsHelperSpec extends SpecBase {
               .withPage(IndividualNamePage, testIndividualName)
               .withPage(NiNumberPage, testNiNumber)
               .withPage(UkAddressInUserAnswers, testAddressUk)
-              .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+              .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
 
             val section: Section          = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = true).get
             val expectedTitle             = ""
@@ -412,7 +411,7 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(IndividualNamePage, testIndividualName)
             .withPage(NiNumberPage, testNiNumber)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
 
           val section = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = true)
 
@@ -425,7 +424,7 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(IndividualNamePage, testIndividualName)
             .withPage(NiNumberPage, testNiNumber)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+            .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
 
           val section = testHelper.getIndividualSectionMaybe(userAnswers, changeJourney = true)
 
@@ -588,7 +587,7 @@ class DetailsHelperSpec extends SpecBase {
               .withPage(TradingNamePage, testTradingName)
               .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
               .withPage(UkAddressInUserAnswers, testAddressUk)
-              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse.copy(IsRCASPUser = true))
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
 
             val section: Section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true).get
 
@@ -624,7 +623,7 @@ class DetailsHelperSpec extends SpecBase {
               .withPage(HaveTradingNamePage, false)
               .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
               .withPage(UkAddressInUserAnswers, testAddressUk)
-              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
             val section: Section          = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true).get
             val expectedTitle             = ""
@@ -649,7 +648,7 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(HaveTradingNamePage, true)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
           val section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true)
 
@@ -675,7 +674,7 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(HaveTradingNamePage, false)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
           val section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true)
 
@@ -689,7 +688,7 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(HaveTradingNamePage, false)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
           val section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true)
 

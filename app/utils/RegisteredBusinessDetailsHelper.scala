@@ -23,7 +23,7 @@ import viewmodels.Section
 import viewmodels.changeDetails.RcaspIdSummary
 import viewmodels.checkAnswers.organisation.*
 
-class CheckDetailsRegisteredBusinessHelper {
+class RegisteredBusinessDetailsHelper {
 
   def getRegisteredBusinessSection(
       userAnswers: UserAnswers,

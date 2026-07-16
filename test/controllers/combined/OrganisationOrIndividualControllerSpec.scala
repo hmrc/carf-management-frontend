@@ -17,24 +17,21 @@
 package controllers.combined
 
 import base.SpecBase
-import controllers.routes
-import navigation.{FakeNavigator, Navigator}
 import forms.combined.OrganisationOrIndividualFormProvider
 import models.individual.IndividualName
 import models.{ChangeMode, NormalMode, OrganisationOrIndividual}
+import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{verify, when}
-import pages.individual.*
-import pages.organisation.*
-import pages.AddressPagePrePop
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
-import play.api.inject.bind
+import pages.individual.*
+import pages.organisation.*
 import play.api.data.Form
+import play.api.inject.bind
 import play.api.mvc.Call
-import play.api.test.Helpers.*
 import play.api.test.FakeRequest
-import repositories.SessionRepository
+import play.api.test.Helpers.*
 import views.html.combined.OrganisationOrIndividualView
 
 import scala.concurrent.Future
@@ -261,7 +258,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
       "must redirect to ChangeDetailsRoutingController and NOT clear Organisation pages when answer remains unchanged [Organisation -> Organisation]" in {
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         val userAnswers = emptyUserAnswers
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
           .withPage(OrganisationOrIndividualPage, OrganisationOrIndividual.Organisation)
           .withPage(OrganisationNamePage, "Test Organisation Name")
           .withPage(OverwritableOrganisationName, "Test Overwritable Name")
@@ -320,7 +317,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
       "must redirect to ChangeDetailsRoutingController and NOT clear Individual pages when answer remains unchanged [Individual -> Individual]" in {
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         val userAnswers = emptyUserAnswers
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
           .withPage(OrganisationOrIndividualPage, OrganisationOrIndividual.Individual)
           .withPage(IndividualNamePage, IndividualName(testName, "lastName"))
           .withPage(NiNumberPage, testNiNumber)

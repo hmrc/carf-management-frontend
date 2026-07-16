@@ -29,13 +29,13 @@ class RemoveUserAccessViewModelSpec extends SpecBase {
   val formProvider = new GenericYesNoPageFormProvider()
 
   private val individualDetails: RcaspDetails =
-    individualRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = false)
+    individualRcaspDetailsViewUpdate.copy(RCASPID = rcaspId, IsRCASPUser = false)
 
   private val rcaspIsUserDetails: RcaspDetails =
-    organisationRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = true)
+    organisationRcaspDetailsViewUpdate.copy(RCASPID = rcaspId, IsRCASPUser = true)
 
   private val otherOrgDetails: RcaspDetails =
-    organisationRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = false)
+    organisationRcaspDetailsViewUpdate.copy(RCASPID = rcaspId, IsRCASPUser = false)
 
   "RemoveUserAccessViewModel.from" - {
 

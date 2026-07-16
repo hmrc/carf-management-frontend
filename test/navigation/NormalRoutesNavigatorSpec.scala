@@ -105,7 +105,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed UtrPage" - {
-      "Should redirect to PlaceholderController for /find-address" in {
+      "Should redirect to FindAddressController" in {
         navigator.nextPage(
           UtrPage,
           NormalMode,
@@ -135,7 +135,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed RegisteredBusinessIsTheAddressCorrectPage" - {
-      "Should redirect to PlaceholderController for /check-answers when answer is true and country is GB" in {
+      "Should redirect to RegisteredBusinessCheckDetailsController when answer is true and country is GB" in {
         val ua = emptyUserAnswers
           .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
           .withPage(CachedBusinessDetailsPage, cachedBusinessDetailsGb)
@@ -148,7 +148,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
 
       }
 
-      "Should redirect to PlaceholderController for /check-answers when answer is true and country is lowercase gb" in {
+      "Should redirect to RegisteredBusinessCheckDetailsController when answer is true and country is lowercase gb" in {
         val ua = emptyUserAnswers
           .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
           .withPage(
@@ -177,7 +177,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.organisation.routes.NotInUkController.onPageLoad()
       }
 
-      "Should redirect to PlaceholderController for /find-address when answer is false" in {
+      "Should redirect to FindAddressController when answer is false" in {
         val ua = emptyUserAnswers.withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
 
         navigator.nextPage(

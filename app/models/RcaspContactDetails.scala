@@ -43,7 +43,7 @@ case class RcaspAddress(
     )
 
   def toAddressUk: Option[AddressUk] =
-    if (Constants.acceptedUkCountryCode.contains(CountryCode)) {
+    if (Constants.acceptedUkCountryCode.contains(CountryCode.toUpperCase)) {
       val lines2To4       = Seq(AddressLine2, AddressLine3, AddressLine4).flatten
       val maybeTownOrCity = lines2To4.lastOption
       maybeTownOrCity.map { townOrCity =>

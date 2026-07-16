@@ -35,7 +35,7 @@ import repositories.SessionRepository
 import services.RcaspSubmissionService
 import types.ResultT
 import uk.gov.hmrc.auth.core.AffinityGroup
-import utils.{CheckDetailsHelper, CheckDetailsRegisteredBusinessHelper}
+import utils.{DetailsHelper, RegisteredBusinessDetailsHelper}
 import views.html.changeDetails.RegisteredBusinessChangeDetailsView
 
 import scala.concurrent.Future
@@ -44,7 +44,7 @@ class RegisteredBusinessChangeDetailsControllerSpec extends SpecBase {
 
   private val testCompleteUserAnswers = emptyUserAnswers
     .withPage(ReportForRegisteredBusinessPage, true)
-    .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+    .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
   lazy val changeDetailsRoute: String =
     controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(rcaspId).url
@@ -54,10 +54,10 @@ class RegisteredBusinessChangeDetailsControllerSpec extends SpecBase {
       "must return OK and the correct view for a GET when all required questions have been answered" in new Setup(
         testCompleteUserAnswers
       ) {
-        when(mockCheckDetailsHelper.haveAnswersChangedFromApi(eqTo(testCompleteUserAnswers))).thenReturn(Some(false))
+        when(mockDetailsHelper.haveAnswersChangedFromApi(eqTo(testCompleteUserAnswers))).thenReturn(Some(false))
 
         when(
-          mockCheckDetailsRegisteredBusinessHelper
+          mockRegisteredBusinessDetailsHelper
             .getRegisteredBusinessSection(eqTo(testCompleteUserAnswers), eqTo(true))(any())
         ).thenReturn(Some(testSection))
 
@@ -76,10 +76,10 @@ class RegisteredBusinessChangeDetailsControllerSpec extends SpecBase {
       "must redirect to information is missing page for a GET when a section is none (answers missing)" in new Setup(
         testCompleteUserAnswers
       ) {
-        when(mockCheckDetailsHelper.haveAnswersChangedFromApi(eqTo(testCompleteUserAnswers))).thenReturn(Some(false))
+        when(mockDetailsHelper.haveAnswersChangedFromApi(eqTo(testCompleteUserAnswers))).thenReturn(Some(false))
 
         when(
-          mockCheckDetailsRegisteredBusinessHelper
+          mockRegisteredBusinessDetailsHelper
             .getRegisteredBusinessSection(eqTo(testCompleteUserAnswers), eqTo(true))(any())
         ).thenReturn(None)
 
@@ -93,10 +93,10 @@ class RegisteredBusinessChangeDetailsControllerSpec extends SpecBase {
       "must redirect to information is missing page for a GET when haveAnswersChangedFromApi returns None (answers missing)" in new Setup(
         testCompleteUserAnswers
       ) {
-        when(mockCheckDetailsHelper.haveAnswersChangedFromApi(eqTo(testCompleteUserAnswers))).thenReturn(None)
+        when(mockDetailsHelper.haveAnswersChangedFromApi(eqTo(testCompleteUserAnswers))).thenReturn(None)
 
         when(
-          mockCheckDetailsRegisteredBusinessHelper
+          mockRegisteredBusinessDetailsHelper
             .getRegisteredBusinessSection(eqTo(testCompleteUserAnswers), eqTo(true))(any())
         ).thenReturn(Some(testSection))
 
@@ -119,7 +119,7 @@ class RegisteredBusinessChangeDetailsControllerSpec extends SpecBase {
       }
 
       "must redirect to information is missing page for a GET when ChangeRcaspCachedDetails contains the wrong RCASPID" in new Setup(
-        emptyUserAnswers.withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse.copy(RCASPID = "other"))
+        emptyUserAnswers.withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(RCASPID = "other"))
       ) {
         val request                = FakeRequest(GET, changeDetailsRoute)
         val result: Future[Result] = route(application, request).value
@@ -253,15 +253,15 @@ class RegisteredBusinessChangeDetailsControllerSpec extends SpecBase {
   }
 
   class Setup(userAnswers: UserAnswers, requestUtr: Option[String] = Some(testUtr.uniqueTaxPayerReference)) {
-    final val mockCheckDetailsHelper                   = mock[CheckDetailsHelper]
-    final val mockCheckDetailsRegisteredBusinessHelper = mock[CheckDetailsRegisteredBusinessHelper]
-    final val mockRcaspService                         = mock[RcaspSubmissionService]
+    final val mockDetailsHelper                   = mock[DetailsHelper]
+    final val mockRegisteredBusinessDetailsHelper = mock[RegisteredBusinessDetailsHelper]
+    final val mockRcaspService                    = mock[RcaspSubmissionService]
 
     val application: Application =
       applicationBuilder(userAnswers = Some(userAnswers), requestUtr = requestUtr)
         .overrides(
-          bind[CheckDetailsHelper].toInstance(mockCheckDetailsHelper),
-          bind[CheckDetailsRegisteredBusinessHelper].toInstance(mockCheckDetailsRegisteredBusinessHelper),
+          bind[DetailsHelper].toInstance(mockDetailsHelper),
+          bind[RegisteredBusinessDetailsHelper].toInstance(mockRegisteredBusinessDetailsHelper),
           bind[RcaspSubmissionService].toInstance(mockRcaspService)
         )
         .build()

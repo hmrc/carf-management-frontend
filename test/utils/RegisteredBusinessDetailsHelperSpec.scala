@@ -17,40 +17,38 @@
 package utils
 
 import base.SpecBase
-import models.{CachedBusinessDetails, ChangeMode, UserAnswers}
+import models.{ChangeMode, UserAnswers}
 import pages.*
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.*
 import play.api.i18n.Messages
 
-class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
+class RegisteredBusinessDetailsHelperSpec extends SpecBase {
 
-  val helper: CheckDetailsRegisteredBusinessHelper = new CheckDetailsRegisteredBusinessHelper()
+  val helper: RegisteredBusinessDetailsHelper = new RegisteredBusinessDetailsHelper()
 
   implicit lazy val msgs: Messages = messages(app)
 
   val completeUserAnswers: UserAnswers = emptyUserAnswers
     .withPage(ReportForRegisteredBusinessPage, true)
-    .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
     .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
     .withPage(OverwritableOrganisationName, "Test Business Ltd")
     .withPage(HaveTradingNamePage, false)
-    .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+    .withPage(UkAddressInUserAnswers, testAddressUk)
 
   val expectedEmptySectionTitle = ""
 
-  "CheckDetailsRegisteredBusinessHelper" - {
+  "RegisteredBusinessDetailsHelper" - {
     "getRegisteredBusinessSection" - {
       "for the add journey" - {
         "must return a section with all rows when have trading name is true" in {
           val userAnswers = emptyUserAnswers
             .withPage(ReportForRegisteredBusinessPage, true)
-            .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
             .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
             .withPage(OverwritableOrganisationName, testOrgName)
             .withPage(HaveTradingNamePage, true)
             .withPage(TradingNamePage, "Trading Co")
-            .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+            .withPage(UkAddressInUserAnswers, testAddressUk)
 
           val section = helper.getRegisteredBusinessSection(userAnswers, changeJourney = false).get
 
@@ -65,15 +63,14 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
           compareRowsAndTitleToExpected(expectedEmptySectionTitle, expectedKeys, section)
         }
 
-        "must return an alternative section with no trading name, non cached address or business name and correct name row url" - {
-          "when user indicates that the do not trade under a different name, and the address from the api is not correct" in {
+        "must return an alternative section with no trading name" - {
+          "when user indicates that the business name from the api is not correct" in {
             val userAnswers = emptyUserAnswers
               .withPage(ReportForRegisteredBusinessPage, true)
-              .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
               .withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
               .withPage(OverwritableOrganisationName, testOrgName)
-              .withPage(UkAddressInUserAnswers, testAddressUk)
               .withPage(HaveTradingNamePage, false)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
 
             val section = helper.getRegisteredBusinessSection(userAnswers, changeJourney = false).get
 
@@ -112,33 +109,18 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
 
           helper.getRegisteredBusinessSection(userAnswers, changeJourney = false) mustBe None
         }
-
-        "must return None when cached business details are missing but the user indicated that the address there was correct" in {
-          val userAnswers = completeUserAnswers
-            .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
-            .withoutPage(CachedBusinessDetailsPage)
-
-          helper.getRegisteredBusinessSection(userAnswers, changeJourney = false) mustBe None
-        }
-
-        "must return None when UkAddressInUserAnswers is missing but the user indicated that the address from the api was incorrect" in {
-          val userAnswers = completeUserAnswers.withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
-
-          helper.getRegisteredBusinessSection(userAnswers, changeJourney = false) mustBe None
-        }
       }
 
       "for the change journey" - {
         "must return a section with all rows when have trading name is true" in {
           val userAnswers = emptyUserAnswers
             .withPage(ReportForRegisteredBusinessPage, true)
-            .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
             .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
             .withPage(OverwritableOrganisationName, testOrgName)
             .withPage(HaveTradingNamePage, true)
             .withPage(TradingNamePage, "Trading Co")
-            .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
-            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse.copy(IsRCASPUser = true))
+            .withPage(UkAddressInUserAnswers, testAddressUk)
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
 
           val section = helper.getRegisteredBusinessSection(userAnswers, changeJourney = true).get
 
@@ -154,16 +136,15 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
           compareRowsAndTitleToExpected(expectedEmptySectionTitle, expectedKeys, section)
         }
 
-        "must return an alternative section with no trading name, non cached address or business name and correct name row url" - {
-          "when user indicates that the do not trade under a different name, and the address from the api is not correct" in {
+        "must return an alternative section with no trading name" - {
+          "when user indicates that the business name from the api is not correct" in {
             val userAnswers = emptyUserAnswers
               .withPage(ReportForRegisteredBusinessPage, true)
-              .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
               .withPage(RegisteredBusinessIsThisYourBusinessNamePage, false)
               .withPage(OverwritableOrganisationName, testOrgName)
-              .withPage(UkAddressInUserAnswers, testAddressUk)
               .withPage(HaveTradingNamePage, false)
-              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse.copy(IsRCASPUser = true))
+              .withPage(UkAddressInUserAnswers, testAddressUk)
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
 
             val section = helper.getRegisteredBusinessSection(userAnswers, changeJourney = true).get
 
@@ -197,7 +178,7 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
         "must return None when have trading name is true but trading name is missing" in {
           val userAnswers = completeUserAnswers
             .withPage(HaveTradingNamePage, true)
-            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse.copy(IsRCASPUser = true))
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
 
           helper.getRegisteredBusinessSection(userAnswers, changeJourney = true) mustBe None
         }
@@ -205,24 +186,7 @@ class CheckDetailsRegisteredBusinessHelperSpec extends SpecBase {
         "must return None when all answers are present but ReportForRegisteredBusinessPage is false" in {
           val userAnswers = completeUserAnswers
             .withPage(ReportForRegisteredBusinessPage, false)
-            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse.copy(IsRCASPUser = true))
-
-          helper.getRegisteredBusinessSection(userAnswers, changeJourney = true) mustBe None
-        }
-
-        "must return None when cached business details are missing but the user indicated that the address there was correct" in {
-          val userAnswers = completeUserAnswers
-            .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
-            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse.copy(IsRCASPUser = true))
-            .withoutPage(CachedBusinessDetailsPage)
-
-          helper.getRegisteredBusinessSection(userAnswers, changeJourney = true) mustBe None
-        }
-
-        "must return None when UkAddressInUserAnswers is missing but the user indicated that the address from the api was incorrect" in {
-          val userAnswers = completeUserAnswers
-            .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
-            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse.copy(IsRCASPUser = true))
+            .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
 
           helper.getRegisteredBusinessSection(userAnswers, changeJourney = true) mustBe None
         }

@@ -26,7 +26,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.RcaspSubmissionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.{CheckDetailsHelper, CheckDetailsRegisteredBusinessHelper}
+import utils.{DetailsHelper, RegisteredBusinessDetailsHelper}
 import views.html.changeDetails.RegisteredBusinessChangeDetailsView
 
 import javax.inject.Inject
@@ -42,8 +42,8 @@ class RegisteredBusinessChangeDetailsController @Inject() (
     submissionLock: SubmissionLockAction,
     view: RegisteredBusinessChangeDetailsView,
     val controllerComponents: MessagesControllerComponents,
-    checkDetailsHelper: CheckDetailsHelper,
-    checkDetailsRegisteredBusinessHelper: CheckDetailsRegisteredBusinessHelper,
+    detailsHelper: DetailsHelper,
+    registeredBusinessDetailsHelper: RegisteredBusinessDetailsHelper,
     rcaspSubmissionService: RcaspSubmissionService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -58,8 +58,8 @@ class RegisteredBusinessChangeDetailsController @Inject() (
       userAnswers.get(ChangeRcaspCachedDetails) match {
         case Some(cachedDetails) if cachedDetails.RCASPID.toUpperCase == rcaspId.toUpperCase =>
           (
-            checkDetailsHelper.haveAnswersChangedFromApi(userAnswers),
-            checkDetailsRegisteredBusinessHelper.getRegisteredBusinessSection(userAnswers, changeJourney = true)
+            detailsHelper.haveAnswersChangedFromApi(userAnswers),
+            registeredBusinessDetailsHelper.getRegisteredBusinessSection(userAnswers, changeJourney = true)
           ).mapN { (hasDataChanged, section) =>
             Ok(view(section, rcaspId, hasDataChanged))
           }.getOrElse {

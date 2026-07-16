@@ -76,10 +76,10 @@ class AccountServiceSpec extends SpecBase {
               ResponseCommon = rcaspResponseCommon,
               ResponseDetails = RcaspResponseDetails(
                 RCASPList = List(
-                  individualRcaspDetailsResponse,
-                  organisationRcaspDetailsResponse,
-                  individualRcaspDetailsResponse,
-                  organisationRcaspDetailsResponse
+                  individualRcaspDetailsViewUpdate,
+                  organisationRcaspDetailsViewUpdate,
+                  individualRcaspDetailsViewUpdate,
+                  organisationRcaspDetailsViewUpdate
                 )
               )
             )
@@ -113,10 +113,10 @@ class AccountServiceSpec extends SpecBase {
             ResponseCommon = rcaspResponseCommon,
             ResponseDetails = RcaspResponseDetails(
               RCASPList = List(
-                individualRcaspDetailsResponse.copy(RCASPID = "RCASP1"),
-                organisationRcaspDetailsResponse.copy(RCASPID = "RCASP2"),
-                individualRcaspDetailsResponse,
-                organisationRcaspDetailsResponse.copy(RCASPID = "RCASP3")
+                individualRcaspDetailsViewUpdate.copy(RCASPID = "RCASP1"),
+                organisationRcaspDetailsViewUpdate.copy(RCASPID = "RCASP2"),
+                individualRcaspDetailsViewUpdate,
+                organisationRcaspDetailsViewUpdate.copy(RCASPID = "RCASP3")
               )
             )
           )
@@ -126,7 +126,7 @@ class AccountServiceSpec extends SpecBase {
 
         val result: ResultT[RcaspDetails] = accountService.getRcaspDetails(testCarfId, rcaspId)
 
-        result.value.futureValue mustBe Right(individualRcaspDetailsResponse)
+        result.value.futureValue mustBe Right(individualRcaspDetailsViewUpdate)
 
         verify(mockRcaspConnector, times(1)).viewRcasp(eqTo(testCarfId))(any(), any())
       }
@@ -137,10 +137,10 @@ class AccountServiceSpec extends SpecBase {
             ResponseCommon = rcaspResponseCommon,
             ResponseDetails = RcaspResponseDetails(
               RCASPList = List(
-                individualRcaspDetailsResponse.copy(RCASPID = "RCASP1"),
-                organisationRcaspDetailsResponse.copy(RCASPID = "RCASP2"),
-                individualRcaspDetailsResponse.copy(RCASPID = "ZMcar0123456789"),
-                organisationRcaspDetailsResponse.copy(RCASPID = "RCASP3")
+                individualRcaspDetailsViewUpdate.copy(RCASPID = "RCASP1"),
+                organisationRcaspDetailsViewUpdate.copy(RCASPID = "RCASP2"),
+                individualRcaspDetailsViewUpdate.copy(RCASPID = "ZMcar0123456789"),
+                organisationRcaspDetailsViewUpdate.copy(RCASPID = "RCASP3")
               )
             )
           )
@@ -150,7 +150,7 @@ class AccountServiceSpec extends SpecBase {
 
         val result: ResultT[RcaspDetails] = accountService.getRcaspDetails(testCarfId, "zmCAR0123456789")
 
-        result.value.futureValue mustBe Right(individualRcaspDetailsResponse.copy(RCASPID = "ZMcar0123456789"))
+        result.value.futureValue mustBe Right(individualRcaspDetailsViewUpdate.copy(RCASPID = "ZMcar0123456789"))
 
         verify(mockRcaspConnector, times(1)).viewRcasp(eqTo(testCarfId))(any(), any())
       }
@@ -171,8 +171,8 @@ class AccountServiceSpec extends SpecBase {
             ResponseCommon = rcaspResponseCommon,
             ResponseDetails = RcaspResponseDetails(
               RCASPList = List(
-                individualRcaspDetailsResponse.copy(RCASPID = "RCASP1"),
-                organisationRcaspDetailsResponse.copy(RCASPID = "RCASP2")
+                individualRcaspDetailsViewUpdate.copy(RCASPID = "RCASP1"),
+                organisationRcaspDetailsViewUpdate.copy(RCASPID = "RCASP2")
               )
             )
           )

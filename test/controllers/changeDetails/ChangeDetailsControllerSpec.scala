@@ -50,12 +50,12 @@ class ChangeDetailsControllerSpec extends SpecBase {
     .withPage(ReportForRegisteredBusinessPage, false)
     .withPage(OrganisationOrIndividualPage, Individual)
     .withPage(IndividualNamePage, testIndividualName)
-    .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+    .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
   private val organisationCompleteUserAnswers = emptyUserAnswers
     .withPage(ReportForRegisteredBusinessPage, false)
     .withPage(OrganisationOrIndividualPage, Organisation)
     .withPage(OverwritableOrganisationName, testOrgName)
-    .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+    .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
   lazy val changeDetailsRoute: String = controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId).url
 
@@ -197,7 +197,7 @@ class ChangeDetailsControllerSpec extends SpecBase {
       }
 
       "must redirect to information is missing page for a GET when OrganisationOrIndividualPage is missing" in new Setup(
-        emptyUserAnswers.withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+        emptyUserAnswers.withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
       ) {
         val request                = FakeRequest(GET, changeDetailsRoute)
         val result: Future[Result] = route(application, request).value
@@ -221,7 +221,7 @@ class ChangeDetailsControllerSpec extends SpecBase {
       "must redirect to information is missing page for a GET when ChangeRcaspCachedDetails contains the wrong RCASPID" in new Setup(
         emptyUserAnswers
           .withPage(OrganisationOrIndividualPage, Individual)
-          .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse.copy(RCASPID = "other"))
+          .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate.copy(RCASPID = "other"))
       ) {
         val request                = FakeRequest(GET, changeDetailsRoute)
         val result: Future[Result] = route(application, request).value

@@ -50,13 +50,13 @@ class RemoveUserAccessControllerSpec extends SpecBase {
   private val formProvider = new GenericYesNoPageFormProvider()
 
   private val individualDetails: RcaspDetails =
-    individualRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = false)
+    individualRcaspDetailsViewUpdate.copy(RCASPID = rcaspId, IsRCASPUser = false)
 
   private val rcaspIsUserDetails: RcaspDetails =
-    organisationRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = true)
+    organisationRcaspDetailsViewUpdate.copy(RCASPID = rcaspId, IsRCASPUser = true)
 
   private val otherOrgDetails: RcaspDetails =
-    organisationRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = false)
+    organisationRcaspDetailsViewUpdate.copy(RCASPID = rcaspId, IsRCASPUser = false)
 
   private val individualUserInfo   =
     UserBusinessSubscriptionData(hasOrganisationContactDetails = false, organisationName = None)
@@ -313,7 +313,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
         }
 
         "must ignore cached details when cached rcaspId does not match URL rcaspId" in {
-          val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
+          val differentDetails = organisationRcaspDetailsViewUpdate.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
 
           val userAnswers = emptyUserAnswers
             .withPage(RemoveRcaspCachedDetails, differentDetails)
@@ -587,7 +587,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
       }
 
       "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
-        val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
+        val differentDetails = organisationRcaspDetailsViewUpdate.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
         val userAnswers      = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, differentDetails)
           .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)

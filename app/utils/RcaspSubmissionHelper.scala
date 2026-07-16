@@ -18,8 +18,8 @@ package utils
 
 import config.Constants.ukCountryCode
 import models.OrganisationOrIndividual.{Individual, Organisation}
-import models.requests.createRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails, RcaspDetails, RcaspManagementRequest, RcaspRequest as CreateRcaspRequest}
 import models.requests.*
+import models.requests.createRcasp.RcaspRequest as CreateRcaspRequest
 import models.{toRcaspAddress, OrganisationOrIndividual, RcaspContactDetails, TinDetails, UniqueTaxpayerReference, UserAnswers}
 import pages.UkAddressInUserAnswers
 import pages.combined.OrganisationOrIndividualPage
@@ -28,11 +28,11 @@ import pages.organisation.*
 
 class RcaspSubmissionHelper {
 
-  val rcaspCreateRequestCommon: RcaspRequestCommon =
+  private def rcaspRequestCommon(requestType: RequestType): RcaspRequestCommon =
     RcaspRequestCommon(
       OriginatingSystem = "MDTP",
       TransmittingSystem = "EIS",
-      RequestType = "CREATE",
+      RequestType = requestType.name,
       Regime = "CARF",
       RequestParameters = None
     )
@@ -43,22 +43,15 @@ class RcaspSubmissionHelper {
       userAnswers: UserAnswers
   ): Option[CreateRcaspRequest] =
     for {
-      isRcaspUser            <- userAnswers.get(ReportForRegisteredBusinessPage)
+      isRcaspUser     <- userAnswers.get(ReportForRegisteredBusinessPage)
       if isRcaspUser
-      orgName                <- userAnswers.get(OverwritableOrganisationName)
-      haveTradingName        <- userAnswers.get(HaveTradingNamePage)
-      tradingName            <- if (haveTradingName) userAnswers.get(TradingNamePage) else Some(orgName)
-      isCachedAddressCorrect <- userAnswers.get(RegisteredBusinessIsTheAddressCorrectPage)
-      address                <- if (isCachedAddressCorrect) {
-                                  import models.responses.toRcaspAddress
-                                  userAnswers.get(CachedBusinessDetailsPage).flatMap(_.address.toRcaspAddress)
-                                } else {
-                                  import models.toRcaspAddress
-                                  userAnswers.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
-                                }
+      orgName         <- userAnswers.get(OverwritableOrganisationName)
+      haveTradingName <- userAnswers.get(HaveTradingNamePage)
+      tradingName     <- if (haveTradingName) userAnswers.get(TradingNamePage) else Some(orgName)
+      address         <- userAnswers.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
     } yield CreateRcaspRequest(
-      RCASPManagement = RcaspManagementRequest(
-        RequestCommon = rcaspCreateRequestCommon,
+      RCASPManagement = createRcasp.RcaspManagementRequest(
+        RequestCommon = rcaspRequestCommon(RequestType.Create),
         RequestDetails = createRcasp.OrganisationRcaspDetails(
           SubscriptionID = carfId,
           IsRCASPUser = isRcaspUser,
@@ -86,8 +79,8 @@ class RcaspSubmissionHelper {
       organisationOrIndividual <- userAnswers.get(OrganisationOrIndividualPage)
       rcaspDetails             <- createRcaspDetails(carfId, userAnswers, organisationOrIndividual)
     } yield CreateRcaspRequest(
-      RCASPManagement = RcaspManagementRequest(
-        RequestCommon = rcaspCreateRequestCommon,
+      RCASPManagement = createRcasp.RcaspManagementRequest(
+        RequestCommon = rcaspRequestCommon(RequestType.Create),
         RequestDetails = rcaspDetails
       )
     )
@@ -96,13 +89,16 @@ class RcaspSubmissionHelper {
       carfId: String,
       userAnswers: UserAnswers,
       organisationOrIndividual: OrganisationOrIndividual
-  ): Option[RcaspDetails] =
+  ): Option[createRcasp.RcaspDetails] =
     organisationOrIndividual match {
       case Individual   => createIndividualRcaspDetails(carfId: String, userAnswers: UserAnswers)
       case Organisation => createOrganisationRcaspDetails(carfId: String, userAnswers: UserAnswers)
     }
 
-  private def createIndividualRcaspDetails(carfId: String, userAnswers: UserAnswers): Option[IndividualRcaspDetails] =
+  private def createIndividualRcaspDetails(
+      carfId: String,
+      userAnswers: UserAnswers
+  ): Option[createRcasp.IndividualRcaspDetails] =
     for {
       name             <- userAnswers.get(IndividualNamePage)
       nino             <- userAnswers.get(NiNumberPage)
@@ -110,7 +106,7 @@ class RcaspSubmissionHelper {
       address          <- userAnswers.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
       isRcaspUserAnswer = userAnswers.get(ReportForRegisteredBusinessPage).contains(true)
       isRcaspUser      <- if (isRcaspUserAnswer) None else Some(isRcaspUserAnswer)
-    } yield IndividualRcaspDetails(
+    } yield createRcasp.IndividualRcaspDetails(
       SubscriptionID = carfId,
       IsRCASPUser = isRcaspUser,
       PartyType = "Individual",
@@ -132,7 +128,7 @@ class RcaspSubmissionHelper {
   private def createOrganisationRcaspDetails(
       carfId: String,
       userAnswers: UserAnswers
-  ): Option[OrganisationRcaspDetails] =
+  ): Option[createRcasp.OrganisationRcaspDetails] =
     for {
       orgName           <- userAnswers.get(OverwritableOrganisationName)
       haveTradingName   <- userAnswers.get(HaveTradingNamePage)
@@ -144,7 +140,7 @@ class RcaspSubmissionHelper {
       address           <- userAnswers.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
       isRcaspUserAnswer  = userAnswers.get(ReportForRegisteredBusinessPage).contains(true)
       isRcaspUser       <- if (isRcaspUserAnswer) None else Some(isRcaspUserAnswer)
-    } yield OrganisationRcaspDetails(
+    } yield createRcasp.OrganisationRcaspDetails(
       SubscriptionID = carfId,
       IsRCASPUser = isRcaspUser,
       PartyType = "Organisation",
