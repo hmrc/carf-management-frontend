@@ -19,17 +19,16 @@ package controllers.remove
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import pages.SubmissionSucceededPage
-import pages.remove.{RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveRcaspRemovedDateTimePage}
+import pages.remove.{RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveRcaspPage}
 import play.api.Logging
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
-import services.AccountService
+import services.RcaspSubmissionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import viewmodels.remove.RemoveRcaspViewModel
 import views.html.remove.RemoveRcaspView
 
-import java.time.Instant
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,7 +40,7 @@ class RemoveRcaspController @Inject() (
     submissionLock: SubmissionLockAction,
     sessionRepository: SessionRepository,
     formProvider: GenericYesNoPageFormProvider,
-    accountService: AccountService,
+    rcaspSubmissionService: RcaspSubmissionService,
     val controllerComponents: MessagesControllerComponents,
     view: RemoveRcaspView
 )(implicit ec: ExecutionContext)
@@ -49,80 +48,67 @@ class RemoveRcaspController @Inject() (
     with I18nSupport
     with Logging {
 
+  val form: Form[Boolean] = formProvider("removeRcasp.error.required")
+
   def onPageLoad(rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
-      val alreadySubmitted = request.userAnswers.get(SubmissionSucceededPage).contains(true)
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
-      if (alreadySubmitted) {
-        logger.info(
-          "[RemoveRcaspController][onPageLoad] Submission already succeeded - redirecting to page-unavailable (CARF-536)"
-        )
-        Future.successful(
-          Redirect(controllers.routes.PlaceholderController.onPageLoad("/problem/page-unavailable (CARF-536)"))
-        )
-      } else {
-        val cachedDetails = request.userAnswers
-          .get(RemoveRcaspCachedDetails)
-          .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
+      lazy val preparedForm = request.userAnswers.get(RemoveRcaspPage).fold(form)(form.fill)
 
-        val otherAccessAnswer = request.userAnswers.get(RemoveOtherAccessPage)
+      val maybeCachedDetails = request.userAnswers
+        .get(RemoveRcaspCachedDetails)
+        .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
 
-        (cachedDetails, otherAccessAnswer) match {
-          case (Some(details), Some(answer)) =>
-            val vm = RemoveRcaspViewModel.from(details, answer, formProvider)
+      val maybeOtherAccessAnswer = request.userAnswers.get(RemoveOtherAccessPage)
 
-            Future.successful(
-              Ok(view(vm.form, rcaspId, vm.titleKey, vm.headingKey, vm.rcaspName))
-            )
+      (maybeCachedDetails, maybeOtherAccessAnswer) match {
+        case (Some(cachedDetails), Some(otherAccessAnswer)) =>
+          Ok(view(preparedForm, rcaspId, otherAccessAnswer, cachedDetails.getName))
 
-          case _ =>
-            logger.warn(
-              "[RemoveRcaspController][onPageLoad] RemoveRcaspCachedDetails or RemoveOtherAccessPage not found, or rcaspId mismatch"
-            )
-            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-        }
+        case _ =>
+          logger.warn(
+            "[RemoveRcaspController][onPageLoad] RemoveRcaspCachedDetails or RemoveOtherAccessPage not found, or rcaspId mismatch"
+          )
+          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
     }
 
   def onSubmit(rcaspId: String): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
-      val cachedDetails = request.userAnswers
+
+      val maybeCachedDetails = request.userAnswers
         .get(RemoveRcaspCachedDetails)
         .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
 
-      val otherAccessAnswer = request.userAnswers.get(RemoveOtherAccessPage)
+      val maybeOtherAccessAnswer = request.userAnswers.get(RemoveOtherAccessPage)
 
-      (cachedDetails, otherAccessAnswer) match {
-        case (Some(details), Some(answer)) =>
-          val vm = RemoveRcaspViewModel.from(details, answer, formProvider)
-
-          vm.form
+      (maybeCachedDetails, maybeOtherAccessAnswer) match {
+        case (Some(cachedDetails), Some(otherAccessAnswer)) =>
+          form
             .bindFromRequest()
             .fold(
               formWithErrors =>
-                Future.successful(BadRequest(view(formWithErrors, rcaspId, vm.titleKey, vm.headingKey, vm.rcaspName))),
-              {
-                case false =>
-                  Future.successful(Redirect(controllers.routes.YourRcaspsController.onPageLoad()))
-
-                case true =>
-                  accountService.removeRcasp(request.carfId, rcaspId).value.flatMap {
+                Future.successful(BadRequest(view(formWithErrors, rcaspId, otherAccessAnswer, cachedDetails.getName))),
+              value =>
+                if (!value) {
+                  for {
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(RemoveRcaspPage, value))
+                    _              <- sessionRepository.set(updatedAnswers)
+                  } yield Redirect(controllers.routes.YourRcaspsController.onPageLoad())
+                } else {
+                  rcaspSubmissionService.removeRcasp(request.carfId, rcaspId).value.flatMap {
                     case Right(_) =>
-                      val removedAt = Instant.now()
                       for {
-                        updatedAnswers <- Future.fromTry(
-                                            request.userAnswers
-                                              .set(RemoveRcaspRemovedDateTimePage, removedAt.toString)
-                                              .flatMap(_.set(SubmissionSucceededPage, true))
-                                          )
-                        _              <- sessionRepository.set(updatedAnswers)
+                        updatedAnswers1 <- Future.fromTry(request.userAnswers.set(RemoveRcaspPage, value))
+                        updatedAnswers2 <- Future.fromTry(updatedAnswers1.set(SubmissionSucceededPage, true))
+                        _               <- sessionRepository.set(updatedAnswers2)
                       } yield Redirect(controllers.remove.routes.RcaspRemovedController.onPageLoad(rcaspId))
 
                     case Left(error) =>
                       logger.warn(s"[RemoveRcaspController][onSubmit] Failed to remove RCASP: $error")
                       Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
                   }
-              }
+                }
             )
 
         case _ =>

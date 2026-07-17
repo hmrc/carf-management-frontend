@@ -16,65 +16,60 @@
 
 package controllers.remove
 
-import controllers.actions.{DataRetrievalAction, IdentifierAction}
+import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import pages.SubmissionSucceededPage
-import pages.remove.{RemoveRcaspCachedDetails, RemoveRcaspRemovedDateTimePage}
+import pages.remove.RemoveRcaspCachedDetails
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import viewmodels.remove.RcaspRemovedViewModel
 import views.html.remove.RcaspRemovedView
+import utils.DateTimeFormats
 
-import java.time.Instant
+import java.time.{Clock, ZoneId, ZonedDateTime}
 import javax.inject.Inject
-import scala.concurrent.Future
-import scala.util.Try
 
 class RcaspRemovedController @Inject() (
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
+    requireData: DataRequiredAction,
+    clock: Clock,
     val controllerComponents: MessagesControllerComponents,
     view: RcaspRemovedView
 ) extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  def onPageLoad(rcaspId: String): Action[AnyContent] = (identify() andThen getData()).async { implicit request =>
-    val submissionSucceeded = request.userAnswers.flatMap(_.get(SubmissionSucceededPage)).contains(true)
+  def onPageLoad(rcaspId: String): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
+    implicit request =>
 
-    val cachedDetails = request.userAnswers
-      .flatMap(_.get(RemoveRcaspCachedDetails))
-      .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
+      val submissionSucceeded = request.userAnswers.get(SubmissionSucceededPage).contains(true)
 
-    val removedAtOpt = request.userAnswers
-      .flatMap(_.get(RemoveRcaspRemovedDateTimePage))
-      .flatMap(str => Try(Instant.parse(str)).toOption)
+      val cachedDetails = request.userAnswers
+        .get(RemoveRcaspCachedDetails)
+        .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
 
-    (cachedDetails, removedAtOpt) match {
-      case (Some(details), Some(removedAt)) if submissionSucceeded =>
-        val vm = RcaspRemovedViewModel.from(details, removedAt)
+      cachedDetails match {
+        case Some(details) if submissionSucceeded =>
+          val datetime = ZonedDateTime.now(clock).withZoneSameInstant(ZoneId.of("Europe/London"))
+          val date     = datetime.toLocalDate
+          val time     = datetime.toLocalTime
 
-        Future.successful(
           Ok(
             view(
-              rcaspName = vm.rcaspName,
-              rcaspId = vm.rcaspId,
-              formattedDateTime = vm.formattedDateTime,
-              manageRcaspsCall = controllers.routes.YourRcaspsController.onPageLoad(),
-              manageReportsCall = controllers.home.routes.HomePageController.onPageLoad()
+              rcaspName = details.getName,
+              rcaspId = rcaspId,
+              formattedDate = DateTimeFormats.formatDate(date),
+              formattedTime = DateTimeFormats.formatTime(time)
             )
           )
-        )
 
-      case _ =>
-        logger.warn(
-          "[RcaspRemovedController][onPageLoad] Missing cached RCASP details, removal datetime, or submission flag not set"
-        )
-        Future.successful(
+        case _ =>
+          logger.warn(
+            "[RcaspRemovedController][onPageLoad] Missing cached RCASP details, removal datetime, or submission flag not set"
+          )
           Redirect(controllers.routes.PlaceholderController.onPageLoad("/problem/page-unavailable (CARF-536)"))
-        )
-    }
+      }
   }
 }

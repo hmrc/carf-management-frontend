@@ -19,7 +19,7 @@ package controllers.remove
 import base.SpecBase
 import models.viewAndUpdateRcasp.RcaspDetails
 import pages.SubmissionSucceededPage
-import pages.remove.{RemoveRcaspCachedDetails, RemoveRcaspRemovedDateTimePage}
+import pages.remove.RemoveRcaspCachedDetails
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import viewmodels.remove.RcaspRemovedViewModel

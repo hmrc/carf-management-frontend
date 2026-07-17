@@ -23,11 +23,10 @@
         govukButton: GovukButton
 )
 
-@(form: Form[Boolean], rcaspId: String, titleKey: String, headingKey: String, rcaspName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[Boolean], rcaspId: String, otherAccessAnswer: Boolean, rcaspName: String)(implicit request: Request[_], messages: Messages)
 
-@headingText = @{ messages(headingKey, rcaspName) }
-
-@layout(pageTitle = title(form, messages(titleKey))) {
+@headingText = @{ if (otherAccessAnswer) messages("removeRcasp.heading.otherAccess", rcaspName) else messages("removeRcasp.heading",rcaspName)}
+@layout(pageTitle = title(form, if (otherAccessAnswer) messages("removeRcasp.title.otherAccess") else messages("removeRcasp.title"))) {
 
     @formHelper(action = controllers.remove.routes.RemoveRcaspController.onSubmit(rcaspId), Symbol("autoComplete") -> "off") {
 
@@ -35,7 +34,7 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        <h1 class="govuk-heading-l">@headingText</h1>
+        <h1 class="govuk-heading-l long-word">@headingText</h1>
 
         <p class="govuk-body">@messages("removeRcasp.p1", rcaspName)</p>
         <p class="govuk-body">@messages("removeRcasp.p2", rcaspName)</p>

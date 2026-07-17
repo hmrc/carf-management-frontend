@@ -95,9 +95,7 @@ class RemoveOtherAccessController @Inject() (
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(RemoveOtherAccessPage, value))
                   _              <- sessionRepository.set(updatedAnswers)
-                } yield Redirect(
-                  controllers.routes.PlaceholderController.onPageLoad("Should nav to /remove/remove-rcasp (CARF-549)")
-                )
+                } yield Redirect(controllers.remove.routes.RemoveRcaspController.onPageLoad(rcaspId))
             )
 
         case _ =>

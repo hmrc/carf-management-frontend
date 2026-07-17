@@ -16,23 +16,35 @@
 
 @this(
         layout: templates.Layout,
-        govukPanel: GovukPanel
+        govukPanel: GovukPanel,
+        link: components.Link
 )
 
-@(rcaspName: String, rcaspId: String, formattedDateTime: String, manageRcaspsCall: Call, manageReportsCall: Call)(implicit request: Request[_], messages: Messages)
+@(rcaspName: String, rcaspId: String, formattedDate: String, formattedTime: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = messages("rcaspRemoved.title"), showBackLink = false) {
 
-    @govukPanel(Panel(
-        title = Text(messages("rcaspRemoved.heading", rcaspName, formattedDateTime))
-    ))
+    @govukPanel(
+        Panel(
+            title = Text(messages("rcaspRemoved.heading", rcaspName)),
+            content = HtmlContent(s"<strong>on $formattedDate at $formattedTime</strong>")
+        )
+    )
 
     <p class="govuk-body">@messages("rcaspRemoved.p1", rcaspName, rcaspId)</p>
 
     <p class="govuk-body govuk-!-margin-bottom-2">
-        <a class="govuk-link" href="@manageRcaspsCall">@messages("rcaspRemoved.backToRcasps")</a>
+    @link(
+        controllers.routes.YourRcaspsController.onPageLoad().url,
+        "rcaspRemoved.backToRcasps",
+        id = Some("manage-your-rcasps-link")
+    )
     </p>
     <p class="govuk-body">
-        <a class="govuk-link" href="@manageReportsCall">@messages("rcaspRemoved.backToReports")</a>
+    @link(
+        controllers.home.routes.HomePageController.onPageLoad().url,
+        "rcaspRemoved.backToReports",
+        id = Some("manage-your-cryptoassets-report-link")
+    )
     </p>
 }
