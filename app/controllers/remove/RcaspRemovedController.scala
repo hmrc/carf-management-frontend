@@ -1,23 +1,80 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package controllers.remove
 
-import controllers.actions._
-import javax.inject.Inject
+import controllers.actions.{DataRetrievalAction, IdentifierAction}
+import pages.SubmissionSucceededPage
+import pages.remove.{RemoveRcaspCachedDetails, RemoveRcaspRemovedDateTimePage}
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import viewmodels.remove.RcaspRemovedViewModel
 import views.html.remove.RcaspRemovedView
 
-class RcaspRemovedController @Inject()(
-                                       override val messagesApi: MessagesApi,
-                                       identify: IdentifierAction,
-                                       getData: DataRetrievalAction,
-                                       requireData: DataRequiredAction,
-                                       val controllerComponents: MessagesControllerComponents,
-                                       view: RcaspRemovedView
-                                     ) extends FrontendBaseController with I18nSupport {
+import java.time.Instant
+import javax.inject.Inject
+import scala.concurrent.Future
+import scala.util.Try
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
-      Ok(view())
+class RcaspRemovedController @Inject() (
+    override val messagesApi: MessagesApi,
+    identify: IdentifierAction,
+    getData: DataRetrievalAction,
+    val controllerComponents: MessagesControllerComponents,
+    view: RcaspRemovedView
+) extends FrontendBaseController
+    with I18nSupport
+    with Logging {
+
+  def onPageLoad(rcaspId: String): Action[AnyContent] = (identify() andThen getData()).async { implicit request =>
+    val submissionSucceeded = request.userAnswers.flatMap(_.get(SubmissionSucceededPage)).contains(true)
+
+    val cachedDetails = request.userAnswers
+      .flatMap(_.get(RemoveRcaspCachedDetails))
+      .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
+
+    val removedAtOpt = request.userAnswers
+      .flatMap(_.get(RemoveRcaspRemovedDateTimePage))
+      .flatMap(str => Try(Instant.parse(str)).toOption)
+
+    (cachedDetails, removedAtOpt) match {
+      case (Some(details), Some(removedAt)) if submissionSucceeded =>
+        val vm = RcaspRemovedViewModel.from(details, removedAt)
+
+        Future.successful(
+          Ok(
+            view(
+              rcaspName = vm.rcaspName,
+              rcaspId = vm.rcaspId,
+              formattedDateTime = vm.formattedDateTime,
+              manageRcaspsCall = controllers.routes.YourRcaspsController.onPageLoad(),
+              manageReportsCall = controllers.home.routes.HomePageController.onPageLoad()
+            )
+          )
+        )
+
+      case _ =>
+        logger.warn(
+          "[RcaspRemovedController][onPageLoad] Missing cached RCASP details, removal datetime, or submission flag not set"
+        )
+        Future.successful(
+          Redirect(controllers.routes.PlaceholderController.onPageLoad("/problem/page-unavailable (CARF-536)"))
+        )
+    }
   }
 }
