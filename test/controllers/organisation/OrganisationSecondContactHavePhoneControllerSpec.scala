@@ -21,10 +21,10 @@ import controllers.routes
 import forms.GenericYesNoPageFormProvider
 import models.{NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.eq as eqTo
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.ArgumentMatchers.{any, argThat}
+import org.mockito.Mockito.{verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.organisation.{OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OverwritableOrganisationName}
+import pages.organisation.{OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OrganisationSecondContactPhoneNumberPage, OverwritableOrganisationName}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -84,15 +84,14 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
-      val expectedUserAnswers =
-        userAnswersWithSecondNameAndRcaspNameTest
-          .withPage(OrganisationSecondContactHavePhonePage, true)
+    "must redirect to the next page and NOT clear data when valid data is submitted" in {
+      val userAnswers = emptyUserAnswers
+        .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
 
-      when(mockSessionRepository.set(eqTo(expectedUserAnswers))) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val application =
-        applicationBuilder(userAnswers = Some(expectedUserAnswers))
+        applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
             bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
             bind[Clock].toInstance(clock)
@@ -103,10 +102,47 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         val request =
           FakeRequest(POST, secondContactHavePhoneRoute)
             .withFormUrlEncodedBody(("value", "true"))
-        val result  = route(application, request).value
+
+        val result = route(application, request).value
+
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual onwardRoute.url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedUserAnswers))
+
+        verify(mockSessionRepository).set(argThat { ua =>
+          ua.get(OrganisationSecondContactHavePhonePage).contains(true) &&
+          ua.get(OrganisationSecondContactPhoneNumberPage).isDefined
+        })
+      }
+    }
+
+    "must redirect to the next page and clear answers when answer is changed to false" in {
+      val userAnswers = emptyUserAnswers
+        .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[Clock].toInstance(clock)
+          )
+          .build()
+
+      running(application) {
+        val request =
+          FakeRequest(POST, secondContactHavePhoneRoute)
+            .withFormUrlEncodedBody(("value", "false"))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual onwardRoute.url
+
+        verify(mockSessionRepository).set(argThat { ua =>
+          ua.get(OrganisationSecondContactHavePhonePage).contains(false) &&
+          ua.get(OrganisationSecondContactPhoneNumberPage).isEmpty
+        })
       }
     }
 

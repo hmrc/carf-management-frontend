@@ -94,7 +94,7 @@ class TradingNameControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect via Navigator when valid data is sumbitted" in {
+    "must redirect via Navigator when valid data is submitted" in {
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
       val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)

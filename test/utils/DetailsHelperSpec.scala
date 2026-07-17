@@ -27,9 +27,9 @@ import pages.organisation.*
 import play.api.i18n.Messages
 import viewmodels.Section
 
-class CheckDetailsHelperSpec extends SpecBase {
+class DetailsHelperSpec extends SpecBase {
 
-  val testHelper                  = new CheckDetailsHelper()
+  val testHelper                  = new DetailsHelper()
   implicit val messages: Messages = messages(app)
 
   "CheckDetailsHelperSpec" - {
