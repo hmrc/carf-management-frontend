@@ -408,7 +408,7 @@ removeRcasp.warning = Removing an RCASP that has inaccurate or incomplete report
 removeRcasp.question = Are you sure you want to permanently remove {0}?
 
 rcaspRemoved.title = Reporting cryptoasset service provider (RCASP) removed
-rcaspRemoved.heading = {0} removed on {1}
+rcaspRemoved.heading = {0} removed
 rcaspRemoved.p1 = You have permanently removed {0} with the RCASP ID {1}.
 rcaspRemoved.backToRcasps = Back to manage your reporting cryptoasset service providers (RCASPs)
 rcaspRemoved.backToReports = Back to manage your cryptoasset reports
