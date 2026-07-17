@@ -168,3 +168,9 @@ GET         /change/:rcaspId                                              contro
 
 GET         /change-answers/:rcaspId                                      controllers.changeDetails.ChangeDetailsController.onPageLoad(rcaspId: String)
 POST        /change-answers/:rcaspId                                      controllers.changeDetails.ChangeDetailsController.onSubmit(rcaspId: String)
+
+GET         /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onPageLoad(rcaspId: String)
+POST        /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onSubmit(rcaspId: String)
+
+GET         /remove/other-access/:rcaspId                                 controllers.remove.RemoveOtherAccessController.onPageLoad(rcaspId: String)
+POST        /remove/other-access/:rcaspId                                 controllers.remove.RemoveOtherAccessController.onSubmit(rcaspId: String)

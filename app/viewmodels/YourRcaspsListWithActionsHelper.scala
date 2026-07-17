@@ -35,8 +35,8 @@ object YourRcaspsListWithActionsHelper {
             visuallyHiddenText = Some(messages("yourRcasps.change.hidden", rcasp.getName))
           ),
           ListWithActionsAction(
-            href = controllers.routes.PlaceholderController
-              .onPageLoad(s"Should nav to /remove/user-access/${rcasp.RCASPID} (CARF-355)")
+            href = controllers.remove.routes.RemoveUserAccessController
+              .onPageLoad(rcasp.RCASPID)
               .url,
             content = Text(messages("site.remove")),
             visuallyHiddenText = Some(messages("yourRcasps.remove.hidden", rcasp.getName))

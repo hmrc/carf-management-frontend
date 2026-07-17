@@ -58,8 +58,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for Timmy Jimmison")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP1 (CARF-355)")
+              href = controllers.remove.routes.RemoveUserAccessController
+                .onPageLoad("RCASP1")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove Timmy Jimmison from the list")
@@ -72,8 +72,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for Timmy Ltd")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP2 (CARF-355)")
+              href = controllers.remove.routes.RemoveUserAccessController
+                .onPageLoad("RCASP2")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove Timmy Ltd from the list")
@@ -119,8 +119,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for ORG2")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP3 (CARF-355)")
+              href = controllers.remove.routes.RemoveUserAccessController
+                .onPageLoad("RCASP3")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove ORG2 from the list")
@@ -133,8 +133,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for Ann Smith")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP4 (CARF-355)")
+              href = controllers.remove.routes.RemoveUserAccessController
+                .onPageLoad("RCASP4")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove Ann Smith from the list")
@@ -147,8 +147,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for John Doe")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP2 (CARF-355)")
+              href = controllers.remove.routes.RemoveUserAccessController
+                .onPageLoad("RCASP2")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove John Doe from the list")
@@ -161,8 +161,8 @@ class YourRcaspsListWithActionsHelperSpec extends SpecBase {
               visuallyHiddenText = Some("Change the details for org1")
             ),
             ListWithActionsAction(
-              href = controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /remove/user-access/RCASP1 (CARF-355)")
+              href = controllers.remove.routes.RemoveUserAccessController
+                .onPageLoad("RCASP1")
                 .url,
               content = Text("Remove"),
               visuallyHiddenText = Some("Remove org1 from the list")

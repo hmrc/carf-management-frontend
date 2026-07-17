@@ -70,6 +70,20 @@ Starts service locally with test-only routes enabled.
 sbt "run -Dapplication.router=testOnlyDoNotUseInAppConf.routes"
 ```
 
+### Running tests
+Run unit tests:
+```
+sbt test
+```
+Run Integration Tests:
+```
+sbt it/test
+```
+Run Unit and Integration Tests with coverage report:
+```
+sbt clean compile scalafmtAll coverage test it/test coverageReport 
+```
+
 ### License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").

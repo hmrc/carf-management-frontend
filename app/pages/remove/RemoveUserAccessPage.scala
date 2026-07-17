@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
-package models
+package pages.remove
 
-case class HomePageSubscriptionData(hasOrganisationContactDetails: Boolean, organisationName: Option[String])
+import pages.QuestionPage
+import play.api.libs.json.JsPath
+
+case object RemoveUserAccessPage extends QuestionPage[Boolean] {
+
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "removeUserAccess"
+}

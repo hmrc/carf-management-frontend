@@ -18,7 +18,7 @@ package services
 
 import base.SpecBase
 import connectors.{RcaspConnector, SubscriptionConnector}
-import models.HomePageSubscriptionData
+import models.UserBusinessSubscriptionData
 import models.errors.ApiError.{InternalServerError, NotFoundError}
 import models.responses.{RcaspResponseDetails, ViewRcasp, ViewRcaspResponse}
 import models.viewAndUpdateRcasp.RcaspDetails
@@ -188,15 +188,15 @@ class AccountServiceSpec extends SpecBase {
       }
     }
 
-    ".getHomePageSubscriptionData" - {
+    ".getUserBusinessSubscriptionData" - {
       "must return a Right when individual contact details are present" in {
         when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
           .thenReturn(ResultT.fromValue(testIndividualDisplaySubscriptionResponse))
 
-        val result: ResultT[HomePageSubscriptionData] = accountService.getHomePageSubscriptionData(testCarfId)
+        val result: ResultT[UserBusinessSubscriptionData] = accountService.getUserBusinessSubscriptionData(testCarfId)
 
         result.value.futureValue mustBe Right(
-          HomePageSubscriptionData(hasOrganisationContactDetails = false, organisationName = None)
+          UserBusinessSubscriptionData(hasOrganisationContactDetails = false, organisationName = None)
         )
 
         verify(mockSubscriptionConnector, times(1)).displaySubscription(eqTo(testCarfId))(any(), any())
@@ -206,10 +206,10 @@ class AccountServiceSpec extends SpecBase {
         when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
           .thenReturn(ResultT.fromValue(testOrganisationDisplaySubscriptionResponse(Some(testTradingName))))
 
-        val result: ResultT[HomePageSubscriptionData] = accountService.getHomePageSubscriptionData(testCarfId)
+        val result: ResultT[UserBusinessSubscriptionData] = accountService.getUserBusinessSubscriptionData(testCarfId)
 
         result.value.futureValue mustBe Right(
-          HomePageSubscriptionData(hasOrganisationContactDetails = true, organisationName = Some(testTradingName))
+          UserBusinessSubscriptionData(hasOrganisationContactDetails = true, organisationName = Some(testTradingName))
         )
 
         verify(mockSubscriptionConnector, times(1)).displaySubscription(eqTo(testCarfId))(any(), any())
@@ -219,10 +219,10 @@ class AccountServiceSpec extends SpecBase {
         when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
           .thenReturn(ResultT.fromValue(testOrganisationDisplaySubscriptionResponse(None)))
 
-        val result: ResultT[HomePageSubscriptionData] = accountService.getHomePageSubscriptionData(testCarfId)
+        val result: ResultT[UserBusinessSubscriptionData] = accountService.getUserBusinessSubscriptionData(testCarfId)
 
         result.value.futureValue mustBe Right(
-          HomePageSubscriptionData(hasOrganisationContactDetails = true, organisationName = None)
+          UserBusinessSubscriptionData(hasOrganisationContactDetails = true, organisationName = None)
         )
 
         verify(mockSubscriptionConnector, times(1)).displaySubscription(eqTo(testCarfId))(any(), any())
@@ -232,7 +232,7 @@ class AccountServiceSpec extends SpecBase {
         when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
           .thenReturn(ResultT.fromValue(testInvalidSubscriptionResponseBoth))
 
-        val result: ResultT[HomePageSubscriptionData] = accountService.getHomePageSubscriptionData(testCarfId)
+        val result: ResultT[UserBusinessSubscriptionData] = accountService.getUserBusinessSubscriptionData(testCarfId)
 
         result.value.futureValue mustBe Left(InternalServerError)
 
@@ -243,7 +243,7 @@ class AccountServiceSpec extends SpecBase {
         when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
           .thenReturn(ResultT.fromValue(testInvalidSubscriptionResponseNeither))
 
-        val result: ResultT[HomePageSubscriptionData] = accountService.getHomePageSubscriptionData(testCarfId)
+        val result: ResultT[UserBusinessSubscriptionData] = accountService.getUserBusinessSubscriptionData(testCarfId)
 
         result.value.futureValue mustBe Left(InternalServerError)
 
@@ -254,7 +254,7 @@ class AccountServiceSpec extends SpecBase {
         when(mockSubscriptionConnector.displaySubscription(any())(any(), any()))
           .thenReturn(ResultT.fromError(InternalServerError))
 
-        val result: ResultT[HomePageSubscriptionData] = accountService.getHomePageSubscriptionData(testCarfId)
+        val result: ResultT[UserBusinessSubscriptionData] = accountService.getUserBusinessSubscriptionData(testCarfId)
 
         result.value.futureValue mustBe Left(InternalServerError)
 
