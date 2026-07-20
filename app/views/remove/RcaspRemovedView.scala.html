@@ -26,8 +26,8 @@
 
     @govukPanel(
         Panel(
-            title = Text(messages("rcaspRemoved.heading", rcaspName)),
-            content = HtmlContent(s"<strong>on $formattedDate at $formattedTime</strong>")
+            title = HtmlContent(s"<span class='long-word'>${messages("rcaspRemoved.heading", rcaspName)}</span>"),
+            content = HtmlContent(s"<strong>${messages("rcaspRemoved.panel.content", formattedDate, formattedTime)}</strong>")
         )
     )
 

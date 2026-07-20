@@ -19,7 +19,7 @@ package controllers.remove
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import pages.SubmissionSucceededPage
-import pages.remove.{RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveRcaspPage}
+import pages.remove.{RcaspRemovedDateTimePage, RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveRcaspPage}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -29,6 +29,7 @@ import services.RcaspSubmissionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.remove.RemoveRcaspView
 
+import java.time.{Clock, Instant}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -42,7 +43,8 @@ class RemoveRcaspController @Inject() (
     formProvider: GenericYesNoPageFormProvider,
     rcaspSubmissionService: RcaspSubmissionService,
     val controllerComponents: MessagesControllerComponents,
-    view: RemoveRcaspView
+    view: RemoveRcaspView,
+    clock: Clock
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
@@ -98,10 +100,12 @@ class RemoveRcaspController @Inject() (
                 } else {
                   rcaspSubmissionService.removeRcasp(request.carfId, rcaspId).value.flatMap {
                     case Right(_) =>
+                      val currentTime = Instant.now(clock)
                       for {
                         updatedAnswers1 <- Future.fromTry(request.userAnswers.set(RemoveRcaspPage, value))
                         updatedAnswers2 <- Future.fromTry(updatedAnswers1.set(SubmissionSucceededPage, true))
-                        _               <- sessionRepository.set(updatedAnswers2)
+                        updatedAnswers3 <- Future.fromTry(updatedAnswers2.set(RcaspRemovedDateTimePage, currentTime))
+                        _               <- sessionRepository.set(updatedAnswers3)
                       } yield Redirect(controllers.remove.routes.RcaspRemovedController.onPageLoad(rcaspId))
 
                     case Left(error) =>

@@ -16,17 +16,17 @@
 
 package controllers.remove
 
+import config.Constants.ukZoneId
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import pages.SubmissionSucceededPage
-import pages.remove.RemoveRcaspCachedDetails
+import pages.remove.{RcaspRemovedDateTimePage, RemoveRcaspCachedDetails}
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.remove.RcaspRemovedView
 import utils.DateTimeFormats
+import views.html.remove.RcaspRemovedView
 
-import java.time.{Clock, ZoneId, ZonedDateTime}
 import javax.inject.Inject
 
 class RcaspRemovedController @Inject() (
@@ -34,7 +34,6 @@ class RcaspRemovedController @Inject() (
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    clock: Clock,
     val controllerComponents: MessagesControllerComponents,
     view: RcaspRemovedView
 ) extends FrontendBaseController
@@ -50,9 +49,11 @@ class RcaspRemovedController @Inject() (
         .get(RemoveRcaspCachedDetails)
         .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
 
-      cachedDetails match {
-        case Some(details) if submissionSucceeded =>
-          val datetime = ZonedDateTime.now(clock).withZoneSameInstant(ZoneId.of("Europe/London"))
+      val rcaspRemovedInstant = request.userAnswers.get(RcaspRemovedDateTimePage)
+
+      (cachedDetails, rcaspRemovedInstant) match {
+        case (Some(details), Some(instant)) if submissionSucceeded =>
+          val datetime = instant.atZone(ukZoneId)
           val date     = datetime.toLocalDate
           val time     = datetime.toLocalTime
 
@@ -69,7 +70,7 @@ class RcaspRemovedController @Inject() (
           logger.warn(
             "[RcaspRemovedController][onPageLoad] Missing cached RCASP details, removal datetime, or submission flag not set"
           )
-          Redirect(controllers.routes.PlaceholderController.onPageLoad("/problem/page-unavailable (CARF-536)"))
+          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
   }
 }

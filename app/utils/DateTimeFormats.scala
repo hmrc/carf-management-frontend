@@ -37,16 +37,13 @@ object DateTimeFormats {
   val dateTimeHintFormat: DateTimeFormatter =
     DateTimeFormatter.ofPattern("d M yyyy")
 
-  def formatDate(date: LocalDate): String = {
-    val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
-    date.format(dateFormatter)
-  }
+  def formatDate(date: LocalDate): String = date.format(dateTimeFormatter)
 
   def formatTime(time: LocalTime): String =
     if (time == LocalTime.MIDNIGHT) {
-      s"midnight"
+      "midnight"
     } else if (time == LocalTime.NOON) {
-      s"midday"
+      "midday"
     } else {
       val timeFormatter = DateTimeFormatter.ofPattern("h:mma")
       val formattedTime = time.format(timeFormatter).toLowerCase

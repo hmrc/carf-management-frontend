@@ -16,7 +16,11 @@
 
 package config
 
+import java.time.ZoneId
+
 object Constants {
+
+  val ukZoneId: ZoneId = ZoneId.of("Europe/London")
 
   inline val ZERO = 0
 

@@ -19,9 +19,11 @@ package pages.remove
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 
-case object RemoveRcaspRemovedDateTimePage extends QuestionPage[String] {
+import java.time.Instant
+
+case object RcaspRemovedDateTimePage extends QuestionPage[Instant] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "removeRcaspRemovedDateTime"
+  override def toString: String = "rcaspRemovedDateTime"
 }
