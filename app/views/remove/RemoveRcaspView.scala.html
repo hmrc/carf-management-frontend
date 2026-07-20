@@ -23,12 +23,12 @@
         govukButton: GovukButton
 )
 
-@(form: Form[Boolean], rcaspId: String, otherAccessAnswer: Boolean, rcaspName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[Boolean], otherAccessAnswer: Boolean, rcaspName: String)(implicit request: Request[_], messages: Messages)
 
 @headingText = @{ if (otherAccessAnswer) messages("removeRcasp.heading.otherAccess", rcaspName) else messages("removeRcasp.heading",rcaspName)}
 @layout(pageTitle = title(form, if (otherAccessAnswer) messages("removeRcasp.title.otherAccess") else messages("removeRcasp.title"))) {
 
-    @formHelper(action = controllers.remove.routes.RemoveRcaspController.onSubmit(rcaspId), Symbol("autoComplete") -> "off") {
+    @formHelper(action = controllers.remove.routes.RemoveRcaspController.onSubmit(), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

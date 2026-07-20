@@ -52,36 +52,28 @@ class RemoveRcaspController @Inject() (
 
   val form: Form[Boolean] = formProvider("removeRcasp.error.required")
 
-  def onPageLoad(rcaspId: String): Action[AnyContent] =
+  def onPageLoad(): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
-
       lazy val preparedForm = request.userAnswers.get(RemoveRcaspPage).fold(form)(form.fill)
 
-      val maybeCachedDetails = request.userAnswers
-        .get(RemoveRcaspCachedDetails)
-        .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
-
+      val maybeCachedDetails     = request.userAnswers.get(RemoveRcaspCachedDetails)
       val maybeOtherAccessAnswer = request.userAnswers.get(RemoveOtherAccessPage)
 
       (maybeCachedDetails, maybeOtherAccessAnswer) match {
         case (Some(cachedDetails), Some(otherAccessAnswer)) =>
-          Ok(view(preparedForm, rcaspId, otherAccessAnswer, cachedDetails.getName))
+          Ok(view(preparedForm, otherAccessAnswer, cachedDetails.getName))
 
         case _ =>
           logger.warn(
-            "[RemoveRcaspController][onPageLoad] RemoveRcaspCachedDetails or RemoveOtherAccessPage not found, or rcaspId mismatch"
+            "[RemoveRcaspController][onPageLoad] RemoveRcaspCachedDetails or RemoveOtherAccessPage not found"
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       }
     }
 
-  def onSubmit(rcaspId: String): Action[AnyContent] =
+  def onSubmit(): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
-
-      val maybeCachedDetails = request.userAnswers
-        .get(RemoveRcaspCachedDetails)
-        .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
-
+      val maybeCachedDetails     = request.userAnswers.get(RemoveRcaspCachedDetails)
       val maybeOtherAccessAnswer = request.userAnswers.get(RemoveOtherAccessPage)
 
       (maybeCachedDetails, maybeOtherAccessAnswer) match {
@@ -90,7 +82,7 @@ class RemoveRcaspController @Inject() (
             .bindFromRequest()
             .fold(
               formWithErrors =>
-                Future.successful(BadRequest(view(formWithErrors, rcaspId, otherAccessAnswer, cachedDetails.getName))),
+                Future.successful(BadRequest(view(formWithErrors, otherAccessAnswer, cachedDetails.getName))),
               value =>
                 if (!value) {
                   for {
@@ -98,7 +90,7 @@ class RemoveRcaspController @Inject() (
                     _              <- sessionRepository.set(updatedAnswers)
                   } yield Redirect(controllers.routes.YourRcaspsController.onPageLoad())
                 } else {
-                  rcaspSubmissionService.removeRcasp(request.carfId, rcaspId).value.flatMap {
+                  rcaspSubmissionService.removeRcasp(request.carfId, cachedDetails.RCASPID).value.flatMap {
                     case Right(_) =>
                       val currentTime = Instant.now(clock)
                       for {
@@ -106,7 +98,7 @@ class RemoveRcaspController @Inject() (
                         updatedAnswers2 <- Future.fromTry(updatedAnswers1.set(SubmissionSucceededPage, true))
                         updatedAnswers3 <- Future.fromTry(updatedAnswers2.set(RcaspRemovedDateTimePage, currentTime))
                         _               <- sessionRepository.set(updatedAnswers3)
-                      } yield Redirect(controllers.remove.routes.RcaspRemovedController.onPageLoad(rcaspId))
+                      } yield Redirect(controllers.remove.routes.RcaspRemovedController.onPageLoad())
 
                     case Left(error) =>
                       logger.warn(s"[RemoveRcaspController][onSubmit] Failed to remove RCASP: $error")
@@ -117,7 +109,7 @@ class RemoveRcaspController @Inject() (
 
         case _ =>
           logger.warn(
-            "[RemoveRcaspController][onSubmit] RemoveRcaspCachedDetails or RemoveOtherAccessPage not found, or rcaspId mismatch"
+            "[RemoveRcaspController][onSubmit] RemoveRcaspCachedDetails or RemoveOtherAccessPage not found"
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }

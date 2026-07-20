@@ -40,37 +40,33 @@ class RcaspRemovedController @Inject() (
     with I18nSupport
     with Logging {
 
-  def onPageLoad(rcaspId: String): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
-    implicit request =>
+  def onPageLoad(): Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
+    val submissionSucceeded = request.userAnswers.get(SubmissionSucceededPage).contains(true)
 
-      val submissionSucceeded = request.userAnswers.get(SubmissionSucceededPage).contains(true)
+    val cachedDetails = request.userAnswers.get(RemoveRcaspCachedDetails)
 
-      val cachedDetails = request.userAnswers
-        .get(RemoveRcaspCachedDetails)
-        .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
+    val rcaspRemovedInstant = request.userAnswers.get(RcaspRemovedDateTimePage)
 
-      val rcaspRemovedInstant = request.userAnswers.get(RcaspRemovedDateTimePage)
+    (cachedDetails, rcaspRemovedInstant) match {
+      case (Some(details), Some(instant)) if submissionSucceeded =>
+        val datetime = instant.atZone(ukZoneId)
+        val date     = datetime.toLocalDate
+        val time     = datetime.toLocalTime
 
-      (cachedDetails, rcaspRemovedInstant) match {
-        case (Some(details), Some(instant)) if submissionSucceeded =>
-          val datetime = instant.atZone(ukZoneId)
-          val date     = datetime.toLocalDate
-          val time     = datetime.toLocalTime
-
-          Ok(
-            view(
-              rcaspName = details.getName,
-              rcaspId = rcaspId,
-              formattedDate = DateTimeFormats.formatDate(date),
-              formattedTime = DateTimeFormats.formatTime(time)
-            )
+        Ok(
+          view(
+            rcaspName = details.getName,
+            rcaspId = details.RCASPID,
+            formattedDate = DateTimeFormats.formatDate(date),
+            formattedTime = DateTimeFormats.formatTime(time)
           )
+        )
 
-        case _ =>
-          logger.warn(
-            "[RcaspRemovedController][onPageLoad] Missing cached RCASP details, removal datetime, or submission flag not set"
-          )
-          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-      }
+      case _ =>
+        logger.warn(
+          "[RcaspRemovedController][onPageLoad] Missing cached RCASP details, removal datetime, or submission flag not set"
+        )
+        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+    }
   }
 }
