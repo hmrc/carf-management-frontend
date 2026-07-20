@@ -19,8 +19,6 @@ package services
 import connectors.{RcaspConnector, SubscriptionConnector}
 import models.UserBusinessSubscriptionData
 import models.errors.ApiError.{InternalServerError, NotFoundError}
-import models.requests.RcaspRequestCommon
-import models.requests.deleteRcasp.{RcaspDetails as DeleteRcaspDetails, RcaspManagementRequest as DeleteRcaspManagementRequest, RcaspRequest as DeleteRcaspRequest}
 import models.viewAndUpdateRcasp.RcaspDetails
 import play.api.Logging
 import types.ResultT
@@ -92,36 +90,4 @@ class AccountService @Inject() (
           )
         }
       }
-
-  def removeRcasp(
-      carfId: String,
-      rcaspId: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[Unit] = {
-
-    val deleteRequest = DeleteRcaspRequest(
-      RCASPManagement = DeleteRcaspManagementRequest(
-        RequestCommon = RcaspRequestCommon(
-          OriginatingSystem = "MDTP",
-          TransmittingSystem = "EIS",
-          RequestType = "DELETE",
-          Regime = "CARF",
-          RequestParameters = None
-        ),
-        RequestDetails = DeleteRcaspDetails(
-          RCASPID = rcaspId,
-          SubscriptionID = carfId
-        )
-      )
-    )
-
-    rcaspConnector
-      .deleteRcasp(deleteRequest)
-      .bimap(
-        error => {
-          logger.warn(s"[AccountService][removeRcasp] Error calling deleteRcasp: $error")
-          error
-        },
-        _ => ()
-      )
-  }
 }

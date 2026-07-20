@@ -23,16 +23,16 @@ import models.viewAndUpdateRcasp.RcaspDetails
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{never, reset, verify, when}
 import pages.SubmissionSucceededPage
-import pages.remove.{RemoveOtherAccessPage, RemoveRcaspCachedDetails}
+import pages.remove.{RcaspRemovedDateTimePage, RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveRcaspPage}
 import play.api.data.FormBinding.Implicits.formBinding
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.AccountService
+import services.RcaspSubmissionService
 import types.ResultT
-import viewmodels.remove.RemoveRcaspViewModel
 import views.html.remove.RemoveRcaspView
 
+import java.time.{Clock, Instant}
 import scala.concurrent.Future
 
 class RemoveRcaspControllerSpec extends SpecBase {
@@ -41,103 +41,104 @@ class RemoveRcaspControllerSpec extends SpecBase {
   lazy val onSubmitRoute: String   = controllers.remove.routes.RemoveRcaspController.onSubmit(rcaspId).url
 
   private val formProvider = new GenericYesNoPageFormProvider()
+  private val form         = formProvider("removeRcasp.error.required")
 
-  val mockAccountService: AccountService = mock[AccountService]
+  val mockRcaspSubmissionService: RcaspSubmissionService = mock[RcaspSubmissionService]
 
   private val rcaspDetails: RcaspDetails =
     organisationRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = true)
 
-  private val pageUnavailableUrl: String =
-    controllers.routes.PlaceholderController.onPageLoad("/problem/page-unavailable (CARF-536)").url
-
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockAccountService)
+    reset(mockRcaspSubmissionService)
   }
+
+  private def buildApplication(userAnswers: Option[models.UserAnswers]) =
+    applicationBuilder(userAnswers = userAnswers)
+      .overrides(
+        bind[RcaspSubmissionService].toInstance(mockRcaspSubmissionService),
+        bind[Clock].toInstance(clock)
+      )
+      .build()
 
   "RemoveRcaspController" - {
 
     "onPageLoad" - {
 
-      "must return OK and render the view with the otherAccess wording when RemoveOtherAccessPage is true" in {
+      "must return OK and render the view with otherAccessAnswer = true when RemoveOtherAccessPage is true" in {
         val userAnswers = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, rcaspDetails)
           .withPage(RemoveOtherAccessPage, true)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request = FakeRequest(GET, onPageLoadRoute)
           val result  = route(application, request).value
 
           val view = application.injector.instanceOf[RemoveRcaspView]
-          val vm   = RemoveRcaspViewModel.from(rcaspDetails, otherAccessAnswer = true, formProvider)
 
           status(result)          mustEqual OK
           contentAsString(result) mustEqual view(
-            vm.form,
+            form,
             rcaspId,
-            vm.titleKey,
-            vm.headingKey,
-            vm.rcaspName
+            true,
+            rcaspDetails.getName
           )(request, messages(application)).toString
         }
       }
 
-      "must return OK and render the view with the default wording when RemoveOtherAccessPage is false" in {
+      "must return OK and render the view with otherAccessAnswer = false when RemoveOtherAccessPage is false" in {
         val userAnswers = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, rcaspDetails)
           .withPage(RemoveOtherAccessPage, false)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request = FakeRequest(GET, onPageLoadRoute)
           val result  = route(application, request).value
 
           val view = application.injector.instanceOf[RemoveRcaspView]
-          val vm   = RemoveRcaspViewModel.from(rcaspDetails, otherAccessAnswer = false, formProvider)
 
           status(result)          mustEqual OK
           contentAsString(result) mustEqual view(
-            vm.form,
+            form,
             rcaspId,
-            vm.titleKey,
-            vm.headingKey,
-            vm.rcaspName
+            false,
+            rcaspDetails.getName
           )(request, messages(application)).toString
         }
       }
 
-      "must redirect to page-unavailable placeholder when SubmissionSucceededPage is true" in {
+      "must populate the view with a filled form when RemoveRcaspPage has previously been answered" in {
         val userAnswers = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, rcaspDetails)
           .withPage(RemoveOtherAccessPage, false)
-          .withPage(SubmissionSucceededPage, true)
+          .withPage(RemoveRcaspPage, true)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request = FakeRequest(GET, onPageLoadRoute)
           val result  = route(application, request).value
 
-          status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual pageUnavailableUrl
+          val view = application.injector.instanceOf[RemoveRcaspView]
+
+          status(result)          mustEqual OK
+          contentAsString(result) mustEqual view(
+            form.fill(true),
+            rcaspId,
+            false,
+            rcaspDetails.getName
+          )(request, messages(application)).toString
         }
       }
 
       "must redirect to Journey Recovery when RemoveRcaspCachedDetails not in UserAnswers" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveOtherAccessPage, false)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request = FakeRequest(GET, onPageLoadRoute)
@@ -151,9 +152,7 @@ class RemoveRcaspControllerSpec extends SpecBase {
       "must redirect to Journey Recovery when RemoveOtherAccessPage not in UserAnswers" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspDetails)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request = FakeRequest(GET, onPageLoadRoute)
@@ -170,9 +169,7 @@ class RemoveRcaspControllerSpec extends SpecBase {
           .withPage(RemoveRcaspCachedDetails, differentDetails)
           .withPage(RemoveOtherAccessPage, false)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request = FakeRequest(GET, onPageLoadRoute)
@@ -184,9 +181,7 @@ class RemoveRcaspControllerSpec extends SpecBase {
       }
 
       "must redirect to Journey Recovery for a GET if no existing data is found" in {
-        val application = applicationBuilder(userAnswers = None)
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(None)
 
         running(application) {
           val request = FakeRequest(GET, onPageLoadRoute)
@@ -200,14 +195,15 @@ class RemoveRcaspControllerSpec extends SpecBase {
 
     "onSubmit" - {
 
-      "must redirect to the homepage when 'No' is submitted, without calling removeRcasp" in {
+      "must save the answer, redirect to Your RCASPs, and never call removeRcasp when 'No' is submitted" in {
+        when(mockSessionRepository.set(any()))
+          .thenReturn(Future.successful(true))
+
         val userAnswers = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, rcaspDetails)
           .withPage(RemoveOtherAccessPage, false)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request =
@@ -219,12 +215,13 @@ class RemoveRcaspControllerSpec extends SpecBase {
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.YourRcaspsController.onPageLoad().url
 
-          verify(mockAccountService, never).removeRcasp(any(), any())(any(), any())
+          verify(mockRcaspSubmissionService, never).removeRcasp(any(), any())(any(), any())
+          verify(mockSessionRepository).set(eqTo(userAnswers.withPage(RemoveRcaspPage, false)))
         }
       }
 
       "must call removeRcasp, update the session, and redirect to RcaspRemovedController when 'Yes' is submitted and the call succeeds" in {
-        when(mockAccountService.removeRcasp(any(), any())(any(), any()))
+        when(mockRcaspSubmissionService.removeRcasp(any(), any())(any(), any()))
           .thenReturn(ResultT.fromValue(()))
 
         when(mockSessionRepository.set(any()))
@@ -234,9 +231,7 @@ class RemoveRcaspControllerSpec extends SpecBase {
           .withPage(RemoveRcaspCachedDetails, rcaspDetails)
           .withPage(RemoveOtherAccessPage, false)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request =
@@ -249,22 +244,26 @@ class RemoveRcaspControllerSpec extends SpecBase {
           redirectLocation(result).value mustEqual
             controllers.remove.routes.RcaspRemovedController.onPageLoad(rcaspId).url
 
-          verify(mockAccountService).removeRcasp(eqTo(testCarfId), eqTo(rcaspId))(any(), any())
-          verify(mockSessionRepository).set(any())
+          verify(mockRcaspSubmissionService).removeRcasp(eqTo(testCarfId), eqTo(rcaspId))(any(), any())
+
+          val expectedAnswers = userAnswers
+            .withPage(RemoveRcaspPage, true)
+            .withPage(SubmissionSucceededPage, true)
+            .withPage(RcaspRemovedDateTimePage, Instant.now(clock))
+
+          verify(mockSessionRepository).set(eqTo(expectedAnswers))
         }
       }
 
-      "must redirect to Journey Recovery when 'Yes' is submitted but removeRcasp fails" in {
-        when(mockAccountService.removeRcasp(any(), any())(any(), any()))
+      "must redirect to Journey Recovery and not update the session when 'Yes' is submitted but removeRcasp fails" in {
+        when(mockRcaspSubmissionService.removeRcasp(any(), any())(any(), any()))
           .thenReturn(ResultT.fromError(InternalServerError))
 
         val userAnswers = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, rcaspDetails)
           .withPage(RemoveOtherAccessPage, false)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request =
@@ -276,7 +275,7 @@ class RemoveRcaspControllerSpec extends SpecBase {
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-          verify(mockAccountService).removeRcasp(any(), any())(any(), any())
+          verify(mockRcaspSubmissionService).removeRcasp(any(), any())(any(), any())
           verify(mockSessionRepository, never).set(any())
         }
       }
@@ -286,9 +285,7 @@ class RemoveRcaspControllerSpec extends SpecBase {
           .withPage(RemoveRcaspCachedDetails, rcaspDetails)
           .withPage(RemoveOtherAccessPage, true)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request =
@@ -298,28 +295,24 @@ class RemoveRcaspControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           val view      = application.injector.instanceOf[RemoveRcaspView]
-          val vm        = RemoveRcaspViewModel.from(rcaspDetails, otherAccessAnswer = true, formProvider)
-          val boundForm = vm.form.bindFromRequest()(request, implicitly)
+          val boundForm = form.bindFromRequest()(request, implicitly)
 
           status(result)          mustEqual BAD_REQUEST
           contentAsString(result) mustEqual view(
             boundForm,
             rcaspId,
-            vm.titleKey,
-            vm.headingKey,
-            vm.rcaspName
+            true,
+            rcaspDetails.getName
           )(request, messages(application)).toString
 
-          verify(mockAccountService, never).removeRcasp(any(), any())(any(), any())
+          verify(mockRcaspSubmissionService, never).removeRcasp(any(), any())(any(), any())
         }
       }
 
       "must redirect to Journey Recovery when RemoveRcaspCachedDetails not in UserAnswers" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveOtherAccessPage, false)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request =
@@ -331,16 +324,14 @@ class RemoveRcaspControllerSpec extends SpecBase {
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-          verify(mockAccountService, never).removeRcasp(any(), any())(any(), any())
+          verify(mockRcaspSubmissionService, never).removeRcasp(any(), any())(any(), any())
         }
       }
 
       "must redirect to Journey Recovery when RemoveOtherAccessPage not in UserAnswers" in {
         val userAnswers = emptyUserAnswers.withPage(RemoveRcaspCachedDetails, rcaspDetails)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request =
@@ -352,7 +343,7 @@ class RemoveRcaspControllerSpec extends SpecBase {
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-          verify(mockAccountService, never).removeRcasp(any(), any())(any(), any())
+          verify(mockRcaspSubmissionService, never).removeRcasp(any(), any())(any(), any())
         }
       }
 
@@ -362,9 +353,7 @@ class RemoveRcaspControllerSpec extends SpecBase {
           .withPage(RemoveRcaspCachedDetails, differentDetails)
           .withPage(RemoveOtherAccessPage, false)
 
-        val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(Some(userAnswers))
 
         running(application) {
           val request =
@@ -376,14 +365,12 @@ class RemoveRcaspControllerSpec extends SpecBase {
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-          verify(mockAccountService, never).removeRcasp(any(), any())(any(), any())
+          verify(mockRcaspSubmissionService, never).removeRcasp(any(), any())(any(), any())
         }
       }
 
       "must redirect to Journey Recovery for a POST if no existing data is found" in {
-        val application = applicationBuilder(userAnswers = None)
-          .overrides(bind[AccountService].toInstance(mockAccountService))
-          .build()
+        val application = buildApplication(None)
 
         running(application) {
           val request =

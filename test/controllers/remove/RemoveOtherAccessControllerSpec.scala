@@ -210,7 +210,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
     "onSubmit" - {
 
-      "must redirect to next page when valid data is submitted" in {
+      "must redirect to RemoveRcaspController when 'Yes' is submitted" in {
         when(mockSessionRepository.set(any()))
           .thenReturn(Future.successful(true))
 
@@ -229,9 +229,30 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual
-            controllers.routes.PlaceholderController
-              .onPageLoad("Should nav to /remove/remove-rcasp (CARF-549)")
-              .url
+            controllers.remove.routes.RemoveRcaspController.onPageLoad(rcaspId).url
+        }
+      }
+
+      "must redirect to RemoveRcaspController when 'No' is submitted" in {
+        when(mockSessionRepository.set(any()))
+          .thenReturn(Future.successful(true))
+
+        val userAnswers = emptyUserAnswers
+          .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+          .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, onSubmitRoute)
+              .withFormUrlEncodedBody(("value", "false"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual
+            controllers.remove.routes.RemoveRcaspController.onPageLoad(rcaspId).url
         }
       }
 
