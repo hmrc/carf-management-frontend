@@ -18,10 +18,11 @@ package controllers.organisation
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
-import models.NormalMode
+import models.{ChangeMode, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{verify, when}
+import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.*
 import play.api.data.Form
 import play.api.inject.bind
@@ -40,185 +41,354 @@ class HaveTradingNameControllerSpec extends SpecBase {
   lazy val haveTradingNameRoute: String =
     controllers.organisation.routes.HaveTradingNameController.onPageLoad(NormalMode).url
 
+  lazy val haveTradingNameRouteChangeMode: String =
+    controllers.organisation.routes.HaveTradingNameController.onPageLoad(ChangeMode).url
+
   def onwardRoute = Call("GET", "/foo")
 
   "HaveTradingName Controller" - {
 
-    "must return OK and the correct view for a GET when an org name is present in user answers" in {
+    "normal mode" - {
+      "must return OK and the correct view for a GET when an org name is present in user answers" in {
 
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+        val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
 
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
+        val application = applicationBuilder(userAnswers = Some(ua)).build()
 
-      running(application) {
-        val request = FakeRequest(GET, haveTradingNameRoute)
-        val result  = route(application, request).value
-        val view    = application.injector.instanceOf[HaveTradingNameView]
+        running(application) {
+          val request = FakeRequest(GET, haveTradingNameRoute)
+          val result  = route(application, request).value
+          val view    = application.injector.instanceOf[HaveTradingNameView]
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, testOrgName)(request, messages(application)).toString
+          status(result)          mustEqual OK
+          contentAsString(result) mustEqual view(form, NormalMode, testOrgName)(request, messages(application)).toString
+        }
+      }
+
+      "must redirect to Some Information is Missing GET when an org name is NOT present in user answers" in {
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+        running(application) {
+          val request = FakeRequest(GET, haveTradingNameRoute)
+          val result  = route(application, request).value
+
+          status(result)               mustEqual SEE_OTHER
+          redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+        }
+      }
+
+      "must populate the view correctly on a GET when the question has previously been answered" in {
+
+        val userAnswers = emptyUserAnswers
+          .withPage(HaveTradingNamePage, true)
+          .withPage(OverwritableOrganisationName, testOrgName)
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+        running(application) {
+          val request = FakeRequest(GET, haveTradingNameRoute)
+          val view    = application.injector.instanceOf[HaveTradingNameView]
+          val result  = route(application, request).value
+
+          status(result)          mustEqual OK
+          contentAsString(result) mustEqual view(form.fill(true), NormalMode, testOrgName)(
+            request,
+            messages(application)
+          ).toString
+        }
+      }
+
+      "must redirect via Navigator and NOT clear data when answer is true" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(TradingNamePage, testTradingName)
+
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, haveTradingNameRoute)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(HaveTradingNamePage).contains(true) &&
+            ua.get(TradingNamePage).isDefined
+          })
+        }
+      }
+
+      "must redirect via Navigator and clear data when answer is false" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(TradingNamePage, testTradingName)
+
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, haveTradingNameRoute)
+              .withFormUrlEncodedBody(("value", "false"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(HaveTradingNamePage).contains(false) &&
+            ua.get(TradingNamePage).isEmpty
+          })
+        }
+      }
+
+      "must return a Bad Request and errors when invalid data is submitted and an org name is present in user answers" in {
+
+        val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+
+        val application = applicationBuilder(userAnswers = Some(ua)).build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, haveTradingNameRoute)
+              .withFormUrlEncodedBody(("value", ""))
+
+          val boundForm = form.bind(Map("value" -> ""))
+          val view      = application.injector.instanceOf[HaveTradingNameView]
+          val result    = route(application, request).value
+
+          status(result)          mustEqual BAD_REQUEST
+          contentAsString(result) mustEqual view(boundForm, NormalMode, testOrgName)(
+            request,
+            messages(application)
+          ).toString
+        }
+      }
+
+      "must redirect to Some Information is Missing when invalid data is submitted and an org name is NOT present in user answers" in {
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, haveTradingNameRoute)
+              .withFormUrlEncodedBody(("value", ""))
+
+          val result = route(application, request).value
+
+          status(result)               mustEqual SEE_OTHER
+          redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery for a GET if no existing data is found" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val request = FakeRequest(GET, haveTradingNameRoute)
+          val result  = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery for a POST if no existing data is found" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, haveTradingNameRoute)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
       }
     }
 
-    "must redirect to Some Information is Missing GET when an org name is NOT present in user answers" in {
+    "change mode" - {
+      "must redirect to TradingNameController when answer is changed from false -> true" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(HaveTradingNamePage, false)
+          .withPage(TradingNamePage, testTradingName)
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      running(application) {
-        val request = FakeRequest(GET, haveTradingNameRoute)
-        val result  = route(application, request).value
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
 
-        status(result)               mustEqual SEE_OTHER
-        redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+        running(application) {
+          val request =
+            FakeRequest(POST, haveTradingNameRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.organisation.routes.TradingNameController
+            .onPageLoad(ChangeMode)
+            .url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(HaveTradingNamePage).contains(true) &&
+            ua.get(TradingNamePage).isDefined
+          })
+        }
       }
-    }
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
+      "must redirect ChangeDetailsRoutingController when answer is changed from true -> false" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(HaveTradingNamePage, true)
+          .withPage(TradingNamePage, testTradingName)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
 
-      val userAnswers = emptyUserAnswers
-        .withPage(HaveTradingNamePage, true)
-        .withPage(OverwritableOrganisationName, testOrgName)
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
 
-      running(application) {
-        val request = FakeRequest(GET, haveTradingNameRoute)
-        val view    = application.injector.instanceOf[HaveTradingNameView]
-        val result  = route(application, request).value
+        running(application) {
+          val request =
+            FakeRequest(POST, haveTradingNameRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "false"))
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, testOrgName)(
-          request,
-          messages(application)
-        ).toString
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
+            .onPageLoad(rcaspId)
+            .url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(HaveTradingNamePage).contains(false) &&
+            ua.get(TradingNamePage).isEmpty
+          })
+        }
       }
-    }
 
-    "must redirect via Navigator and NOT clear data when answer is true" in {
-      val userAnswers = emptyUserAnswers
-        .withPage(TradingNamePage, testTradingName)
+      "must redirect ChangeDetailsRoutingController when answer is true and does not change" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(HaveTradingNamePage, true)
+          .withPage(TradingNamePage, testTradingName)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application =
-        applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
-          )
-          .build()
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
 
-      running(application) {
-        val request =
-          FakeRequest(POST, haveTradingNameRoute)
-            .withFormUrlEncodedBody(("value", "true"))
+        running(application) {
+          val request =
+            FakeRequest(POST, haveTradingNameRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "true"))
 
-        val result = route(application, request).value
+          val result = route(application, request).value
 
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual onwardRoute.url
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
+            .onPageLoad(rcaspId)
+            .url
 
-        verify(mockSessionRepository).set(argThat { ua =>
-          ua.get(HaveTradingNamePage).contains(true) &&
-          ua.get(TradingNamePage).isDefined
-        })
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(HaveTradingNamePage).contains(true) &&
+            ua.get(TradingNamePage).isDefined
+          })
+        }
       }
-    }
 
-    "must redirect via Navigator and clear data when answer is false" in {
-      val userAnswers = emptyUserAnswers
-        .withPage(TradingNamePage, testTradingName)
+      "must redirect ChangeDetailsRoutingController when answer is false and does not change" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(HaveTradingNamePage, false)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application =
-        applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
-          )
-          .build()
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
 
-      running(application) {
-        val request =
-          FakeRequest(POST, haveTradingNameRoute)
-            .withFormUrlEncodedBody(("value", "false"))
+        running(application) {
+          val request =
+            FakeRequest(POST, haveTradingNameRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "false"))
 
-        val result = route(application, request).value
+          val result = route(application, request).value
 
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual onwardRoute.url
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
+            .onPageLoad(rcaspId)
+            .url
 
-        verify(mockSessionRepository).set(argThat { ua =>
-          ua.get(HaveTradingNamePage).contains(false) &&
-          ua.get(TradingNamePage).isEmpty
-        })
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(HaveTradingNamePage).contains(false)
+          })
+        }
       }
-    }
 
-    "must return a Bad Request and errors when invalid data is submitted and an org name is present in user answers" in {
+      "must redirect Journey recovery when ChangeRcaspCachedDetails is not in userAnswers" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(HaveTradingNamePage, false)
 
-      val ua = emptyUserAnswers.withPage(OverwritableOrganisationName, testOrgName)
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
 
-      running(application) {
-        val request =
-          FakeRequest(POST, haveTradingNameRoute)
-            .withFormUrlEncodedBody(("value", ""))
+        running(application) {
+          val request =
+            FakeRequest(POST, haveTradingNameRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "false"))
 
-        val boundForm = form.bind(Map("value" -> ""))
-        val view      = application.injector.instanceOf[HaveTradingNameView]
-        val result    = route(application, request).value
+          val result = route(application, request).value
 
-        status(result)          mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, testOrgName)(
-          request,
-          messages(application)
-        ).toString
-      }
-    }
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-    "must redirect to Some Information is Missing when invalid data is submitted and an org name is NOT present in user answers" in {
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, haveTradingNameRoute)
-            .withFormUrlEncodedBody(("value", ""))
-
-        val result = route(application, request).value
-
-        status(result)               mustEqual SEE_OTHER
-        redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, haveTradingNameRoute)
-        val result  = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a POST if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, haveTradingNameRoute)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(HaveTradingNamePage).contains(false)
+          })
+        }
       }
     }
   }

@@ -17,20 +17,21 @@
 package controllers.individual
 
 import controllers.actions.*
+import controllers.routes
 import forms.GenericYesNoPageFormProvider
-
-import javax.inject.Inject
-import models.Mode
+import models.{ChangeMode, Mode, NormalMode, UserAnswers}
 import navigation.Navigator
+import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.individual.{IndividualHavePhonePage, IndividualNamePage}
 import play.api.Logging
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.individual.IndividualHavePhoneView
-import play.api.data.Form
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class IndividualHavePhoneController @Inject() (
@@ -49,7 +50,8 @@ class IndividualHavePhoneController @Inject() (
     with I18nSupport
     with Logging {
 
-  val form: Form[Boolean] = formProvider("individualHavePhone.error.required")
+  val form: Form[Boolean]         = formProvider("individualHavePhone.error.required")
+  private lazy val recovery: Call = routes.JourneyRecoveryController.onPageLoad()
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
@@ -70,6 +72,12 @@ class IndividualHavePhoneController @Inject() (
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+
+      val userAnswers = request.userAnswers
+
+      lazy val hasValueChanged: Boolean => Boolean =
+        newValue => !userAnswers.get(IndividualHavePhonePage).contains(newValue)
+
       form
         .bindFromRequest()
         .fold(
@@ -90,7 +98,33 @@ class IndividualHavePhoneController @Inject() (
             for {
               updatedAnswers <- Future.fromTry(request.userAnswers.set(IndividualHavePhonePage, value))
               _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(navigator.nextPage(IndividualHavePhonePage, mode, updatedAnswers))
+            } yield mode match {
+              case NormalMode =>
+                Redirect(navigator.nextPage(IndividualHavePhonePage, mode, updatedAnswers))
+              case ChangeMode =>
+                Redirect {
+                  if (hasValueChanged(value)) {
+                    navigateFromIndividualHavePhonePage(updatedAnswers)
+                  } else {
+                    changeDetailsNavigation(updatedAnswers)
+                  }
+                }
+            }
         )
     }
+
+  private def navigateFromIndividualHavePhonePage(userAnswers: UserAnswers): Call =
+    userAnswers.get(IndividualHavePhonePage) match {
+      case Some(true)  => controllers.individual.routes.IndividualPhoneController.onPageLoad(ChangeMode)
+      case Some(false) => changeDetailsNavigation(userAnswers)
+      case None        => recovery
+    }
+
+  private def changeDetailsNavigation(userAnswers: UserAnswers): Call = {
+    val maybeRcaspId = userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
+
+    maybeRcaspId.fold(recovery) { rcaspId =>
+      controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
+    }
+  }
 }
