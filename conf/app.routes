@@ -174,3 +174,5 @@ POST        /remove/user-access/:rcaspId                                  contro
 
 GET         /remove/other-access/:rcaspId                                 controllers.remove.RemoveOtherAccessController.onPageLoad(rcaspId: String)
 POST        /remove/other-access/:rcaspId                                 controllers.remove.RemoveOtherAccessController.onSubmit(rcaspId: String)
+
+GET         /report/problem/invalid-xml                                   controllers.problem.InvalidXmlController.onPageLoad()
