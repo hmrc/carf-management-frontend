@@ -101,7 +101,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
             ResponseCommon = rcaspResponseCommon,
             ResponseDetails = RcaspResponseDetails(
               RCASPList = List(
-                organisationRcaspDetailsResponse.copy(AddressDetails = rcaspAddress)
+                organisationRcaspDetailsViewUpdate.copy(AddressDetails = rcaspAddress)
               )
             )
           )
