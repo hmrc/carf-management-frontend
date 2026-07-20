@@ -52,8 +52,9 @@ class RemoveUserAccessController @Inject() (
     with I18nSupport
     with Logging {
 
-  private val journeyRecovery: Result =
-    Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+  private val journeyRecovery: Result = Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+
+  private val pageUnavailable: Result = Redirect(controllers.routes.PlaceholderController.onPageLoad("Should nav to /problem/page-unavailable (CARF-308)"))
 
   private def render(
       form: Form[Boolean],
@@ -81,56 +82,63 @@ class RemoveUserAccessController @Inject() (
       Ok(render(vm.form, rcaspId, vm))
     }
 
-  def onPageLoad(rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData()).async { implicit request =>
-
-      val submissionFlagSet = request.userAnswers.flatMap(_.get(SubmissionSucceededPage)).contains(true)
-
-      val cachedDetails =
-        request.userAnswers.flatMap(_.get(RemoveRcaspCachedDetails))
-
-      val cachedUserInfo: Option[UserBusinessSubscriptionData] =
-        request.userAnswers.flatMap(_.get(RemoveUserBusinessInfoCached))
-
-      (cachedDetails, cachedUserInfo) match {
-
-        case (Some(details), Some(userInfo)) if details.RCASPID.equalsIgnoreCase(rcaspId) && !submissionFlagSet =>
-          val vm           = RemoveUserAccessViewModel.from(details, userInfo, formProvider)
-          val preparedForm = request.userAnswers.flatMap(_.get(RemoveUserAccessPage)).fold(vm.form)(vm.form.fill)
-          Future.successful(Ok(render(preparedForm, rcaspId, vm)))
-
-        case _ =>
-          accountService.getRcaspDetails(request.carfId, rcaspId).value.flatMap {
-            case Right(details) =>
-              accountService.getUserBusinessSubscriptionData(request.carfId).value.flatMap {
-                case Right(userInfo) =>
-                  cacheAndRender(rcaspId, details, userInfo)
-                case Left(error)     =>
-                  logger.warn(
-                    s"[RemoveUserAccessController][onPageLoad] Failed to get user business info: $error"
-                  )
-                  Future.successful(journeyRecovery)
-              }
-            case Left(error)    =>
-              logger.warn(s"[RemoveUserAccessController][onPageLoad] Failed to get RCASP details: $error")
-              Future.successful(journeyRecovery)
-          }
-      }
+  private def fetchAndCache(
+      rcaspId: String
+  )(implicit request: OptionalDataRequest[AnyContent], messages: Messages): Future[Result] =
+    accountService.getRcaspDetails(request.carfId, rcaspId).value.flatMap {
+      case Right(details) =>
+        accountService.getUserBusinessSubscriptionData(request.carfId).value.flatMap {
+          case Right(userInfo) => cacheAndRender(rcaspId, details, userInfo)
+          case Left(error)     =>
+            logger.warn(s"[RemoveUserAccessController][onPageLoad] Failed to get user business info: $error")
+            Future.successful(journeyRecovery)
+        }
+      case Left(error)    =>
+        logger.warn(s"[RemoveUserAccessController][onPageLoad] Failed to get RCASP details: $error")
+        Future.successful(journeyRecovery)
     }
+
+  def onPageLoad(rcaspId: String): Action[AnyContent] = (identify() andThen getData()).async { implicit request =>
+    val submissionSucceeded = request.userAnswers.flatMap(_.get(SubmissionSucceededPage)).contains(true)
+
+    val cachedDetails = request.userAnswers.flatMap(_.get(RemoveRcaspCachedDetails))
+
+    val cachedUserInfo: Option[UserBusinessSubscriptionData] = request.userAnswers.flatMap(_.get(RemoveUserBusinessInfoCached))
+
+    val cachedRcaspIdMatches = cachedDetails.exists(_.RCASPID.equalsIgnoreCase(rcaspId))
+
+    (cachedRcaspIdMatches, submissionSucceeded) match {
+      case (true, true) =>
+        logger.info(
+          "[RemoveUserAccessController][onPageLoad] Submission already succeeded for this RCASP - redirecting to page-unavailable"
+        )
+        Future.successful(pageUnavailable)
+
+      case (true, false) =>
+        (cachedDetails, cachedUserInfo) match {
+          case (Some(details), Some(userInfo)) =>
+            val vm           = RemoveUserAccessViewModel.from(details, userInfo, formProvider)
+            val preparedForm = request.userAnswers.flatMap(_.get(RemoveUserAccessPage)).fold(vm.form)(vm.form.fill)
+            Future.successful(Ok(render(preparedForm, rcaspId, vm)))
+
+          case _ =>
+            fetchAndCache(rcaspId)
+        }
+
+      case (false, _) =>
+        fetchAndCache(rcaspId)
+    }
+  }
 
   def onSubmit(rcaspId: String): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+      val cachedDetails = request.userAnswers
+        .get(RemoveRcaspCachedDetails)
+        .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
 
-      val cachedDetails =
-        request.userAnswers
-          .get(RemoveRcaspCachedDetails)
-          .filter(_.RCASPID.equalsIgnoreCase(rcaspId))
-
-      val cachedUserInfo: Option[UserBusinessSubscriptionData] =
-        request.userAnswers.get(RemoveUserBusinessInfoCached)
+      val cachedUserInfo: Option[UserBusinessSubscriptionData] = request.userAnswers.get(RemoveUserBusinessInfoCached)
 
       (cachedDetails, cachedUserInfo) match {
-
         case (Some(details), Some(userInfo)) =>
           val vm = RemoveUserAccessViewModel.from(details, userInfo, formProvider)
 
