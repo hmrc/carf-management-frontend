@@ -268,6 +268,20 @@ trait TestData extends Generators {
       SecondaryContactDetails = None
     )
 
+  val registeredBusinessUpdateRcaspDetailsRequest: viewAndUpdateRcasp.OrganisationRcaspDetails =
+    viewAndUpdateRcasp.OrganisationRcaspDetails(
+      RCASPID = rcaspId,
+      SubscriptionID = carfId,
+      IsRCASPUser = true,
+      PartyType = "Organisation",
+      RCASPName = testOrgName,
+      TradingName = testTradingName,
+      TINDetails = Some(List(TinDetails(TINType = "UTR", TIN = testUtr.uniqueTaxPayerReference, IssuedBy = "GB"))),
+      AddressDetails = testAddressUkRcaspAddress,
+      PrimaryContactDetails = None,
+      SecondaryContactDetails = None
+    )
+
   def rcaspRequestCommon(requestType: RequestType): RcaspRequestCommon =
     RcaspRequestCommon(
       OriginatingSystem = "MDTP",
@@ -306,6 +320,14 @@ trait TestData extends Generators {
       createRcasp.RcaspManagementRequest(
         RequestCommon = rcaspRequestCommon(RequestType.Create),
         RequestDetails = registeredBusinessRcaspDetailsRequest
+      )
+    )
+
+  val updateRcaspRequestRegisteredBusiness: UpdateRcaspRequest =
+    UpdateRcaspRequest(
+      updateRcasp.RcaspManagementRequest(
+        RequestCommon = rcaspRequestCommon(RequestType.Update),
+        RequestDetails = registeredBusinessUpdateRcaspDetailsRequest
       )
     )
 

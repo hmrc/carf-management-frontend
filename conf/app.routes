@@ -172,6 +172,8 @@ POST        /change-answers/:rcaspId                                      contro
 GET         /registered-business/change-answers/:rcaspId                  controllers.changeDetails.RegisteredBusinessChangeDetailsController.onPageLoad(rcaspId: String)
 POST        /registered-business/change-answers/:rcaspId                  controllers.changeDetails.RegisteredBusinessChangeDetailsController.onSubmit(rcaspId: String)
 
+GET         /details-updated                                              controllers.changeDetails.RcaspUpdatedConfirmationController.onPageLoad()
+
 GET         /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onPageLoad(rcaspId: String)
 POST        /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onSubmit(rcaspId: String)
 

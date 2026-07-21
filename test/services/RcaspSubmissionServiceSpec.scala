@@ -47,8 +47,8 @@ class RcaspSubmissionServiceSpec extends SpecBase {
     .withPage(IndividualNamePage, testIndividualName)
 
   "RcaspSubmissionService" - {
-    ".submitRegisteredBusinessRcasp" - {
-      "when the CreateRcaspRequest is submitted successfully" in {
+    ".createRegisteredBusinessRcasp" - {
+      "when the RcaspRequest is submitted successfully" in {
         when(mockRcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(
           Some(createRcaspRequestRegisteredBusiness)
         )
@@ -58,7 +58,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         )
 
         val result =
-          rcaspSubmissionService.submitRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
+          rcaspSubmissionService.createRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
 
         result mustBe Right(submitRcaspResponse)
 
@@ -67,7 +67,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         verify(mockRcaspConnector, times(1)).createRcasp(eqTo(createRcaspRequestRegisteredBusiness))(any(), any())
       }
 
-      "when the CreateRcaspRequest is built but the connector returns an error" in {
+      "when the RcaspRequest is built but the connector returns an error" in {
         when(mockRcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(
           Some(createRcaspRequestRegisteredBusiness)
         )
@@ -77,7 +77,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         )
 
         val result =
-          rcaspSubmissionService.submitRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
+          rcaspSubmissionService.createRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
 
         result mustBe Left(InternalServerError)
 
@@ -90,7 +90,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         when(mockRcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(None)
 
         val result =
-          rcaspSubmissionService.submitRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
+          rcaspSubmissionService.createRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
 
         result mustBe Left(
           MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers")
@@ -102,8 +102,8 @@ class RcaspSubmissionServiceSpec extends SpecBase {
       }
     }
 
-    ".submitRcasp" - {
-      "when the CreateRcaspRequest is submitted successfully" in {
+    ".createRcasp" - {
+      "when the RcaspRequest is submitted successfully" in {
         when(mockRcaspSubmissionHelper.createRcaspRequest(any(), any())).thenReturn(
           Some(createRcaspRequestIndividual)
         )
@@ -112,7 +112,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
           ResultT.fromValue(submitRcaspResponse)
         )
 
-        val result = rcaspSubmissionService.submitRcasp(carfId, testUserAnswers).value.futureValue
+        val result = rcaspSubmissionService.createRcasp(carfId, testUserAnswers).value.futureValue
 
         result mustBe Right(submitRcaspResponse)
 
@@ -120,7 +120,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         verify(mockRcaspConnector, times(1)).createRcasp(eqTo(createRcaspRequestIndividual))(any(), any())
       }
 
-      "when the CreateRcaspRequest is built but the connector returns an error" in {
+      "when the RcaspRequest is built but the connector returns an error" in {
         when(mockRcaspSubmissionHelper.createRcaspRequest(any(), any())).thenReturn(
           Some(createRcaspRequestIndividual)
         )
@@ -129,7 +129,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
           ResultT.fromError(InternalServerError)
         )
 
-        val result = rcaspSubmissionService.submitRcasp(carfId, testUserAnswers).value.futureValue
+        val result = rcaspSubmissionService.createRcasp(carfId, testUserAnswers).value.futureValue
 
         result mustBe Left(InternalServerError)
 
@@ -140,13 +140,117 @@ class RcaspSubmissionServiceSpec extends SpecBase {
       "when the helper fails to build the RcaspRequest" in {
         when(mockRcaspSubmissionHelper.createRcaspRequest(any(), any())).thenReturn(None)
 
-        val result = rcaspSubmissionService.submitRcasp(carfId, testUserAnswers).value.futureValue
+        val result = rcaspSubmissionService.createRcasp(carfId, testUserAnswers).value.futureValue
 
         result mustBe Left(
           MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers")
         )
 
         verify(mockRcaspSubmissionHelper, times(1)).createRcaspRequest(eqTo(carfId), eqTo(testUserAnswers))
+        verify(mockRcaspConnector, times(0)).createRcasp(any())(any(), any())
+      }
+    }
+
+    ".updateRegisteredBusinessRcasp" - {
+      "when the RcaspRequest is submitted successfully" in {
+        when(mockRcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(
+          Some(updateRcaspRequestRegisteredBusiness)
+        )
+
+        when(mockRcaspConnector.updateRcasp(eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())).thenReturn(
+          ResultT.fromValue(submitRcaspResponse)
+        )
+
+        val result =
+          rcaspSubmissionService.updateRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
+
+        result mustBe Right(submitRcaspResponse)
+
+        verify(mockRcaspSubmissionHelper, times(1))
+          .updateRcaspRequestForRegisteredBusiness(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
+        verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())
+      }
+
+      "when the RcaspRequest is built but the connector returns an error" in {
+        when(mockRcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(
+          Some(updateRcaspRequestRegisteredBusiness)
+        )
+
+        when(mockRcaspConnector.updateRcasp(eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())).thenReturn(
+          ResultT.fromError(InternalServerError)
+        )
+
+        val result =
+          rcaspSubmissionService.updateRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
+
+        result mustBe Left(InternalServerError)
+
+        verify(mockRcaspSubmissionHelper, times(1))
+          .updateRcaspRequestForRegisteredBusiness(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
+        verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())
+      }
+
+      "when the helper fails to build the RcaspRequest" in {
+        when(mockRcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(None)
+
+        val result =
+          rcaspSubmissionService.updateRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
+
+        result mustBe Left(
+          MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers")
+        )
+
+        verify(mockRcaspSubmissionHelper, times(1))
+          .updateRcaspRequestForRegisteredBusiness(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
+        verify(mockRcaspConnector, times(0)).updateRcasp(any())(any(), any())
+      }
+    }
+
+    ".updateRcasp" - {
+      "when the RcaspRequest is submitted successfully" in {
+        when(mockRcaspSubmissionHelper.updateRcaspRequest(any(), any())).thenReturn(
+          Some(updateRcaspRequestIndividual)
+        )
+
+        when(mockRcaspConnector.updateRcasp(eqTo(updateRcaspRequestIndividual))(any(), any())).thenReturn(
+          ResultT.fromValue(submitRcaspResponse)
+        )
+
+        val result = rcaspSubmissionService.updateRcasp(carfId, testUserAnswers).value.futureValue
+
+        result mustBe Right(submitRcaspResponse)
+
+        verify(mockRcaspSubmissionHelper, times(1)).updateRcaspRequest(eqTo(carfId), eqTo(testUserAnswers))
+        verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(updateRcaspRequestIndividual))(any(), any())
+      }
+
+      "when the RcaspRequest is built but the connector returns an error" in {
+        when(mockRcaspSubmissionHelper.updateRcaspRequest(any(), any())).thenReturn(
+          Some(updateRcaspRequestIndividual)
+        )
+
+        when(mockRcaspConnector.updateRcasp(eqTo(updateRcaspRequestIndividual))(any(), any())).thenReturn(
+          ResultT.fromError(InternalServerError)
+        )
+
+        val result = rcaspSubmissionService.updateRcasp(carfId, testUserAnswers).value.futureValue
+
+        result mustBe Left(InternalServerError)
+
+        verify(mockRcaspSubmissionHelper, times(1)).updateRcaspRequest(eqTo(carfId), eqTo(testUserAnswers))
+        verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(updateRcaspRequestIndividual))(any(), any())
+      }
+
+      "when the helper fails to build the RcaspRequest" in {
+        when(mockRcaspSubmissionHelper.updateRcaspRequest(any(), any())).thenReturn(None)
+
+        val result = rcaspSubmissionService.updateRcasp(carfId, testUserAnswers).value.futureValue
+
+        result mustBe Left(
+          MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers")
+        )
+
+        verify(mockRcaspSubmissionHelper, times(1)).updateRcaspRequest(eqTo(carfId), eqTo(testUserAnswers))
         verify(mockRcaspConnector, times(0)).createRcasp(any())(any(), any())
       }
     }

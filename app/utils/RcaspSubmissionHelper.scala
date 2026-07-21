@@ -20,8 +20,10 @@ import config.Constants.ukCountryCode
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.requests.*
 import models.requests.createRcasp.RcaspRequest as CreateRcaspRequest
-import models.{toRcaspAddress, OrganisationOrIndividual, RcaspContactDetails, TinDetails, UniqueTaxpayerReference, UserAnswers}
+import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
+import models.{toRcaspAddress, viewAndUpdateRcasp, OrganisationOrIndividual, RcaspContactDetails, TinDetails, UniqueTaxpayerReference, UserAnswers}
 import pages.UkAddressInUserAnswers
+import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
@@ -74,6 +76,45 @@ class RcaspSubmissionHelper {
       )
     )
 
+  def updateRcaspRequestForRegisteredBusiness(
+      carfId: String,
+      utr: UniqueTaxpayerReference,
+      userAnswers: UserAnswers
+  ): Option[UpdateRcaspRequest] =
+    for {
+      isRcaspUser     <- userAnswers.get(ReportForRegisteredBusinessPage)
+      if isRcaspUser
+      rcaspId         <- userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
+      orgName         <- userAnswers.get(OverwritableOrganisationName)
+      haveTradingName <- userAnswers.get(HaveTradingNamePage)
+      tradingName     <- if (haveTradingName) userAnswers.get(TradingNamePage) else Some(orgName)
+      address         <- userAnswers.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
+    } yield UpdateRcaspRequest(
+      RCASPManagement = updateRcasp.RcaspManagementRequest(
+        RequestCommon = rcaspRequestCommon(RequestType.Update),
+        RequestDetails = viewAndUpdateRcasp.OrganisationRcaspDetails(
+          RCASPID = rcaspId,
+          SubscriptionID = carfId,
+          IsRCASPUser = isRcaspUser,
+          PartyType = "Organisation",
+          RCASPName = orgName,
+          TradingName = tradingName,
+          TINDetails = Some(
+            List(
+              TinDetails(
+                TINType = "UTR",
+                TIN = utr.uniqueTaxPayerReference,
+                IssuedBy = ukCountryCode
+              )
+            )
+          ),
+          AddressDetails = address,
+          PrimaryContactDetails = None,
+          SecondaryContactDetails = None
+        )
+      )
+    )
+
   def createRcaspRequest(carfId: String, userAnswers: UserAnswers): Option[CreateRcaspRequest] =
     for {
       organisationOrIndividual <- userAnswers.get(OrganisationOrIndividualPage)
@@ -81,6 +122,17 @@ class RcaspSubmissionHelper {
     } yield CreateRcaspRequest(
       RCASPManagement = createRcasp.RcaspManagementRequest(
         RequestCommon = rcaspRequestCommon(RequestType.Create),
+        RequestDetails = rcaspDetails
+      )
+    )
+
+  def updateRcaspRequest(carfId: String, userAnswers: UserAnswers): Option[UpdateRcaspRequest] =
+    for {
+      organisationOrIndividual <- userAnswers.get(OrganisationOrIndividualPage)
+      rcaspDetails             <- updateRcaspDetails(carfId, userAnswers, organisationOrIndividual)
+    } yield UpdateRcaspRequest(
+      RCASPManagement = updateRcasp.RcaspManagementRequest(
+        RequestCommon = rcaspRequestCommon(RequestType.Update),
         RequestDetails = rcaspDetails
       )
     )
@@ -95,6 +147,16 @@ class RcaspSubmissionHelper {
       case Organisation => createOrganisationRcaspDetails(carfId: String, userAnswers: UserAnswers)
     }
 
+  private def updateRcaspDetails(
+      carfId: String,
+      userAnswers: UserAnswers,
+      organisationOrIndividual: OrganisationOrIndividual
+  ): Option[viewAndUpdateRcasp.RcaspDetails] =
+    organisationOrIndividual match {
+      case Individual   => updateIndividualRcaspDetails(carfId: String, userAnswers: UserAnswers)
+      case Organisation => updateOrganisationRcaspDetails(carfId: String, userAnswers: UserAnswers)
+    }
+
   private def createIndividualRcaspDetails(
       carfId: String,
       userAnswers: UserAnswers
@@ -107,6 +169,38 @@ class RcaspSubmissionHelper {
       isRcaspUserAnswer = userAnswers.get(ReportForRegisteredBusinessPage).contains(true)
       isRcaspUser      <- if (isRcaspUserAnswer) None else Some(isRcaspUserAnswer)
     } yield createRcasp.IndividualRcaspDetails(
+      SubscriptionID = carfId,
+      IsRCASPUser = isRcaspUser,
+      PartyType = "Individual",
+      FirstName = name.firstName,
+      LastName = name.lastName,
+      TINDetails = Some(
+        List(
+          TinDetails(
+            TINType = "OTHER",
+            TIN = nino,
+            IssuedBy = ukCountryCode
+          )
+        )
+      ),
+      AddressDetails = address,
+      PrimaryContactDetails = Some(contactDetails)
+    )
+
+  private def updateIndividualRcaspDetails(
+      carfId: String,
+      userAnswers: UserAnswers
+  ): Option[viewAndUpdateRcasp.IndividualRcaspDetails] =
+    for {
+      isRcaspUser    <- userAnswers.get(ReportForRegisteredBusinessPage)
+      if !isRcaspUser
+      rcaspId        <- userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
+      name           <- userAnswers.get(IndividualNamePage)
+      nino           <- userAnswers.get(NiNumberPage)
+      contactDetails <- buildIndividualContactDetails(userAnswers)
+      address        <- userAnswers.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
+    } yield viewAndUpdateRcasp.IndividualRcaspDetails(
+      RCASPID = rcaspId,
       SubscriptionID = carfId,
       IsRCASPUser = isRcaspUser,
       PartyType = "Individual",
@@ -141,6 +235,43 @@ class RcaspSubmissionHelper {
       isRcaspUserAnswer  = userAnswers.get(ReportForRegisteredBusinessPage).contains(true)
       isRcaspUser       <- if (isRcaspUserAnswer) None else Some(isRcaspUserAnswer)
     } yield createRcasp.OrganisationRcaspDetails(
+      SubscriptionID = carfId,
+      IsRCASPUser = isRcaspUser,
+      PartyType = "Organisation",
+      RCASPName = orgName,
+      TradingName = tradingName,
+      TINDetails = Some(
+        List(
+          TinDetails(
+            TINType = "UTR",
+            TIN = utr,
+            IssuedBy = ukCountryCode
+          )
+        )
+      ),
+      AddressDetails = address,
+      PrimaryContactDetails = Some(firstContact),
+      SecondaryContactDetails = secondContact
+    )
+
+  private def updateOrganisationRcaspDetails(
+      carfId: String,
+      userAnswers: UserAnswers
+  ): Option[viewAndUpdateRcasp.OrganisationRcaspDetails] =
+    for {
+      isRcaspUser       <- userAnswers.get(ReportForRegisteredBusinessPage)
+      if !isRcaspUser
+      rcaspId           <- userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
+      orgName           <- userAnswers.get(OverwritableOrganisationName)
+      haveTradingName   <- userAnswers.get(HaveTradingNamePage)
+      tradingName       <- if (haveTradingName) userAnswers.get(TradingNamePage) else Some(orgName)
+      utr               <- userAnswers.get(UtrPage)
+      firstContact      <- buildOrgFirstContactDetails(userAnswers)
+      haveSecondContact <- userAnswers.get(OrganisationHaveSecondContactPage)
+      secondContact     <- if (haveSecondContact) buildOrgSecondContactDetails(userAnswers).map(Some(_)) else Some(None)
+      address           <- userAnswers.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
+    } yield viewAndUpdateRcasp.OrganisationRcaspDetails(
+      RCASPID = rcaspId,
       SubscriptionID = carfId,
       IsRCASPUser = isRcaspUser,
       PartyType = "Organisation",

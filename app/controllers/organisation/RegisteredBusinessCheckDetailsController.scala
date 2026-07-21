@@ -84,7 +84,7 @@ class RegisteredBusinessCheckDetailsController @Inject() (
         request.utr match {
           case Some(utr) =>
             rcaspSubmissionService
-              .submitRegisteredBusinessRcasp(request.carfId, utr, request.userAnswers)
+              .createRegisteredBusinessRcasp(request.carfId, utr, request.userAnswers)
               .value
               .flatMap {
                 case Right(response) =>

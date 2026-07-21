@@ -279,9 +279,8 @@ class ChangeDetailsControllerSpec extends SpecBase {
         val result: Future[Result] = route(application, request).value
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
-          .onPageLoad(s"Successful submission for $rcaspId. Should redirect to /details-updated (CARF-353)")
-          .url
+        redirectLocation(result).value mustEqual
+          controllers.changeDetails.routes.RcaspUpdatedConfirmationController.onPageLoad().url
 
         verify(mockRcaspService, times(1)).updateRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
         verify(mockSessionRepository, times(1)).set(

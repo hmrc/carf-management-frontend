@@ -137,7 +137,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
       "must set the SubmissionSucceededPage flag as true redirect to the RCASP added page if submission is successful" in new Setup(
         emptyUserAnswers
       ) {
-        when(mockRcaspSubmissionService.submitRegisteredBusinessRcasp(any(), any(), any())(any(), any()))
+        when(mockRcaspSubmissionService.createRegisteredBusinessRcasp(any(), any(), any())(any(), any()))
           .thenReturn(ResultT.fromValue(submitRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -147,7 +147,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.RcaspAddedConfirmationController.onPageLoad().url
 
-        verify(mockRcaspSubmissionService, times(1)).submitRegisteredBusinessRcasp(any(), any(), any())(any(), any())
+        verify(mockRcaspSubmissionService, times(1)).createRegisteredBusinessRcasp(any(), any(), any())(any(), any())
         verify(mockSessionRepository, times(1)).set(
           eqTo(
             emptyUserAnswers
@@ -158,7 +158,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
       }
 
       "must redirect to Journey Recovery if submission failed" in new Setup(emptyUserAnswers) {
-        when(mockRcaspSubmissionService.submitRegisteredBusinessRcasp(any(), any(), any())(any(), any()))
+        when(mockRcaspSubmissionService.createRegisteredBusinessRcasp(any(), any(), any())(any(), any()))
           .thenReturn(ResultT.fromError(InternalServerError))
 
         val request                = FakeRequest(POST, cdRoute)
@@ -167,7 +167,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-        verify(mockRcaspSubmissionService, times(1)).submitRegisteredBusinessRcasp(any(), any(), any())(any(), any())
+        verify(mockRcaspSubmissionService, times(1)).createRegisteredBusinessRcasp(any(), any(), any())(any(), any())
         verify(mockSessionRepository, times(0)).set(eqTo(emptyUserAnswers))
       }
 
