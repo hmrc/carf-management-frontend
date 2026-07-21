@@ -19,7 +19,7 @@ package controllers.remove
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import pages.SubmissionSucceededPage
-import pages.remove.{RcaspRemovedDateTimePage, RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveRcaspPage}
+import pages.remove.{RcaspRemovedDateTimePage, RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveRcaspPage, RemoveUserAccessPage}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -74,10 +74,11 @@ class RemoveRcaspController @Inject() (
   def onSubmit(): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       val maybeCachedDetails     = request.userAnswers.get(RemoveRcaspCachedDetails)
+      val maybeUserAccessAnswer = request.userAnswers.get(RemoveUserAccessPage)
       val maybeOtherAccessAnswer = request.userAnswers.get(RemoveOtherAccessPage)
 
-      (maybeCachedDetails, maybeOtherAccessAnswer) match {
-        case (Some(cachedDetails), Some(otherAccessAnswer)) =>
+      (maybeCachedDetails, maybeUserAccessAnswer, maybeOtherAccessAnswer) match {
+        case (Some(cachedDetails), Some(_), Some(otherAccessAnswer)) =>
           form
             .bindFromRequest()
             .fold(
@@ -109,7 +110,7 @@ class RemoveRcaspController @Inject() (
 
         case _ =>
           logger.warn(
-            "[RemoveRcaspController][onSubmit] RemoveRcaspCachedDetails or RemoveOtherAccessPage not found"
+            "[RemoveRcaspController][onSubmit] RemoveRcaspCachedDetails, RemoveUserAccessPage or RemoveOtherAccessPage not found"
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }

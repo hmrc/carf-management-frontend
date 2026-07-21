@@ -110,7 +110,7 @@ class RemoveUserAccessController @Inject() (
     (cachedRcaspIdMatches, submissionSucceeded) match {
       case (true, true) =>
         logger.info(
-          "[RemoveUserAccessController][onPageLoad] Submission already succeeded for this RCASP - redirecting to page-unavailable"
+          "[RemoveUserAccessController][onPageLoad] RCASP already removed - redirecting to page-unavailable"
         )
         Future.successful(pageUnavailable)
 
