@@ -172,10 +172,10 @@ POST        /change-answers/:rcaspId                                      contro
 GET         /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onPageLoad(rcaspId: String)
 POST        /remove/user-access/:rcaspId                                  controllers.remove.RemoveUserAccessController.onSubmit(rcaspId: String)
 
-GET         /remove/other-access/:rcaspId                                 controllers.remove.RemoveOtherAccessController.onPageLoad(rcaspId: String)
-POST        /remove/other-access/:rcaspId                                 controllers.remove.RemoveOtherAccessController.onSubmit(rcaspId: String)
+GET         /remove/other-access                                          controllers.remove.RemoveOtherAccessController.onPageLoad()
+POST        /remove/other-access                                          controllers.remove.RemoveOtherAccessController.onSubmit()
 
-GET         /remove/remove-rcasp/                                         controllers.remove.RemoveRcaspController.onPageLoad()
-POST        /remove/remove-rcasp/                                         controllers.remove.RemoveRcaspController.onSubmit()
+GET         /remove/remove-rcasp                                          controllers.remove.RemoveRcaspController.onPageLoad()
+POST        /remove/remove-rcasp                                          controllers.remove.RemoveRcaspController.onSubmit()
 
-GET         /remove/rcasp-removed/                                        controllers.remove.RcaspRemovedController.onPageLoad()
+GET         /remove/rcasp-removed                                         controllers.remove.RcaspRemovedController.onPageLoad()
