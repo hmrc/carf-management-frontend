@@ -54,7 +54,7 @@ class RemoveUserAccessController @Inject() (
 
   private val journeyRecovery: Result = Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
-  private val pageUnavailable: Result = Redirect(
+  private def pageUnavailable: Result = Redirect(
     controllers.routes.PlaceholderController.onPageLoad("Should nav to /problem/page-unavailable (CARF-308)")
   )
 
