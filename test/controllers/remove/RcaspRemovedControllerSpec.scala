@@ -30,7 +30,7 @@ import java.time.Instant
 
 class RcaspRemovedControllerSpec extends SpecBase {
 
-  lazy val onPageLoadRoute: String = controllers.remove.routes.RcaspRemovedController.onPageLoad(rcaspId).url
+  lazy val onPageLoadRoute: String = controllers.remove.routes.RcaspRemovedController.onPageLoad().url
 
   private val rcaspDetails: RcaspDetails =
     organisationRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = true)
@@ -62,7 +62,7 @@ class RcaspRemovedControllerSpec extends SpecBase {
           status(result)          mustEqual OK
           contentAsString(result) mustEqual view(
             rcaspName = rcaspDetails.getName,
-            rcaspId = rcaspId,
+            rcaspId = rcaspDetails.RCASPID,
             formattedDate = DateTimeFormats.formatDate(datetime.toLocalDate),
             formattedTime = DateTimeFormats.formatTime(datetime.toLocalTime)
           )(request, messages(application)).toString
@@ -105,25 +105,6 @@ class RcaspRemovedControllerSpec extends SpecBase {
       "must redirect to Journey Recovery when RemoveRcaspCachedDetails is missing" in {
         val userAnswers = emptyUserAnswers
           .withPage(SubmissionSucceededPage, true)
-          .withPage(RcaspRemovedDateTimePage, removedAt)
-
-        val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-        running(application) {
-          val request = FakeRequest(GET, onPageLoadRoute)
-          val result  = route(application, request).value
-
-          status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual journeyRecoveryUrl
-        }
-      }
-
-      "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
-        val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
-
-        val userAnswers = emptyUserAnswers
-          .withPage(SubmissionSucceededPage, true)
-          .withPage(RemoveRcaspCachedDetails, differentDetails)
           .withPage(RcaspRemovedDateTimePage, removedAt)
 
         val application = applicationBuilder(userAnswers = Some(userAnswers)).build()

@@ -229,7 +229,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual
-            controllers.remove.routes.RemoveRcaspController.onPageLoad(rcaspId).url
+            controllers.remove.routes.RemoveRcaspController.onPageLoad().url
         }
       }
 
@@ -252,7 +252,7 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual
-            controllers.remove.routes.RemoveRcaspController.onPageLoad(rcaspId).url
+            controllers.remove.routes.RemoveRcaspController.onPageLoad().url
         }
       }
 

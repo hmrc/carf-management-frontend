@@ -74,7 +74,7 @@ class RemoveRcaspController @Inject() (
   def onSubmit(): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       val maybeCachedDetails     = request.userAnswers.get(RemoveRcaspCachedDetails)
-      val maybeUserAccessAnswer = request.userAnswers.get(RemoveUserAccessPage)
+      val maybeUserAccessAnswer  = request.userAnswers.get(RemoveUserAccessPage)
       val maybeOtherAccessAnswer = request.userAnswers.get(RemoveOtherAccessPage)
 
       (maybeCachedDetails, maybeUserAccessAnswer, maybeOtherAccessAnswer) match {
