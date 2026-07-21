@@ -54,10 +54,6 @@ class RemoveUserAccessController @Inject() (
 
   private val journeyRecovery: Result = Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
-  private def pageUnavailable: Result = Redirect(
-    controllers.routes.PlaceholderController.onPageLoad("Should nav to /problem/page-unavailable (CARF-308)")
-  )
-
   private def render(
       form: Form[Boolean],
       rcaspId: String,
@@ -115,7 +111,11 @@ class RemoveUserAccessController @Inject() (
         logger.info(
           "[RemoveUserAccessController][onPageLoad] RCASP already removed - redirecting to page-unavailable"
         )
-        Future.successful(pageUnavailable)
+        Future.successful(
+          Redirect(
+            controllers.routes.PlaceholderController.onPageLoad("Should nav to /problem/page-unavailable (CARF-308)")
+          )
+        )
 
       case (true, false) =>
         (cachedDetails, cachedUserInfo) match {
