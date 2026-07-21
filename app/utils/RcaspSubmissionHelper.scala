@@ -16,12 +16,12 @@
 
 package utils
 
-import config.Constants.ukCountryCode
+import config.Constants.{individualPartyType, organisationPartyType, ukCountryCode}
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.requests.*
 import models.requests.createRcasp.RcaspRequest as CreateRcaspRequest
 import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
-import models.{toRcaspAddress, viewAndUpdateRcasp, OrganisationOrIndividual, RcaspContactDetails, TinDetails, UniqueTaxpayerReference, UserAnswers}
+import models.{toRcaspAddress, viewAndUpdateRcasp, IdentifierType, OrganisationOrIndividual, RcaspContactDetails, TinDetails, UniqueTaxpayerReference, UserAnswers}
 import pages.UkAddressInUserAnswers
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
@@ -39,7 +39,7 @@ class RcaspSubmissionHelper {
       RequestParameters = None
     )
 
-  def createRcaspRequestForRegisteredBusiness(
+  def createRegisteredBusinessRcaspRequest(
       carfId: String,
       utr: UniqueTaxpayerReference,
       userAnswers: UserAnswers
@@ -57,13 +57,13 @@ class RcaspSubmissionHelper {
         RequestDetails = createRcasp.OrganisationRcaspDetails(
           SubscriptionID = carfId,
           IsRCASPUser = isRcaspUser,
-          PartyType = "Organisation",
+          PartyType = organisationPartyType,
           RCASPName = orgName,
           TradingName = tradingName,
           TINDetails = Some(
             List(
               TinDetails(
-                TINType = "UTR",
+                TINType = IdentifierType.UTR,
                 TIN = utr.uniqueTaxPayerReference,
                 IssuedBy = ukCountryCode
               )
@@ -76,7 +76,7 @@ class RcaspSubmissionHelper {
       )
     )
 
-  def updateRcaspRequestForRegisteredBusiness(
+  def updateRegisteredBusinessRcaspRequest(
       carfId: String,
       utr: UniqueTaxpayerReference,
       userAnswers: UserAnswers
@@ -96,13 +96,13 @@ class RcaspSubmissionHelper {
           RCASPID = rcaspId,
           SubscriptionID = carfId,
           IsRCASPUser = isRcaspUser,
-          PartyType = "Organisation",
+          PartyType = organisationPartyType,
           RCASPName = orgName,
           TradingName = tradingName,
           TINDetails = Some(
             List(
               TinDetails(
-                TINType = "UTR",
+                TINType = IdentifierType.UTR,
                 TIN = utr.uniqueTaxPayerReference,
                 IssuedBy = ukCountryCode
               )
@@ -171,13 +171,13 @@ class RcaspSubmissionHelper {
     } yield createRcasp.IndividualRcaspDetails(
       SubscriptionID = carfId,
       IsRCASPUser = isRcaspUser,
-      PartyType = "Individual",
+      PartyType = individualPartyType,
       FirstName = name.firstName,
       LastName = name.lastName,
       TINDetails = Some(
         List(
           TinDetails(
-            TINType = "OTHER",
+            TINType = IdentifierType.OTHER,
             TIN = nino,
             IssuedBy = ukCountryCode
           )
@@ -203,13 +203,13 @@ class RcaspSubmissionHelper {
       RCASPID = rcaspId,
       SubscriptionID = carfId,
       IsRCASPUser = isRcaspUser,
-      PartyType = "Individual",
+      PartyType = individualPartyType,
       FirstName = name.firstName,
       LastName = name.lastName,
       TINDetails = Some(
         List(
           TinDetails(
-            TINType = "OTHER",
+            TINType = IdentifierType.OTHER,
             TIN = nino,
             IssuedBy = ukCountryCode
           )
@@ -237,13 +237,13 @@ class RcaspSubmissionHelper {
     } yield createRcasp.OrganisationRcaspDetails(
       SubscriptionID = carfId,
       IsRCASPUser = isRcaspUser,
-      PartyType = "Organisation",
+      PartyType = organisationPartyType,
       RCASPName = orgName,
       TradingName = tradingName,
       TINDetails = Some(
         List(
           TinDetails(
-            TINType = "UTR",
+            TINType = IdentifierType.UTR,
             TIN = utr,
             IssuedBy = ukCountryCode
           )
@@ -274,13 +274,13 @@ class RcaspSubmissionHelper {
       RCASPID = rcaspId,
       SubscriptionID = carfId,
       IsRCASPUser = isRcaspUser,
-      PartyType = "Organisation",
+      PartyType = organisationPartyType,
       RCASPName = orgName,
       TradingName = tradingName,
       TINDetails = Some(
         List(
           TinDetails(
-            TINType = "UTR",
+            TINType = IdentifierType.UTR,
             TIN = utr,
             IssuedBy = ukCountryCode
           )

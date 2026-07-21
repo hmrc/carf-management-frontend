@@ -38,7 +38,7 @@ class RcaspSubmissionService @Inject (
       utr: UniqueTaxpayerReference,
       userAnswers: UserAnswers
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
-    rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, utr, userAnswers) match {
+    rcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(carfId, utr, userAnswers) match {
       case Some(request) =>
         rcaspConnector
           .createRcasp(request)
@@ -75,7 +75,7 @@ class RcaspSubmissionService @Inject (
       utr: UniqueTaxpayerReference,
       userAnswers: UserAnswers
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
-    rcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(carfId, utr, userAnswers) match {
+    rcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(carfId, utr, userAnswers) match {
       case Some(request) =>
         rcaspConnector
           .updateRcasp(request)

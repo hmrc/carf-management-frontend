@@ -49,7 +49,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
   "RcaspSubmissionService" - {
     ".createRegisteredBusinessRcasp" - {
       "when the RcaspRequest is submitted successfully" in {
-        when(mockRcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(
+        when(mockRcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(any(), any(), any())).thenReturn(
           Some(createRcaspRequestRegisteredBusiness)
         )
 
@@ -63,12 +63,12 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         result mustBe Right(submitRcaspResponse)
 
         verify(mockRcaspSubmissionHelper, times(1))
-          .createRcaspRequestForRegisteredBusiness(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
+          .createRegisteredBusinessRcaspRequest(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
         verify(mockRcaspConnector, times(1)).createRcasp(eqTo(createRcaspRequestRegisteredBusiness))(any(), any())
       }
 
       "when the RcaspRequest is built but the connector returns an error" in {
-        when(mockRcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(
+        when(mockRcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(any(), any(), any())).thenReturn(
           Some(createRcaspRequestRegisteredBusiness)
         )
 
@@ -82,12 +82,12 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         result mustBe Left(InternalServerError)
 
         verify(mockRcaspSubmissionHelper, times(1))
-          .createRcaspRequestForRegisteredBusiness(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
+          .createRegisteredBusinessRcaspRequest(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
         verify(mockRcaspConnector, times(1)).createRcasp(eqTo(createRcaspRequestRegisteredBusiness))(any(), any())
       }
 
       "when the helper fails to build the RcaspRequest" in {
-        when(mockRcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(None)
+        when(mockRcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(any(), any(), any())).thenReturn(None)
 
         val result =
           rcaspSubmissionService.createRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
@@ -97,7 +97,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         )
 
         verify(mockRcaspSubmissionHelper, times(1))
-          .createRcaspRequestForRegisteredBusiness(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
+          .createRegisteredBusinessRcaspRequest(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
         verify(mockRcaspConnector, times(0)).createRcasp(any())(any(), any())
       }
     }
@@ -153,7 +153,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
 
     ".updateRegisteredBusinessRcasp" - {
       "when the RcaspRequest is submitted successfully" in {
-        when(mockRcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(
+        when(mockRcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(any(), any(), any())).thenReturn(
           Some(updateRcaspRequestRegisteredBusiness)
         )
 
@@ -167,12 +167,12 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         result mustBe Right(submitRcaspResponse)
 
         verify(mockRcaspSubmissionHelper, times(1))
-          .updateRcaspRequestForRegisteredBusiness(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
+          .updateRegisteredBusinessRcaspRequest(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
         verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())
       }
 
       "when the RcaspRequest is built but the connector returns an error" in {
-        when(mockRcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(
+        when(mockRcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(any(), any(), any())).thenReturn(
           Some(updateRcaspRequestRegisteredBusiness)
         )
 
@@ -186,12 +186,12 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         result mustBe Left(InternalServerError)
 
         verify(mockRcaspSubmissionHelper, times(1))
-          .updateRcaspRequestForRegisteredBusiness(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
+          .updateRegisteredBusinessRcaspRequest(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
         verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())
       }
 
       "when the helper fails to build the RcaspRequest" in {
-        when(mockRcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(any(), any(), any())).thenReturn(None)
+        when(mockRcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(any(), any(), any())).thenReturn(None)
 
         val result =
           rcaspSubmissionService.updateRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
@@ -201,7 +201,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         )
 
         verify(mockRcaspSubmissionHelper, times(1))
-          .updateRcaspRequestForRegisteredBusiness(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
+          .updateRegisteredBusinessRcaspRequest(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
         verify(mockRcaspConnector, times(0)).updateRcasp(any())(any(), any())
       }
     }

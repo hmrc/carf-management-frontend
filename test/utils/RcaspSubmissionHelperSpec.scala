@@ -33,7 +33,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
   val rcaspSubmissionHelper: RcaspSubmissionHelper = new RcaspSubmissionHelper
 
   "RcaspSubmissionHelper" - {
-    ".createRcaspRequestForRegisteredBusiness" - {
+    ".createRegisteredBusinessRcaspRequest" - {
       "must build the request successfully with all required fields" in {
         val userAnswers = emptyUserAnswers
           .withPage(ReportForRegisteredBusinessPage, true)
@@ -43,12 +43,12 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val result: Option[CreateRcaspRequest] =
-          rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+          rcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
         result mustBe Some(
           CreateRcaspRequest(
             createRcasp.RcaspManagementRequest(
-              RequestCommon = rcaspRequestCommon(RequestType.Create),
+              RequestCommon = testRcaspRequestCommon(RequestType.Create),
               RequestDetails = registeredBusinessRcaspDetailsRequest
             )
           )
@@ -63,12 +63,12 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val result: Option[CreateRcaspRequest] =
-          rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+          rcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
         result mustBe Some(
           CreateRcaspRequest(
             createRcasp.RcaspManagementRequest(
-              RequestCommon = rcaspRequestCommon(RequestType.Create),
+              RequestCommon = testRcaspRequestCommon(RequestType.Create),
               RequestDetails = registeredBusinessRcaspDetailsRequest.copy(TradingName = testOrgName)
             )
           )
@@ -83,7 +83,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val result: Option[CreateRcaspRequest] =
-          rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+          rcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
         result mustBe None
       }
@@ -96,7 +96,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val result: Option[CreateRcaspRequest] =
-          rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+          rcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
         result mustBe None
       }
@@ -111,7 +111,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(UkAddressInUserAnswers, testAddressUk)
 
           val result: Option[CreateRcaspRequest] =
-            rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+            rcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
           result mustBe None
         }
@@ -124,7 +124,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(UkAddressInUserAnswers, testAddressUk)
 
           val result: Option[CreateRcaspRequest] =
-            rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+            rcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
           result mustBe None
         }
@@ -149,7 +149,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           result mustBe Some(
             CreateRcaspRequest(
               createRcasp.RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon(RequestType.Create),
+                RequestCommon = testRcaspRequestCommon(RequestType.Create),
                 RequestDetails = individualRcaspDetailsRequest
               )
             )
@@ -170,7 +170,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           result mustBe Some(
             CreateRcaspRequest(
               createRcasp.RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon(RequestType.Create),
+                RequestCommon = testRcaspRequestCommon(RequestType.Create),
                 RequestDetails = individualRcaspDetailsRequest.copy(
                   PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None))
                 )
@@ -265,7 +265,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           result mustBe Some(
             CreateRcaspRequest(
               createRcasp.RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon(RequestType.Create),
+                RequestCommon = testRcaspRequestCommon(RequestType.Create),
                 RequestDetails = organisationRcaspDetailsRequest
               )
             )
@@ -294,7 +294,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           result mustBe Some(
             CreateRcaspRequest(
               createRcasp.RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon(RequestType.Create),
+                RequestCommon = testRcaspRequestCommon(RequestType.Create),
                 RequestDetails = organisationRcaspDetailsRequest.copy(
                   SecondaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None))
                 )
@@ -320,7 +320,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           result mustBe Some(
             CreateRcaspRequest(
               createRcasp.RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon(RequestType.Create),
+                RequestCommon = testRcaspRequestCommon(RequestType.Create),
                 RequestDetails = organisationRcaspDetailsRequest.copy(
                   TradingName = testOrgName,
                   PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None)),
@@ -469,7 +469,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
       }
     }
 
-    ".updateRcaspRequestForRegisteredBusiness" - {
+    ".updateRegisteredBusinessRcaspRequest" - {
       "must build the request successfully with all required fields" in {
         val userAnswers = emptyUserAnswers
           .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
@@ -480,12 +480,12 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val result: Option[UpdateRcaspRequest] =
-          rcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+          rcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
         result mustBe Some(
           UpdateRcaspRequest(
             updateRcasp.RcaspManagementRequest(
-              RequestCommon = rcaspRequestCommon(RequestType.Update),
+              RequestCommon = testRcaspRequestCommon(RequestType.Update),
               RequestDetails = registeredBusinessUpdateRcaspDetailsRequest
             )
           )
@@ -501,12 +501,12 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val result: Option[UpdateRcaspRequest] =
-          rcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+          rcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
         result mustBe Some(
           UpdateRcaspRequest(
             updateRcasp.RcaspManagementRequest(
-              RequestCommon = rcaspRequestCommon(RequestType.Update),
+              RequestCommon = testRcaspRequestCommon(RequestType.Update),
               RequestDetails = registeredBusinessUpdateRcaspDetailsRequest.copy(TradingName = testOrgName)
             )
           )
@@ -522,7 +522,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val result: Option[UpdateRcaspRequest] =
-          rcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+          rcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
         result mustBe None
       }
@@ -536,7 +536,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val result: Option[UpdateRcaspRequest] =
-          rcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+          rcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
         result mustBe None
       }
@@ -550,7 +550,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val result: Option[UpdateRcaspRequest] =
-          rcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+          rcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
         result mustBe None
       }
@@ -567,7 +567,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(UkAddressInUserAnswers, testAddressUk)
 
           val result: Option[UpdateRcaspRequest] =
-            rcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+            rcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
           result mustBe None
         }
@@ -582,7 +582,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(UkAddressInUserAnswers, testAddressUk)
 
           val result: Option[UpdateRcaspRequest] =
-            rcaspSubmissionHelper.updateRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+            rcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(carfId, testUtr, userAnswers)
 
           result mustBe None
         }
@@ -608,7 +608,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           result mustBe Some(
             UpdateRcaspRequest(
               updateRcasp.RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon(RequestType.Update),
+                RequestCommon = testRcaspRequestCommon(RequestType.Update),
                 RequestDetails = individualRcaspDetailsViewUpdate
               )
             )
@@ -631,7 +631,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           result mustBe Some(
             UpdateRcaspRequest(
               updateRcasp.RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon(RequestType.Update),
+                RequestCommon = testRcaspRequestCommon(RequestType.Update),
                 RequestDetails = individualRcaspDetailsViewUpdate.copy(
                   PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None))
                 )
@@ -764,7 +764,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           result mustBe Some(
             UpdateRcaspRequest(
               updateRcasp.RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon(RequestType.Update),
+                RequestCommon = testRcaspRequestCommon(RequestType.Update),
                 RequestDetails = organisationRcaspDetailsViewUpdate
               )
             )
@@ -795,7 +795,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           result mustBe Some(
             UpdateRcaspRequest(
               updateRcasp.RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon(RequestType.Update),
+                RequestCommon = testRcaspRequestCommon(RequestType.Update),
                 RequestDetails = organisationRcaspDetailsViewUpdate.copy(
                   SecondaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None))
                 )
@@ -823,7 +823,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           result mustBe Some(
             UpdateRcaspRequest(
               updateRcasp.RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon(RequestType.Update),
+                RequestCommon = testRcaspRequestCommon(RequestType.Update),
                 RequestDetails = organisationRcaspDetailsViewUpdate.copy(
                   TradingName = testOrgName,
                   PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None)),
