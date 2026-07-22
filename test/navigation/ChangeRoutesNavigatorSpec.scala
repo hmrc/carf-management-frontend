@@ -19,7 +19,7 @@ package navigation
 import base.SpecBase
 import config.Constants.noneOfTheseValue
 import models.responses.AddressRegistrationResponse
-import models.{format, CachedBusinessDetails, ChangeMode, NormalMode}
+import models.{format, CachedBusinessDetails, ChangeMode}
 import org.scalatest.prop.Tables.Table
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.*

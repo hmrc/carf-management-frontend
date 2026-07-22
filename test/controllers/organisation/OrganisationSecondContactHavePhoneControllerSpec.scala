@@ -25,7 +25,7 @@ import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.changeDetails.ChangeRcaspCachedDetails
-import pages.organisation.{OrganisationFirstContactHavePhonePage, OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OrganisationSecondContactPhoneNumberPage, OverwritableOrganisationName}
+import pages.organisation.{OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OrganisationSecondContactPhoneNumberPage, OverwritableOrganisationName}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -267,7 +267,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationSecondContactHavePhonePage, true)
           .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -302,7 +302,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationSecondContactHavePhonePage, true)
           .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -336,7 +336,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
       "must redirect ChangeDetailsRoutingController when answer is false and does not change" in {
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationSecondContactHavePhonePage, false)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
