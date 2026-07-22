@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@import views.html.helper.CSPNonce
+
 @this(
         layout: templates.Layout,
         link: components.Link
@@ -48,28 +50,34 @@
         )
     </p>
 
-    <ul class="govuk-list govuk-!-display-none-print" id="invalid-xml-actions">
+    <ul class="govuk-list govuk-!-display-none-print">
         <li>
             <span class="js-hidden">@messages("invalidXml.p5.linkText")</span>
+            <a href="#" class="govuk-link js-visible" id="print-link">@messages("invalidXml.p5.linkText")</a>
+        </li>
+        <li>
             @link(
-                href = "javascript:window.print()",
-                key = "invalidXml.p5.linkText",
-                id = Some("print-link"),
-                classes = "govuk-link js-visible"
+                href = controllers.routes.PlaceholderController.onPageLoad("Upload a different file link CARF-393").url,
+                key = "invalidXml.p6.linkText"
             )
         </li>
         <li>
-        @link(
-            href = controllers.routes.PlaceholderController.onPageLoad("Upload a different file link CARF-393").url,
-            key = "invalidXml.p6.linkText"
-        )
-        </li>
-        <li>
-        @link(
-            href = controllers.home.routes.HomePageController.onPageLoad().url,
-            key = "invalidXml.p7.linkText"
-        )
+            @link(
+                href = controllers.home.routes.HomePageController.onPageLoad().url,
+                key = "invalidXml.p7.linkText"
+            )
         </li>
     </ul>
 
+    <script @CSPNonce.attr>
+        document.addEventListener('DOMContentLoaded', function () {
+            var printLink = document.getElementById('print-link');
+            if (printLink) {
+                printLink.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    window.print();
+                });
+            }
+        });
+    </script>
 }
