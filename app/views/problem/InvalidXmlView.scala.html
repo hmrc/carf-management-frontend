@@ -1,0 +1,75 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@this(
+        layout: templates.Layout,
+        link: components.Link
+)
+
+@()(implicit request: Request[_], messages: Messages)
+
+@layout(pageTitle = titleNoForm(messages("invalidXml.title"))) {
+
+    <h1 class="govuk-heading-l long-word">@messages("invalidXml.heading")</h1>
+  
+    <p class="govuk-body">@messages("invalidXml.p1")</p>
+
+    <p class="govuk-body govuk-!-margin-bottom-2">@messages("invalidXml.p2")</p>
+    <ul class="govuk-list govuk-list--bullet">
+        <li>@messages("invalidXml.bullet.1")</li>
+        <li>@messages("invalidXml.bullet.2")</li>
+        <li>@messages("invalidXml.bullet.3")</li>
+    </ul>
+
+    <p class="govuk-body">
+        @messages("invalidXml.p3")
+        <code class="code--slim">@messages("invalidXml.p3.namespaceCode")</code>.
+    </p>
+
+    <p class="govuk-body">
+        @messages("invalidXml.p4")
+        @link(
+            href = controllers.routes.PlaceholderController.onPageLoad(" TODO: Technical guidance for XML files link CARF-595").url,
+            key = "invalidXml.p4.linkText",
+            fullStop = true
+        )
+    </p>
+
+    <ul class="govuk-list govuk-!-display-none-print" id="invalid-xml-actions">
+        <li>
+            <span class="js-hidden">@messages("invalidXml.p5.linkText")</span>
+            @link(
+                href = "javascript:window.print()",
+                key = "invalidXml.p5.linkText",
+                id = Some("print-link"),
+                classes = "govuk-link js-visible"
+            )
+        </li>
+        <li>
+        @link(
+            href = controllers.routes.PlaceholderController.onPageLoad("Upload a different file link CARF-393").url,
+            key = "invalidXml.p6.linkText"
+        )
+        </li>
+        <li>
+        @link(
+            href = controllers.home.routes.HomePageController.onPageLoad().url,
+            key = "invalidXml.p7.linkText"
+        )
+        </li>
+    </ul>
+
+}

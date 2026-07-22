@@ -11,10 +11,26 @@
   display: inline-block !important;
 }
 
+.js-hidden {
+  display: inline-block !important;
+}
+
 .long-word {
   word-wrap: break-word;
 }
 
 .long-word-legend {
   word-break: break-word;
+}
+
+.code--slim {
+  border: 1px solid #DFE0E7;
+  border-radius: 4px;
+  padding: 2px 4px;
+  display: inline-block;
+  background-color: #F7F7F7;
+  line-height: 1.1em;
+  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  color: #0b0c0c;
+  font-size: 14px;
 }
