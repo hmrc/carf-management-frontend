@@ -26,14 +26,12 @@ import views.html.problem.InvalidXmlView
 class InvalidXmlController @Inject() (
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
     val controllerComponents: MessagesControllerComponents,
     view: InvalidXmlView
 ) extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
+  def onPageLoad: Action[AnyContent] = identify() { implicit request =>
     Ok(view())
   }
 }
