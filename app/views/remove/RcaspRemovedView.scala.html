@@ -22,7 +22,7 @@
 
 @(rcaspName: String, rcaspId: String, formattedDate: String, formattedTime: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = messages("rcaspRemoved.title"), showBackLink = false) {
+@layout(pageTitle = titleNoForm(messages("rcaspAddedConfirmation.title")), showBackLink = false) {
 
     @govukPanel(
         Panel(
