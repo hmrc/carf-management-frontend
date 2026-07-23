@@ -46,7 +46,7 @@ class RemoveRcaspControllerSpec extends SpecBase {
   val mockRcaspSubmissionService: RcaspSubmissionService = mock[RcaspSubmissionService]
 
   private val rcaspDetails: RcaspDetails =
-    organisationRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = true)
+    organisationRcaspDetailsViewUpdate.copy(RCASPID = rcaspId, IsRCASPUser = true)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

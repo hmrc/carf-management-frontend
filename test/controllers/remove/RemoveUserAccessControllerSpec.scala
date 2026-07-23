@@ -337,7 +337,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
         }
 
         "must fetch fresh details when SubmissionSucceededPage is true but cached RCASPID differs from URL rcaspId (new journey)" in {
-          val differentDetails = organisationRcaspDetailsResponse.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
+          val differentDetails = organisationRcaspDetailsViewUpdate.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
 
           val userAnswers = emptyUserAnswers
             .withPage(SubmissionSucceededPage, true)

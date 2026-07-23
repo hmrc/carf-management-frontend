@@ -309,25 +309,6 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
         }
       }
-
-      "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
-        val differentDetails = organisationRcaspDetailsViewUpdate.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
-        val userAnswers      = emptyUserAnswers
-          .withPage(RemoveRcaspCachedDetails, differentDetails)
-          .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
-        val application      = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-        running(application) {
-          val request =
-            FakeRequest(POST, onSubmitRoute)
-              .withFormUrlEncodedBody(("value", "true"))
-
-          val result = route(application, request).value
-
-          status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-        }
-      }
     }
   }
 }

@@ -33,7 +33,7 @@ class RcaspRemovedControllerSpec extends SpecBase {
   lazy val onPageLoadRoute: String = controllers.remove.routes.RcaspRemovedController.onPageLoad().url
 
   private val rcaspDetails: RcaspDetails =
-    organisationRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = true)
+    organisationRcaspDetailsViewUpdate.copy(RCASPID = rcaspId, IsRCASPUser = true)
 
   private val removedAt: Instant = Instant.parse("2027-03-01T13:11:00Z")
 
