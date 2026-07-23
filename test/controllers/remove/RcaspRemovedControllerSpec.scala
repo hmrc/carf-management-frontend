@@ -69,6 +69,31 @@ class RcaspRemovedControllerSpec extends SpecBase {
         }
       }
 
+      "must display the removal time in UK timezone, not user's local timezone" in {
+        val utcInstant = Instant.parse("2027-03-01T23:00:00Z") // 11pm UTC
+        // In EST (UTC-5), this would be 6pm. In UK (UTC+0), it's 11pm.
+
+        val userAnswers = emptyUserAnswers
+          .withPage(SubmissionSucceededPage, true)
+          .withPage(RemoveRcaspCachedDetails, rcaspDetails)
+          .withPage(RcaspRemovedDateTimePage, utcInstant)
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+        running(application) {
+          val request = FakeRequest(GET, onPageLoadRoute)
+          val result  = route(application, request).value
+
+          val content = contentAsString(result)
+
+          // Must show 11pm (UK time), not 6pm (EST time)
+          content must include("11:00pm")
+          content must not include "6:00pm"
+
+          status(result) mustEqual OK
+        }
+      }
+
       "must redirect to Journey Recovery when SubmissionSucceededPage is not set" in {
         val userAnswers = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, rcaspDetails)
