@@ -17,10 +17,9 @@
 package services
 
 import connectors.RcaspConnector
-import models.errors.ApiError.InternalServerError
-import models.{UniqueTaxpayerReference, UserAnswers}
 import models.errors.MandatoryInformationMissingError
-import models.responses.{SubmitRcaspResponse, SubmitResponseDetails, SubmitReturnParameters}
+import models.responses.SubmitRcaspResponse
+import models.{UniqueTaxpayerReference, UserAnswers}
 import play.api.Logging
 import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
@@ -34,27 +33,27 @@ class RcaspSubmissionService @Inject (
     rcaspSubmissionHelper: RcaspSubmissionHelper
 ) extends Logging {
 
-  def submitRegisteredBusinessRcasp(
+  def createRegisteredBusinessRcasp(
       carfId: String,
       utr: UniqueTaxpayerReference,
       userAnswers: UserAnswers
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
-    rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, utr, userAnswers) match {
+    rcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(carfId, utr, userAnswers) match {
       case Some(request) =>
         rcaspConnector
           .createRcasp(request)
           .leftMap { error =>
-            logger.warn(s"[RcaspSubmissionService][submitRegisteredBusinessRcasp] Failed to add RCASP: $error")
+            logger.warn(s"[RcaspSubmissionService][createRegisteredBusinessRcasp] Failed to add RCASP: $error")
             error
           }
       case None          =>
         logger.warn(
-          "[RcaspSubmissionService][submitRegisteredBusinessRcasp] Error building the RcaspRequest from userAnswers"
+          "[RcaspSubmissionService][createRegisteredBusinessRcasp] Error building the RcaspRequest from userAnswers"
         )
         ResultT.fromError(MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers"))
     }
 
-  def submitRcasp(
+  def createRcasp(
       carfId: String,
       userAnswers: UserAnswers
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
@@ -63,38 +62,48 @@ class RcaspSubmissionService @Inject (
         rcaspConnector
           .createRcasp(request)
           .leftMap { error =>
-            logger.warn(s"[RcaspSubmissionService][submitRcasp] Failed to add RCASP: $error")
+            logger.warn(s"[RcaspSubmissionService][createRcasp] Failed to add RCASP: $error")
             error
           }
       case None          =>
-        logger.warn("[RcaspSubmissionService][submitRcasp] Error building the RcaspRequest from userAnswers")
+        logger.warn("[RcaspSubmissionService][createRcasp] Error building the RcaspRequest from userAnswers")
         ResultT.fromError(MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers"))
     }
 
-  // TODO: Replace with actual call to update RCASP (CARF-353)
   def updateRegisteredBusinessRcasp(
       carfId: String,
       utr: UniqueTaxpayerReference,
       userAnswers: UserAnswers
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
-    carfId.takeRight(1) match {
-      case "4" | "5" | "6" | "7" | "8" | "9" => ResultT.fromError(InternalServerError)
-      case _                                 =>
-        ResultT.fromValue(
-          SubmitRcaspResponse(SubmitResponseDetails(SubmitReturnParameters(Key = "RCASPID", Value = "ZMCAR0123456789")))
+    rcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(carfId, utr, userAnswers) match {
+      case Some(request) =>
+        rcaspConnector
+          .updateRcasp(request)
+          .leftMap { error =>
+            logger.warn(s"[RcaspSubmissionService][updateRegisteredBusinessRcasp] Failed to update RCASP: $error")
+            error
+          }
+      case None          =>
+        logger.warn(
+          "[RcaspSubmissionService][updateRegisteredBusinessRcasp] Error building the RcaspRequest from userAnswers"
         )
+        ResultT.fromError(MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers"))
     }
 
-  // TODO: Replace with actual call to update RCASP (CARF-353)
   def updateRcasp(
       carfId: String,
       userAnswers: UserAnswers
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
-    carfId.takeRight(1) match {
-      case "4" | "5" | "6" | "7" | "8" | "9" => ResultT.fromError(InternalServerError)
-      case _                                 =>
-        ResultT.fromValue(
-          SubmitRcaspResponse(SubmitResponseDetails(SubmitReturnParameters(Key = "RCASPID", Value = "ZMCAR0123456789")))
-        )
+    rcaspSubmissionHelper.updateRcaspRequest(carfId, userAnswers) match {
+      case Some(request) =>
+        rcaspConnector
+          .updateRcasp(request)
+          .leftMap { error =>
+            logger.warn(s"[RcaspSubmissionService][updateRcasp] Failed to update RCASP: $error")
+            error
+          }
+      case None          =>
+        logger.warn("[RcaspSubmissionService][updateRcasp] Error building the RcaspRequest from userAnswers")
+        ResultT.fromError(MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers"))
     }
 }

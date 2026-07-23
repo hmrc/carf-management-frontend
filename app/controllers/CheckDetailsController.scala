@@ -99,7 +99,7 @@ class CheckDetailsController @Inject() (
 
   def onSubmit: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData).async {
     implicit request =>
-      rcaspSubmissionService.submitRcasp(request.carfId, request.userAnswers).value.flatMap {
+      rcaspSubmissionService.createRcasp(request.carfId, request.userAnswers).value.flatMap {
         case Right(response) =>
           val rcaspId = response.ResponseDetails.ReturnParameters.Value
           for {
