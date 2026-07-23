@@ -409,7 +409,7 @@ removeRcasp.heading = If you remove {0}, it will not be possible to access or up
 removeRcasp.heading.otherAccess = If you remove {0}, it will not be possible for anyone to access or update any previous reports
 removeRcasp.error.required = Select yes if you are sure you want to remove the RCASP
 removeRcasp.p1 = You should make any changes to the reports before you remove {0}.
-removeRcasp.p2 = If someone adds {0} as a reporting cryptoasset service provider (RCASP) again in the future, they will have a different RCASP ID.
+removeRcasp.p2 = If someone adds {0} as a reporting cryptoasset service provider (RCASP) again in the future, then they will have a different RCASP ID.
 removeRcasp.warning = Removing an RCASP that has inaccurate or incomplete reports could result in a penalty for them.
 removeRcasp.question = Are you sure you want to permanently remove {0}?
 
