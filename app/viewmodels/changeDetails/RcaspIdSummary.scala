@@ -32,6 +32,6 @@ object RcaspIdSummary {
         key = "rcaspId.checkYourAnswersLabel",
         value = ValueViewModel(HtmlFormat.escape(rcaspDetails.RCASPID).toString),
         actions = Seq.empty
-      )
+      ).withCssClass("govuk-summary-list__row--no-actions")
     }
 }
