@@ -26,12 +26,11 @@ import play.api.Application
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.{AccountService, AddressLookupService, UploadInformationService}
+import services.{AccountService, UploadInformationService}
 import types.ResultT
 import viewmodels.HomePageViewModel
 import views.html.HomePageView
 
-import java.time.Clock
 import scala.concurrent.Future
 
 class HomePageControllerSpec extends SpecBase {
@@ -227,16 +226,13 @@ class HomePageControllerSpec extends SpecBase {
     val mockAccountService: AccountService                     = mock[AccountService]
     val mockUploadInformationService: UploadInformationService = mock[UploadInformationService]
     val mockAppConfig: FrontendAppConfig                       = mock[FrontendAppConfig]
-    val mockAddressLookupService: AddressLookupService         = mock[AddressLookupService]
 
     val application: Application =
       applicationBuilder(requestUtr = requestUtr, userAnswers = userAnswers)
         .overrides(
           bind[AccountService].toInstance(mockAccountService),
           bind[UploadInformationService].toInstance(mockUploadInformationService),
-          bind[FrontendAppConfig].toInstance(mockAppConfig),
-          bind[AddressLookupService].toInstance(mockAddressLookupService),
-          bind[Clock].toInstance(clock)
+          bind[FrontendAppConfig].toInstance(mockAppConfig)
         )
         .build()
   }
