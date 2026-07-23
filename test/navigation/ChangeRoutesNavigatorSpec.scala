@@ -18,7 +18,7 @@ package navigation
 
 import base.SpecBase
 import config.Constants.noneOfTheseValue
-import models.{format, ChangeMode, NormalMode}
+import models.{format, ChangeMode}
 import org.scalatest.prop.Tables.Table
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.*

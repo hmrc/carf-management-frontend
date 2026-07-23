@@ -25,7 +25,7 @@ import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.changeDetails.ChangeRcaspCachedDetails
-import pages.organisation.{OrganisationFirstContactHavePhonePage, OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OrganisationSecondContactPhoneNumberPage, OverwritableOrganisationName}
+import pages.organisation.{OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OrganisationSecondContactPhoneNumberPage, OverwritableOrganisationName}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call

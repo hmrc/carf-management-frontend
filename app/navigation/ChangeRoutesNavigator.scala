@@ -18,7 +18,7 @@ package navigation
 
 import config.Constants.noneOfTheseValue
 import controllers.routes
-import models.{ChangeMode, NormalMode, UserAnswers}
+import models.{ChangeMode, UserAnswers}
 import pages.*
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.individual.*
