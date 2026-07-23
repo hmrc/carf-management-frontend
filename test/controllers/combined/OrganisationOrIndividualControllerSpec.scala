@@ -258,7 +258,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
       "must redirect to ChangeDetailsRoutingController and NOT clear Organisation pages when answer remains unchanged [Organisation -> Organisation]" in {
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         val userAnswers = emptyUserAnswers
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
           .withPage(OrganisationOrIndividualPage, OrganisationOrIndividual.Organisation)
           .withPage(OrganisationNamePage, "Test Organisation Name")
           .withPage(OverwritableOrganisationName, "Test Overwritable Name")
@@ -317,7 +317,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
       "must redirect to ChangeDetailsRoutingController and NOT clear Individual pages when answer remains unchanged [Individual -> Individual]" in {
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         val userAnswers = emptyUserAnswers
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
           .withPage(OrganisationOrIndividualPage, OrganisationOrIndividual.Individual)
           .withPage(IndividualNamePage, IndividualName(testName, "lastName"))
           .withPage(NiNumberPage, testNiNumber)

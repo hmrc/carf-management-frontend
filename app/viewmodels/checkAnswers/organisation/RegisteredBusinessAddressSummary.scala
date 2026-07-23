@@ -16,9 +16,8 @@
 
 package viewmodels.checkAnswers.organisation
 
-import models.{AddressUk, ChangeMode, UserAnswers}
+import models.{renderHtml, AddressUk, ChangeMode, UserAnswers}
 import pages.UkAddressInUserAnswers
-import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsTheAddressCorrectPage}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -29,13 +28,7 @@ object RegisteredBusinessAddressSummary {
 
   def row(answers: UserAnswers)(implicit messages: Messages): Option[SummaryListRow] = {
 
-    val address: Option[String] = if (answers.get(RegisteredBusinessIsTheAddressCorrectPage).contains(true)) {
-      import models.responses.renderHtml
-      answers.get(CachedBusinessDetailsPage).map(_.address.renderHtml)
-    } else {
-      import models.renderHtml
-      answers.get(UkAddressInUserAnswers).map(_.renderHtml)
-    }
+    val address: Option[String] = answers.get(UkAddressInUserAnswers).map(_.renderHtml)
 
     address.map { address =>
       SummaryListRowViewModel(

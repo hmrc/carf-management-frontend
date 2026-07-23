@@ -51,7 +51,7 @@ class AccountServiceSpec extends SpecBase {
         }
 
         "when there is 1 rcasp" in {
-          val rcaspList = List(organisationRcaspDetailsResponse)
+          val rcaspList = List(organisationRcaspDetailsViewUpdate)
 
           when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromValue(rcaspList))
 
@@ -64,10 +64,10 @@ class AccountServiceSpec extends SpecBase {
 
         "when there are 4 rcasps" in {
           val rcaspList = List(
-            individualRcaspDetailsResponse,
-            organisationRcaspDetailsResponse,
-            individualRcaspDetailsResponse,
-            organisationRcaspDetailsResponse
+            individualRcaspDetailsViewUpdate,
+            organisationRcaspDetailsViewUpdate,
+            individualRcaspDetailsViewUpdate,
+            organisationRcaspDetailsViewUpdate
           )
 
           when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromValue(rcaspList))
@@ -94,34 +94,34 @@ class AccountServiceSpec extends SpecBase {
     ".getRcaspDetails" - {
       "must return a Right with RcaspDetails" in {
         val rcaspList = List(
-          individualRcaspDetailsResponse.copy(RCASPID = "RCASP1"),
-          organisationRcaspDetailsResponse.copy(RCASPID = "RCASP2"),
-          individualRcaspDetailsResponse,
-          organisationRcaspDetailsResponse.copy(RCASPID = "RCASP3")
+          individualRcaspDetailsViewUpdate.copy(RCASPID = "RCASP1"),
+          organisationRcaspDetailsViewUpdate.copy(RCASPID = "RCASP2"),
+          individualRcaspDetailsViewUpdate,
+          organisationRcaspDetailsViewUpdate.copy(RCASPID = "RCASP3")
         )
 
         when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromValue(rcaspList))
 
         val result: ResultT[RcaspDetails] = accountService.getRcaspDetails(testCarfId, rcaspId)
 
-        result.value.futureValue mustBe Right(individualRcaspDetailsResponse)
+        result.value.futureValue mustBe Right(individualRcaspDetailsViewUpdate)
 
         verify(mockRcaspConnector, times(1)).viewRcasp(eqTo(testCarfId))(any(), any())
       }
 
       "must return a Right with RcaspDetails when an RCASPID matches after converting to uppercase" in {
         val rcaspList = List(
-          individualRcaspDetailsResponse.copy(RCASPID = "RCASP1"),
-          organisationRcaspDetailsResponse.copy(RCASPID = "RCASP2"),
-          individualRcaspDetailsResponse.copy(RCASPID = "ZMcar0123456789"),
-          organisationRcaspDetailsResponse.copy(RCASPID = "RCASP3")
+          individualRcaspDetailsViewUpdate.copy(RCASPID = "RCASP1"),
+          organisationRcaspDetailsViewUpdate.copy(RCASPID = "RCASP2"),
+          individualRcaspDetailsViewUpdate.copy(RCASPID = "ZMcar0123456789"),
+          organisationRcaspDetailsViewUpdate.copy(RCASPID = "RCASP3")
         )
 
         when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromValue(rcaspList))
 
         val result: ResultT[RcaspDetails] = accountService.getRcaspDetails(testCarfId, "zmCAR0123456789")
 
-        result.value.futureValue mustBe Right(individualRcaspDetailsResponse.copy(RCASPID = "ZMcar0123456789"))
+        result.value.futureValue mustBe Right(individualRcaspDetailsViewUpdate.copy(RCASPID = "ZMcar0123456789"))
 
         verify(mockRcaspConnector, times(1)).viewRcasp(eqTo(testCarfId))(any(), any())
       }
@@ -138,8 +138,8 @@ class AccountServiceSpec extends SpecBase {
 
       "must return a Left with NotFoundError when the connector response does not contain details for the RCASPID" in {
         val rcaspList = List(
-          individualRcaspDetailsResponse.copy(RCASPID = "RCASP1"),
-          organisationRcaspDetailsResponse.copy(RCASPID = "RCASP2")
+          individualRcaspDetailsViewUpdate.copy(RCASPID = "RCASP1"),
+          organisationRcaspDetailsViewUpdate.copy(RCASPID = "RCASP2")
         )
 
         when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromValue(rcaspList))

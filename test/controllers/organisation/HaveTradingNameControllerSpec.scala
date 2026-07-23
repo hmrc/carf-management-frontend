@@ -266,7 +266,7 @@ class HaveTradingNameControllerSpec extends SpecBase {
         val userAnswers = emptyUserAnswers
           .withPage(HaveTradingNamePage, true)
           .withPage(TradingNamePage, testTradingName)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -300,7 +300,7 @@ class HaveTradingNameControllerSpec extends SpecBase {
         val userAnswers = emptyUserAnswers
           .withPage(HaveTradingNamePage, true)
           .withPage(TradingNamePage, testTradingName)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -333,7 +333,7 @@ class HaveTradingNameControllerSpec extends SpecBase {
       "must redirect ChangeDetailsRoutingController when answer is false and does not change" in {
         val userAnswers = emptyUserAnswers
           .withPage(HaveTradingNamePage, false)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 

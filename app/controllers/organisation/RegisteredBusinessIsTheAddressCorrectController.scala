@@ -16,10 +16,13 @@
 
 package controllers.organisation
 
+import config.Constants
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
+import models.responses.toAddressUk
 import models.{CachedBusinessDetails, Mode, UserAnswers}
 import navigation.Navigator
+import pages.UkAddressInUserAnswers
 import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsTheAddressCorrectPage}
 import play.api.Logging
 import play.api.data.Form
@@ -31,6 +34,7 @@ import views.html.organisation.RegisteredBusinessIsTheAddressCorrectView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 class RegisteredBusinessIsTheAddressCorrectController @Inject() (
     override val messagesApi: MessagesApi,
@@ -83,36 +87,49 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
-      form
-        .bindFromRequest()
-        .fold(
-          formWithErrors =>
-            getNameAndDetailsMaybe(userAnswers = request.userAnswers).fold {
-              logger.warn(
-                "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] No name or cached business details found. Redirecting to journey recovery."
-              )
-              Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-            } { (businessName, cachedDetails) =>
+      getNameAndDetailsMaybe(userAnswers = request.userAnswers).fold {
+        logger.warn(
+          "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] No name or cached business details found. Redirecting to journey recovery."
+        )
+        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+      } { (businessName, cachedDetails) =>
+        form
+          .bindFromRequest()
+          .fold(
+            formWithErrors =>
               Future.successful(
                 BadRequest(view(formWithErrors, mode, businessName, cachedDetails.address, cachedDetails.countryName))
-              )
-            },
-          value =>
-            for {
-              updatedAnswers <- Future.fromTry(
-                                  request.userAnswers.set(
-                                    RegisteredBusinessIsTheAddressCorrectPage,
-                                    value
-                                  )
-                                )
-              _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(
-              navigator.nextPage(
-                RegisteredBusinessIsTheAddressCorrectPage,
-                mode,
-                updatedAnswers
-              )
-            )
-        )
+              ),
+            value => {
+              val shouldSetUkAddress =
+                value && Constants.acceptedUkCountryCode.contains(cachedDetails.address.countryCode.toUpperCase)
+              val resultFuture       =
+                for {
+                  answersWithUkAddress <-
+                    Future.fromTry(
+                      if (shouldSetUkAddress) {
+                        cachedDetails.address.toAddressUk.fold {
+                          logger.warn(
+                            "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] Unable to convert cached address to AddressUk"
+                          )
+                          Failure(new IllegalStateException("Unable to convert cached address to AddressUk"))
+                        }(request.userAnswers.set(UkAddressInUserAnswers, _))
+                      } else {
+                        Success(request.userAnswers)
+                      }
+                    )
+                  updatedAnswers       <-
+                    Future.fromTry(answersWithUkAddress.set(RegisteredBusinessIsTheAddressCorrectPage, value))
+                  _                    <- sessionRepository.set(updatedAnswers)
+                } yield Redirect(
+                  navigator.nextPage(RegisteredBusinessIsTheAddressCorrectPage, mode, updatedAnswers)
+                )
+
+              resultFuture.recover { case ex =>
+                Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+              }
+            }
+          )
+      }
     }
 }

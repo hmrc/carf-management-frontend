@@ -96,7 +96,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
       val result = connector.viewRcasp(testCarfId).value.futureValue
       result shouldBe Right(
-        List(organisationRcaspDetailsResponse.copy(AddressDetails = rcaspAddress))
+        List(organisationRcaspDetailsViewUpdate.copy(AddressDetails = rcaspAddress))
       )
     }
 

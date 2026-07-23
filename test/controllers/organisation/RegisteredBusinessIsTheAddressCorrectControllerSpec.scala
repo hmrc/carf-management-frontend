@@ -18,10 +18,12 @@ package controllers.organisation
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
+import models.responses.AddressRegistrationResponse
 import models.{CachedBusinessDetails, NormalMode}
 import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.{any, argThat}
+import org.mockito.Mockito.{times, verify, when}
+import pages.UkAddressInUserAnswers
 import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsTheAddressCorrectPage, RegisteredBusinessIsThisYourBusinessNamePage}
 import play.api.data.Form
 import play.api.inject.bind
@@ -167,24 +169,89 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to the next page when valid data is submitted" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+    "must redirect to the next page when valid data is submitted" - {
+      "when the answer is yes and it is a UK address" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+          .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
-        )
-        .build()
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      running(application) {
-        val request =
-          FakeRequest(POST, routeUnderTest)
-            .withFormUrlEncodedBody(("value", "true"))
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+          )
+          .build()
 
-        val result = route(application, request).value
+        running(application) {
+          val request =
+            FakeRequest(POST, routeUnderTest)
+              .withFormUrlEncodedBody(("value", "true"))
 
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual onwardRoute.url
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+        }
+
+        verify(mockSessionRepository, times(1)).set(argThat(_.get(UkAddressInUserAnswers).contains(testAddressUk)))
+      }
+
+      "when the answer is yes and it is not a UK address" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(
+            CachedBusinessDetailsPage,
+            cachedBusinessDetails.copy(address = cachedBusinessDetails.address.copy(countryCode = "US"))
+          )
+          .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
+
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+          )
+          .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, routeUnderTest)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+        }
+
+        verify(mockSessionRepository, times(1)).set(argThat(_.get(UkAddressInUserAnswers).isEmpty))
+      }
+
+      "when the answer is no" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+          .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
+
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+          )
+          .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, routeUnderTest)
+              .withFormUrlEncodedBody(("value", "false"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+
+          verify(mockSessionRepository, times(1)).set(argThat(_.get(UkAddressInUserAnswers).isEmpty))
+        }
       }
     }
 
@@ -249,11 +316,41 @@ class RegisteredBusinessIsTheAddressCorrectControllerSpec extends SpecBase {
       }
     }
 
-    "must redirect to Journey Recovery for a POST when cached business details are not found when form has errors" in {
+    "must redirect to Journey Recovery for a POST when cached business details are not found" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(POST, routeUnderTest).withFormUrlEncodedBody(("value", ""))
+        val request = FakeRequest(POST, routeUnderTest)
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+      }
+    }
+
+    "must redirect to Journey Recovery for a POST when answer is yes but cached address cannot be converted to AddressUk" in {
+      val cachedBusinessDetails = CachedBusinessDetails(
+        name = "Timmy Ltd",
+        address = AddressRegistrationResponse(
+          addressLine1 = "1 Test",
+          addressLine2 = None,
+          addressLine3 = None,
+          addressLine4 = None,
+          postalCode = Some(testPostcode),
+          countryCode = "GB"
+        ),
+        countryName = "United Kingdom"
+      )
+
+      val userAnswers = emptyUserAnswers
+        .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+        .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(POST, routeUnderTest).withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
 

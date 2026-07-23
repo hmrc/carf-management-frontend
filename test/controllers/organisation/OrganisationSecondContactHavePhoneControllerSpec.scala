@@ -267,7 +267,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationSecondContactHavePhonePage, true)
           .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -302,7 +302,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationSecondContactHavePhonePage, true)
           .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -336,7 +336,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
       "must redirect ChangeDetailsRoutingController when answer is false and does not change" in {
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationSecondContactHavePhonePage, false)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 

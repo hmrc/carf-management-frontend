@@ -49,7 +49,7 @@ class YourRcaspsControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET if the Rcasp connector is called successfully" in {
       when(mockRcaspConnector.viewRcasp(any())(any(), any()))
-        .thenReturn(ResultT.fromValue(List(organisationRcaspDetailsResponse)))
+        .thenReturn(ResultT.fromValue(List(organisationRcaspDetailsViewUpdate)))
 
       val application = applicationBuilder(userAnswers = None)
         .overrides(bind[RcaspConnector].toInstance(mockRcaspConnector))
@@ -63,7 +63,7 @@ class YourRcaspsControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[YourRcaspsView]
 
         val listWithItems =
-          YourRcaspsListWithActionsHelper.getYourRcaspsRows(List(organisationRcaspDetailsResponse))(
+          YourRcaspsListWithActionsHelper.getYourRcaspsRows(List(organisationRcaspDetailsViewUpdate))(
             messages(application)
           )
 
@@ -135,7 +135,7 @@ class YourRcaspsControllerSpec extends SpecBase {
 
     "must return a Bad Request and errors when invalid data is submitted and the Rcasp connector is called successfully" in {
       when(mockRcaspConnector.viewRcasp(any())(any(), any()))
-        .thenReturn(ResultT.fromValue(List(organisationRcaspDetailsResponse)))
+        .thenReturn(ResultT.fromValue(List(organisationRcaspDetailsViewUpdate)))
 
       val application = applicationBuilder(userAnswers = None)
         .overrides(bind[RcaspConnector].toInstance(mockRcaspConnector))
@@ -153,7 +153,7 @@ class YourRcaspsControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         val listWithItems =
-          YourRcaspsListWithActionsHelper.getYourRcaspsRows(List(organisationRcaspDetailsResponse))(
+          YourRcaspsListWithActionsHelper.getYourRcaspsRows(List(organisationRcaspDetailsViewUpdate))(
             messages(application)
           )
 

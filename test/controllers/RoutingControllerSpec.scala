@@ -187,7 +187,7 @@ class RoutingControllerSpec extends SpecBase {
     }
 
     "must save fresh UserAnswers in NormalMode when ChangeRcaspCachedDetails is present (switching journeys)" in {
-      val staleUserAnswers = emptyUserAnswers.withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+      val staleUserAnswers = emptyUserAnswers.withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
@@ -213,7 +213,7 @@ class RoutingControllerSpec extends SpecBase {
 
     "must save fresh UserAnswers in NormalMode when RemoveRcaspCachedDetails is present (switching journeys)" in {
       val staleUserAnswers =
-        emptyUserAnswers.withPage(RemoveRcaspCachedDetails, individualRcaspDetailsResponse)
+        emptyUserAnswers.withPage(RemoveRcaspCachedDetails, individualRcaspDetailsViewUpdate)
 
       when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
