@@ -37,11 +37,6 @@ case class HomePageViewModel(
 
   lazy val getNoRcaspsSectionLink: String = controllers.routes.RoutingController.onPageLoad(NormalMode).url
 
-  lazy val getUploadXmlLink: String =
-    controllers.routes.PlaceholderController
-      .onPageLoad("Should redirect to /report/upload-file (part of file upload journey)")
-      .url
-
   lazy val getViewResultsLink: String =
     controllers.routes.PlaceholderController
       .onPageLoad("Should redirect to /result-of-automatic-checks (part of file upload journey)")

@@ -47,6 +47,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val signOutUrl: String                   = configuration.get[String]("urls.signOut")
   val registrationUrl: String              = configuration.get[String]("urls.registration")
   val changeContactDetailsIndexUrl: String = configuration.get[String]("urls.changeContactDetails")
+  val uploadFileUrl: String                = configuration.get[String]("urls.uploadFile")
 
   val aeoiEmailAddress: String = configuration.get("email.aeoi")
 

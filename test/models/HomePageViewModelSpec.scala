@@ -62,18 +62,6 @@ class HomePageViewModelSpec extends SpecBase {
       }
     }
 
-    "getUploadXmlLink val" - {
-      "must return the url for the upload xml link" in {
-        val viewModel   = basicViewModel
-        val result      = viewModel.getUploadXmlLink
-        val expectedUrl = controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to /report/upload-file (part of file upload journey)")
-          .url
-
-        result mustBe expectedUrl
-      }
-    }
-
     "getViewResultsLink val" - {
       "must return the url for the view results page" in {
         val viewModel   = basicViewModel
