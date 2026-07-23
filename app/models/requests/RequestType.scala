@@ -14,28 +14,22 @@
  * limitations under the License.
  */
 
-package pages.individual
+package models.requests
 
-import models.UserAnswers
-import pages.QuestionPage
-import play.api.libs.json.JsPath
+sealed trait RequestType {
+  val name: String
+}
 
-import scala.util.{Success, Try}
+object RequestType {
+  case object Create extends RequestType {
+    val name: String = "CREATE"
+  }
 
-case object IndividualHavePhonePage extends QuestionPage[Boolean] {
+  case object Update extends RequestType {
+    val name: String = "UPDATE"
+  }
 
-  override def path: JsPath = JsPath \ toString
-
-  override def toString: String = "individualHavePhone"
-
-  override def cleanup(
-      newValue: Boolean,
-      userAnswers: UserAnswers,
-      hasChanged: Boolean
-  ): Try[UserAnswers] =
-    if (hasChanged && !newValue) {
-      userAnswers.remove(List(IndividualPhonePage))
-    } else {
-      Success(userAnswers)
-    }
+  case object Delete extends RequestType {
+    val name: String = "DELETE"
+  }
 }

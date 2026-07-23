@@ -16,7 +16,7 @@
 
 package controllers.changeDetails
 
-import controllers.actions.{DataRetrievalAction, IdentifierAction}
+import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
 import models.viewAndUpdateRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails}
 import pages.SubmissionSucceededPage
 import pages.changeDetails.ChangeRcaspCachedDetails
@@ -32,6 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ChangeDetailsRoutingController @Inject() (
     identify: IdentifierAction,
+    ctUtrRetrievalAction: CtUtrRetrievalAction,
     accountService: AccountService,
     getData: DataRetrievalAction,
     populateUserAnswersHelper: PopulateUserAnswersHelper,
@@ -40,41 +41,48 @@ class ChangeDetailsRoutingController @Inject() (
     extends FrontendBaseController
     with Logging {
 
-  def onPageLoad(rcaspId: String): Action[AnyContent] = (identify() andThen getData()).async { implicit request =>
-    val submissionFlagSet = request.userAnswers.flatMap(_.get(SubmissionSucceededPage)).contains(true)
-    (
-      request.userAnswers.flatMap(_.get(ChangeRcaspCachedDetails)),
-      request.userAnswers.flatMap(_.get(ReportForRegisteredBusinessPage))
-    ) match {
-      case (Some(cachedDetails), Some(isRcaspUserAnswer))
-          if cachedDetails.RCASPID.toUpperCase == rcaspId.toUpperCase && !submissionFlagSet =>
-        val redirectCall: Call =
-          if (isRcaspUserAnswer)
-            controllers.routes.PlaceholderController
-              .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
-          else controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId)
-        Future.successful(Redirect(redirectCall))
-      case _ =>
-        accountService.getRcaspDetails(request.carfId, rcaspId).value.flatMap {
-          case Left(error)                                               =>
-            logger.warn(s"[ChangeDetailsRoutingController][onPageLoad] Failed to get RCASP details: $error")
-            Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-          case Right(individualRcaspDetails: IndividualRcaspDetails)     =>
-            if (individualRcaspDetails.IsRCASPUser) {
-              logger.warn(
-                s"[ChangeDetailsRoutingController][onPageLoad] RCASP $rcaspId is an individual but isRcaspUser = true"
-              )
+  def onPageLoad(rcaspId: String): Action[AnyContent] =
+    (identify() andThen ctUtrRetrievalAction() andThen getData()).async { implicit request =>
+      val submissionFlagSet = request.userAnswers.flatMap(_.get(SubmissionSucceededPage)).contains(true)
+      (
+        request.userAnswers.flatMap(_.get(ChangeRcaspCachedDetails)),
+        request.userAnswers.flatMap(_.get(ReportForRegisteredBusinessPage))
+      ) match {
+        case (Some(cachedDetails), Some(isRcaspUserAnswer))
+            if cachedDetails.RCASPID.toUpperCase == rcaspId.toUpperCase && !submissionFlagSet =>
+          val redirectCall: Call =
+            if (isRcaspUserAnswer)
+              controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(rcaspId)
+            else controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId)
+          Future.successful(Redirect(redirectCall))
+        case _ =>
+          accountService.getRcaspDetails(request.carfId, rcaspId).value.flatMap {
+            case Left(error)                                               =>
+              logger.warn(s"[ChangeDetailsRoutingController][onPageLoad] Failed to get RCASP details: $error")
               Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-            } else {
-              populateUserAnswersHelper.populateUserAnswersForIndividual(request.userId, individualRcaspDetails)
-            }
-          case Right(organisationRcaspDetails: OrganisationRcaspDetails) =>
-            if (organisationRcaspDetails.IsRCASPUser)
-              populateUserAnswersHelper
-                .populateUserAnswersForRegisteredBusiness(request.userId, organisationRcaspDetails)
-            else
-              populateUserAnswersHelper.populateUserAnswersForOrganisation(request.userId, organisationRcaspDetails)
-        }
+            case Right(individualRcaspDetails: IndividualRcaspDetails)     =>
+              if (individualRcaspDetails.IsRCASPUser) {
+                logger.warn(
+                  s"[ChangeDetailsRoutingController][onPageLoad] RCASP $rcaspId is an individual but isRcaspUser = true"
+                )
+                Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+              } else {
+                populateUserAnswersHelper.populateUserAnswersForIndividual(request.userId, individualRcaspDetails)
+              }
+            case Right(organisationRcaspDetails: OrganisationRcaspDetails) =>
+              if (organisationRcaspDetails.IsRCASPUser) {
+                request.utr.fold {
+                  logger.warn(
+                    "[ChangeDetailsRoutingController][onPageLoad] CT UTR not found in request for registered business"
+                  )
+                  Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+                } { utr =>
+                  populateUserAnswersHelper
+                    .populateUserAnswersForRegisteredBusiness(request.userId, utr, organisationRcaspDetails)
+                }
+              } else
+                populateUserAnswersHelper.populateUserAnswersForOrganisation(request.userId, organisationRcaspDetails)
+          }
+      }
     }
-  }
 }

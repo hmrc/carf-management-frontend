@@ -18,30 +18,31 @@ package utils
 
 import models.UserAnswers
 import pages.organisation.{HaveTradingNamePage, ReportForRegisteredBusinessPage}
-import play.api.Logging
 import play.api.i18n.Messages
 import viewmodels.Section
+import viewmodels.changeDetails.RcaspIdSummary
 import viewmodels.checkAnswers.organisation.*
 
-import javax.inject.Inject
+class RegisteredBusinessDetailsHelper {
 
-class CheckDetailsRegisteredBusinessHelper @Inject() extends Logging {
-
-  def getRegisteredBusinessSection(userAnswers: UserAnswers)(implicit messages: Messages): Option[Section] =
+  def getRegisteredBusinessSection(
+      userAnswers: UserAnswers,
+      changeJourney: Boolean
+  )(implicit messages: Messages): Option[Section] =
     (for {
       reportForRegisteredBusinessAnswer <- userAnswers.get(ReportForRegisteredBusinessPage)
       if reportForRegisteredBusinessAnswer
-      reportForRegisteredBusiness       <- ReportForRegisteredBusinessSummary.row(userAnswers, changeJourney = false)
-      organisationName                  <- OverwritableOrganisationNameSummary.row(userAnswers, true)
+      reportForRegisteredBusiness       <- ReportForRegisteredBusinessSummary.row(userAnswers, changeJourney = changeJourney)
+      organisationName                  <- OverwritableOrganisationNameSummary.row(userAnswers, isRegisteredBusiness = true)
       haveTradingRow                    <- HaveTradingNameSummary.row(userAnswers)
       haveTrading                       <- userAnswers.get(HaveTradingNamePage)
       address                           <- RegisteredBusinessAddressSummary.row(userAnswers)
+      maybeRcaspIdRow                   <- if changeJourney then RcaspIdSummary.row(userAnswers).map(Some(_)) else Some(None)
     } yield {
-      val topBaseRows = Seq(
-        reportForRegisteredBusiness,
-        organisationName,
-        haveTradingRow
-      )
+      val topBaseRows = maybeRcaspIdRow.fold {
+        Seq(reportForRegisteredBusiness, organisationName, haveTradingRow)
+      }(Seq(_, reportForRegisteredBusiness, organisationName, haveTradingRow))
+
       if (haveTrading) {
         TradingNameSummary.row(userAnswers).map { tradingRow =>
           topBaseRows :+ tradingRow :+ address

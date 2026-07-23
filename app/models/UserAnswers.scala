@@ -113,23 +113,17 @@ final case class UserAnswers(
       )
     } else {
       for {
-        isRcaspUser           <- this.get(ReportForRegisteredBusinessPage)
-        rcaspName             <- this.get(OverwritableOrganisationName)
-        tradingName            = this.get(TradingNamePage).getOrElse(rcaspName)
-        utr                   <- this.get(UtrPage)
-        isCachedAddressCorrect = this.get(RegisteredBusinessIsTheAddressCorrectPage).contains(true)
-        address               <- if (isRcaspUser && isCachedAddressCorrect) {
-                                   import models.responses.toRcaspAddress
-                                   this.get(CachedBusinessDetailsPage).flatMap(_.address.toRcaspAddress)
-                                 } else {
-                                   this.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
-                                 }
-        firstContactName       = this.get(OrganisationFirstContactNamePage)
-        firstContactEmail      = this.get(OrganisationFirstContactEmailPage)
-        firstContactPhone      = this.get(OrganisationFirstContactPhoneNumberPage)
-        secondContactName      = this.get(OrganisationSecondContactNamePage)
-        secondContactEmail     = this.get(OrganisationSecondContactEmailPage)
-        secondContactPhone     = this.get(OrganisationSecondContactPhoneNumberPage)
+        isRcaspUser       <- this.get(ReportForRegisteredBusinessPage)
+        rcaspName         <- this.get(OverwritableOrganisationName)
+        tradingName        = this.get(TradingNamePage).getOrElse(rcaspName)
+        utr               <- this.get(UtrPage)
+        address           <- this.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
+        firstContactName   = this.get(OrganisationFirstContactNamePage)
+        firstContactEmail  = this.get(OrganisationFirstContactEmailPage)
+        firstContactPhone  = this.get(OrganisationFirstContactPhoneNumberPage)
+        secondContactName  = this.get(OrganisationSecondContactNamePage)
+        secondContactEmail = this.get(OrganisationSecondContactEmailPage)
+        secondContactPhone = this.get(OrganisationSecondContactPhoneNumberPage)
       } yield OrganisationRcaspDetailsForComparison(
         isRcaspUser,
         rcaspName,

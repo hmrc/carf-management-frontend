@@ -80,5 +80,4 @@ class ReviewAddressController @Inject() (
           Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       }
     }
-
 }

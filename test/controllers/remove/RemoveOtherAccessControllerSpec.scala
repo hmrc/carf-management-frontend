@@ -39,10 +39,10 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
   private val formProvider = new GenericYesNoPageFormProvider()
 
   private val rcaspIsUserDetails: RcaspDetails =
-    organisationRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = true)
+    organisationRcaspDetailsViewUpdate.copy(RCASPID = rcaspId, IsRCASPUser = true)
 
   private val otherOrgDetails: RcaspDetails =
-    organisationRcaspDetailsResponse.copy(RCASPID = rcaspId, IsRCASPUser = false)
+    organisationRcaspDetailsViewUpdate.copy(RCASPID = rcaspId, IsRCASPUser = false)
 
   private val individualUserInfo   =
     UserBusinessSubscriptionData(hasOrganisationContactDetails = false, organisationName = None)
@@ -297,6 +297,25 @@ class RemoveOtherAccessControllerSpec extends SpecBase {
 
       "must redirect to Journey Recovery for a POST if no existing data is found" in {
         val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, onSubmitRoute)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery when cached rcaspId does not match URL rcaspId" in {
+        val differentDetails = organisationRcaspDetailsViewUpdate.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
+        val userAnswers      = emptyUserAnswers
+          .withPage(RemoveRcaspCachedDetails, differentDetails)
+          .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
+        val application      = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
         running(application) {
           val request =

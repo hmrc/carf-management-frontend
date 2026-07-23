@@ -18,11 +18,12 @@ package controllers.individual
 
 import base.SpecBase
 import forms.GenericYesNoPageFormProvider
-import models.NormalMode
+import models.{ChangeMode, NormalMode}
 import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import pages.individual.{IndividualHavePhonePage, IndividualNamePage}
+import org.mockito.ArgumentMatchers.{any, argThat}
+import org.mockito.Mockito.{verify, when}
+import pages.changeDetails.ChangeRcaspCachedDetails
+import pages.individual.{IndividualHavePhonePage, IndividualNamePage, IndividualPhonePage}
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -39,156 +40,350 @@ class IndividualHavePhoneControllerSpec extends SpecBase {
   val formProvider        = new GenericYesNoPageFormProvider()
   val form: Form[Boolean] = formProvider("individualHavePhone.error.required")
 
-  lazy val individualHavePhoneRoute: String =
+  lazy val individualHavePhoneRoute: String           =
     controllers.individual.routes.IndividualHavePhoneController.onPageLoad(NormalMode).url
+  lazy val individualHavePhoneRouteChangeMode: String =
+    controllers.individual.routes.IndividualHavePhoneController.onPageLoad(ChangeMode).url
 
   "IndividualHavePhone Controller" - {
 
-    "must return OK and the correct view for a GET when an individual name is present in user answers" in {
+    "normal mode" - {
+      "must return OK and the correct view for a GET when an individual name is present in user answers" in {
 
-      val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
+        val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
 
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
+        val application = applicationBuilder(userAnswers = Some(ua)).build()
 
-      running(application) {
-        val request = FakeRequest(GET, individualHavePhoneRoute)
+        running(application) {
+          val request = FakeRequest(GET, individualHavePhoneRoute)
 
-        val result = route(application, request).value
+          val result = route(application, request).value
 
-        val view = application.injector.instanceOf[IndividualHavePhoneView]
+          val view = application.injector.instanceOf[IndividualHavePhoneView]
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, testIndividualName.fullName)(
-          request,
-          messages(application)
-        ).toString
+          status(result)          mustEqual OK
+          contentAsString(result) mustEqual view(form, NormalMode, testIndividualName.fullName)(
+            request,
+            messages(application)
+          ).toString
+        }
+      }
+
+      "must redirect to Some Information is Missing GET when an individual name is NOT present in user answers" in {
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+        running(application) {
+          val request = FakeRequest(GET, individualHavePhoneRoute)
+
+          val result = route(application, request).value
+
+          status(result)               mustEqual SEE_OTHER
+          redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+        }
+      }
+
+      "must populate the view correctly on a GET when the question has previously been answered" in {
+
+        val userAnswers = emptyUserAnswers
+          .withPage(IndividualHavePhonePage, true)
+          .withPage(IndividualNamePage, testIndividualName)
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+        running(application) {
+          val request = FakeRequest(GET, individualHavePhoneRoute)
+
+          val view = application.injector.instanceOf[IndividualHavePhoneView]
+
+          val result = route(application, request).value
+
+          status(result)          mustEqual OK
+          contentAsString(result) mustEqual view(form.fill(true), NormalMode, testIndividualName.fullName)(
+            request,
+            messages(application)
+          ).toString
+        }
+      }
+
+      "must redirect to the next page when valid data is submitted and clear individual phone page when answer is false" in {
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val userAnswers = emptyUserAnswers.withPage(IndividualPhonePage, testPhone)
+
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, individualHavePhoneRoute)
+              .withFormUrlEncodedBody(("value", "false"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+
+          verify(mockSessionRepository).set(argThat(_.get(IndividualPhonePage).isEmpty))
+        }
+      }
+
+      "must redirect to the next page when valid data is submitted and not clear individual phone page when answer is true" in {
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val userAnswers = emptyUserAnswers.withPage(IndividualPhonePage, testPhone)
+
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, individualHavePhoneRoute)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+
+          verify(mockSessionRepository).set(argThat(_.get(IndividualPhonePage).isDefined))
+        }
+      }
+
+      "must return a Bad Request and errors when invalid data is submitted and an individual name is present in user answers" in {
+
+        val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
+
+        val application = applicationBuilder(userAnswers = Some(ua)).build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, individualHavePhoneRoute).withFormUrlEncodedBody(("value", ""))
+
+          val boundForm = form.bind(Map("value" -> ""))
+
+          val view = application.injector.instanceOf[IndividualHavePhoneView]
+
+          val result = route(application, request).value
+
+          status(result)          mustEqual BAD_REQUEST
+          contentAsString(result) mustEqual view(boundForm, NormalMode, testIndividualName.fullName)(
+            request,
+            messages(application)
+          ).toString
+        }
+      }
+
+      "must redirect to Some Information is Missing when invalid data is submitted and an org name is NOT present in user answers" in {
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+        running(application) {
+          val request = FakeRequest(POST, individualHavePhoneRoute).withFormUrlEncodedBody(("value", ""))
+
+          val result = route(application, request).value
+
+          status(result)               mustEqual SEE_OTHER
+          redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery for a GET if no existing data is found" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val request = FakeRequest(GET, individualHavePhoneRoute)
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery for a POST if no existing data is found" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, individualHavePhoneRoute)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+        }
       }
     }
 
-    "must redirect to Some Information is Missing GET when an individual name is NOT present in user answers" in {
+    "change mode" - {
+      "must redirect to IndividualPhoneController when answer is changed from false -> true" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(IndividualHavePhonePage, false)
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      running(application) {
-        val request = FakeRequest(GET, individualHavePhoneRoute)
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
 
-        val result = route(application, request).value
+        running(application) {
+          val request =
+            FakeRequest(POST, individualHavePhoneRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "true"))
 
-        status(result)               mustEqual SEE_OTHER
-        redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.individual.routes.IndividualPhoneController
+            .onPageLoad(ChangeMode)
+            .url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(IndividualHavePhonePage).contains(true)
+          })
+        }
       }
-    }
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
+      "must redirect ChangeDetailsRoutingController and clear data when answer is changed from true -> false" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(IndividualHavePhonePage, true)
+          .withPage(IndividualPhonePage, testPhone)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
-      val userAnswers = emptyUserAnswers
-        .withPage(IndividualHavePhonePage, true)
-        .withPage(IndividualNamePage, testIndividualName)
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
 
-      running(application) {
-        val request = FakeRequest(GET, individualHavePhoneRoute)
+        running(application) {
+          val request =
+            FakeRequest(POST, individualHavePhoneRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "false"))
 
-        val view = application.injector.instanceOf[IndividualHavePhoneView]
+          val result = route(application, request).value
 
-        val result = route(application, request).value
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
+            .onPageLoad(rcaspId)
+            .url
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, testIndividualName.fullName)(
-          request,
-          messages(application)
-        ).toString
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(IndividualHavePhonePage).contains(false) &&
+            ua.get(IndividualPhonePage).isEmpty
+          })
+        }
       }
-    }
 
-    "must redirect to the next page when valid data is submitted" in {
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      "must redirect ChangeDetailsRoutingController when answer is true and does not change" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(IndividualHavePhonePage, true)
+          .withPage(IndividualPhonePage, testPhone)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
-          )
-          .build()
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      running(application) {
-        val request =
-          FakeRequest(POST, individualHavePhoneRoute)
-            .withFormUrlEncodedBody(("value", "true"))
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
 
-        val result = route(application, request).value
+        running(application) {
+          val request =
+            FakeRequest(POST, individualHavePhoneRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "true"))
 
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual onwardRoute.url
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
+            .onPageLoad(rcaspId)
+            .url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(IndividualHavePhonePage).contains(true) &&
+            ua.get(IndividualPhonePage).isDefined
+          })
+        }
       }
-    }
 
-    "must return a Bad Request and errors when invalid data is submitted and an individual name is present in user answers" in {
+      "must redirect ChangeDetailsRoutingController when answer is false and does not change" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(IndividualHavePhonePage, false)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
-      val ua = emptyUserAnswers.withPage(IndividualNamePage, testIndividualName)
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application = applicationBuilder(userAnswers = Some(ua)).build()
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
 
-      running(application) {
-        val request =
-          FakeRequest(POST, individualHavePhoneRoute).withFormUrlEncodedBody(("value", ""))
+        running(application) {
+          val request =
+            FakeRequest(POST, individualHavePhoneRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "false"))
 
-        val boundForm = form.bind(Map("value" -> ""))
+          val result = route(application, request).value
 
-        val view = application.injector.instanceOf[IndividualHavePhoneView]
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
+            .onPageLoad(rcaspId)
+            .url
 
-        val result = route(application, request).value
-
-        status(result)          mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, testIndividualName.fullName)(
-          request,
-          messages(application)
-        ).toString
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(IndividualHavePhonePage).contains(false)
+          })
+        }
       }
-    }
 
-    "must redirect to Some Information is Missing when invalid data is submitted and an org name is NOT present in user answers" in {
+      "must redirect Journey recovery when ChangeRcaspCachedDetails is not in userAnswers" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(IndividualHavePhonePage, false)
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      running(application) {
-        val request = FakeRequest(POST, individualHavePhoneRoute).withFormUrlEncodedBody(("value", ""))
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute))
+            )
+            .build()
 
-        val result = route(application, request).value
+        running(application) {
+          val request =
+            FakeRequest(POST, individualHavePhoneRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "false"))
 
-        status(result)               mustEqual SEE_OTHER
-        redirectLocation(result).get mustEqual controllers.routes.InformationMissingController.onPageLoad().url
-      }
-    }
+          val result = route(application, request).value
 
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, individualHavePhoneRoute)
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
-
-    "must redirect to Journey Recovery for a POST if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, individualHavePhoneRoute)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+          verify(mockSessionRepository).set(argThat(_.get(IndividualHavePhonePage).contains(false)))
+        }
       }
     }
   }

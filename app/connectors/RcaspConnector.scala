@@ -19,11 +19,12 @@ package connectors
 import config.FrontendAppConfig
 import models.errors.ApiError.{InternalServerError, JsonValidationError}
 import models.errors.CarfError
-import models.responses.*
 import models.requests.createRcasp
 import models.requests.createRcasp.RcaspRequest as CreateRcaspRequest
-import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
 import models.requests.deleteRcasp.RcaspRequest as DeleteRcaspRequest
+import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
+import models.responses.*
+import models.viewAndUpdateRcasp
 import play.api.Logging
 import play.api.http.Status.*
 import play.api.libs.json.*
@@ -42,22 +43,30 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
 
   def viewRcasp(
       carfId: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[ViewRcaspResponse] = {
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[List[viewAndUpdateRcasp.RcaspDetails]] = {
     val baseUrl = url"${config.carfManagementBaseUrl}/view-rcasp/$carfId/none"
 
-    logger.debug(
-      s"[RcaspConnector] Viewing RCASP with ID: $carfId"
-    )
+    logger.debug(s"[RcaspConnector] Viewing RCASP with ID: $carfId")
 
-    val requestBuilder = http.get(baseUrl)
-
-    sendRequest(baseUrl, requestBuilder) { httpResponse =>
-      Try(httpResponse.json.as[ViewRcaspResponse]) match {
-        case Success(data)      => Right(data)
-        case Failure(exception) =>
-          logger.warn(s"Error parsing ViewRcaspResponse with endpoint: ${baseUrl.toURI}")
-          Left(JsonValidationError)
-      }
+    ResultT.fromFuture {
+      http
+        .get(baseUrl)
+        .execute[HttpResponse]
+        .map {
+          case response if response.status == OK =>
+            Try(response.json.as[ViewRcaspResponse]) match {
+              case Success(viewRcaspResponse) => Right(viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList)
+              case Failure(exception)         =>
+                logParseWarning(baseUrl, "viewRcasp")
+                Left(JsonValidationError)
+            }
+          case res if res.status == NOT_FOUND    =>
+            logger.info(s"No RCASPs found for carfId $carfId")
+            Right(List.empty)
+          case response                          =>
+            logger.warn(s"Unexpected response: status code: ${response.status}, from endpoint: ${baseUrl.toURI}")
+            Left(InternalServerError)
+        }
     }
   }
 

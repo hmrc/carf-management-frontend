@@ -18,8 +18,9 @@ package utils
 
 import base.SpecBase
 import models.OrganisationOrIndividual.{Individual, Organisation}
+import models.requests.createRcasp.RcaspRequest as CreateRcaspRequest
+import models.requests.{createRcasp, RequestType}
 import models.{RcaspAddress, RcaspContactDetails, TinDetails}
-import models.requests.createRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails, RcaspManagementRequest, RcaspRequest as CreateRcaspRequest}
 import pages.UkAddressInUserAnswers
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
@@ -29,102 +30,14 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
   val rcaspSubmissionHelper: RcaspSubmissionHelper = new RcaspSubmissionHelper
 
-  private val rcaspAddress = RcaspAddress(
-    AddressLine1 = "1 Test",
-    AddressLine2 = Some("Test Street"),
-    AddressLine3 = Some("Test Region"),
-    AddressLine4 = Some("Testingtown"),
-    PostalCode = testPostcode,
-    CountryCode = "GB"
-  )
-
-  private val individualContactDetails = RcaspContactDetails(
-    ContactName = testIndividualName.fullName,
-    EmailAddress = testEmail,
-    PhoneNumber = Some(testPhone)
-  )
-
-  private val organisationContactDetails = RcaspContactDetails(
-    ContactName = testOrgContactName,
-    EmailAddress = testEmail,
-    PhoneNumber = Some(testPhone)
-  )
-
-  private val individualRcaspDetails = IndividualRcaspDetails(
-    SubscriptionID = carfId,
-    IsRCASPUser = false,
-    PartyType = "Individual",
-    FirstName = testIndividualName.firstName,
-    LastName = testIndividualName.lastName,
-    TINDetails = Some(
-      List(
-        TinDetails(
-          TINType = "OTHER",
-          TIN = testNiNumber,
-          IssuedBy = "GB"
-        )
-      )
-    ),
-    AddressDetails = rcaspAddress,
-    PrimaryContactDetails = Some(individualContactDetails)
-  )
-
-  private val organisationRcaspDetails = OrganisationRcaspDetails(
-    SubscriptionID = carfId,
-    IsRCASPUser = false,
-    PartyType = "Organisation",
-    RCASPName = testOrgName,
-    TradingName = testTradingName,
-    TINDetails = Some(
-      List(
-        TinDetails(
-          TINType = "UTR",
-          TIN = testUtr.uniqueTaxPayerReference,
-          IssuedBy = "GB"
-        )
-      )
-    ),
-    AddressDetails = rcaspAddress,
-    PrimaryContactDetails = Some(organisationContactDetails),
-    SecondaryContactDetails = Some(organisationContactDetails)
-  )
-
-  private val registeredBusinessRcaspDetails = organisationRcaspDetails.copy(
-    IsRCASPUser = true,
-    PrimaryContactDetails = None,
-    SecondaryContactDetails = None
-  )
-
   "RcaspSubmissionHelper" - {
     ".createRcaspRequestForRegisteredBusiness" - {
-      "must build the request successfully with all required fields where cached address is correct" in {
+      "must build the request successfully with all required fields" in {
         val userAnswers = emptyUserAnswers
           .withPage(ReportForRegisteredBusinessPage, true)
           .withPage(OverwritableOrganisationName, testOrgName)
           .withPage(HaveTradingNamePage, true)
           .withPage(TradingNamePage, testTradingName)
-          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
-          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
-
-        val result: Option[CreateRcaspRequest] =
-          rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
-
-        result mustBe Some(
-          CreateRcaspRequest(
-            RcaspManagementRequest(
-              RequestCommon = rcaspRequestCommon,
-              RequestDetails = registeredBusinessRcaspDetails
-            )
-          )
-        )
-      }
-
-      "must build the request without trading name where cached address is not correct" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(ReportForRegisteredBusinessPage, true)
-          .withPage(OverwritableOrganisationName, testOrgName)
-          .withPage(HaveTradingNamePage, false)
-          .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val result: Option[CreateRcaspRequest] =
@@ -132,9 +45,29 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
         result mustBe Some(
           CreateRcaspRequest(
-            RcaspManagementRequest(
-              RequestCommon = rcaspRequestCommon,
-              RequestDetails = registeredBusinessRcaspDetails.copy(TradingName = testOrgName)
+            createRcasp.RcaspManagementRequest(
+              RequestCommon = rcaspRequestCommon(RequestType.Create),
+              RequestDetails = registeredBusinessRcaspDetailsRequest
+            )
+          )
+        )
+      }
+
+      "must build the request without trading name" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, true)
+          .withPage(OverwritableOrganisationName, testOrgName)
+          .withPage(HaveTradingNamePage, false)
+          .withPage(UkAddressInUserAnswers, testAddressUk)
+
+        val result: Option[CreateRcaspRequest] =
+          rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
+
+        result mustBe Some(
+          CreateRcaspRequest(
+            createRcasp.RcaspManagementRequest(
+              RequestCommon = rcaspRequestCommon(RequestType.Create),
+              RequestDetails = registeredBusinessRcaspDetailsRequest.copy(TradingName = testOrgName)
             )
           )
         )
@@ -145,7 +78,6 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           .withPage(ReportForRegisteredBusinessPage, true)
           .withPage(HaveTradingNamePage, true)
           .withPage(TradingNamePage, testTradingName)
-          .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val result: Option[CreateRcaspRequest] =
@@ -159,36 +91,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
           .withPage(ReportForRegisteredBusinessPage, true)
           .withPage(OverwritableOrganisationName, testOrgName)
           .withPage(HaveTradingNamePage, true)
-          .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
           .withPage(UkAddressInUserAnswers, testAddressUk)
-
-        val result: Option[CreateRcaspRequest] =
-          rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
-
-        result mustBe None
-      }
-
-      "must return None when cached address is correct but CachedBusinessDetails is missing" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(ReportForRegisteredBusinessPage, true)
-          .withPage(OverwritableOrganisationName, testOrgName)
-          .withPage(HaveTradingNamePage, false)
-          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
-          .withPage(UkAddressInUserAnswers, testAddressUk)
-
-        val result: Option[CreateRcaspRequest] =
-          rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
-
-        result mustBe None
-      }
-
-      "must return None when cached address is not correct and UkAddressInUserAnswers is missing" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(ReportForRegisteredBusinessPage, true)
-          .withPage(OverwritableOrganisationName, testOrgName)
-          .withPage(HaveTradingNamePage, false)
-          .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
-          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
 
         val result: Option[CreateRcaspRequest] =
           rcaspSubmissionHelper.createRcaspRequestForRegisteredBusiness(carfId, testUtr, userAnswers)
@@ -203,7 +106,6 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(OverwritableOrganisationName, testOrgName)
             .withPage(HaveTradingNamePage, true)
             .withPage(TradingNamePage, testTradingName)
-            .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
             .withPage(UkAddressInUserAnswers, testAddressUk)
 
           val result: Option[CreateRcaspRequest] =
@@ -217,7 +119,6 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(OverwritableOrganisationName, testOrgName)
             .withPage(HaveTradingNamePage, true)
             .withPage(TradingNamePage, testTradingName)
-            .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
             .withPage(UkAddressInUserAnswers, testAddressUk)
 
           val result: Option[CreateRcaspRequest] =
@@ -245,9 +146,9 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
           result mustBe Some(
             CreateRcaspRequest(
-              RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon,
-                RequestDetails = individualRcaspDetails
+              createRcasp.RcaspManagementRequest(
+                RequestCommon = rcaspRequestCommon(RequestType.Create),
+                RequestDetails = individualRcaspDetailsRequest
               )
             )
           )
@@ -266,10 +167,10 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
           result mustBe Some(
             CreateRcaspRequest(
-              RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon,
-                RequestDetails = individualRcaspDetails.copy(
-                  PrimaryContactDetails = Some(individualContactDetails.copy(PhoneNumber = None))
+              createRcasp.RcaspManagementRequest(
+                RequestCommon = rcaspRequestCommon(RequestType.Create),
+                RequestDetails = individualRcaspDetailsRequest.copy(
+                  PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None))
                 )
               )
             )
@@ -347,12 +248,12 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(TradingNamePage, testTradingName)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationFirstContactEmailPage, testEmail)
             .withPage(OrganisationFirstContactHavePhonePage, true)
             .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
             .withPage(OrganisationHaveSecondContactPage, true)
-            .withPage(OrganisationSecondContactNamePage, testOrgContactName)
+            .withPage(OrganisationSecondContactNamePage, "Prof Turo")
             .withPage(OrganisationSecondContactEmailPage, testEmail)
             .withPage(OrganisationSecondContactHavePhonePage, true)
             .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
@@ -361,9 +262,9 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
           result mustBe Some(
             CreateRcaspRequest(
-              RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon,
-                RequestDetails = organisationRcaspDetails
+              createRcasp.RcaspManagementRequest(
+                RequestCommon = rcaspRequestCommon(RequestType.Create),
+                RequestDetails = organisationRcaspDetailsRequest
               )
             )
           )
@@ -377,12 +278,12 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(TradingNamePage, testTradingName)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationFirstContactEmailPage, testEmail)
             .withPage(OrganisationFirstContactHavePhonePage, true)
             .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
             .withPage(OrganisationHaveSecondContactPage, true)
-            .withPage(OrganisationSecondContactNamePage, testOrgContactName)
+            .withPage(OrganisationSecondContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationSecondContactEmailPage, testEmail)
             .withPage(OrganisationSecondContactHavePhonePage, false)
 
@@ -390,10 +291,10 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
           result mustBe Some(
             CreateRcaspRequest(
-              RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon,
-                RequestDetails = organisationRcaspDetails.copy(
-                  SecondaryContactDetails = Some(organisationContactDetails.copy(PhoneNumber = None))
+              createRcasp.RcaspManagementRequest(
+                RequestCommon = rcaspRequestCommon(RequestType.Create),
+                RequestDetails = organisationRcaspDetailsRequest.copy(
+                  SecondaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None))
                 )
               )
             )
@@ -407,7 +308,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(HaveTradingNamePage, false)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationFirstContactEmailPage, testEmail)
             .withPage(OrganisationFirstContactHavePhonePage, false)
             .withPage(OrganisationHaveSecondContactPage, false)
@@ -416,11 +317,11 @@ class RcaspSubmissionHelperSpec extends SpecBase {
 
           result mustBe Some(
             CreateRcaspRequest(
-              RcaspManagementRequest(
-                RequestCommon = rcaspRequestCommon,
-                RequestDetails = organisationRcaspDetails.copy(
+              createRcasp.RcaspManagementRequest(
+                RequestCommon = rcaspRequestCommon(RequestType.Create),
+                RequestDetails = organisationRcaspDetailsRequest.copy(
                   TradingName = testOrgName,
-                  PrimaryContactDetails = Some(organisationContactDetails.copy(PhoneNumber = None)),
+                  PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None)),
                   SecondaryContactDetails = None
                 )
               )
@@ -435,7 +336,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(HaveTradingNamePage, false)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationFirstContactEmailPage, testEmail)
             .withPage(OrganisationFirstContactHavePhonePage, false)
             .withPage(OrganisationHaveSecondContactPage, false)
@@ -453,12 +354,12 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(HaveTradingNamePage, true)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationFirstContactEmailPage, testEmail)
             .withPage(OrganisationFirstContactHavePhonePage, true)
             .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
             .withPage(OrganisationHaveSecondContactPage, true)
-            .withPage(OrganisationSecondContactNamePage, testOrgContactName)
+            .withPage(OrganisationSecondContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationSecondContactEmailPage, testEmail)
             .withPage(OrganisationSecondContactHavePhonePage, true)
             .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
@@ -494,12 +395,12 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(TradingNamePage, testTradingName)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationFirstContactEmailPage, testEmail)
             .withPage(OrganisationFirstContactHavePhonePage, true)
             .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
             .withPage(OrganisationHaveSecondContactPage, true)
-            .withPage(OrganisationSecondContactNamePage, testOrgContactName)
+            .withPage(OrganisationSecondContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationSecondContactHavePhonePage, true)
             .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
 
@@ -517,12 +418,12 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(TradingNamePage, testTradingName)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationFirstContactEmailPage, testEmail)
             .withPage(OrganisationFirstContactHavePhonePage, true)
             .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
             .withPage(OrganisationHaveSecondContactPage, true)
-            .withPage(OrganisationSecondContactNamePage, testOrgContactName)
+            .withPage(OrganisationSecondContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationSecondContactEmailPage, testEmail)
             .withPage(OrganisationSecondContactHavePhonePage, true)
 
@@ -539,7 +440,7 @@ class RcaspSubmissionHelperSpec extends SpecBase {
             .withPage(HaveTradingNamePage, false)
             .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
-            .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+            .withPage(OrganisationFirstContactNamePage, testIndividualName.fullName)
             .withPage(OrganisationFirstContactEmailPage, testEmail)
             .withPage(OrganisationFirstContactHavePhonePage, false)
             .withPage(OrganisationHaveSecondContactPage, false)

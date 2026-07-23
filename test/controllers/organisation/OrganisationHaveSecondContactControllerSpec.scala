@@ -19,12 +19,13 @@ package controllers.organisation
 import base.SpecBase
 import controllers.routes
 import forms.GenericYesNoPageFormProvider
-import models.NormalMode
+import models.{ChangeMode, NormalMode}
 import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.eq as eqTo
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.ArgumentMatchers.{any, argThat}
+import org.mockito.Mockito.{verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.organisation.{OrganisationFirstContactNamePage, OrganisationHaveSecondContactPage}
+import pages.changeDetails.ChangeRcaspCachedDetails
+import pages.organisation.*
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
@@ -43,167 +44,399 @@ class OrganisationHaveSecondContactControllerSpec extends SpecBase with MockitoS
   val form: Form[Boolean]                        = formProvider("organisationHaveSecondContact.error.required")
   val firstContactName: String                   = "name"
 
-  lazy val organisationHaveSecondContactRoute: String =
+  lazy val organisationHaveSecondContactRoute: String           =
     controllers.organisation.routes.OrganisationHaveSecondContactController.onPageLoad(NormalMode).url
+  lazy val organisationHaveSecondContactRouteChangeMode: String =
+    controllers.organisation.routes.OrganisationHaveSecondContactController.onPageLoad(ChangeMode).url
 
   "OrganisationHaveSecondContact Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "normal mode" - {
+      "must return OK and the correct view for a GET" in {
 
-      val userAnswers = emptyUserAnswers.withPage(OrganisationFirstContactNamePage, firstContactName)
+        val userAnswers = emptyUserAnswers.withPage(OrganisationFirstContactNamePage, firstContactName)
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+        val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
-      running(application) {
-        val request = FakeRequest(GET, organisationHaveSecondContactRoute)
+        running(application) {
+          val request = FakeRequest(GET, organisationHaveSecondContactRoute)
 
-        val result = route(application, request).value
+          val result = route(application, request).value
 
-        val view = application.injector.instanceOf[OrganisationHaveSecondContactView]
+          val view = application.injector.instanceOf[OrganisationHaveSecondContactView]
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form, NormalMode, firstContactName)(
-          request,
-          messages(application)
-        ).toString
+          status(result)          mustEqual OK
+          contentAsString(result) mustEqual view(form, NormalMode, firstContactName)(
+            request,
+            messages(application)
+          ).toString
+        }
       }
-    }
 
-    "must populate the view correctly on a GET when the question has previously been answered" in {
+      "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = emptyUserAnswers
-        .withPage(OrganisationHaveSecondContactPage, true)
-        .withPage(OrganisationFirstContactNamePage, firstContactName)
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationHaveSecondContactPage, true)
+          .withPage(OrganisationFirstContactNamePage, firstContactName)
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+        val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
-      running(application) {
-        val request = FakeRequest(GET, organisationHaveSecondContactRoute)
+        running(application) {
+          val request = FakeRequest(GET, organisationHaveSecondContactRoute)
 
-        val view = application.injector.instanceOf[OrganisationHaveSecondContactView]
+          val view = application.injector.instanceOf[OrganisationHaveSecondContactView]
 
-        val result = route(application, request).value
+          val result = route(application, request).value
 
-        status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), NormalMode, firstContactName)(
-          request,
-          messages(application)
-        ).toString
+          status(result)          mustEqual OK
+          contentAsString(result) mustEqual view(form.fill(true), NormalMode, firstContactName)(
+            request,
+            messages(application)
+          ).toString
+        }
       }
-    }
 
-    "must redirect to the next page when valid data is submitted" in {
-      val expectedUserAnswers = emptyUserAnswers.withPage(OrganisationHaveSecondContactPage, true)
+      "must redirect to the next page and NOT clear data when valid data is submitted" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationSecondContactNamePage, testName)
+          .withPage(OrganisationSecondContactEmailPage, testEmail)
+          .withPage(OrganisationSecondContactHavePhonePage, true)
+          .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
 
-      when(mockSessionRepository.set(eqTo(expectedUserAnswers))) thenReturn Future.successful(true)
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[Clock].toInstance(clock)
-          )
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+              bind[Clock].toInstance(clock)
+            )
+            .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, organisationHaveSecondContactRoute)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(OrganisationHaveSecondContactPage).contains(true) &&
+            ua.get(OrganisationSecondContactNamePage).isDefined &&
+            ua.get(OrganisationSecondContactEmailPage).isDefined &&
+            ua.get(OrganisationSecondContactHavePhonePage).isDefined &&
+            ua.get(OrganisationSecondContactPhoneNumberPage).isDefined
+          })
+        }
+      }
+
+      "must redirect to the next page and clear answers when answer is changed to false" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationSecondContactNamePage, testName)
+          .withPage(OrganisationSecondContactEmailPage, testEmail)
+          .withPage(OrganisationSecondContactHavePhonePage, true)
+          .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
+
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+              bind[Clock].toInstance(clock)
+            )
+            .build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, organisationHaveSecondContactRoute)
+              .withFormUrlEncodedBody(("value", "false"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(OrganisationHaveSecondContactPage).contains(false) &&
+            ua.get(OrganisationSecondContactNamePage).isEmpty &&
+            ua.get(OrganisationSecondContactEmailPage).isEmpty &&
+            ua.get(OrganisationSecondContactHavePhonePage).isEmpty &&
+            ua.get(OrganisationSecondContactPhoneNumberPage).isEmpty
+          })
+        }
+      }
+
+      "must return a Bad Request and errors when invalid data is submitted" in {
+
+        val userAnswers = emptyUserAnswers.withPage(OrganisationFirstContactNamePage, firstContactName)
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, organisationHaveSecondContactRoute)
+              .withFormUrlEncodedBody(("value", ""))
+
+          val boundForm = form.bind(Map("value" -> ""))
+
+          val view = application.injector.instanceOf[OrganisationHaveSecondContactView]
+
+          val result = route(application, request).value
+
+          status(result)          mustEqual BAD_REQUEST
+          contentAsString(result) mustEqual view(boundForm, NormalMode, firstContactName)(
+            request,
+            messages(application)
+          ).toString
+        }
+      }
+
+      "must redirect to Journey Recovery for a GET if no existing data is found" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val request = FakeRequest(GET, organisationHaveSecondContactRoute)
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to the Some Information is Missing page for a GET if no first contact name exists in user answers" in {
+
+        val userAnswers = emptyUserAnswers.withPage(OrganisationHaveSecondContactPage, true)
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+        running(application) {
+          val request =
+            FakeRequest(GET, organisationHaveSecondContactRoute)
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.InformationMissingController.onPageLoad().url
+        }
+      }
+
+      "must redirect to Journey Recovery for a POST if no existing data is found" in {
+
+        val application = applicationBuilder(userAnswers = None).build()
+
+        running(application) {
+          val request =
+            FakeRequest(POST, organisationHaveSecondContactRoute)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        }
+      }
+
+      "must redirect to the Some Information is Missing page for a POST if no first contact name exists in user answers when the form contains errors" in {
+
+        val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
           .build()
 
-      running(application) {
-        val request =
-          FakeRequest(POST, organisationHaveSecondContactRoute)
-            .withFormUrlEncodedBody(("value", "true"))
+        running(application) {
+          val request =
+            FakeRequest(POST, organisationHaveSecondContactRoute)
+              .withFormUrlEncodedBody(("value", "invalid"))
 
-        val result = route(application, request).value
+          val result = route(application, request).value
 
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual onwardRoute.url
-        verify(mockSessionRepository, times(1)).set(eqTo(expectedUserAnswers))
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.InformationMissingController.onPageLoad().url
+        }
       }
+
     }
 
-    "must return a Bad Request and errors when invalid data is submitted" in {
+    "change mode" - {
+      "must redirect to OrganisationSecondContactNameController when answer is changed from false -> true" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationHaveSecondContactPage, false)
 
-      val userAnswers = emptyUserAnswers.withPage(OrganisationFirstContactNamePage, firstContactName)
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+              bind[Clock].toInstance(clock)
+            )
+            .build()
 
-      running(application) {
-        val request =
-          FakeRequest(POST, organisationHaveSecondContactRoute)
-            .withFormUrlEncodedBody(("value", ""))
+        running(application) {
+          val request =
+            FakeRequest(POST, organisationHaveSecondContactRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "true"))
 
-        val boundForm = form.bind(Map("value" -> ""))
+          val result = route(application, request).value
 
-        val view = application.injector.instanceOf[OrganisationHaveSecondContactView]
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(
+            result
+          ).value        mustEqual controllers.organisation.routes.OrganisationSecondContactNameController
+            .onPageLoad(NormalMode)
+            .url
 
-        val result = route(application, request).value
-
-        status(result)          mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode, firstContactName)(
-          request,
-          messages(application)
-        ).toString
+          verify(mockSessionRepository).set(argThat(_.get(OrganisationHaveSecondContactPage).contains(true)))
+        }
       }
-    }
 
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
+      "must redirect ChangeDetailsRoutingController and clear data when answer is changed from true -> false" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationHaveSecondContactPage, true)
+          .withPage(OrganisationSecondContactNamePage, testName)
+          .withPage(OrganisationSecondContactEmailPage, testEmail)
+          .withPage(OrganisationSecondContactHavePhonePage, true)
+          .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
-      val application = applicationBuilder(userAnswers = None).build()
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      running(application) {
-        val request = FakeRequest(GET, organisationHaveSecondContactRoute)
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+              bind[Clock].toInstance(clock)
+            )
+            .build()
 
-        val result = route(application, request).value
+        running(application) {
+          val request =
+            FakeRequest(POST, organisationHaveSecondContactRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "false"))
 
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
+            .onPageLoad(rcaspId)
+            .url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(OrganisationHaveSecondContactPage).contains(false) &&
+            ua.get(OrganisationSecondContactNamePage).isEmpty &&
+            ua.get(OrganisationSecondContactEmailPage).isEmpty &&
+            ua.get(OrganisationSecondContactHavePhonePage).isEmpty &&
+            ua.get(OrganisationSecondContactPhoneNumberPage).isEmpty
+          })
+        }
       }
-    }
 
-    "must redirect to the Some Information is Missing page for a GET if no first contact name exists in user answers" in {
+      "must redirect ChangeDetailsRoutingController when answer is true and does not change" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationHaveSecondContactPage, true)
+          .withPage(OrganisationSecondContactNamePage, testName)
+          .withPage(OrganisationSecondContactEmailPage, testEmail)
+          .withPage(OrganisationSecondContactHavePhonePage, true)
+          .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
-      val userAnswers = emptyUserAnswers.withPage(OrganisationHaveSecondContactPage, true)
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+              bind[Clock].toInstance(clock)
+            )
+            .build()
 
-      running(application) {
-        val request =
-          FakeRequest(GET, organisationHaveSecondContactRoute)
+        running(application) {
+          val request =
+            FakeRequest(POST, organisationHaveSecondContactRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "true"))
 
-        val result = route(application, request).value
+          val result = route(application, request).value
 
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.InformationMissingController.onPageLoad().url
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
+            .onPageLoad(rcaspId)
+            .url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(OrganisationHaveSecondContactPage).contains(true) &&
+            ua.get(OrganisationSecondContactNamePage).isDefined &&
+            ua.get(OrganisationSecondContactEmailPage).isDefined &&
+            ua.get(OrganisationSecondContactHavePhonePage).isDefined &&
+            ua.get(OrganisationSecondContactPhoneNumberPage).isDefined
+          })
+        }
       }
-    }
 
-    "must redirect to Journey Recovery for a POST if no existing data is found" in {
+      "must redirect ChangeDetailsRoutingController when answer is false and does not change" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationHaveSecondContactPage, false)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
-      val application = applicationBuilder(userAnswers = None).build()
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      running(application) {
-        val request =
-          FakeRequest(POST, organisationHaveSecondContactRoute)
-            .withFormUrlEncodedBody(("value", "true"))
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+              bind[Clock].toInstance(clock)
+            )
+            .build()
 
-        val result = route(application, request).value
+        running(application) {
+          val request =
+            FakeRequest(POST, organisationHaveSecondContactRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "false"))
 
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
+            .onPageLoad(rcaspId)
+            .url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(OrganisationHaveSecondContactPage).contains(false)
+          })
+        }
       }
-    }
 
-    "must redirect to the Some Information is Missing page for a POST if no first contact name exists in user answers when the form contains errors" in {
+      "must redirect Journey recovery when ChangeRcaspCachedDetails is not in userAnswers" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(OrganisationHaveSecondContactPage, false)
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .build()
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      running(application) {
-        val request =
-          FakeRequest(POST, organisationHaveSecondContactRoute)
-            .withFormUrlEncodedBody(("value", "invalid"))
+        val application =
+          applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(
+              bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+              bind[Clock].toInstance(clock)
+            )
+            .build()
 
-        val result = route(application, request).value
+        running(application) {
+          val request =
+            FakeRequest(POST, organisationHaveSecondContactRouteChangeMode)
+              .withFormUrlEncodedBody(("value", "false"))
 
-        status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.InformationMissingController.onPageLoad().url
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+
+          verify(mockSessionRepository).set(argThat { ua =>
+            ua.get(OrganisationHaveSecondContactPage).contains(false)
+          })
+        }
       }
     }
   }

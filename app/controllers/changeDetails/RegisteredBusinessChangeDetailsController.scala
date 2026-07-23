@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package controllers.organisation
+package controllers.changeDetails
 
 import cats.syntax.all.*
-import controllers.actions.{CtUtrRetrievalAction, DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
-import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
-import pages.{RcaspIdPage, SubmissionSucceededPage}
+import controllers.actions.*
+import pages.SubmissionSucceededPage
+import pages.changeDetails.ChangeRcaspCachedDetails
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.RcaspSubmissionService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.RegisteredBusinessDetailsHelper
-import views.html.organisation.RegisteredBusinessCheckDetailsView
+import utils.{DetailsHelper, RegisteredBusinessDetailsHelper}
+import views.html.changeDetails.RegisteredBusinessChangeDetailsView
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RegisteredBusinessCheckDetailsController @Inject() (
+class RegisteredBusinessChangeDetailsController @Inject() (
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     identify: IdentifierAction,
@@ -40,66 +40,67 @@ class RegisteredBusinessCheckDetailsController @Inject() (
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     submissionLock: SubmissionLockAction,
-    view: RegisteredBusinessCheckDetailsView,
+    view: RegisteredBusinessChangeDetailsView,
     val controllerComponents: MessagesControllerComponents,
-    helper: RegisteredBusinessDetailsHelper,
+    detailsHelper: DetailsHelper,
+    registeredBusinessDetailsHelper: RegisteredBusinessDetailsHelper,
     rcaspSubmissionService: RcaspSubmissionService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport
     with Logging {
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData) {
-    implicit request =>
+  def onPageLoad(rcaspId: String): Action[AnyContent] =
+    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       val userAnswers          = request.userAnswers
       lazy val ifEmptyProtocol = Redirect(controllers.routes.InformationMissingController.onPageLoad())
 
-      userAnswers.get(ReportForRegisteredBusinessPage) match {
-        case Some(true) =>
+      userAnswers.get(ChangeRcaspCachedDetails) match {
+        case Some(cachedDetails) if cachedDetails.RCASPID.toUpperCase == rcaspId.toUpperCase =>
           (
-            userAnswers.get(OverwritableOrganisationName),
-            helper.getRegisteredBusinessSection(userAnswers, changeJourney = false)
-          )
-            .mapN { (name, section) =>
-              Ok(view(section, name))
-            }
-            .getOrElse {
-              logger.warn(
-                "[RegisteredBusinessCheckDetailsController][onPageLoad] Error! Could not load page missing answers"
-              )
-              ifEmptyProtocol
-            }
-
-        case _ =>
+            detailsHelper.haveAnswersChangedFromApi(userAnswers),
+            registeredBusinessDetailsHelper.getRegisteredBusinessSection(userAnswers, changeJourney = true)
+          ).mapN { (hasDataChanged, section) =>
+            Ok(view(section, rcaspId, hasDataChanged))
+          }.getOrElse {
+            logger.warn(
+              "[RegisteredBusinessChangeDetailsController][onPageLoad] Error! Could not load page due to missing answers"
+            )
+            ifEmptyProtocol
+          }
+        case _                                                                               =>
           logger.warn(
-            "[RegisteredBusinessCheckDetailsController][onPageLoad] ReportForRegisteredBusiness is false or missing. Redirecting to SIIM."
+            "[RegisteredBusinessChangeDetailsController][onPageLoad] Error! Missing ChangeRcaspCachedDetails."
           )
           ifEmptyProtocol
       }
-  }
+    }
 
-  def onSubmit: Action[AnyContent] =
+  def onSubmit(rcaspId: String): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
       implicit request =>
         request.utr match {
           case Some(utr) =>
             rcaspSubmissionService
-              .submitRegisteredBusinessRcasp(request.carfId, utr, request.userAnswers)
+              .updateRegisteredBusinessRcasp(request.carfId, utr, request.userAnswers)
               .value
               .flatMap {
-                case Right(response) =>
-                  val rcaspId = response.ResponseDetails.ReturnParameters.Value
+                case Right(_)    =>
                   for {
-                    ua                <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
-                    uaWithSuccessFlag <- Future.fromTry(ua.set(SubmissionSucceededPage, true))
+                    uaWithSuccessFlag <- Future.fromTry(request.userAnswers.set(SubmissionSucceededPage, true))
                     _                 <- sessionRepository.set(uaWithSuccessFlag)
-                  } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
-                case Left(error)     =>
-                  logger.warn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")
+                  } yield Redirect(
+                    controllers.routes.PlaceholderController
+                      .onPageLoad(s"Successful submission for $rcaspId. Should redirect to /details-updated (CARF-353)")
+                  )
+                case Left(error) =>
+                  logger.warn(
+                    s"[RegisteredBusinessChangeDetailsController][onSubmit] Unable to update RCASP $rcaspId: $error"
+                  )
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
               }
           case None      =>
-            logger.warn("[RegisteredBusinessCheckDetailsController][onSubmit] CT UTR not found in request")
+            logger.warn("[RegisteredBusinessChangeDetailsController][onSubmit] CT UTR not found in request")
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
     }

@@ -256,14 +256,13 @@ class UserAnswersSpec extends SpecBase {
 
       "when OrganisationOrIndividual is None (registered business)" - {
         "must return an OrganisationRcaspDetailsForComparison" - {
-          "when all fields are present and using address from CachedBusinessDetails" in {
+          "when all fields are present" in {
             val ua = emptyUserAnswers
               .withPage(ReportForRegisteredBusinessPage, true)
               .withPage(OverwritableOrganisationName, testOrgName)
               .withPage(TradingNamePage, testTradingName)
               .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
-              .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
-              .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
+              .withPage(UkAddressInUserAnswers, testAddressUk)
 
             ua.getRcaspDetailsForComparison mustBe Some(
               OrganisationRcaspDetailsForComparison(
@@ -278,12 +277,11 @@ class UserAnswersSpec extends SpecBase {
             )
           }
 
-          "when trading name is absent and not using address from CachedBusinessDetails" in {
+          "when trading name is absent" in {
             val ua = emptyUserAnswers
               .withPage(ReportForRegisteredBusinessPage, true)
               .withPage(OverwritableOrganisationName, testOrgName)
               .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
-              .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
               .withPage(UkAddressInUserAnswers, testAddressUk)
 
             ua.getRcaspDetailsForComparison mustBe Some(
@@ -305,7 +303,7 @@ class UserAnswersSpec extends SpecBase {
             .withPage(ReportForRegisteredBusinessPage, true)
             .withPage(OverwritableOrganisationName, testOrgName)
             .withPage(TradingNamePage, testTradingName)
-            .withPage(RegisteredBusinessIsTheAddressCorrectPage, false)
+            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
 
           ua.getRcaspDetailsForComparison mustBe None
         }

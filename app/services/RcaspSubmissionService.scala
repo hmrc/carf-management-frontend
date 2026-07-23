@@ -106,6 +106,20 @@ class RcaspSubmissionService @Inject (
   }
 
   // TODO: Replace with actual call to update RCASP (CARF-353)
+  def updateRegisteredBusinessRcasp(
+      carfId: String,
+      utr: UniqueTaxpayerReference,
+      userAnswers: UserAnswers
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
+    carfId.takeRight(1) match {
+      case "4" | "5" | "6" | "7" | "8" | "9" => ResultT.fromError(InternalServerError)
+      case _                                 =>
+        ResultT.fromValue(
+          SubmitRcaspResponse(SubmitResponseDetails(SubmitReturnParameters(Key = "RCASPID", Value = "ZMCAR0123456789")))
+        )
+    }
+
+  // TODO: Replace with actual call to update RCASP (CARF-353)
   def updateRcasp(
       carfId: String,
       userAnswers: UserAnswers

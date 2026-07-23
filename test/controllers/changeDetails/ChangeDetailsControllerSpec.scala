@@ -38,7 +38,7 @@ import repositories.SessionRepository
 import services.RcaspSubmissionService
 import types.ResultT
 import uk.gov.hmrc.auth.core.AffinityGroup
-import utils.CheckDetailsHelper
+import utils.DetailsHelper
 import viewmodels.Section
 import views.html.changeDetails.ChangeDetailsView
 
@@ -50,12 +50,12 @@ class ChangeDetailsControllerSpec extends SpecBase {
     .withPage(ReportForRegisteredBusinessPage, false)
     .withPage(OrganisationOrIndividualPage, Individual)
     .withPage(IndividualNamePage, testIndividualName)
-    .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+    .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
   private val organisationCompleteUserAnswers = emptyUserAnswers
     .withPage(ReportForRegisteredBusinessPage, false)
     .withPage(OrganisationOrIndividualPage, Organisation)
     .withPage(OverwritableOrganisationName, testOrgName)
-    .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsResponse)
+    .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
   lazy val changeDetailsRoute: String = controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId).url
 
@@ -174,7 +174,7 @@ class ChangeDetailsControllerSpec extends SpecBase {
           redirectLocation(result).value mustEqual controllers.routes.InformationMissingController.onPageLoad().url
         }
 
-        "must redirect to information is missing page for a GET when a haveAnswersChangedFromApi returns None (answers missing)" in new Setup(
+        "must redirect to information is missing page for a GET when haveAnswersChangedFromApi returns None (answers missing)" in new Setup(
           organisationCompleteUserAnswers
         ) {
           when(mockCdHelper.haveAnswersChangedFromApi(eqTo(organisationCompleteUserAnswers))).thenReturn(None)
@@ -197,7 +197,7 @@ class ChangeDetailsControllerSpec extends SpecBase {
       }
 
       "must redirect to information is missing page for a GET when OrganisationOrIndividualPage is missing" in new Setup(
-        emptyUserAnswers.withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse)
+        emptyUserAnswers.withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
       ) {
         val request                = FakeRequest(GET, changeDetailsRoute)
         val result: Future[Result] = route(application, request).value
@@ -221,7 +221,7 @@ class ChangeDetailsControllerSpec extends SpecBase {
       "must redirect to information is missing page for a GET when ChangeRcaspCachedDetails contains the wrong RCASPID" in new Setup(
         emptyUserAnswers
           .withPage(OrganisationOrIndividualPage, Individual)
-          .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsResponse.copy(RCASPID = "other"))
+          .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate.copy(RCASPID = "other"))
       ) {
         val request                = FakeRequest(GET, changeDetailsRoute)
         val result: Future[Result] = route(application, request).value
@@ -342,13 +342,13 @@ class ChangeDetailsControllerSpec extends SpecBase {
   }
 
   class Setup(userAnswers: UserAnswers) {
-    final val mockCdHelper     = mock[CheckDetailsHelper]
+    final val mockCdHelper     = mock[DetailsHelper]
     final val mockRcaspService = mock[RcaspSubmissionService]
 
     val application: Application =
       applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
-          bind[CheckDetailsHelper].toInstance(mockCdHelper),
+          bind[DetailsHelper].toInstance(mockCdHelper),
           bind[RcaspSubmissionService].toInstance(mockRcaspService)
         )
         .build()
