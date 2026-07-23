@@ -19,7 +19,7 @@ package common
 import generators.Generators
 import models.*
 import models.individual.IndividualName
-import models.requests.{createRcasp, deleteRcasp, updateRcasp, RcaspRequestCommon}
+import models.requests.{createRcasp, deleteRcasp, updateRcasp, RcaspRequestCommon, RequestType}
 import models.requests.createRcasp.RcaspRequest as CreateRcaspRequest
 import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
 import models.requests.deleteRcasp.RcaspRequest as DeleteRcaspRequest
@@ -186,9 +186,9 @@ trait TestData extends Generators {
       CountryCode = "GB"
     )
 
-  val individualRcaspDetailsResponse: viewAndUpdateRcasp.IndividualRcaspDetails =
+  val individualRcaspDetailsViewUpdate: viewAndUpdateRcasp.IndividualRcaspDetails =
     viewAndUpdateRcasp.IndividualRcaspDetails(
-      SubscriptionID = "XCARF000000001",
+      SubscriptionID = carfId,
       RCASPID = rcaspId,
       IsRCASPUser = false,
       PartyType = "Individual",
@@ -199,7 +199,7 @@ trait TestData extends Generators {
       PrimaryContactDetails = Some(rcaspContactDetails)
     )
 
-  val organisationRcaspDetailsResponse: viewAndUpdateRcasp.OrganisationRcaspDetails =
+  val organisationRcaspDetailsViewUpdate: viewAndUpdateRcasp.OrganisationRcaspDetails =
     viewAndUpdateRcasp.OrganisationRcaspDetails(
       SubscriptionID = carfId,
       RCASPID = rcaspId,
@@ -219,7 +219,7 @@ trait TestData extends Generators {
         ResponseCommon = rcaspResponseCommon,
         ResponseDetails = RcaspResponseDetails(
           RCASPList = List(
-            organisationRcaspDetailsResponse
+            organisationRcaspDetailsViewUpdate
           )
         )
       )
@@ -228,27 +228,26 @@ trait TestData extends Generators {
   val individualRcaspDetailsRequest: createRcasp.IndividualRcaspDetails =
     createRcasp.IndividualRcaspDetails(
       SubscriptionID = carfId,
-      IsRCASPUser = true,
+      IsRCASPUser = false,
       PartyType = "Individual",
-      FirstName = "Penny",
-      LastName = "Cassiopeia",
-      TINDetails = Some(List(TinDetails(TINType = "OTHER", TIN = "6893649", IssuedBy = "GB"))),
-      AddressDetails = rcaspAddress,
+      FirstName = testIndividualName.firstName,
+      LastName = testIndividualName.lastName,
+      TINDetails = Some(List(TinDetails(TINType = "OTHER", TIN = testNiNumber, IssuedBy = "GB"))),
+      AddressDetails = testAddressUkRcaspAddress,
       PrimaryContactDetails = Some(rcaspContactDetails)
     )
 
-  val updateIndividualRcaspDetailsRequest: viewAndUpdateRcasp.IndividualRcaspDetails =
-    viewAndUpdateRcasp.IndividualRcaspDetails(
-      RCASPID = rcaspId,
-      SubscriptionID = carfId,
-      IsRCASPUser = true,
-      PartyType = "Individual",
-      FirstName = "Penny",
-      LastName = "Cassiopeia",
-      TINDetails = Some(List(TinDetails(TINType = "OTHER", TIN = "6893649", IssuedBy = "GB"))),
-      AddressDetails = rcaspAddress,
-      PrimaryContactDetails = Some(rcaspContactDetails)
-    )
+  val organisationRcaspDetailsRequest = createRcasp.OrganisationRcaspDetails(
+    SubscriptionID = carfId,
+    IsRCASPUser = false,
+    PartyType = "Organisation",
+    RCASPName = testOrgName,
+    TradingName = testTradingName,
+    TINDetails = Some(List(TinDetails(TINType = "UTR", TIN = testUtr.uniqueTaxPayerReference, IssuedBy = "GB"))),
+    AddressDetails = testAddressUkRcaspAddress,
+    PrimaryContactDetails = Some(rcaspContactDetails),
+    SecondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = "Prof Turo"))
+  )
 
   val deleteRcaspDetailsRequest: deleteRcasp.RcaspDetails =
     deleteRcasp.RcaspDetails(
@@ -263,17 +262,17 @@ trait TestData extends Generators {
       PartyType = "Organisation",
       RCASPName = testOrgName,
       TradingName = testTradingName,
-      TINDetails = Some(List(TinDetails(TINType = "UTR", TIN = "68936493", IssuedBy = "GB"))),
-      AddressDetails = rcaspAddress,
+      TINDetails = Some(List(TinDetails(TINType = "UTR", TIN = testUtr.uniqueTaxPayerReference, IssuedBy = "GB"))),
+      AddressDetails = testAddressUkRcaspAddress,
       PrimaryContactDetails = None,
       SecondaryContactDetails = None
     )
 
-  val rcaspRequestCommon: RcaspRequestCommon =
+  def rcaspRequestCommon(requestType: RequestType): RcaspRequestCommon =
     RcaspRequestCommon(
       OriginatingSystem = "MDTP",
       TransmittingSystem = "EIS",
-      RequestType = "CREATE",
+      RequestType = requestType.name,
       Regime = "CARF",
       RequestParameters = None
     )
@@ -281,7 +280,7 @@ trait TestData extends Generators {
   val createRcaspRequestIndividual: CreateRcaspRequest =
     CreateRcaspRequest(
       createRcasp.RcaspManagementRequest(
-        RequestCommon = rcaspRequestCommon,
+        RequestCommon = rcaspRequestCommon(RequestType.Create),
         RequestDetails = individualRcaspDetailsRequest
       )
     )
@@ -289,15 +288,15 @@ trait TestData extends Generators {
   val updateRcaspRequestIndividual: UpdateRcaspRequest =
     UpdateRcaspRequest(
       updateRcasp.RcaspManagementRequest(
-        RequestCommon = rcaspRequestCommon,
-        RequestDetails = updateIndividualRcaspDetailsRequest
+        RequestCommon = rcaspRequestCommon(RequestType.Update),
+        RequestDetails = individualRcaspDetailsViewUpdate
       )
     )
 
   val deleteRcaspRequest: DeleteRcaspRequest =
     DeleteRcaspRequest(
       deleteRcasp.RcaspManagementRequest(
-        RequestCommon = rcaspRequestCommon,
+        RequestCommon = rcaspRequestCommon(RequestType.Delete),
         RequestDetails = deleteRcaspDetailsRequest
       )
     )
@@ -305,7 +304,7 @@ trait TestData extends Generators {
   val createRcaspRequestRegisteredBusiness: CreateRcaspRequest =
     CreateRcaspRequest(
       createRcasp.RcaspManagementRequest(
-        RequestCommon = rcaspRequestCommon,
+        RequestCommon = rcaspRequestCommon(RequestType.Create),
         RequestDetails = registeredBusinessRcaspDetailsRequest
       )
     )

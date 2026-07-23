@@ -34,7 +34,7 @@ import repositories.SessionRepository
 import services.RcaspSubmissionService
 import types.ResultT
 import uk.gov.hmrc.auth.core.AffinityGroup
-import utils.CheckDetailsRegisteredBusinessHelper
+import utils.RegisteredBusinessDetailsHelper
 import views.html.organisation.RegisteredBusinessCheckDetailsView
 
 import scala.concurrent.Future
@@ -58,7 +58,8 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
               emptyUserAnswers
                 .withPage(ReportForRegisteredBusinessPage, true)
                 .withPage(OverwritableOrganisationName, "Test Business Ltd")
-            )
+            ),
+            eqTo(false)
           )(any())
         )
           .thenReturn(Some(testSection))
@@ -80,8 +81,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
           .withPage(ReportForRegisteredBusinessPage, true)
           .withPage(OverwritableOrganisationName, "Test Business Ltd")
       ) {
-        when(mockHelper.getRegisteredBusinessSection(any())(any()))
-          .thenReturn(None)
+        when(mockHelper.getRegisteredBusinessSection(any(), any())(any())).thenReturn(None)
 
         val request                = FakeRequest(GET, cdRoute)
         val result: Future[Result] = route(application, request).value
@@ -228,13 +228,13 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
   }
 
   class Setup(userAnswers: UserAnswers, requestUtr: Option[String] = Some(testUtr.uniqueTaxPayerReference)) {
-    final val mockHelper: CheckDetailsRegisteredBusinessHelper   = mock[CheckDetailsRegisteredBusinessHelper]
+    final val mockHelper: RegisteredBusinessDetailsHelper        = mock[RegisteredBusinessDetailsHelper]
     final val mockRcaspSubmissionService: RcaspSubmissionService = mock[RcaspSubmissionService]
 
     val application: Application =
       applicationBuilder(userAnswers = Some(userAnswers), requestUtr = requestUtr)
         .overrides(
-          bind[CheckDetailsRegisteredBusinessHelper].toInstance(mockHelper),
+          bind[RegisteredBusinessDetailsHelper].toInstance(mockHelper),
           bind[RcaspSubmissionService].toInstance(mockRcaspSubmissionService)
         )
         .build()

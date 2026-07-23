@@ -16,9 +16,10 @@
 
 package navigation
 
+import config.Constants
 import config.Constants.noneOfTheseValue
 import controllers.routes
-import models.{ChangeMode, NormalMode, UserAnswers}
+import models.{ChangeMode, UserAnswers}
 import pages.*
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.individual.*
@@ -50,7 +51,13 @@ trait ChangeRoutesNavigator {
     case OrganisationSecondContactHavePhonePage   =>
       userAnswers => navigateFromOrganisationSecondContactHavePhonePage(userAnswers)
     case OrganisationSecondContactPhoneNumberPage => userAnswers => changeDetailsNavigation(userAnswers)
-    case _                                        => _ => recovery
+
+    case RegisteredBusinessIsThisYourBusinessNamePage =>
+      userAnswers => navigateFromRegisteredBusinessIsThisYourBusinessNamePage(userAnswers)
+    case RegisteredBusinessIsTheAddressCorrectPage    =>
+      userAnswers => navigateFromRegisteredBusinessIsTheAddressCorrectPage(userAnswers)
+
+    case _ => _ => recovery
   }
 
   private def navigateFromFindAddressPage(userAnswers: UserAnswers): Call =
@@ -88,5 +95,34 @@ trait ChangeRoutesNavigator {
         changeDetailsNavigation(userAnswers)
       case None        =>
         routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  private def navigateFromRegisteredBusinessIsThisYourBusinessNamePage(userAnswers: UserAnswers): Call =
+    userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage) match {
+      case Some(true)  =>
+        changeDetailsNavigation(userAnswers)
+      case Some(false) =>
+        controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode)
+      case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
+    }
+
+  private def navigateFromRegisteredBusinessIsTheAddressCorrectPage(userAnswers: UserAnswers): Call =
+    userAnswers.get(RegisteredBusinessIsTheAddressCorrectPage) match {
+      case Some(true)  =>
+        userAnswers
+          .get(CachedBusinessDetailsPage)
+          .fold(
+            controllers.routes.JourneyRecoveryController.onPageLoad()
+          ) { businessDetails =>
+            if (Constants.acceptedUkCountryCode.contains(businessDetails.address.countryCode.toUpperCase)) {
+              changeDetailsNavigation(userAnswers)
+            } else {
+              controllers.organisation.routes.NotInUkController.onPageLoad()
+            }
+          }
+      case Some(false) =>
+        controllers.routes.FindAddressController.onPageLoad(ChangeMode)
+      case None        =>
+        controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 }

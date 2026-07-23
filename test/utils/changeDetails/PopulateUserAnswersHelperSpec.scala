@@ -17,36 +17,42 @@
 package utils.changeDetails
 
 import base.SpecBase
+import models.BusinessDetails
 import models.OrganisationOrIndividual.{Individual, Organisation}
+import models.errors.ApiError.InternalServerError
+import models.responses.AddressRegistrationResponse
 import models.viewAndUpdateRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails}
 import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
-import pages.UkAddressInUserAnswers
+import pages.{AddressPagePrePop, UkAddressInUserAnswers}
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
 import play.api.mvc.Result
 import play.api.test.Helpers.*
+import services.RegistrationService
+import types.ResultT
 import utils.CountryListFactory
 
 import scala.concurrent.Future
 
 class PopulateUserAnswersHelperSpec extends SpecBase {
 
-  val mockCountryListFactory: CountryListFactory = mock[CountryListFactory]
+  val mockRegistrationService: RegistrationService = mock[RegistrationService]
+  val mockCountryListFactory: CountryListFactory   = mock[CountryListFactory]
 
-  val helper = new PopulateUserAnswersHelper(mockSessionRepository, mockCountryListFactory)
+  val helper = new PopulateUserAnswersHelper(mockSessionRepository, mockRegistrationService, mockCountryListFactory)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockCountryListFactory)
+    reset(mockRegistrationService, mockCountryListFactory)
   }
 
   "PopulateUserAnswersHelper" - {
     ".populateUserAnswersForIndividual" - {
       "must populate user answers and redirect to ChangeDetails when all fields are present" in {
-        val rcaspDetails: IndividualRcaspDetails = individualRcaspDetailsResponse
+        val rcaspDetails: IndividualRcaspDetails = individualRcaspDetailsViewUpdate
 
         when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
@@ -66,6 +72,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(IndividualNamePage).contains(testIndividualName) &&
             ua.get(NiNumberPage).contains(testNiNumber) &&
             ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
+            ua.get(AddressPagePrePop).contains(testAddressUk) &&
             ua.get(IndividualEmailPage).contains(testEmail) &&
             ua.get(IndividualHavePhonePage).contains(true) &&
             ua.get(IndividualPhonePage).contains(testPhone) &&
@@ -76,7 +83,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
       "must populate user answers and redirect to ChangeDetails when phone number is absent" in {
         val rcaspDetails: IndividualRcaspDetails =
-          individualRcaspDetailsResponse.copy(
+          individualRcaspDetailsViewUpdate.copy(
             PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None))
           )
 
@@ -98,6 +105,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(IndividualNamePage).contains(testIndividualName) &&
             ua.get(NiNumberPage).contains(testNiNumber) &&
             ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
+            ua.get(AddressPagePrePop).contains(testAddressUk) &&
             ua.get(IndividualEmailPage).contains(testEmail) &&
             ua.get(IndividualHavePhonePage).contains(false) &&
             ua.get(IndividualPhonePage).isEmpty &&
@@ -108,7 +116,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
       "must redirect to journey recovery" - {
         "when TINDetails is missing" in {
-          val rcaspDetails: IndividualRcaspDetails = individualRcaspDetailsResponse.copy(TINDetails = None)
+          val rcaspDetails: IndividualRcaspDetails = individualRcaspDetailsViewUpdate.copy(TINDetails = None)
 
           val result: Future[Result] = helper.populateUserAnswersForIndividual(userAnswersId, rcaspDetails)
 
@@ -119,7 +127,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
         }
 
         "when TINDetails contains an empty list" in {
-          val rcaspDetails: IndividualRcaspDetails = individualRcaspDetailsResponse.copy(TINDetails = Some(List.empty))
+          val rcaspDetails: IndividualRcaspDetails =
+            individualRcaspDetailsViewUpdate.copy(TINDetails = Some(List.empty))
 
           val result: Future[Result] = helper.populateUserAnswersForIndividual(userAnswersId, rcaspDetails)
 
@@ -130,7 +139,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
         }
 
         "when PrimaryContactDetails is missing" in {
-          val rcaspDetails: IndividualRcaspDetails = individualRcaspDetailsResponse.copy(PrimaryContactDetails = None)
+          val rcaspDetails: IndividualRcaspDetails = individualRcaspDetailsViewUpdate.copy(PrimaryContactDetails = None)
 
           val result: Future[Result] = helper.populateUserAnswersForIndividual(userAnswersId, rcaspDetails)
 
@@ -142,7 +151,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
         "when address cannot be converted to AddressUk" in {
           val rcaspDetails: IndividualRcaspDetails =
-            individualRcaspDetailsResponse.copy(AddressDetails = rcaspAddressEmptyOptionals)
+            individualRcaspDetailsViewUpdate.copy(AddressDetails = rcaspAddressEmptyOptionals)
 
           val result: Future[Result] = helper.populateUserAnswersForIndividual(userAnswersId, rcaspDetails)
 
@@ -156,7 +165,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
     ".populateUserAnswersForOrganisation" - {
       "must populate user answers and redirect to ChangeDetails when all fields are present" in {
-        val rcaspDetails: OrganisationRcaspDetails = organisationRcaspDetailsResponse
+        val rcaspDetails: OrganisationRcaspDetails = organisationRcaspDetailsViewUpdate
 
         when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
@@ -179,6 +188,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(TradingNamePage).contains(testTradingName) &&
             ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
             ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
+            ua.get(AddressPagePrePop).contains(testAddressUk) &&
             ua.get(OrganisationFirstContactNamePage).contains(testIndividualName.fullName) &&
             ua.get(OrganisationFirstContactEmailPage).contains(testEmail) &&
             ua.get(OrganisationFirstContactHavePhonePage).contains(true) &&
@@ -195,7 +205,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
       "must populate user answers and redirect to ChangeDetails when separate trading name, first contact phone and second contact details are absent" in {
         val rcaspDetails: OrganisationRcaspDetails =
-          organisationRcaspDetailsResponse.copy(
+          organisationRcaspDetailsViewUpdate.copy(
             TradingName = testOrgName,
             PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None)),
             SecondaryContactDetails = None
@@ -222,6 +232,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(TradingNamePage).isEmpty &&
             ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
             ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
+            ua.get(AddressPagePrePop).contains(testAddressUk) &&
             ua.get(OrganisationFirstContactNamePage).contains(testIndividualName.fullName) &&
             ua.get(OrganisationFirstContactEmailPage).contains(testEmail) &&
             ua.get(OrganisationFirstContactHavePhonePage).contains(false) &&
@@ -238,7 +249,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
       "must populate user answers and redirect to ChangeDetails when only second contact phone is absent" in {
         val rcaspDetails: OrganisationRcaspDetails =
-          organisationRcaspDetailsResponse.copy(
+          organisationRcaspDetailsViewUpdate.copy(
             SecondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = "Prof Turo", PhoneNumber = None))
           )
 
@@ -279,7 +290,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
       "must redirect to journey recovery" - {
         "when TINDetails is missing" in {
-          val rcaspDetails: OrganisationRcaspDetails = organisationRcaspDetailsResponse.copy(TINDetails = None)
+          val rcaspDetails: OrganisationRcaspDetails = organisationRcaspDetailsViewUpdate.copy(TINDetails = None)
 
           val result: Future[Result] = helper.populateUserAnswersForOrganisation(userAnswersId, rcaspDetails)
 
@@ -291,7 +302,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
         "when TINDetails contains an empty list" in {
           val rcaspDetails: OrganisationRcaspDetails =
-            organisationRcaspDetailsResponse.copy(TINDetails = Some(List.empty))
+            organisationRcaspDetailsViewUpdate.copy(TINDetails = Some(List.empty))
 
           val result: Future[Result] = helper.populateUserAnswersForOrganisation(userAnswersId, rcaspDetails)
 
@@ -303,7 +314,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
         "when PrimaryContactDetails is missing" in {
           val rcaspDetails: OrganisationRcaspDetails =
-            organisationRcaspDetailsResponse.copy(PrimaryContactDetails = None)
+            organisationRcaspDetailsViewUpdate.copy(PrimaryContactDetails = None)
 
           val result: Future[Result] = helper.populateUserAnswersForOrganisation(userAnswersId, rcaspDetails)
 
@@ -315,7 +326,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
         "when address cannot be converted to AddressUk" in {
           val rcaspDetails: OrganisationRcaspDetails =
-            organisationRcaspDetailsResponse.copy(AddressDetails = rcaspAddressEmptyOptionals)
+            organisationRcaspDetailsViewUpdate.copy(AddressDetails = rcaspAddressEmptyOptionals)
 
           val result: Future[Result] = helper.populateUserAnswersForOrganisation(userAnswersId, rcaspDetails)
 
@@ -328,24 +339,40 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
     }
 
     ".populateUserAnswersForRegisteredBusiness" - {
+      val businessDetailsFromService =
+        BusinessDetails(
+          name = "Timmy Ltd",
+          address = AddressRegistrationResponse(
+            addressLine1 = "1 Test",
+            addressLine2 = Some("Test Street"),
+            addressLine3 = Some("Test Region"),
+            addressLine4 = Some("Testingtown"),
+            postalCode = Some(testPostcode),
+            countryCode = "GB"
+          )
+        )
+
       "must populate user answers and redirect to RegisteredBusinessChangeDetails when trading name is different from RCASP name" in {
         val rcaspDetails: OrganisationRcaspDetails =
-          organisationRcaspDetailsResponse.copy(
+          organisationRcaspDetailsViewUpdate.copy(
             IsRCASPUser = true,
             PrimaryContactDetails = None,
             SecondaryContactDetails = None
           )
 
+        when(mockRegistrationService.getBusinessWithCtUtr(eqTo(testUtr.uniqueTaxPayerReference))(any()))
+          .thenReturn(ResultT.fromValue(businessDetailsFromService))
         when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(Some("United Kingdom"))
         when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
-        val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
+        val result: Future[Result] =
+          helper.populateUserAnswersForRegisteredBusiness(userAnswersId, testUtr, rcaspDetails)
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
-          .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
-          .url
+        redirectLocation(result).value mustEqual
+          controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(rcaspId).url
 
+        verify(mockRegistrationService, times(1)).getBusinessWithCtUtr(eqTo(testUtr.uniqueTaxPayerReference))(any())
         verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("GB"))
         verify(mockSessionRepository, times(1)).set(
           argThat { ua =>
@@ -357,7 +384,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(HaveTradingNamePage).contains(true) &&
             ua.get(TradingNamePage).contains(testTradingName) &&
             ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
-            ua.get(RegisteredBusinessIsTheAddressCorrectPage).contains(true) &&
+            ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
+            ua.get(AddressPagePrePop).contains(testAddressUk) &&
             ua.get(CachedBusinessDetailsPage).contains(cachedBusinessDetails) &&
             ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
           }
@@ -366,23 +394,26 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
       "must populate user answers and redirect to RegisteredBusinessChangeDetails when trading name is the same as RCASP name" in {
         val rcaspDetails: OrganisationRcaspDetails =
-          organisationRcaspDetailsResponse.copy(
+          organisationRcaspDetailsViewUpdate.copy(
             IsRCASPUser = true,
             TradingName = testOrgName,
             PrimaryContactDetails = None,
             SecondaryContactDetails = None
           )
 
+        when(mockRegistrationService.getBusinessWithCtUtr(eqTo(testUtr.uniqueTaxPayerReference))(any()))
+          .thenReturn(ResultT.fromValue(businessDetailsFromService))
         when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(Some("United Kingdom"))
         when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
-        val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
+        val result: Future[Result] =
+          helper.populateUserAnswersForRegisteredBusiness(userAnswersId, testUtr, rcaspDetails)
 
         status(result)                 mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual controllers.routes.PlaceholderController
-          .onPageLoad(s"Should nav to registered-business/change-answers/$rcaspId (CARF-350)")
-          .url
+        redirectLocation(result).value mustEqual
+          controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(rcaspId).url
 
+        verify(mockRegistrationService, times(1)).getBusinessWithCtUtr(eqTo(testUtr.uniqueTaxPayerReference))(any())
         verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("GB"))
         verify(mockSessionRepository, times(1)).set(
           argThat { ua =>
@@ -394,7 +425,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(HaveTradingNamePage).contains(false) &&
             ua.get(TradingNamePage).isEmpty &&
             ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
-            ua.get(RegisteredBusinessIsTheAddressCorrectPage).contains(true) &&
+            ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
+            ua.get(AddressPagePrePop).contains(testAddressUk) &&
             ua.get(CachedBusinessDetailsPage).contains(cachedBusinessDetails) &&
             ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
           }
@@ -402,63 +434,128 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
       }
 
       "must redirect to journey recovery" - {
+        "when an error is returned from RegistrationService" in {
+          val rcaspDetails: OrganisationRcaspDetails =
+            organisationRcaspDetailsViewUpdate.copy(
+              IsRCASPUser = true,
+              PrimaryContactDetails = None,
+              SecondaryContactDetails = None
+            )
+
+          when(mockRegistrationService.getBusinessWithCtUtr(eqTo(testUtr.uniqueTaxPayerReference))(any()))
+            .thenReturn(ResultT.fromError(InternalServerError))
+
+          val result: Future[Result] =
+            helper.populateUserAnswersForRegisteredBusiness(userAnswersId, testUtr, rcaspDetails)
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+
+          verify(mockRegistrationService, times(1)).getBusinessWithCtUtr(eqTo(testUtr.uniqueTaxPayerReference))(any())
+          verify(mockCountryListFactory, times(0)).getDescriptionFromCode(any())
+          verify(mockSessionRepository, times(0)).set(any())
+        }
+
+        "when country code lookup fails for the address from ETMP" in {
+          val rcaspDetails: OrganisationRcaspDetails =
+            organisationRcaspDetailsViewUpdate.copy(
+              IsRCASPUser = true,
+              PrimaryContactDetails = None,
+              SecondaryContactDetails = None
+            )
+
+          when(mockRegistrationService.getBusinessWithCtUtr(eqTo(testUtr.uniqueTaxPayerReference))(any()))
+            .thenReturn(ResultT.fromValue(businessDetailsFromService))
+          when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(None)
+
+          val result: Future[Result] =
+            helper.populateUserAnswersForRegisteredBusiness(userAnswersId, testUtr, rcaspDetails)
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+
+          verify(mockRegistrationService, times(1)).getBusinessWithCtUtr(eqTo(testUtr.uniqueTaxPayerReference))(any())
+          verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("GB"))
+          verify(mockSessionRepository, times(0)).set(any())
+        }
+
         "when TINDetails is missing" in {
           val rcaspDetails: OrganisationRcaspDetails =
-            organisationRcaspDetailsResponse.copy(
+            organisationRcaspDetailsViewUpdate.copy(
               IsRCASPUser = true,
               PrimaryContactDetails = None,
               SecondaryContactDetails = None,
               TINDetails = None
             )
 
-          when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(Some("United Kingdom"))
-
-          val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
+          val result: Future[Result] =
+            helper.populateUserAnswersForRegisteredBusiness(userAnswersId, testUtr, rcaspDetails)
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-          verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("GB"))
+          verify(mockRegistrationService, times(0)).getBusinessWithCtUtr(any())(any())
+          verify(mockCountryListFactory, times(0)).getDescriptionFromCode(any())
           verify(mockSessionRepository, times(0)).set(any())
         }
 
         "when TINDetails contains an empty list" in {
           val rcaspDetails: OrganisationRcaspDetails =
-            organisationRcaspDetailsResponse.copy(
+            organisationRcaspDetailsViewUpdate.copy(
               IsRCASPUser = true,
               PrimaryContactDetails = None,
               SecondaryContactDetails = None,
               TINDetails = Some(List.empty)
             )
 
-          when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(Some("United Kingdom"))
-
-          val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
+          val result: Future[Result] =
+            helper.populateUserAnswersForRegisteredBusiness(userAnswersId, testUtr, rcaspDetails)
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-          verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("GB"))
+          verify(mockRegistrationService, times(0)).getBusinessWithCtUtr(any())(any())
+          verify(mockCountryListFactory, times(0)).getDescriptionFromCode(any())
+          verify(mockSessionRepository, times(0)).set(any())
+        }
+
+        "when address cannot be converted to AddressUk" in {
+          val rcaspDetails: OrganisationRcaspDetails =
+            organisationRcaspDetailsViewUpdate.copy(
+              IsRCASPUser = true,
+              PrimaryContactDetails = None,
+              SecondaryContactDetails = None,
+              AddressDetails = rcaspAddressEmptyOptionals
+            )
+
+          val result: Future[Result] =
+            helper.populateUserAnswersForRegisteredBusiness(userAnswersId, testUtr, rcaspDetails)
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+
+          verify(mockRegistrationService, times(0)).getBusinessWithCtUtr(any())(any())
+          verify(mockCountryListFactory, times(0)).getDescriptionFromCode(any())
           verify(mockSessionRepository, times(0)).set(any())
         }
 
         "when country name cannot be found from country code in AddressDetails" in {
           val rcaspDetails: OrganisationRcaspDetails =
-            organisationRcaspDetailsResponse.copy(
+            organisationRcaspDetailsViewUpdate.copy(
               IsRCASPUser = true,
               PrimaryContactDetails = None,
               SecondaryContactDetails = None,
               AddressDetails = testAddressUkRcaspAddress.copy(CountryCode = "NA")
             )
 
-          when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(None)
-
-          val result: Future[Result] = helper.populateUserAnswersForRegisteredBusiness(userAnswersId, rcaspDetails)
+          val result: Future[Result] =
+            helper.populateUserAnswersForRegisteredBusiness(userAnswersId, testUtr, rcaspDetails)
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-          verify(mockCountryListFactory, times(1)).getDescriptionFromCode(eqTo("NA"))
+          verify(mockRegistrationService, times(0)).getBusinessWithCtUtr(any())(any())
+          verify(mockCountryListFactory, times(0)).getDescriptionFromCode(any())
           verify(mockSessionRepository, times(0)).set(any())
         }
       }

@@ -16,7 +16,7 @@
 
 package models.responses
 
-import models.RcaspAddress
+import models.AddressUk
 import play.api.libs.json.{Json, OFormat}
 
 import scala.collection.immutable.Seq
@@ -51,17 +51,20 @@ extension (address: AddressRegistrationResponse) {
     htmlLines.mkString("<br>")
   }
 
-  def toRcaspAddress: Option[RcaspAddress] =
-    address.postalCode.map { postcode =>
+  def toAddressUk: Option[AddressUk] =
+    address.postalCode.flatMap { postcode =>
       val addressSubsequentLines = Seq(address.addressLine2, address.addressLine3, address.addressLine4).flatten
-      RcaspAddress(
-        AddressLine1 = address.addressLine1,
-        AddressLine2 = addressSubsequentLines.headOption,
-        AddressLine3 = addressSubsequentLines.lift(1),
-        AddressLine4 = addressSubsequentLines.lift(2),
-        PostalCode = postcode,
-        CountryCode = address.countryCode
-      )
+      val maybeTownOrCity        = addressSubsequentLines.lastOption
+      maybeTownOrCity.map { townOrCity =>
+        val intermediateLines = addressSubsequentLines.dropRight(1)
+        AddressUk(
+          address.addressLine1,
+          addressLine2 = intermediateLines.headOption,
+          addressLine3 = intermediateLines.lift(1),
+          townOrCity,
+          postcode
+        )
+      }
     }
 }
 

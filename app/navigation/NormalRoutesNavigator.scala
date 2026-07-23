@@ -183,7 +183,7 @@ trait NormalRoutesNavigator {
           .fold(
             controllers.routes.JourneyRecoveryController.onPageLoad()
           ) { businessDetails =>
-            if (businessDetails.address.countryCode.toUpperCase == Constants.ukCountryCode) {
+            if (Constants.acceptedUkCountryCode.contains(businessDetails.address.countryCode.toUpperCase)) {
               controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
             } else {
               controllers.organisation.routes.NotInUkController.onPageLoad()

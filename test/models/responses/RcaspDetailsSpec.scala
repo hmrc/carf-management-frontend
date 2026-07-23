@@ -25,7 +25,7 @@ class RcaspDetailsSpec extends SpecBase {
       "given an IndividualRcaspDetails" - {
         "must return an IndividualRcaspDetailsForComparison" - {
           "when phone number is present" in {
-            val result = individualRcaspDetailsResponse.forComparison
+            val result = individualRcaspDetailsViewUpdate.forComparison
 
             result mustBe Some(
               IndividualRcaspDetailsForComparison(
@@ -41,7 +41,7 @@ class RcaspDetailsSpec extends SpecBase {
           }
 
           "when phone number is absent" in {
-            val result = individualRcaspDetailsResponse
+            val result = individualRcaspDetailsViewUpdate
               .copy(PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None)))
               .forComparison
 
@@ -60,19 +60,19 @@ class RcaspDetailsSpec extends SpecBase {
         }
 
         "must return None when PrimaryContactDetails is missing" in {
-          val result = individualRcaspDetailsResponse.copy(PrimaryContactDetails = None).forComparison
+          val result = individualRcaspDetailsViewUpdate.copy(PrimaryContactDetails = None).forComparison
 
           result mustBe None
         }
 
         "must return None when TINDetails is missing" in {
-          val result = individualRcaspDetailsResponse.copy(TINDetails = None).forComparison
+          val result = individualRcaspDetailsViewUpdate.copy(TINDetails = None).forComparison
 
           result mustBe None
         }
 
         "must return None when TINDetails contains an empty list" in {
-          val result = individualRcaspDetailsResponse.copy(TINDetails = Some(List.empty)).forComparison
+          val result = individualRcaspDetailsViewUpdate.copy(TINDetails = Some(List.empty)).forComparison
 
           result mustBe None
         }
@@ -81,7 +81,7 @@ class RcaspDetailsSpec extends SpecBase {
       "given an OrganisationRcaspDetails" - {
         "must return an OrganisationRcaspDetailsForComparison" - {
           "when all fields are present" in {
-            val result = organisationRcaspDetailsResponse.forComparison
+            val result = organisationRcaspDetailsViewUpdate.forComparison
 
             result mustBe Some(
               OrganisationRcaspDetailsForComparison(
@@ -97,7 +97,7 @@ class RcaspDetailsSpec extends SpecBase {
           }
 
           "when some optional fields are absent" in {
-            val result = organisationRcaspDetailsResponse
+            val result = organisationRcaspDetailsViewUpdate
               .copy(
                 PrimaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None)),
                 SecondaryContactDetails = None
@@ -118,7 +118,7 @@ class RcaspDetailsSpec extends SpecBase {
           }
 
           "when only registered business fields are present" in {
-            val result = organisationRcaspDetailsResponse
+            val result = organisationRcaspDetailsViewUpdate
               .copy(
                 IsRCASPUser = true,
                 PrimaryContactDetails = None,
@@ -141,13 +141,13 @@ class RcaspDetailsSpec extends SpecBase {
         }
 
         "must return None when TINDetails is missing" in {
-          val result = organisationRcaspDetailsResponse.copy(TINDetails = None).forComparison
+          val result = organisationRcaspDetailsViewUpdate.copy(TINDetails = None).forComparison
 
           result mustBe None
         }
 
         "must return None when TINDetails contains an empty list" in {
-          val result = organisationRcaspDetailsResponse.copy(TINDetails = Some(List.empty)).forComparison
+          val result = organisationRcaspDetailsViewUpdate.copy(TINDetails = Some(List.empty)).forComparison
 
           result mustBe None
         }
