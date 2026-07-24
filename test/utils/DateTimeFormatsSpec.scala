@@ -102,5 +102,17 @@ class DateTimeFormatsSpec extends AnyFreeSpec with Matchers {
     "must use a colon as the separator between hours and minutes" in {
       DateTimeFormats.formatTime(LocalTime.of(10, 30)) must include(":")
     }
+
+    "must display 'midnight' when time has non-zero seconds but is still within the midnight minute" in {
+      DateTimeFormats.formatTime(LocalTime.of(0, 0, 30)) mustEqual "midnight"
+    }
+
+    "must display 'midday' when time has non-zero seconds but is still within the midday minute" in {
+      DateTimeFormats.formatTime(LocalTime.of(12, 0, 45)) mustEqual "midday"
+    }
+
+    "must display 'midnight' when time has non-zero nanoseconds" in {
+      DateTimeFormats.formatTime(LocalTime.of(0, 0, 0, 500)) mustEqual "midnight"
+    }
   }
 }
