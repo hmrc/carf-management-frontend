@@ -63,6 +63,9 @@ class RemoveUserAccessControllerSpec extends SpecBase {
   private val organisationUserInfo =
     UserBusinessSubscriptionData(hasOrganisationContactDetails = true, organisationName = Some("My Business"))
 
+  private val pageUnavailableUrl: String =
+    controllers.routes.PlaceholderController.onPageLoad("Should nav to /problem/page-unavailable (CARF-308)").url
+
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockAccountService)
@@ -270,48 +273,6 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           }
         }
 
-        "must ignore cached answers and call the APIs when SubmissionSucceededPage is set" in {
-          val userAnswers = emptyUserAnswers
-            .withPage(SubmissionSucceededPage, true)
-            .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
-            .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
-
-          when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
-            .thenReturn(ResultT.fromValue(rcaspIsUserDetails))
-
-          when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
-            .thenReturn(ResultT.fromValue(organisationUserInfo))
-
-          when(mockSessionRepository.set(any()))
-            .thenReturn(Future.successful(true))
-
-          val application = applicationBuilder(userAnswers = Some(userAnswers))
-            .overrides(bind[AccountService].toInstance(mockAccountService))
-            .build()
-
-          running(application) {
-            val request = FakeRequest(GET, onPageLoadRoute)
-            val result  = route(application, request).value
-
-            val view = application.injector.instanceOf[RemoveUserAccessView]
-            val vm   = RemoveUserAccessViewModel.from(rcaspIsUserDetails, organisationUserInfo, formProvider)
-
-            status(result)          mustEqual OK
-            contentAsString(result) mustEqual view(
-              vm.form,
-              rcaspId,
-              vm.titleKey,
-              vm.headingKey,
-              vm.rcaspName,
-              vm.userBusinessNameOpt
-            )(request, messages(application)).toString
-
-            verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
-            verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
-            verify(mockSessionRepository).set(any())
-          }
-        }
-
         "must ignore cached details when cached rcaspId does not match URL rcaspId" in {
           val differentDetails = organisationRcaspDetailsViewUpdate.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
 
@@ -372,6 +333,38 @@ class RemoveUserAccessControllerSpec extends SpecBase {
             verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
             verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
             verify(mockSessionRepository).set(any())
+          }
+        }
+
+        "must fetch fresh details when SubmissionSucceededPage is true but cached RCASPID differs from URL rcaspId (new journey)" in {
+          val differentDetails = organisationRcaspDetailsViewUpdate.copy(RCASPID = "DIFFERENT-ID", IsRCASPUser = true)
+
+          val userAnswers = emptyUserAnswers
+            .withPage(SubmissionSucceededPage, true)
+            .withPage(RemoveRcaspCachedDetails, differentDetails)
+            .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
+
+          when(mockAccountService.getRcaspDetails(any(), any())(any(), any()))
+            .thenReturn(ResultT.fromValue(rcaspIsUserDetails))
+
+          when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
+            .thenReturn(ResultT.fromValue(organisationUserInfo))
+
+          when(mockSessionRepository.set(any()))
+            .thenReturn(Future.successful(true))
+
+          val application = applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(bind[AccountService].toInstance(mockAccountService))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(GET, onPageLoadRoute)
+            val result  = route(application, request).value
+
+            status(result) mustEqual OK
+
+            verify(mockAccountService).getRcaspDetails(any(), any())(any(), any())
+            verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
           }
         }
       }
@@ -471,6 +464,32 @@ class RemoveUserAccessControllerSpec extends SpecBase {
           }
         }
       }
+
+      "already submitted for this RCASP" - {
+
+        "must redirect to page-unavailable placeholder without calling any APIs when cached RCASPID matches the URL and SubmissionSucceededPage is true" in {
+          val userAnswers = emptyUserAnswers
+            .withPage(SubmissionSucceededPage, true)
+            .withPage(RemoveRcaspCachedDetails, rcaspIsUserDetails)
+            .withPage(RemoveUserBusinessInfoCached, organisationUserInfo)
+
+          val application = applicationBuilder(userAnswers = Some(userAnswers))
+            .overrides(bind[AccountService].toInstance(mockAccountService))
+            .build()
+
+          running(application) {
+            val request = FakeRequest(GET, onPageLoadRoute)
+            val result  = route(application, request).value
+
+            status(result)                 mustEqual SEE_OTHER
+            redirectLocation(result).value mustEqual pageUnavailableUrl
+
+            verify(mockAccountService, never).getRcaspDetails(any(), any())(any(), any())
+            verify(mockAccountService, never).getUserBusinessSubscriptionData(any())(any(), any())
+            verify(mockSessionRepository, never).set(any())
+          }
+        }
+      }
     }
 
     "onSubmit" - {
@@ -496,7 +515,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
 
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual
-            controllers.remove.routes.RemoveOtherAccessController.onPageLoad(rcaspId).url
+            controllers.remove.routes.RemoveOtherAccessController.onPageLoad().url
         }
       }
 

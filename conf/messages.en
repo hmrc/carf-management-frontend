@@ -407,3 +407,20 @@ removeOtherAccess.heading.otherOrg = Could {0} or a representative need to acces
 removeOtherAccess.error.required.individual = Select yes if the RCASP or a representative may need to access or update any previous reports for them
 removeOtherAccess.error.required.rcaspIsUser = Select yes if anyone who may act on behalf of your business in the future may need to access or update any previous reports
 removeOtherAccess.error.required.otherOrg = Select yes if the RCASP or a representative may need to access or update any previous reports for them
+
+removeRcasp.title = If you remove the reporting cryptoasset service provider (RCASP), it will not be possible to access or update any previous reports
+removeRcasp.title.otherAccess = If you remove the reporting cryptoasset service provider (RCASP), it will not be possible for anyone to access or update any previous reports
+removeRcasp.heading = If you remove {0}, it will not be possible to access or update any previous reports
+removeRcasp.heading.otherAccess = If you remove {0}, it will not be possible for anyone to access or update any previous reports
+removeRcasp.error.required = Select yes if you are sure you want to remove the RCASP
+removeRcasp.p1 = You should make any changes to the reports before you remove {0}.
+removeRcasp.p2 = If someone adds {0} as a reporting cryptoasset service provider (RCASP) again in the future, then they will have a different RCASP ID.
+removeRcasp.warning = Removing an RCASP that has inaccurate or incomplete reports could result in a penalty for them.
+removeRcasp.question = Are you sure you want to permanently remove {0}?
+
+rcaspRemoved.title = Reporting cryptoasset service provider (RCASP) removed
+rcaspRemoved.heading = {0} removed
+rcaspRemoved.panel.content = on {0} at {1}
+rcaspRemoved.p1 = You have permanently removed {0} with the RCASP ID {1}.
+rcaspRemoved.backToRcasps = Back to manage your reporting cryptoasset service providers (RCASPs)
+rcaspRemoved.backToReports = Back to manage your cryptoasset reports

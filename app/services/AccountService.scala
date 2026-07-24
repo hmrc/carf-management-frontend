@@ -28,7 +28,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class AccountService @Inject (
+class AccountService @Inject() (
     rcaspConnector: RcaspConnector,
     subscriptionConnector: SubscriptionConnector
 ) extends Logging {
@@ -41,7 +41,7 @@ class AccountService @Inject (
           logger.warn(s"[AccountService][getNumberOfRcaspsCurrentlyAdded] Error calling viewRcasp: $error")
           error
         },
-        viewRcaspResponse => viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList.size
+        rcaspList => rcaspList.size
       )
 
   def getRcaspDetails(
@@ -54,8 +54,8 @@ class AccountService @Inject (
         logger.warn(s"[AccountService][getRcaspDetails] Error calling viewRcasp: $error")
         error
       }
-      .subflatMap { viewRcaspResponse =>
-        viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList
+      .subflatMap { rcaspList =>
+        rcaspList
           .find(_.RCASPID.toUpperCase == rcaspId.toUpperCase)
           .fold {
             logger.warn(s"[AccountService][getRcaspDetails] No RCASP found with ID $rcaspId")

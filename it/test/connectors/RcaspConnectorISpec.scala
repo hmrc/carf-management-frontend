@@ -84,7 +84,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
     val baseUrlPattern = "/carf-management/view-rcasp/.*"
 
-    "successfully retrieve a ViewRcaspResponse" in {
+    "successfully retrieve a ViewRcaspResponse and return the RCASP list" in {
       stubFor(
         get(urlPathMatching(baseUrlPattern))
           .willReturn(
@@ -96,16 +96,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
       val result = connector.viewRcasp(testCarfId).value.futureValue
       result shouldBe Right(
-        ViewRcaspResponse(
-          ViewRCASP = ViewRcasp(
-            ResponseCommon = rcaspResponseCommon,
-            ResponseDetails = RcaspResponseDetails(
-              RCASPList = List(
-                organisationRcaspDetailsViewUpdate.copy(AddressDetails = rcaspAddress)
-              )
-            )
-          )
-        )
+        List(organisationRcaspDetailsViewUpdate.copy(AddressDetails = rcaspAddress))
       )
     }
 
@@ -121,6 +112,20 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
       val result = connector.viewRcasp(testCarfId).value.futureValue
       result shouldBe Left(JsonValidationError)
+    }
+
+    "return an empty list when backend returns 404" in {
+      stubFor(
+        get(urlPathMatching(baseUrlPattern))
+          .willReturn(
+            aResponse()
+              .withStatus(NOT_FOUND)
+              .withBody("No RCASPs found")
+          )
+      )
+
+      val result = connector.viewRcasp(testCarfId).value.futureValue
+      result shouldBe Right(List.empty)
     }
 
     "return InternalServerError when backend returns 400" in {

@@ -47,12 +47,11 @@ class YourRcaspsController @Inject() (
 
   def onPageLoad(): Action[AnyContent] = identify().async { implicit request =>
     rcaspConnector.viewRcasp(request.carfId).value.map {
-      case Left(value)              =>
-        logger.warn("[YourRcaspsController][onPageLoad] Error! Could not view rcasps!")
+      case Left(error)      =>
+        logger.warn(s"[YourRcaspsController][onPageLoad] Error! Could not view rcasps: $error")
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-      case Right(viewRcaspResponse) =>
-        val listWithActions =
-          YourRcaspsListWithActionsHelper.getYourRcaspsRows(viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList)
+      case Right(rcaspList) =>
+        val listWithActions = YourRcaspsListWithActionsHelper.getYourRcaspsRows(rcaspList)
         Ok(view(form, listWithActions))
     }
   }
@@ -63,13 +62,11 @@ class YourRcaspsController @Inject() (
       .fold(
         formWithErrors =>
           rcaspConnector.viewRcasp(request.carfId).value.map {
-            case Left(value)              =>
-              logger.warn("[YourRcaspsController][onSubmit] Error! Could not view rcasps!")
+            case Left(error)      =>
+              logger.warn(s"[YourRcaspsController][onSubmit] Error! Could not view rcasps: $error")
               Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
-            case Right(viewRcaspResponse) =>
-              val listWithActions =
-                YourRcaspsListWithActionsHelper
-                  .getYourRcaspsRows(viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList)
+            case Right(rcaspList) =>
+              val listWithActions = YourRcaspsListWithActionsHelper.getYourRcaspsRows(rcaspList)
               BadRequest(view(formWithErrors, listWithActions))
           },
         value =>

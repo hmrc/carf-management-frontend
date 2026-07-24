@@ -18,6 +18,8 @@ package services
 
 import connectors.RcaspConnector
 import models.errors.MandatoryInformationMissingError
+import models.requests.deleteRcasp.{RcaspDetails as DeleteRcaspDetails, RcaspManagementRequest as DeleteRcaspManagementRequest, RcaspRequest as DeleteRcaspRequest}
+import models.requests.{RcaspRequestCommon, RequestType}
 import models.responses.SubmitRcaspResponse
 import models.{UniqueTaxpayerReference, UserAnswers}
 import play.api.Logging
@@ -106,4 +108,36 @@ class RcaspSubmissionService @Inject (
         logger.warn("[RcaspSubmissionService][updateRcasp] Error building the RcaspRequest from userAnswers")
         ResultT.fromError(MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers"))
     }
+
+  def removeRcasp(
+      carfId: String,
+      rcaspId: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[Unit] = {
+
+    val deleteRequest = DeleteRcaspRequest(
+      RCASPManagement = DeleteRcaspManagementRequest(
+        RequestCommon = RcaspRequestCommon(
+          OriginatingSystem = "MDTP",
+          TransmittingSystem = "EIS",
+          RequestType = RequestType.Delete.name,
+          Regime = "CARF",
+          RequestParameters = None
+        ),
+        RequestDetails = DeleteRcaspDetails(
+          RCASPID = rcaspId,
+          SubscriptionID = carfId
+        )
+      )
+    )
+
+    rcaspConnector
+      .deleteRcasp(deleteRequest)
+      .bimap(
+        error => {
+          logger.warn(s"[AccountService][removeRcasp] Error calling deleteRcasp: $error")
+          error
+        },
+        _ => ()
+      )
+  }
 }

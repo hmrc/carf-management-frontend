@@ -36,22 +36,23 @@ class YourRcaspsControllerSpec extends SpecBase {
   val formProvider        = new GenericYesNoPageFormProvider()
   val form: Form[Boolean] = formProvider("yourRcasps.error.required")
 
-  val mockRCaspConnector: RcaspConnector = mock[RcaspConnector]
+  val mockRcaspConnector: RcaspConnector = mock[RcaspConnector]
 
   lazy val yourRcaspsRoute: String = controllers.routes.YourRcaspsController.onPageLoad().url
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockRCaspConnector)
+    reset(mockRcaspConnector)
   }
 
   "YourRcasps Controller" - {
 
     "must return OK and the correct view for a GET if the Rcasp connector is called successfully" in {
-      when(mockRCaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromValue(testViewRcaspResponse))
+      when(mockRcaspConnector.viewRcasp(any())(any(), any()))
+        .thenReturn(ResultT.fromValue(List(organisationRcaspDetailsViewUpdate)))
 
       val application = applicationBuilder(userAnswers = None)
-        .overrides(bind[RcaspConnector].toInstance(mockRCaspConnector))
+        .overrides(bind[RcaspConnector].toInstance(mockRcaspConnector))
         .build()
 
       running(application) {
@@ -62,22 +63,22 @@ class YourRcaspsControllerSpec extends SpecBase {
         val view = application.injector.instanceOf[YourRcaspsView]
 
         val listWithItems =
-          YourRcaspsListWithActionsHelper.getYourRcaspsRows(testViewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList)(
+          YourRcaspsListWithActionsHelper.getYourRcaspsRows(List(organisationRcaspDetailsViewUpdate))(
             messages(application)
           )
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(form, listWithItems)(request, messages(application)).toString
 
-        verify(mockRCaspConnector, times(1)).viewRcasp(any())(any(), any())
+        verify(mockRcaspConnector, times(1)).viewRcasp(any())(any(), any())
       }
     }
 
     "must redirect to Journey Recovery for a GET if the Rcasp connector returns an error" in {
-      when(mockRCaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromError(JsonValidationError))
+      when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromError(JsonValidationError))
 
       val application = applicationBuilder(userAnswers = None)
-        .overrides(bind[RcaspConnector].toInstance(mockRCaspConnector))
+        .overrides(bind[RcaspConnector].toInstance(mockRcaspConnector))
         .build()
 
       running(application) {
@@ -88,14 +89,14 @@ class YourRcaspsControllerSpec extends SpecBase {
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-        verify(mockRCaspConnector, times(1)).viewRcasp(any())(any(), any())
+        verify(mockRcaspConnector, times(1)).viewRcasp(any())(any(), any())
       }
     }
 
     "must redirect to the next page when valid data is submitted" - {
       "when the answer is Yes" in {
         val application = applicationBuilder(userAnswers = None)
-          .overrides(bind[RcaspConnector].toInstance(mockRCaspConnector))
+          .overrides(bind[RcaspConnector].toInstance(mockRcaspConnector))
           .build()
 
         running(application) {
@@ -108,13 +109,13 @@ class YourRcaspsControllerSpec extends SpecBase {
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.routes.RoutingController.onPageLoad(NormalMode).url
 
-          verify(mockRCaspConnector, times(0)).viewRcasp(any())(any(), any())
+          verify(mockRcaspConnector, times(0)).viewRcasp(any())(any(), any())
         }
       }
 
       "when the answer is No" in {
         val application = applicationBuilder(userAnswers = None)
-          .overrides(bind[RcaspConnector].toInstance(mockRCaspConnector))
+          .overrides(bind[RcaspConnector].toInstance(mockRcaspConnector))
           .build()
 
         running(application) {
@@ -127,16 +128,17 @@ class YourRcaspsControllerSpec extends SpecBase {
           status(result)                 mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual controllers.home.routes.HomePageController.onPageLoad().url
 
-          verify(mockRCaspConnector, times(0)).viewRcasp(any())(any(), any())
+          verify(mockRcaspConnector, times(0)).viewRcasp(any())(any(), any())
         }
       }
     }
 
     "must return a Bad Request and errors when invalid data is submitted and the Rcasp connector is called successfully" in {
-      when(mockRCaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromValue(testViewRcaspResponse))
+      when(mockRcaspConnector.viewRcasp(any())(any(), any()))
+        .thenReturn(ResultT.fromValue(List(organisationRcaspDetailsViewUpdate)))
 
       val application = applicationBuilder(userAnswers = None)
-        .overrides(bind[RcaspConnector].toInstance(mockRCaspConnector))
+        .overrides(bind[RcaspConnector].toInstance(mockRcaspConnector))
         .build()
 
       running(application) {
@@ -151,22 +153,22 @@ class YourRcaspsControllerSpec extends SpecBase {
         val result = route(application, request).value
 
         val listWithItems =
-          YourRcaspsListWithActionsHelper.getYourRcaspsRows(testViewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList)(
+          YourRcaspsListWithActionsHelper.getYourRcaspsRows(List(organisationRcaspDetailsViewUpdate))(
             messages(application)
           )
 
         status(result)          mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(boundForm, listWithItems)(request, messages(application)).toString
 
-        verify(mockRCaspConnector, times(1)).viewRcasp(any())(any(), any())
+        verify(mockRcaspConnector, times(1)).viewRcasp(any())(any(), any())
       }
     }
 
     "must redirect to Journey Recovery when invalid data is submitted and the Rcasp connector returns an error" in {
-      when(mockRCaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromError(JsonValidationError))
+      when(mockRcaspConnector.viewRcasp(any())(any(), any())).thenReturn(ResultT.fromError(JsonValidationError))
 
       val application = applicationBuilder(userAnswers = None)
-        .overrides(bind[RcaspConnector].toInstance(mockRCaspConnector))
+        .overrides(bind[RcaspConnector].toInstance(mockRcaspConnector))
         .build()
 
       running(application) {
@@ -179,7 +181,7 @@ class YourRcaspsControllerSpec extends SpecBase {
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-        verify(mockRCaspConnector, times(1)).viewRcasp(any())(any(), any())
+        verify(mockRcaspConnector, times(1)).viewRcasp(any())(any(), any())
       }
     }
   }

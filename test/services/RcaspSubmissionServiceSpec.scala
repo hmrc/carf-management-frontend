@@ -21,6 +21,8 @@ import connectors.RcaspConnector
 import models.OrganisationOrIndividual.Individual
 import models.errors.ApiError.InternalServerError
 import models.errors.MandatoryInformationMissingError
+import models.requests.RcaspRequestCommon
+import models.requests.deleteRcasp.{RcaspDetails as DeleteRcaspDetails, RcaspManagementRequest as DeleteRcaspManagementRequest, RcaspRequest as DeleteRcaspRequest}
 import models.responses.SubmitRcaspResponse
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
@@ -252,6 +254,55 @@ class RcaspSubmissionServiceSpec extends SpecBase {
 
         verify(mockRcaspSubmissionHelper, times(1)).updateRcaspRequest(eqTo(carfId), eqTo(testUserAnswers))
         verify(mockRcaspConnector, times(0)).createRcasp(any())(any(), any())
+      }
+    }
+
+    ".removeRcasp" - {
+      "must return a Right(()) when the connector call succeeds" in {
+        when(mockRcaspConnector.deleteRcasp(any())(any(), any()))
+          .thenReturn(ResultT.fromValue(submitRcaspResponse))
+
+        val result: ResultT[Unit] = rcaspSubmissionService.removeRcasp(testCarfId, rcaspId)
+
+        result.value.futureValue mustBe Right(())
+
+        verify(mockRcaspConnector, times(1)).deleteRcasp(any())(any(), any())
+      }
+
+      "must build the DeleteRcaspRequest with the correct RequestCommon and RCASPID/SubscriptionID" in {
+        when(mockRcaspConnector.deleteRcasp(any())(any(), any()))
+          .thenReturn(ResultT.fromValue(submitRcaspResponse))
+
+        rcaspSubmissionService.removeRcasp(testCarfId, rcaspId).value.futureValue
+
+        val expectedRequest = DeleteRcaspRequest(
+          RCASPManagement = DeleteRcaspManagementRequest(
+            RequestCommon = RcaspRequestCommon(
+              OriginatingSystem = "MDTP",
+              TransmittingSystem = "EIS",
+              RequestType = "DELETE",
+              Regime = "CARF",
+              RequestParameters = None
+            ),
+            RequestDetails = DeleteRcaspDetails(
+              RCASPID = rcaspId,
+              SubscriptionID = testCarfId
+            )
+          )
+        )
+
+        verify(mockRcaspConnector, times(1)).deleteRcasp(eqTo(expectedRequest))(any(), any())
+      }
+
+      "must return a Left when the connector returns an error" in {
+        when(mockRcaspConnector.deleteRcasp(any())(any(), any()))
+          .thenReturn(ResultT.fromError(InternalServerError))
+
+        val result: ResultT[Unit] = rcaspSubmissionService.removeRcasp(testCarfId, rcaspId)
+
+        result.value.futureValue mustBe Left(InternalServerError)
+
+        verify(mockRcaspConnector, times(1)).deleteRcasp(any())(any(), any())
       }
     }
   }

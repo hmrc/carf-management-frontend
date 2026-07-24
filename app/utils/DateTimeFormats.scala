@@ -18,6 +18,7 @@ package utils
 
 import play.api.i18n.Lang
 
+import java.time.{LocalDate, LocalTime}
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -35,4 +36,17 @@ object DateTimeFormats {
 
   val dateTimeHintFormat: DateTimeFormatter =
     DateTimeFormatter.ofPattern("d M yyyy")
+
+  def formatDate(date: LocalDate): String = date.format(dateTimeFormatter)
+
+  def formatTime(time: LocalTime): String =
+    if (time == LocalTime.MIDNIGHT) {
+      "midnight"
+    } else if (time == LocalTime.NOON) {
+      "midday"
+    } else {
+      val timeFormatter = DateTimeFormatter.ofPattern("h:mma")
+      val formattedTime = time.format(timeFormatter).toLowerCase
+      formattedTime
+    }
 }
