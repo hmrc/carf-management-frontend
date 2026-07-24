@@ -592,9 +592,7 @@ class DetailsHelperSpec extends SpecBase {
             val section: Section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true).get
 
             val expectedReportForRegisteredBusinessUrl: String =
-              controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /registered-business/change-report-for-registered-business (CARF-351)")
-                .url
+              controllers.combined.routes.ChangeReportForRegisteredBusinessController.onPageLoad.url
             val expectedOrganisationNameUrl: String            =
               controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode).url
 

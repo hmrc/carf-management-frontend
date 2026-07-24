@@ -182,5 +182,7 @@ POST        /remove/other-access                                          contro
 
 GET         /remove/remove-rcasp                                          controllers.remove.RemoveRcaspController.onPageLoad()
 POST        /remove/remove-rcasp                                          controllers.remove.RemoveRcaspController.onSubmit()
-
 GET         /remove/rcasp-removed                                         controllers.remove.RcaspRemovedController.onPageLoad()
+
+GET         /registered-business/change-report-for-registered-business                  controllers.combined.ChangeReportForRegisteredBusinessController.onPageLoad
+POST        /registered-business/change-report-for-registered-business                  controllers.combined.ChangeReportForRegisteredBusinessController.onSubmit

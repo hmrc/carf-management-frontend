@@ -100,6 +100,10 @@ reportForRegisteredBusiness.legend = Is {0} an RCASP?
 reportForRegisteredBusiness.error.required = Select yes if the registered business is an RCASP
 reportForRegisteredBusiness.checkYourAnswersLabel = Is the business you registered as a reporting cryptoasset service provider (RCASP)?
 reportForRegisteredBusiness.change.hidden = Change if the business you registered as is a reporting cryptoasset service provider
+
+reportForRegisteredBusiness.changeDetails.title = Is this reporting cryptoasset service provider (RCASP) the business you registered as?
+reportForRegisteredBusiness.changeDetails.heading = Is this reporting cryptoasset service provider (RCASP) the business you registered as?
+reportForRegisteredBusiness.changeDetails.error.required = 	Select yes if this RCASP is the business you registered as
 reportForRegisteredBusiness.changeDetails.checkYourAnswersLabel = Is this reporting cryptoasset service provider (RCASP) the business you registered as?
 reportForRegisteredBusiness.changeDetails.change.hidden = Change if this reporting cryptoasset service provider is the business you registered as
 

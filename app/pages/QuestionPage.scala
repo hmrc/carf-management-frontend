@@ -16,6 +16,31 @@
 
 package pages
 
+import pages.individual.{IndividualEmailPage, IndividualHavePhonePage, IndividualNamePage, IndividualPhonePage, NiNumberPage}
+import pages.organisation.{OrganisationFirstContactEmailPage, OrganisationFirstContactHavePhonePage, OrganisationFirstContactNamePage, OrganisationFirstContactPhoneNumberPage, OrganisationSecondContactEmailPage, OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OrganisationSecondContactPhoneNumberPage}
 import queries.{Gettable, Settable}
 
-trait QuestionPage[A] extends Page with Gettable[A] with Settable[A]
+trait QuestionPage[A] extends Page with Gettable[A] with Settable[A] {
+
+  final lazy val organisationFirstContactPages = List(
+    OrganisationFirstContactNamePage,
+    OrganisationFirstContactEmailPage,
+    OrganisationFirstContactHavePhonePage,
+    OrganisationFirstContactPhoneNumberPage
+  )
+
+  final lazy val organisationSecondContactPages = List(
+    OrganisationSecondContactNamePage,
+    OrganisationSecondContactEmailPage,
+    OrganisationSecondContactHavePhonePage,
+    OrganisationSecondContactPhoneNumberPage
+  )
+
+  final lazy val individualPages = List(
+    IndividualNamePage,
+    NiNumberPage,
+    IndividualEmailPage,
+    IndividualHavePhonePage,
+    IndividualPhonePage
+  )
+}

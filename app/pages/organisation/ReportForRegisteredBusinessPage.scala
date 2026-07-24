@@ -16,12 +16,37 @@
 
 package pages.organisation
 
+import models.UserAnswers
 import pages.QuestionPage
+import pages.changeDetails.ChangeRcaspCachedDetails
+import pages.combined.OrganisationOrIndividualPage
 import play.api.libs.json.JsPath
+
+import scala.util.{Success, Try}
 
 case object ReportForRegisteredBusinessPage extends QuestionPage[Boolean] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "reportForRegisteredBusiness"
+
+  override def cleanup(value: Boolean, userAnswers: UserAnswers, hasChanged: Boolean): Try[UserAnswers] =
+    if (userAnswers.get(ChangeRcaspCachedDetails).isDefined) {
+      (hasChanged, value) match {
+        case (true, true)  =>
+          userAnswers.remove(
+            List(
+              OrganisationOrIndividualPage,
+              UtrPage
+            ) ++ individualPages ++ organisationFirstContactPages ++ organisationSecondContactPages
+          )
+        case (true, false) =>
+          userAnswers.remove(
+            List(RegisteredBusinessIsThisYourBusinessNamePage, RegisteredBusinessIsTheAddressCorrectPage)
+          )
+        case (false, _)    => Success(userAnswers)
+      }
+    } else {
+      Success(userAnswers)
+    }
 }

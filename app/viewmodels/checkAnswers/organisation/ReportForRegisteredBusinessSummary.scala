@@ -42,9 +42,7 @@ object ReportForRegisteredBusinessSummary {
             content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
             href =
               if (changeJourney)
-                controllers.routes.PlaceholderController
-                  .onPageLoad("Should nav to /registered-business/change-report-for-registered-business (CARF-351)")
-                  .url
+                controllers.combined.routes.ChangeReportForRegisteredBusinessController.onPageLoad.url
               else routes.ReportForRegisteredBusinessController.onPageLoad(ChangeMode).url
           ).withVisuallyHiddenText(
             if (changeJourney) messages("reportForRegisteredBusiness.changeDetails.change.hidden")
