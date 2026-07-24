@@ -63,7 +63,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
-      when(mockAppConfig.uploadFileUrl) thenReturn "ddd"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
@@ -91,7 +91,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
-      when(mockAppConfig.uploadFileUrl) thenReturn "ddd"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
@@ -121,7 +121,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
-      when(mockAppConfig.uploadFileUrl) thenReturn "ddd"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(false))
 
@@ -149,7 +149,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
-      when(mockAppConfig.uploadFileUrl) thenReturn "ddd"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromError(InternalServerError))
@@ -177,7 +177,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
-      when(mockAppConfig.uploadFileUrl) thenReturn "ddd"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
@@ -203,7 +203,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
-      when(mockAppConfig.uploadFileUrl) thenReturn "ddd"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
