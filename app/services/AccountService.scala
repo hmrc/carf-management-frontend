@@ -28,7 +28,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class AccountService @Inject (
+class AccountService @Inject() (
     rcaspConnector: RcaspConnector,
     subscriptionConnector: SubscriptionConnector
 ) extends Logging {
