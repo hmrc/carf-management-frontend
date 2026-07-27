@@ -12,6 +12,7 @@ site.confirmAndAdd = Confirm and add
 site.signIn = Sign in
 site.govuk = GOV.UK
 site.confirmAndSend = Confirm and send
+site.warning = Warning
 
 date.day = Day
 date.month = Month
@@ -411,7 +412,6 @@ removeRcasp.error.required = Select yes if you are sure you want to remove the R
 removeRcasp.p1 = You should make any changes to the reports before you remove {0}.
 removeRcasp.p2 = If someone adds {0} as a reporting cryptoasset service provider (RCASP) again in the future, then they will have a different RCASP ID.
 removeRcasp.warning = Removing an RCASP that has inaccurate or incomplete reports could result in a penalty for them.
-removeRcasp.generic.warning = Warning
 removeRcasp.question = Are you sure you want to permanently remove {0}?
 
 rcaspRemoved.title = Reporting cryptoasset service provider (RCASP) removed
