@@ -12,6 +12,7 @@ site.confirmAndAdd = Confirm and add
 site.signIn = Sign in
 site.govuk = GOV.UK
 site.confirmAndSend = Confirm and send
+site.warning = Warning
 
 date.day = Day
 date.month = Month
