@@ -20,6 +20,7 @@ import play.api.i18n.Lang
 
 import java.time.{LocalDate, LocalTime}
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 object DateTimeFormats {
@@ -40,9 +41,9 @@ object DateTimeFormats {
   def formatDate(date: LocalDate): String = date.format(dateTimeFormatter)
 
   def formatTime(time: LocalTime): String =
-    if (time == LocalTime.MIDNIGHT) {
+    if (time.truncatedTo(ChronoUnit.MINUTES) == LocalTime.MIDNIGHT) {
       "midnight"
-    } else if (time == LocalTime.NOON) {
+    } else if (time.truncatedTo(ChronoUnit.MINUTES) == LocalTime.NOON) {
       "midday"
     } else {
       val timeFormatter = DateTimeFormatter.ofPattern("h:mma")
