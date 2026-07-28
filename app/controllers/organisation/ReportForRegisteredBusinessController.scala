@@ -21,6 +21,7 @@ import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import models.{CachedBusinessDetails, Mode, UserAnswers}
 import navigation.Navigator
+import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
 import play.api.Logging
 import play.api.data.Form
@@ -62,8 +63,12 @@ class ReportForRegisteredBusinessController @Inject() (
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
       implicit request =>
-        request.utr match {
-          case Some(utr) =>
+        lazy val preparedForm = request.userAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
+
+        (request.utr, request.userAnswers.get(CachedBusinessDetailsPage)) match {
+          case (Some(_), Some(cached)) =>
+            Future.successful(Ok(view(preparedForm, mode, cached.name)))
+          case (Some(utr), None)       =>
             registrationService.getBusinessWithCtUtr(utr.uniqueTaxPayerReference).value.flatMap {
               case Right(businessDetails) =>
                 countryListFactory.getDescriptionFromCode(businessDetails.address.countryCode) match {
@@ -75,16 +80,9 @@ class ReportForRegisteredBusinessController @Inject() (
                     )
 
                     for {
-                      updatedAnswers <- Future.fromTry(
-                                          request.userAnswers.set(CachedBusinessDetailsPage, cached)
-                                        )
+                      updatedAnswers <- Future.fromTry(request.userAnswers.set(CachedBusinessDetailsPage, cached))
                       _              <- sessionRepository.set(updatedAnswers)
-                    } yield {
-                      val preparedForm =
-                        updatedAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
-
-                      Ok(view(preparedForm, mode, cached.name))
-                    }
+                    } yield Ok(view(preparedForm, mode, cached.name))
 
                   case None =>
                     logger.error(
@@ -100,7 +98,7 @@ class ReportForRegisteredBusinessController @Inject() (
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
             }
 
-          case None =>
+          case (None, _) =>
             logger.warn("[ReportForRegisteredBusinessController][onPageLoad] CT UTR not found in request")
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
@@ -148,11 +146,18 @@ class ReportForRegisteredBusinessController @Inject() (
       carfId: String,
       ctUtr: Option[String]
   )(implicit hc: HeaderCarrier): ResultT[UserAnswers] =
-    accountService.getNumberOfRcaspsCurrentlyAdded(carfId = carfId).map { numberOfRcasps =>
-      if (numberOfRcasps == ZERO && pageAnswer && ctUtr.nonEmpty) {
-        userAnswers.copy(rcaspIsRegisteredBusiness = true)
-      } else {
-        userAnswers.copy(rcaspIsRegisteredBusiness = false)
+    userAnswers
+      .get(ChangeRcaspCachedDetails)
+      .fold {
+        accountService.getNumberOfRcaspsCurrentlyAdded(carfId = carfId).map { numberOfRcasps =>
+          if (numberOfRcasps == ZERO && pageAnswer && ctUtr.nonEmpty) {
+            userAnswers.copy(rcaspIsRegisteredBusiness = true)
+          } else {
+            userAnswers.copy(rcaspIsRegisteredBusiness = false)
+          }
+        }
+      } { details =>
+        if (details.IsRCASPUser && pageAnswer) ResultT.fromValue(userAnswers.copy(rcaspIsRegisteredBusiness = true))
+        else ResultT.fromValue(userAnswers.copy(rcaspIsRegisteredBusiness = false))
       }
-    }
 }

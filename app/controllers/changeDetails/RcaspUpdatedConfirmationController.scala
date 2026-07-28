@@ -14,43 +14,41 @@
  * limitations under the License.
  */
 
-package controllers
+package controllers.changeDetails
 
 import controllers.actions.*
-import models.NormalMode
-import pages.changeDetails.ChangeRcaspCachedDetails
+import pages.SubmissionSucceededPage
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.InformationMissingView
+import views.html.changeDetails.RcaspUpdatedConfirmationView
 
 import javax.inject.Inject
 
-class InformationMissingController @Inject() (
+class RcaspUpdatedConfirmationController @Inject() (
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    submissionLock: SubmissionLockAction,
     val controllerComponents: MessagesControllerComponents,
-    view: InformationMissingView
+    view: RcaspUpdatedConfirmationView
 ) extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData) {
-    implicit request =>
-      val continueUrl =
-        request.userAnswers
-          .get(ChangeRcaspCachedDetails)
-          .map(_.IsRCASPUser)
-          .fold(
-            routes.RoutingController.onPageLoad(NormalMode).url
-          ) { isRcaspUser =>
-            if (isRcaspUser)
-              controllers.organisation.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
-            else controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
-          }
+  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
+    val submissionSucceeded = request.userAnswers.get(SubmissionSucceededPage).contains(true)
+    val maybeRcaspName      = request.userAnswers.retrieveRcaspName
 
-      Ok(view(continueUrl))
+    maybeRcaspName match {
+      case Some(name) if submissionSucceeded =>
+        Ok(view(name))
+      case _                                 =>
+        logger.warn(
+          "[RcaspUpdatedConfirmationController][onPageLoad] Missing submission flag or RCASP name in user answers"
+        )
+        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+    }
   }
 }

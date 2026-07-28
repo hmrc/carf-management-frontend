@@ -18,30 +18,81 @@ package controllers
 
 import base.SpecBase
 import models.NormalMode
+import pages.changeDetails.ChangeRcaspCachedDetails
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.InformationMissingView
 
 class InformationMissingControllerSpec extends SpecBase {
 
+  lazy val informationMissingRoute: String = routes.InformationMissingController.onPageLoad().url
+
   "InformationMissing Controller" - {
 
-    "must return OK and correct view for GET" in {
-
+    "must return OK and the correct view for a GET when user answers do not contain ChangeRcaspCachedDetails" in {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.InformationMissingController.onPageLoad().url)
+        val request = FakeRequest(GET, informationMissingRoute)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[InformationMissingView]
+        val view        = application.injector.instanceOf[InformationMissingView]
+        val continueUrl = routes.RoutingController.onPageLoad(NormalMode).url
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(routes.RoutingController.onPageLoad(NormalMode).url)(
-          request,
-          messages(application)
-        ).toString
+        contentAsString(result) mustEqual view(continueUrl)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when user answers contain ChangeRcaspCachedDetails with IsRCASPUser = true" in {
+      val userAnswers = emptyUserAnswers
+        .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, informationMissingRoute)
+
+        val result = route(application, request).value
+
+        val view        = application.injector.instanceOf[InformationMissingView]
+        val continueUrl =
+          controllers.organisation.routes.ReportForRegisteredBusinessController.onPageLoad(NormalMode).url
+
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(continueUrl)(request, messages(application)).toString
+      }
+    }
+
+    "must return OK and the correct view for a GET when user answers contain ChangeRcaspCachedDetails with IsRCASPUser = false" in {
+      val userAnswers = emptyUserAnswers.withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, informationMissingRoute)
+
+        val result = route(application, request).value
+
+        val view        = application.injector.instanceOf[InformationMissingView]
+        val continueUrl = controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode).url
+
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(continueUrl)(request, messages(application)).toString
+      }
+    }
+
+    "must redirect to Journey Recovery for a GET if no existing data is found" in {
+      val application = applicationBuilder(userAnswers = None).build()
+
+      running(application) {
+        val request = FakeRequest(GET, informationMissingRoute)
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
     }
   }

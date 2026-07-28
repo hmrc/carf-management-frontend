@@ -90,8 +90,7 @@ class RegisteredBusinessChangeDetailsController @Inject() (
                     uaWithSuccessFlag <- Future.fromTry(request.userAnswers.set(SubmissionSucceededPage, true))
                     _                 <- sessionRepository.set(uaWithSuccessFlag)
                   } yield Redirect(
-                    controllers.routes.PlaceholderController
-                      .onPageLoad(s"Successful submission for $rcaspId. Should redirect to /details-updated (CARF-353)")
+                    controllers.changeDetails.routes.RcaspUpdatedConfirmationController.onPageLoad()
                   )
                 case Left(error) =>
                   logger.warn(

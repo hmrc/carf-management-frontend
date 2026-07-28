@@ -193,7 +193,7 @@ class CheckDetailsControllerSpec extends SpecBase {
       "must set the SubmissionSucceededPage flag as true and redirect to the RCASP added page if submission is successful" in new Setup(
         individualCompleteUserAnswers
       ) {
-        when(mockRcaspService.submitRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
+        when(mockRcaspService.createRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
           .thenReturn(ResultT.fromValue(submitRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
@@ -203,7 +203,7 @@ class CheckDetailsControllerSpec extends SpecBase {
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.RcaspAddedConfirmationController.onPageLoad().url
 
-        verify(mockRcaspService, times(1)).submitRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
+        verify(mockRcaspService, times(1)).createRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
         verify(mockSessionRepository, times(1)).set(
           eqTo(
             individualCompleteUserAnswers
@@ -214,7 +214,7 @@ class CheckDetailsControllerSpec extends SpecBase {
       }
 
       "must redirect to Journey Recovery if submission failed" in new Setup(individualCompleteUserAnswers) {
-        when(mockRcaspService.submitRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
+        when(mockRcaspService.createRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
           .thenReturn(ResultT.fromError(InternalServerError))
 
         val request                = FakeRequest(POST, checkDetailsRoute)
@@ -223,7 +223,7 @@ class CheckDetailsControllerSpec extends SpecBase {
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
-        verify(mockRcaspService, times(1)).submitRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
+        verify(mockRcaspService, times(1)).createRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
         verify(mockSessionRepository, times(0)).set(any())
       }
 

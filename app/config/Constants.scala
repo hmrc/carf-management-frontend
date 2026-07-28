@@ -54,4 +54,7 @@ object Constants {
   val acceptedUkCountryCode: Set[String] = Set(ukCountryCode, ukAlternativeCode)
 
   val noneOfTheseValue = "none"
+
+  val individualPartyType   = "Individual"
+  val organisationPartyType = "Organisation"
 }

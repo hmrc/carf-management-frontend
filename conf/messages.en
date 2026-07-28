@@ -384,6 +384,11 @@ registeredBusinessChangeDetails.declaration.subtitle = Now change these details 
 registeredBusinessChangeDetails.declaration.p1 = By changing these details, you are confirming that the information is correct and complete to the best of your knowledge.
 registeredBusinessChangeDetails.back.link = Back to manage your RCASPs
 
+rcaspUpdatedConfirmation.title = Details updated for the reporting cryptoasset service provider (RCASP)
+rcaspUpdatedConfirmation.panel.heading = Details updated for {0}
+rcaspUpdatedConfirmation.next.link1 = Back to manage your reporting cryptoasset service providers (RCASPs)
+rcaspUpdatedConfirmation.next.link2 = Back to manage your cryptoasset reports
+
 removeUserAccess.title.individual = Will you need to access or update any previous reports for the reporting cryptoasset service provider (RCASP)?
 removeUserAccess.title.rcaspIsUser = Will anyone at your business need to access or update any previous reports for the business?
 removeUserAccess.title.otherOrg = Will anyone at your business need to access or update any previous reports for the reporting cryptoasset service provider (RCASP)?
