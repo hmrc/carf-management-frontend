@@ -149,7 +149,7 @@ class RegisteredBusinessDetailsHelperSpec extends SpecBase {
             val section = helper.getRegisteredBusinessSection(userAnswers, changeJourney = true).get
 
             val expectedReportForRegisteredBusinessUrl: String =
-              controllers.combined.routes.ChangeReportForRegisteredBusinessController.onPageLoad.url
+              controllers.organisation.routes.ReportForRegisteredBusinessController.onPageLoad(ChangeMode).url
             val expectedOrganisationNameUrl: String            =
               controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController
                 .onPageLoad(ChangeMode)

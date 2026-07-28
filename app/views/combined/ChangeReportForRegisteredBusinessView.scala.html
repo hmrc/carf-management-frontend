@@ -27,7 +27,7 @@
 @layout(pageTitle = title(form, messages("reportForRegisteredBusiness.changeDetails.title"))) {
 
     @formHelper(
-        action = controllers.combined.routes.ChangeReportForRegisteredBusinessController.onSubmit,
+        action = controllers.organisation.routes.ReportForRegisteredBusinessController.onSubmit(NormalMode),
         Symbol("autoComplete") -> "off"
     ) {
 

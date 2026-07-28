@@ -19,14 +19,16 @@ package controllers.organisation
 import config.Constants.ZERO
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import models.{CachedBusinessDetails, Mode, UserAnswers}
+import models.requests.DataRequest
+import models.viewAndUpdateRcasp.RcaspDetails
+import models.{CachedBusinessDetails, ChangeMode, Mode, NormalMode, UserAnswers}
 import navigation.Navigator
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Result}
 import repositories.SessionRepository
 import services.{AccountService, RegistrationService}
 import types.ResultT
@@ -58,87 +60,141 @@ class ReportForRegisteredBusinessController @Inject() (
     with I18nSupport
     with Logging {
 
-  val form: Form[Boolean] = formProvider("reportForRegisteredBusiness.error.required")
+  val form: Form[Boolean]         = formProvider("reportForRegisteredBusiness.error.required")
+  private lazy val recovery: Call = controllers.routes.JourneyRecoveryController.onPageLoad()
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
       implicit request =>
-        lazy val preparedForm = request.userAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
+        request.userAnswers.get(ChangeRcaspCachedDetails).fold(onPageLoadAddVersion(mode)) { _ =>
+          onPageLoadChangeDetailsVersion(mode)
+        }
+    }
 
-        (request.utr, request.userAnswers.get(CachedBusinessDetailsPage)) match {
-          case (Some(_), Some(cached)) =>
-            Future.successful(Ok(view(preparedForm, mode, cached.name)))
-          case (Some(utr), None)       =>
-            registrationService.getBusinessWithCtUtr(utr.uniqueTaxPayerReference).value.flatMap {
-              case Right(businessDetails) =>
-                countryListFactory.getDescriptionFromCode(businessDetails.address.countryCode) match {
-                  case Some(countryName) =>
-                    val cached = CachedBusinessDetails(
-                      name = businessDetails.name,
-                      address = businessDetails.address,
-                      countryName = countryName
-                    )
+  private def onPageLoadAddVersion(mode: Mode)(implicit request: DataRequest[AnyContent]): Future[Result] =
+    request.utr match {
+      case Some(utr) =>
+        registrationService.getBusinessWithCtUtr(utr.uniqueTaxPayerReference).value.flatMap {
+          case Right(businessDetails) =>
+            countryListFactory.getDescriptionFromCode(businessDetails.address.countryCode) match {
+              case Some(countryName) =>
+                val cached = CachedBusinessDetails(
+                  name = businessDetails.name,
+                  address = businessDetails.address,
+                  countryName = countryName
+                )
 
-                    for {
-                      updatedAnswers <- Future.fromTry(request.userAnswers.set(CachedBusinessDetailsPage, cached))
-                      _              <- sessionRepository.set(updatedAnswers)
-                    } yield Ok(view(preparedForm, mode, cached.name))
+                for {
+                  updatedAnswers <- Future.fromTry(
+                                      request.userAnswers.set(CachedBusinessDetailsPage, cached)
+                                    )
+                  _              <- sessionRepository.set(updatedAnswers)
+                } yield {
+                  val preparedForm =
+                    updatedAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
 
-                  case None =>
-                    logger.error(
-                      s"[ReportForRegisteredBusinessController][onPageLoad] " +
-                        s"Country with code ${businessDetails.address.countryCode} not found in list of countries"
-                    )
-                    Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+                  Ok(view(preparedForm, mode, Some(cached.name), false))
                 }
 
-              case Left(error) =>
-                logger
-                  .warn(s"[ReportForRegisteredBusinessController][onPageLoad] Failed to get business details: $error")
+              case None =>
+                logger.error(
+                  s"[ReportForRegisteredBusinessController][onPageLoad] " +
+                    s"Country with code ${businessDetails.address.countryCode} not found in list of countries"
+                )
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
             }
-
-          case (None, _) =>
-            logger.warn("[ReportForRegisteredBusinessController][onPageLoad] CT UTR not found in request")
+          case Left(error)            =>
+            logger
+              .warn(s"[ReportForRegisteredBusinessController][onPageLoad][Add] Failed to get business details: $error")
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
+
+      case None =>
+        logger.warn("[ReportForRegisteredBusinessController][onPageLoad][Add] CT UTR not found in request")
+        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+    }
+
+  private def onPageLoadChangeDetailsVersion(mode: Mode)(implicit request: DataRequest[AnyContent]): Future[Result] =
+    request.utr match {
+      case Some(utr) =>
+        registrationService.getBusinessWithCtUtr(utr.uniqueTaxPayerReference).value.map {
+          case Right(businessDetails) =>
+            request.userAnswers
+              .get(ReportForRegisteredBusinessPage)
+              .fold(Redirect(recovery))(value => Ok(view(form.fill(value), mode, None, true)))
+          case Left(error)            =>
+            logger
+              .warn(
+                s"[ReportForRegisteredBusinessController][onPageLoad][Change] Failed to get business details: " +
+                  s"$error needed to verify user is a business"
+              )
+            Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+        }
+      case None      =>
+        logger.warn("[ReportForRegisteredBusinessController][onPageLoad][Change] CT UTR not found in request")
+        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
       implicit request =>
+        val userAnswers                              = request.userAnswers
+        lazy val hasValueChanged: Boolean => Boolean =
+          newValue => !userAnswers.get(ReportForRegisteredBusinessPage).contains(newValue)
+
         form
           .bindFromRequest()
           .fold(
             formWithErrors =>
-              request.userAnswers.get(CachedBusinessDetailsPage) match {
-                case Some(cached) => Future.successful(BadRequest(view(formWithErrors, mode, cached.name)))
-                case None         =>
-                  logger.warn("[ReportForRegisteredBusinessController][onSubmit] No cached business details found")
-                  Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-              },
+              userAnswers
+                .get(ChangeRcaspCachedDetails)
+                .fold {
+                  userAnswers.get(CachedBusinessDetailsPage) match {
+                    case Some(cached) =>
+                      Future.successful(BadRequest(view(formWithErrors, mode, Some(cached.name), false)))
+                    case None         =>
+                      logger.warn("[ReportForRegisteredBusinessController][onSubmit] No cached business details found")
+                      Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+                  }
+                }(_ => Future.successful(BadRequest(view(formWithErrors, mode, None, true)))),
             value =>
-              setRcaspIsRegisteredBusinessFlag(
-                userAnswers = request.userAnswers,
-                pageAnswer = value,
-                carfId = request.carfId,
-                ctUtr = request.utr.map(_.uniqueTaxPayerReference)
-              ).value.flatMap {
-                case Right(userAnswers) =>
-                  for {
-                    updatedAnswers <- Future.fromTry(userAnswers.set(ReportForRegisteredBusinessPage, value))
-                    _              <- sessionRepository.set(updatedAnswers)
-                  } yield Redirect(
-                    navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers)
-                  )
-                case Left(error)        =>
-                  logger.error(
-                    s"[ReportForRegisteredBusinessController][onSubmit] Error getting how many Rcasps user has: $error"
-                  )
-                  Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+              userAnswers.get(ChangeRcaspCachedDetails).fold(onSubmitAddVersion(mode, value)) { details =>
+                onSubmitChangeVersion(mode, value, details, userAnswers, hasValueChanged(value))
               }
           )
     }
+
+  private def onSubmitAddVersion(mode: Mode, value: Boolean)(implicit request: DataRequest[AnyContent]) =
+    setRcaspIsRegisteredBusinessFlag(
+      userAnswers = request.userAnswers,
+      pageAnswer = value,
+      carfId = request.carfId,
+      ctUtr = request.utr.map(_.uniqueTaxPayerReference)
+    ).value.flatMap {
+      case Right(userAnswers) =>
+        for {
+          updatedAnswers <- Future.fromTry(userAnswers.set(ReportForRegisteredBusinessPage, value))
+          _              <- sessionRepository.set(updatedAnswers)
+        } yield Redirect(
+          navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers)
+        )
+      case Left(error)        =>
+        logger.error(
+          s"[ReportForRegisteredBusinessController][onSubmit] Error getting how many Rcasps user has: $error"
+        )
+        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+    }
+
+  private def onSubmitChangeVersion(
+      mode: Mode,
+      value: Boolean,
+      details: RcaspDetails,
+      userAnswers: UserAnswers,
+      hasValueChanged: Boolean
+  ): Future[Result] =
+    if (hasValueChanged) {
+      ifChanged(value, details, userAnswers)
+    } else Future.successful(ifUnchanged(value, details, mode))
 
   private def setRcaspIsRegisteredBusinessFlag(
       userAnswers: UserAnswers,
@@ -146,18 +202,57 @@ class ReportForRegisteredBusinessController @Inject() (
       carfId: String,
       ctUtr: Option[String]
   )(implicit hc: HeaderCarrier): ResultT[UserAnswers] =
-    userAnswers
-      .get(ChangeRcaspCachedDetails)
-      .fold {
-        accountService.getNumberOfRcaspsCurrentlyAdded(carfId = carfId).map { numberOfRcasps =>
-          if (numberOfRcasps == ZERO && pageAnswer && ctUtr.nonEmpty) {
-            userAnswers.copy(rcaspIsRegisteredBusiness = true)
-          } else {
-            userAnswers.copy(rcaspIsRegisteredBusiness = false)
-          }
-        }
-      } { details =>
-        if (details.IsRCASPUser && pageAnswer) ResultT.fromValue(userAnswers.copy(rcaspIsRegisteredBusiness = true))
-        else ResultT.fromValue(userAnswers.copy(rcaspIsRegisteredBusiness = false))
+    accountService.getNumberOfRcaspsCurrentlyAdded(carfId = carfId).map { numberOfRcasps =>
+      if (numberOfRcasps == ZERO && pageAnswer && ctUtr.nonEmpty) {
+        userAnswers.copy(rcaspIsRegisteredBusiness = true)
+      } else {
+        userAnswers.copy(rcaspIsRegisteredBusiness = false)
       }
+    }
+
+  private def ifChanged(newValue: Boolean, details: RcaspDetails, userAnswers: UserAnswers): Future[Result] = {
+
+    def saveUserAnswers(call: Call) =
+      for {
+        a <- Future.fromTry(userAnswers.set(ReportForRegisteredBusinessPage, newValue))
+        b  = a.copy(rcaspIsRegisteredBusiness = newValue)
+        _ <- sessionRepository.set(b)
+      } yield Redirect(call)
+
+    if (newValue) {
+      if (details.IsRCASPUser) {
+        saveUserAnswers(
+          controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode)
+        )
+      } else {
+        logger.warn(
+          "[ReportForRegisteredBusinessController][Change Journey] Cannot change RCASP to isRCASPUser to" +
+            "true if previously false in API"
+        )
+        Future.successful(Redirect(recovery))
+      }
+    } else {
+      saveUserAnswers(
+        controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode)
+      )
+    }
+  }
+
+  private def ifUnchanged(newValue: Boolean, details: RcaspDetails, mode: Mode): Result =
+    Redirect {
+      mode match {
+        case NormalMode =>
+          if (newValue) {
+            controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode)
+          } else {
+            controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode)
+          }
+        case ChangeMode =>
+          if (newValue) {
+            controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(details.RCASPID)
+          } else {
+            controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(details.RCASPID)
+          }
+      }
+    }
 }

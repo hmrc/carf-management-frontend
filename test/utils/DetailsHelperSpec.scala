@@ -592,7 +592,7 @@ class DetailsHelperSpec extends SpecBase {
             val section: Section = testHelper.getOrganisationSectionMaybe(userAnswers, changeJourney = true).get
 
             val expectedReportForRegisteredBusinessUrl: String =
-              controllers.combined.routes.ChangeReportForRegisteredBusinessController.onPageLoad.url
+              controllers.organisation.routes.ReportForRegisteredBusinessController.onPageLoad(ChangeMode).url
             val expectedOrganisationNameUrl: String            =
               controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode).url
 

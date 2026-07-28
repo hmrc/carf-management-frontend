@@ -40,8 +40,8 @@ POST        /change-individual-name                                       contro
 
 GET         /report-for-registered-business                               controllers.organisation.ReportForRegisteredBusinessController.onPageLoad(mode: Mode = NormalMode)
 POST        /report-for-registered-business                               controllers.organisation.ReportForRegisteredBusinessController.onSubmit(mode: Mode = NormalMode)
-GET         /change-report-for-registered-business                        controllers.organisation.ReportForRegisteredBusinessController.onPageLoad(mode: Mode = ChangeMode)
-POST        /change-report-for-registered-business                        controllers.organisation.ReportForRegisteredBusinessController.onSubmit(mode: Mode = ChangeMode)
+GET         /registered-business/change-report-for-registered-business    controllers.organisation.ReportForRegisteredBusinessController.onPageLoad(mode: Mode = ChangeMode)
+POST        /registered-business/change-report-for-registered-business    controllers.organisation.ReportForRegisteredBusinessController.onSubmit(mode: Mode = ChangeMode)
 
 GET         /registered-business/is-this-your-business-name               controllers.organisation.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(mode: Mode = NormalMode)
 POST        /registered-business/is-this-your-business-name               controllers.organisation.RegisteredBusinessIsThisYourBusinessNameController.onSubmit(mode: Mode = NormalMode)
@@ -183,6 +183,3 @@ POST        /remove/other-access                                          contro
 GET         /remove/remove-rcasp                                          controllers.remove.RemoveRcaspController.onPageLoad()
 POST        /remove/remove-rcasp                                          controllers.remove.RemoveRcaspController.onSubmit()
 GET         /remove/rcasp-removed                                         controllers.remove.RcaspRemovedController.onPageLoad()
-
-GET         /registered-business/change-report-for-registered-business                  controllers.combined.ChangeReportForRegisteredBusinessController.onPageLoad
-POST        /registered-business/change-report-for-registered-business                  controllers.combined.ChangeReportForRegisteredBusinessController.onSubmit

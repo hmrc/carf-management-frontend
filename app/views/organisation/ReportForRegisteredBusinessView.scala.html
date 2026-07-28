@@ -22,9 +22,9 @@
         govukButton: GovukButton
 )
 
-@(form: Form[Boolean], mode: Mode, businessName: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[Boolean], mode: Mode, businessName: Option[String], isChangeJourney: Boolean)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("reportForRegisteredBusiness.title"))) {
+@layout(pageTitle = title(form, if (isChangeJourney) messages("reportForRegisteredBusiness.changeDetails.title") else messages("reportForRegisteredBusiness.title"))) {
 
     @formHelper(
         action = controllers.organisation.routes.ReportForRegisteredBusinessController.onSubmit(mode),
@@ -35,23 +35,32 @@
             @govukErrorSummary(ErrorSummaryViewModel(form))
         }
 
-        <h1 class="govuk-heading-l">@messages("reportForRegisteredBusiness.heading")</h1>
+        @if(!isChangeJourney) {
+            <h1 class="govuk-heading-l">@messages("reportForRegisteredBusiness.heading")</h1>
 
-        <p class="govuk-body">
-        @messages("reportForRegisteredBusiness.p1", businessName)
-        </p>
+            <p class="govuk-body">
+            @messages("reportForRegisteredBusiness.p1", businessName)
+            </p>
 
-        <p class="govuk-body">
-        @messages("reportForRegisteredBusiness.p2", businessName)
-        </p>
+            <p class="govuk-body">
+            @messages("reportForRegisteredBusiness.p2", businessName)
+            </p>
 
-        @govukRadios(
-            RadiosViewModel.yesNo(
-                field = form("value"),
-                legend = LegendViewModel(messages("reportForRegisteredBusiness.legend", businessName))
-                .withCssClass("govuk-fieldset__legend--m")
-            ).copy(classes = "")
-        )
+            @govukRadios(
+                RadiosViewModel.yesNo(
+                    field = form("value"),
+                    legend = LegendViewModel(messages("reportForRegisteredBusiness.legend", businessName))
+                    .withCssClass("govuk-fieldset__legend--m")
+                ).copy(classes = "")
+            )
+        } else {
+            @govukRadios(
+                RadiosViewModel.yesNo(
+                    field = form("value"),
+                    legend = LegendViewModel(messages("reportForRegisteredBusiness.changeDetails.heading")).asPageHeading()
+                ).copy(classes = "")
+            )
+        }
 
         @govukButton(
             ButtonViewModel(messages("site.continue")).withAttribute("id" -> "continue")
