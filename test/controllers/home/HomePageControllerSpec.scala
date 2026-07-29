@@ -62,6 +62,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
@@ -76,7 +77,7 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(basicViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(
+        contentAsString(result) mustEqual view(basicViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb", "ddd")(
           request,
           messages(application)
         ).toString
@@ -89,6 +90,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
@@ -105,7 +107,7 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(expectedViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(
+        contentAsString(result) mustEqual view(expectedViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb", "ddd")(
           request,
           messages(application)
         ).toString
@@ -118,6 +120,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(false))
 
@@ -132,7 +135,7 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(negativeViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb")(
+        contentAsString(result) mustEqual view(negativeViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb", "ddd")(
           request,
           messages(application)
         ).toString
@@ -145,6 +148,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromError(InternalServerError))
@@ -172,6 +176,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
@@ -197,6 +202,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(

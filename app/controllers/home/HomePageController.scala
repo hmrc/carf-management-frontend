@@ -70,7 +70,8 @@ class HomePageController @Inject() (
         case Right(viewModel) =>
           val aeoiEmail: String               = appConfig.aeoiEmailAddress
           val changeContactDetailsUrl: String = appConfig.changeContactDetailsIndexUrl
-          Future.successful(Ok(view(viewModel, aeoiEmail, changeContactDetailsUrl)))
+          val uploadFileUrl: String           = appConfig.carfReportingFrontendUploadFileUrl
+          Future.successful(Ok(view(viewModel, aeoiEmail, changeContactDetailsUrl, uploadFileUrl)))
       }
   }
 }

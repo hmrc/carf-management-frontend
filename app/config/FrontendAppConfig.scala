@@ -48,6 +48,10 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val registrationUrl: String              = configuration.get[String]("urls.registration")
   val changeContactDetailsIndexUrl: String = configuration.get[String]("urls.changeContactDetails")
 
+  private lazy val carfReportingFrontendBaseUrl: String = configuration.get[String]("urls.reportingFrontendBaseUrl")
+  lazy val carfReportingFrontendUploadFileUrl: String   =
+    s"$carfReportingFrontendBaseUrl/send-a-cryptoasset-report/report/upload-file"
+
   val aeoiEmailAddress: String = configuration.get("email.aeoi")
 
   private val exitSurveyBaseUrl: String = configuration.get[Service]("microservice.services.feedback-frontend").baseUrl

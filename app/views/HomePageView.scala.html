@@ -22,7 +22,7 @@
         link: components.Link
 )
 
-@(viewModel: HomePageViewModel, aeoiEmail: String, changeContactDetailsUrl: String)(implicit request: Request[_], messages: Messages)
+@(viewModel: HomePageViewModel, aeoiEmail: String, changeContactDetailsUrl: String, uploadFileUrl: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("homePage.title")), showBackLink = false) {
 
@@ -32,16 +32,17 @@
         <p class="govuk-body">@viewModel.getNoRcaspsSectionText.get._1 @link(viewModel.getNoRcaspsSectionLink, viewModel.getNoRcaspsSectionText.get._2, fullStop = true)</p>
     }
 
-    <p class="govuk-body">@messages("homePage.carfId.p1") <br>@viewModel.carfId</p>
+    <p class="govuk-body">@messages("homePage.carfId.p1") <br>
+        @viewModel.carfId</p>
 
     @if(!viewModel.hasZeroRcaspsAdded) {
         <div class="govuk-!-padding-top-5">
             <h2 class="govuk-heading-m">@messages("homePage.yourReports.subheading")</h2>
-            <p class="govuk-body govuk-!-margin-bottom-2">@link(viewModel.getUploadXmlLink, messages("homePage.yourReports.linkText"))</p>
+            <p class="govuk-body govuk-!-margin-bottom-2">@link(uploadFileUrl, messages("homePage.yourReports.linkText"))</p>
 
-        @if(viewModel.hasSentFilesInLast28Days) {
-            <p class="govuk-body">@link(viewModel.getViewResultsLink, messages("homePage.viewResults.linkText"))</p>
-        }
+            @if(viewModel.hasSentFilesInLast28Days) {
+                <p class="govuk-body">@link(viewModel.getViewResultsLink, messages("homePage.viewResults.linkText"))</p>
+            }
         </div>
 
         <div class="govuk-!-padding-top-5">
