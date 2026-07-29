@@ -19,7 +19,7 @@ package viewmodels.changeDetails
 import models.UserAnswers
 import pages.changeDetails.ChangeRcaspCachedDetails
 import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*
 import viewmodels.implicits.*
@@ -30,7 +30,7 @@ object RcaspIdSummary {
     answers.get(ChangeRcaspCachedDetails).map { rcaspDetails =>
       SummaryListRowViewModel(
         key = "rcaspId.checkYourAnswersLabel",
-        value = ValueViewModel(HtmlFormat.escape(rcaspDetails.RCASPID).toString),
+        value = ValueViewModel(HtmlContent(rcaspDetails.RCASPID)),
         actions = Seq.empty
       )
     }
