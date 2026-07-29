@@ -66,8 +66,8 @@ class ReportForRegisteredBusinessController @Inject() (
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
       implicit request =>
-        request.userAnswers.get(ChangeRcaspCachedDetails).fold(onPageLoadAddVersion(mode)) { _ =>
-          onPageLoadChangeDetailsVersion(mode)
+        request.userAnswers.get(ChangeRcaspCachedDetails).fold(onPageLoadAddVersion(mode)) { details =>
+          Future.successful(onPageLoadChangeDetailsVersion(mode, details.IsRCASPUser))
         }
     }
 
@@ -114,25 +114,25 @@ class ReportForRegisteredBusinessController @Inject() (
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
     }
 
-  private def onPageLoadChangeDetailsVersion(mode: Mode)(implicit request: DataRequest[AnyContent]): Future[Result] =
+  private def onPageLoadChangeDetailsVersion(mode: Mode, isRcaspUser: Boolean)(implicit
+      request: DataRequest[AnyContent]
+  ): Result =
     request.utr match {
       case Some(utr) =>
-        registrationService.getBusinessWithCtUtr(utr.uniqueTaxPayerReference).value.map {
-          case Right(businessDetails) =>
-            request.userAnswers
-              .get(ReportForRegisteredBusinessPage)
-              .fold(Redirect(recovery))(value => Ok(view(form.fill(value), mode, None, true)))
-          case Left(error)            =>
-            logger
-              .warn(
-                s"[ReportForRegisteredBusinessController][onPageLoad][Change] Failed to get business details: " +
-                  s"$error needed to verify user is a business"
-              )
-            Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
+        if (isRcaspUser) {
+          request.userAnswers
+            .get(ReportForRegisteredBusinessPage)
+            .fold(Redirect(recovery))(value => Ok(view(form.fill(value), mode, None, true)))
+        } else {
+          logger
+            .warn(
+              s"[ReportForRegisteredBusinessController][onPageLoad][Change] Failed verifications as user is not a registered business"
+            )
+          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
         }
       case None      =>
         logger.warn("[ReportForRegisteredBusinessController][onPageLoad][Change] CT UTR not found in request")
-        Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+        Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
@@ -212,7 +212,7 @@ class ReportForRegisteredBusinessController @Inject() (
 
   private def ifChanged(newValue: Boolean, details: RcaspDetails, userAnswers: UserAnswers): Future[Result] = {
 
-    def saveUserAnswers(call: Call) =
+    def saveUserAnswersAndRedirect(call: Call) =
       for {
         a <- Future.fromTry(userAnswers.set(ReportForRegisteredBusinessPage, newValue))
         b  = a.copy(rcaspIsRegisteredBusiness = newValue)
@@ -221,7 +221,7 @@ class ReportForRegisteredBusinessController @Inject() (
 
     if (newValue) {
       if (details.IsRCASPUser) {
-        saveUserAnswers(
+        saveUserAnswersAndRedirect(
           controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode)
         )
       } else {
@@ -232,7 +232,7 @@ class ReportForRegisteredBusinessController @Inject() (
         Future.successful(Redirect(recovery))
       }
     } else {
-      saveUserAnswers(
+      saveUserAnswersAndRedirect(
         controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode)
       )
     }

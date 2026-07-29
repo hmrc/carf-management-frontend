@@ -37,6 +37,7 @@ case object ReportForRegisteredBusinessPage extends QuestionPage[Boolean] {
           userAnswers.remove(
             List(
               OrganisationOrIndividualPage,
+              OrganisationHaveSecondContactPage,
               UtrPage
             ) ++ individualPages ++ organisationFirstContactPages ++ organisationSecondContactPages
           )

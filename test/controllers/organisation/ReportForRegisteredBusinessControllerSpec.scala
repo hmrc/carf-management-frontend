@@ -263,7 +263,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         }
       }
 
-      "when the user answers Yes to the question, has a CT UTR and has more zero RCASPs added" - {
+      "when the user answers Yes to the question, has a CT UTR and has more than zero RCASPs added" - {
         "must redirect to the next page and keep rcaspIsRegisteredBusiness as false" in {
           val mockAccountService: AccountService = mock[AccountService]
 
@@ -382,16 +382,11 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
           "must return OK and the correct view for a GET when the question has previously been answered" in {
             val userAnswers = emptyUserAnswers
               .withPage(ReportForRegisteredBusinessPage, true)
-              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
-
-            when(mockRegistrationService.getBusinessWithCtUtr(eqTo(testUtr.uniqueTaxPayerReference))(any()))
-              .thenReturn(ResultT.fromValue(businessDetailsFromService))
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
 
             val application = applicationBuilder(
               userAnswers = Some(userAnswers),
               requestUtr = Some(testUtr.uniqueTaxPayerReference)
-            ).overrides(
-              bind[RegistrationService].toInstance(mockRegistrationService)
             ).build()
 
             running(application) {
@@ -409,16 +404,11 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
           "must redirect to Journey Recovery on GET when ReportForRegisteredBusinessPage is empty" in {
             val userAnswers = emptyUserAnswers
-              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
-
-            when(mockRegistrationService.getBusinessWithCtUtr(any())(any()))
-              .thenReturn(ResultT.fromValue(businessDetailsFromService))
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
 
             val application = applicationBuilder(
               userAnswers = Some(userAnswers),
               requestUtr = Some(testUtr.uniqueTaxPayerReference)
-            ).overrides(
-              bind[RegistrationService].toInstance(mockRegistrationService)
             ).build()
 
             running(application) {
@@ -430,18 +420,13 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
             }
           }
 
-          "must redirect to Journey Recovery on GET when registration service returns an error" in {
+          "must redirect to Journey Recovery if isRCASPUser is false" in {
             val userAnswers = emptyUserAnswers
               .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
-
-            when(mockRegistrationService.getBusinessWithCtUtr(any())(any()))
-              .thenReturn(ResultT.fromError(InternalServerError))
 
             val application = applicationBuilder(
               userAnswers = Some(userAnswers),
               requestUtr = Some(testUtr.uniqueTaxPayerReference)
-            ).overrides(
-              bind[RegistrationService].toInstance(mockRegistrationService)
             ).build()
 
             running(application) {
@@ -473,8 +458,6 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         }
 
         "onSubmit" - {
-          val mockAccountService: AccountService = mock[AccountService]
-
           "when the answer is changed from false -> true and ChangeRcaspCachedDetails contains RCASP = true" - {
             "must redirect to RegisteredBusinessIsThisYourBusinessNameController and set rcaspIsRegisteredBusiness to true and clear pages" in {
               val userAnswers = emptyUserAnswers
@@ -503,8 +486,6 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
                 applicationBuilder(
                   userAnswers = Some(userAnswers),
                   requestUtr = Some(testUtr.uniqueTaxPayerReference)
-                ).overrides(
-                  bind[AccountService].toInstance(mockAccountService)
                 ).build()
 
               running(application) {
@@ -530,6 +511,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
                   ua.get(OrganisationFirstContactEmailPage).isEmpty &&
                   ua.get(OrganisationFirstContactHavePhonePage).isEmpty &&
                   ua.get(OrganisationFirstContactPhoneNumberPage).isEmpty &&
+                  ua.get(OrganisationHaveSecondContactPage).isEmpty &&
                   ua.get(OrganisationSecondContactNamePage).isEmpty &&
                   ua.get(OrganisationSecondContactEmailPage).isEmpty &&
                   ua.get(OrganisationSecondContactHavePhonePage).isEmpty &&
@@ -553,8 +535,6 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
                 applicationBuilder(
                   userAnswers = Some(userAnswers),
                   requestUtr = Some(testUtr.uniqueTaxPayerReference)
-                ).overrides(
-                  bind[AccountService].toInstance(mockAccountService)
                 ).build()
 
               running(application) {
@@ -581,7 +561,6 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
               val application =
                 applicationBuilder(userAnswers = Some(userAnswers))
-                  .overrides(bind[AccountService].toInstance(mockAccountService))
                   .build()
 
               running(application) {
@@ -667,16 +646,11 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
           "must return OK and the correct view for a GET when the question has previously been answered" in {
             val userAnswers = emptyUserAnswers
               .withPage(ReportForRegisteredBusinessPage, true)
-              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
-
-            when(mockRegistrationService.getBusinessWithCtUtr(eqTo(testUtr.uniqueTaxPayerReference))(any()))
-              .thenReturn(ResultT.fromValue(businessDetailsFromService))
+              .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
 
             val application = applicationBuilder(
               userAnswers = Some(userAnswers),
               requestUtr = Some(testUtr.uniqueTaxPayerReference)
-            ).overrides(
-              bind[RegistrationService].toInstance(mockRegistrationService)
             ).build()
 
             running(application) {
@@ -693,7 +667,12 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
           }
 
           "must redirect to Journey Recovery on GET when ReportForRegisteredBusinessPage is empty" in {
-            val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+            val application = applicationBuilder(userAnswers =
+              Some(
+                emptyUserAnswers
+                  .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
+              )
+            ).build()
 
             running(application) {
               val request = FakeRequest(GET, routeOnPageLoadChangeMode)
@@ -706,7 +685,6 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
         }
 
         "onSubmit" - {
-          val mockAccountService: AccountService = mock[AccountService]
           "when the answer is changed from false -> true and ChangeRcaspCachedDetails contains RCASP = true" - {
             "must redirect to RegisteredBusinessIsThisYourBusinessNameController and set rcaspIsRegisteredBusiness to true and clear pages" in {
               val userAnswers = emptyUserAnswers
@@ -735,8 +713,6 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
                 applicationBuilder(
                   userAnswers = Some(userAnswers),
                   requestUtr = Some(testUtr.uniqueTaxPayerReference)
-                ).overrides(
-                  bind[AccountService].toInstance(mockAccountService)
                 ).build()
 
               running(application) {
@@ -762,6 +738,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
                   ua.get(OrganisationFirstContactEmailPage).isEmpty &&
                   ua.get(OrganisationFirstContactHavePhonePage).isEmpty &&
                   ua.get(OrganisationFirstContactPhoneNumberPage).isEmpty &&
+                  ua.get(OrganisationHaveSecondContactPage).isEmpty &&
                   ua.get(OrganisationSecondContactNamePage).isEmpty &&
                   ua.get(OrganisationSecondContactEmailPage).isEmpty &&
                   ua.get(OrganisationSecondContactHavePhonePage).isEmpty &&
@@ -779,16 +756,12 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
                 .withPage(ReportForRegisteredBusinessPage, false)
                 .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
-              when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
-                .thenReturn(ResultT.fromValue(2))
               when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
               val application =
                 applicationBuilder(
                   userAnswers = Some(userAnswers),
                   requestUtr = Some(testUtr.uniqueTaxPayerReference)
-                ).overrides(
-                  bind[AccountService].toInstance(mockAccountService)
                 ).build()
 
               running(application) {
@@ -814,9 +787,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
               when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
               val application =
-                applicationBuilder(userAnswers = Some(userAnswers))
-                  .overrides(bind[AccountService].toInstance(mockAccountService))
-                  .build()
+                applicationBuilder(userAnswers = Some(userAnswers)).build()
 
               running(application) {
                 val request = FakeRequest(POST, onSubmitRouteChangeMode).withFormUrlEncodedBody(("value", "false"))
