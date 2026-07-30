@@ -20,7 +20,6 @@ import controllers.organisation.routes
 import models.{ChangeMode, UserAnswers}
 import pages.organisation.OrganisationFirstContactNamePage
 import play.api.i18n.Messages
-import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.govukfrontend.views.Aliases.HtmlContent
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
 import viewmodels.govuk.summarylist.*
@@ -32,7 +31,7 @@ object OrganisationFirstContactNameSummary {
     answers.get(OrganisationFirstContactNamePage).map { answer =>
       SummaryListRowViewModel(
         key = "organisationFirstContactName.checkYourAnswersLabel",
-        value = ValueViewModel(HtmlFormat.escape(answer).toString),
+        value = ValueViewModel(HtmlContent(answer)),
         actions = Seq(
           ActionItemViewModel(
             content = HtmlContent(s"""<span aria-hidden='true'>${messages("site.change")}</span>"""),
