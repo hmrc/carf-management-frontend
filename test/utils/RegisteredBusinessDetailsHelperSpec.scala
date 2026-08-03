@@ -149,9 +149,7 @@ class RegisteredBusinessDetailsHelperSpec extends SpecBase {
             val section = helper.getRegisteredBusinessSection(userAnswers, changeJourney = true).get
 
             val expectedReportForRegisteredBusinessUrl: String =
-              controllers.routes.PlaceholderController
-                .onPageLoad("Should nav to /registered-business/change-report-for-registered-business (CARF-351)")
-                .url
+              controllers.organisation.routes.ReportForRegisteredBusinessController.onPageLoad(ChangeMode).url
             val expectedOrganisationNameUrl: String            =
               controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController
                 .onPageLoad(ChangeMode)

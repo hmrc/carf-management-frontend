@@ -31,12 +31,7 @@ case object OrganisationHaveSecondContactPage extends QuestionPage[Boolean] {
   override def cleanup(value: Boolean, userAnswers: UserAnswers, hasChanged: Boolean): Try[UserAnswers] =
     if (hasChanged && !value) {
       userAnswers.remove(
-        List(
-          OrganisationSecondContactNamePage,
-          OrganisationSecondContactEmailPage,
-          OrganisationSecondContactHavePhonePage,
-          OrganisationSecondContactPhoneNumberPage
-        )
+        organisationSecondContactPages
       )
     } else {
       Success(userAnswers)

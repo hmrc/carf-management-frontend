@@ -51,16 +51,8 @@ case object OrganisationOrIndividualPage extends QuestionPage[OrganisationOrIndi
             HaveTradingNamePage,
             TradingNamePage,
             UtrPage,
-            OrganisationFirstContactNamePage,
-            OrganisationFirstContactEmailPage,
-            OrganisationFirstContactHavePhonePage,
-            OrganisationFirstContactPhoneNumberPage,
-            OrganisationHaveSecondContactPage,
-            OrganisationSecondContactNamePage,
-            OrganisationSecondContactEmailPage,
-            OrganisationSecondContactHavePhonePage,
-            OrganisationSecondContactPhoneNumberPage
-          )
+            OrganisationHaveSecondContactPage
+          ) ++ organisationFirstContactPages ++ organisationSecondContactPages
       }
       userAnswers.remove(pagesToRemove)
     } else {
