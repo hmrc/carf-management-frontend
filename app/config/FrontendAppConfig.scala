@@ -50,7 +50,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   private lazy val carfReportingFrontendBaseUrl: String = configuration.get[String]("urls.reportingFrontendBaseUrl")
   lazy val carfReportingFrontendUploadFileUrl: String   =
-    s"$carfReportingFrontendBaseUrl/send-a-cryptoasset-report/report/upload-file"
+    s"$carfReportingFrontendBaseUrl/send-a-cryptoasset-report/upload-file"
 
   val aeoiEmailAddress: String = configuration.get("email.aeoi")
 
