@@ -60,7 +60,15 @@ class ReportForRegisteredBusinessController @Inject() (
     with I18nSupport
     with Logging {
 
-  val form: Form[Boolean]         = formProvider("reportForRegisteredBusiness.error.required")
+  lazy val form: Boolean => Form[Boolean] = isChange =>
+    formProvider(
+      if (isChange) {
+        "reportForRegisteredBusiness.changeDetails.error.required"
+      } else {
+        "reportForRegisteredBusiness.error.required"
+      }
+    )
+
   private lazy val recovery: Call = controllers.routes.JourneyRecoveryController.onPageLoad()
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
@@ -91,7 +99,7 @@ class ReportForRegisteredBusinessController @Inject() (
                   _              <- sessionRepository.set(updatedAnswers)
                 } yield {
                   val preparedForm =
-                    updatedAnswers.get(ReportForRegisteredBusinessPage).fold(form)(form.fill)
+                    updatedAnswers.get(ReportForRegisteredBusinessPage).fold(form(false))(form(false).fill)
 
                   Ok(view(preparedForm, mode, Some(cached.name), false))
                 }
@@ -119,14 +127,16 @@ class ReportForRegisteredBusinessController @Inject() (
   ): Result =
     request.utr match {
       case Some(utr) =>
+        val isChangeJourney = true
         if (isRcaspUser) {
           request.userAnswers
             .get(ReportForRegisteredBusinessPage)
-            .fold(Redirect(recovery))(value => Ok(view(form.fill(value), mode, None, true)))
+            .fold(Redirect(recovery))(value => Ok(view(form(isChangeJourney).fill(value), mode, None, isChangeJourney)))
         } else {
           logger
             .warn(
-              s"[ReportForRegisteredBusinessController][onPageLoad][Change] Failed verifications as user is not a registered business"
+              s"[ReportForRegisteredBusinessController][onPageLoad][Change] Failed verifications as user is not a " +
+                s"registered business"
             )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
         }
@@ -142,21 +152,20 @@ class ReportForRegisteredBusinessController @Inject() (
         lazy val hasValueChanged: Boolean => Boolean =
           newValue => !userAnswers.get(ReportForRegisteredBusinessPage).contains(newValue)
 
-        form
+        val isCachedDetailsPresent: Boolean = userAnswers.get(ChangeRcaspCachedDetails).nonEmpty
+
+        form(isCachedDetailsPresent)
           .bindFromRequest()
           .fold(
             formWithErrors =>
-              userAnswers
-                .get(ChangeRcaspCachedDetails)
-                .fold {
-                  userAnswers.get(CachedBusinessDetailsPage) match {
-                    case Some(cached) =>
-                      Future.successful(BadRequest(view(formWithErrors, mode, Some(cached.name), false)))
-                    case None         =>
-                      logger.warn("[ReportForRegisteredBusinessController][onSubmit] No cached business details found")
-                      Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
-                  }
-                }(_ => Future.successful(BadRequest(view(formWithErrors, mode, None, true)))),
+              userAnswers.get(CachedBusinessDetailsPage) match {
+                case Some(cached) =>
+                  Future.successful(
+                    BadRequest(view(formWithErrors, mode, Some(cached.name), true))
+                  ) // Bug: I had to change this false to true in the scenario the user edits the html to uncheck the box otherwise it renders the add journey page
+                case None         =>
+                  Future.successful(BadRequest(view(formWithErrors, mode, None, false)))
+              },
             value =>
               userAnswers.get(ChangeRcaspCachedDetails).fold(onSubmitAddVersion(mode, value)) { details =>
                 onSubmitChangeVersion(mode, value, details, userAnswers, hasValueChanged(value))
