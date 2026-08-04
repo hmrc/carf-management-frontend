@@ -39,17 +39,17 @@
             <h1 class="govuk-heading-l">@messages("reportForRegisteredBusiness.heading")</h1>
 
             <p class="govuk-body">
-            @messages("reportForRegisteredBusiness.p1", businessName)
+            @messages("reportForRegisteredBusiness.p1", businessName.getOrElse(""))
             </p>
 
             <p class="govuk-body">
-            @messages("reportForRegisteredBusiness.p2", businessName)
+            @messages("reportForRegisteredBusiness.p2", businessName.getOrElse(""))
             </p>
 
             @govukRadios(
                 RadiosViewModel.yesNo(
                     field = form("value"),
-                    legend = LegendViewModel(messages("reportForRegisteredBusiness.legend", businessName))
+                    legend = LegendViewModel(messages("reportForRegisteredBusiness.legend", businessName.getOrElse("")))
                     .withCssClass("govuk-fieldset__legend--m")
                 ).copy(classes = "")
             )

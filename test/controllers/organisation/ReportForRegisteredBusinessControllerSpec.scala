@@ -45,8 +45,9 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider        = new GenericYesNoPageFormProvider()
-  val form: Form[Boolean] = formProvider("reportForRegisteredBusiness.error.required")
+  val formProvider                     = new GenericYesNoPageFormProvider()
+  val form: Form[Boolean]              = formProvider("reportForRegisteredBusiness.error.required")
+  val changeDetailsForm: Form[Boolean] = formProvider("reportForRegisteredBusiness.changeDetails.error.required")
 
   val mockRegistrationService: RegistrationService = mock[RegistrationService]
   val mockCountryListFactory: CountryListFactory   = mock[CountryListFactory]
@@ -395,7 +396,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
               val view    = application.injector.instanceOf[ReportForRegisteredBusinessView]
 
               status(result)          mustEqual OK
-              contentAsString(result) mustEqual view(form.fill(true), NormalMode, None, true)(
+              contentAsString(result) mustEqual view(changeDetailsForm.fill(true), NormalMode, None, true)(
                 request,
                 messages(application)
               ).toString
@@ -659,7 +660,7 @@ class ReportForRegisteredBusinessControllerSpec extends SpecBase {
               val view    = application.injector.instanceOf[ReportForRegisteredBusinessView]
 
               status(result)          mustEqual OK
-              contentAsString(result) mustEqual view(form.fill(true), ChangeMode, None, true)(
+              contentAsString(result) mustEqual view(changeDetailsForm.fill(true), ChangeMode, None, true)(
                 request,
                 messages(application)
               ).toString
