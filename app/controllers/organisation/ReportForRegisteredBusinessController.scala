@@ -162,7 +162,7 @@ class ReportForRegisteredBusinessController @Inject() (
                 case Some(cached) =>
                   Future.successful(
                     BadRequest(view(formWithErrors, mode, Some(cached.name), true))
-                  ) // Bug: I had to change this false to true in the scenario the user edits the html to uncheck the box otherwise it renders the add journey page
+                  )
                 case None         =>
                   Future.successful(BadRequest(view(formWithErrors, mode, None, false)))
               },
