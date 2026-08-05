@@ -25,7 +25,7 @@ import models.requests.deleteRcasp.RcaspRequest as DeleteRcaspRequest
 import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
 import models.responses.*
 import models.viewAndUpdateRcasp
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.http.Status.*
 import play.api.libs.json.*
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
@@ -39,14 +39,14 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
-class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpClientV2) extends Logging {
+class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpClientV2) {
 
   def viewRcasp(
       carfId: String
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[List[viewAndUpdateRcasp.RcaspDetails]] = {
     val baseUrl = url"${config.carfManagementBaseUrl}/view-rcasp/$carfId/none"
 
-    logger.debug(s"[RcaspConnector] Viewing RCASP with ID: $carfId")
+    logDebug(s"[RcaspConnector] Viewing RCASP with ID: $carfId")
 
     ResultT.fromFuture {
       http
@@ -61,10 +61,10 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
                 Left(JsonValidationError)
             }
           case res if res.status == NOT_FOUND    =>
-            logger.info(s"No RCASPs found for carfId $carfId")
+            logInfo(s"No RCASPs found for carfId $carfId")
             Right(List.empty)
           case response                          =>
-            logger.warn(s"Unexpected response: status code: ${response.status}, from endpoint: ${baseUrl.toURI}")
+            logWarn(s"Unexpected response: status code: ${response.status}, from endpoint: ${baseUrl.toURI}")
             Left(InternalServerError)
         }
     }
@@ -75,7 +75,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] = {
     val baseUrl = url"${config.carfManagementBaseUrl}/create"
 
-    logger.debug("[RcaspConnector] Creating RCASP")
+    logDebug("[RcaspConnector] Creating RCASP")
 
     sendRequest(
       url = baseUrl,
@@ -95,7 +95,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] = {
     val baseUrl = url"${config.carfManagementBaseUrl}/update"
 
-    logger.debug("[RcaspConnector] Updating RCASP")
+    logDebug("[RcaspConnector] Updating RCASP")
 
     sendRequest(
       url = baseUrl,
@@ -115,7 +115,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] = {
     val baseUrl = url"${config.carfManagementBaseUrl}/delete"
 
-    logger.debug("[RcaspConnector] Deleting RCASP")
+    logDebug("[RcaspConnector] Deleting RCASP")
 
     sendRequest(
       url = baseUrl,
@@ -133,7 +133,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   private def sendRequest[T](url: URL, requestBuilder: RequestBuilder)(
       successfulResult: HttpResponse => Either[CarfError, T]
   )(implicit ec: ExecutionContext): ResultT[T] = {
-    logger.info(s"Calling endpoint: ${url.toString}")
+    logInfo(s"Calling endpoint: ${url.toString}")
 
     ResultT.fromFuture(
       requestBuilder
@@ -142,7 +142,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
           httpResponse.status match {
             case OK => successfulResult(httpResponse)
             case _  =>
-              logger.warn(s"Unexpected response: status code: ${httpResponse.status}, from endpoint: ${url.toURI}")
+              logWarn(s"Unexpected response: status code: ${httpResponse.status}, from endpoint: ${url.toURI}")
               Left(InternalServerError)
           }
         }
@@ -150,7 +150,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   }
 
   private def logParseWarning(baseUrl: URL, originatingMethod: String): Unit =
-    logger.warn(
+    logWarn(
       s"[RcaspConnector][$originatingMethod] Error parsing SubmitRcaspResponse with endpoint: ${baseUrl.toURI}"
     )
 }

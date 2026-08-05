@@ -20,7 +20,7 @@ import connectors.{RcaspConnector, SubscriptionConnector}
 import models.UserBusinessSubscriptionData
 import models.errors.ApiError.{InternalServerError, NotFoundError}
 import models.viewAndUpdateRcasp.RcaspDetails
-import play.api.Logging
+import utils.LoggerUtil.*
 import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -31,14 +31,14 @@ import scala.concurrent.ExecutionContext
 class AccountService @Inject() (
     rcaspConnector: RcaspConnector,
     subscriptionConnector: SubscriptionConnector
-) extends Logging {
+) {
 
   def getNumberOfRcaspsCurrentlyAdded(carfId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[Int] =
     rcaspConnector
       .viewRcasp(carfId)
       .bimap(
         error => {
-          logger.warn(s"[AccountService][getNumberOfRcaspsCurrentlyAdded] Error calling viewRcasp: $error")
+          logWarn(s"[AccountService][getNumberOfRcaspsCurrentlyAdded] Error calling viewRcasp: $error")
           error
         },
         rcaspList => rcaspList.size
@@ -51,14 +51,14 @@ class AccountService @Inject() (
     rcaspConnector
       .viewRcasp(carfId)
       .leftMap { error =>
-        logger.warn(s"[AccountService][getRcaspDetails] Error calling viewRcasp: $error")
+        logWarn(s"[AccountService][getRcaspDetails] Error calling viewRcasp: $error")
         error
       }
       .subflatMap { rcaspList =>
         rcaspList
           .find(_.RCASPID.toUpperCase == rcaspId.toUpperCase)
           .fold {
-            logger.warn(s"[AccountService][getRcaspDetails] No RCASP found with ID $rcaspId")
+            logWarn(s"[AccountService][getRcaspDetails] No RCASP found with ID $rcaspId")
             Left(NotFoundError)
           }(Right(_))
       }
@@ -69,12 +69,12 @@ class AccountService @Inject() (
     subscriptionConnector
       .displaySubscription(carfId)
       .leftMap { error =>
-        logger.warn(s"[AccountService][getUserBusinessSubscriptionData] Error calling displaySubscription: $error")
+        logWarn(s"[AccountService][getUserBusinessSubscriptionData] Error calling displaySubscription: $error")
         error
       }
       .subflatMap { displaySubscriptionResponse =>
         displaySubscriptionResponse.hasOrganisationContactDetailsMaybe.fold {
-          logger.warn(
+          logWarn(
             "[AccountService][getUserBusinessSubscriptionData] DisplaySubscriptionResponse has contact details for neither or both individual and organisation"
           )
           Left(InternalServerError)

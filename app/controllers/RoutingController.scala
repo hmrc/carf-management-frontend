@@ -22,7 +22,7 @@ import models.{ChangeMode, Mode, NormalMode, UserAnswers}
 import pages.SubmissionSucceededPage
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.remove.RemoveRcaspCachedDetails
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.AccountService
@@ -39,8 +39,7 @@ class RoutingController @Inject() (
     getData: DataRetrievalAction,
     val controllerComponents: MessagesControllerComponents
 )(implicit ec: ExecutionContext)
-    extends FrontendBaseController
-    with Logging {
+    extends FrontendBaseController {
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData()).async { implicit request =>
@@ -48,7 +47,7 @@ class RoutingController @Inject() (
 
       accountService.getNumberOfRcaspsCurrentlyAdded(carfId).value.flatMap {
         case Left(error) =>
-          logger.warn(s"[RoutingController] Failed to get RCASP count: $error")
+          logWarn(s"[RoutingController] Failed to get RCASP count: $error")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
 
         case Right(numberOfRcasps) =>

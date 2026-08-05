@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-package services
+package utils
 
-import models.errors.ApiError.InternalServerError
-import utils.LoggerUtil.*
-import types.ResultT
+import play.api.Logging
 
-import javax.inject.{Inject, Singleton}
+// $COVERAGE-OFF$
 
-@Singleton
-class UploadInformationService @Inject() {
+object LoggerUtil extends Logging {
 
-  def hasUserUploadedFilesInLast28Days(carfId: String): ResultT[Boolean] =
-    carfId.dropRight(1).last.toString match {
-      case "9" =>
-        logWarn("[hasUserUploadedFilesInLast28Days] Error!")
-        ResultT.fromError(InternalServerError)
-      case "1" => ResultT.fromValue(true)
-      case _   => ResultT.fromValue(false)
-    }
-
+  def logInfo(content: String): Unit                            = logger.info(content)
+  def logDebug(content: String): Unit                           = logger.debug(content)
+  def logWarn(content: String): Unit                            = logger.warn(content)
+  def logWarnThrow(content: String, throwable: Throwable): Unit = logger.warn(content, throwable)
+  def logError(content: String): Unit                           = logger.error(content)
 }
+
+// $COVERAGE-ON$

@@ -24,7 +24,7 @@ import models.{CachedBusinessDetails, Mode, UserAnswers}
 import navigation.Navigator
 import pages.UkAddressInUserAnswers
 import pages.organisation.{CachedBusinessDetailsPage, RegisteredBusinessIsTheAddressCorrectPage}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -49,8 +49,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
     view: RegisteredBusinessIsTheAddressCorrectView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   val form: Form[Boolean] = formProvider("registeredBusinessIsTheAddressCorrect.error.required")
 
@@ -63,7 +62,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       getNameAndDetailsMaybe(userAnswers = request.userAnswers).fold {
-        logger.warn(
+        logWarn(
           "[RegisteredBusinessIsTheAddressCorrectController][onPageLoad] No cached business details found. Redirecting to journey recovery."
         )
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
@@ -88,7 +87,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
   def onSubmit(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       getNameAndDetailsMaybe(userAnswers = request.userAnswers).fold {
-        logger.warn(
+        logWarn(
           "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] No name or cached business details found. Redirecting to journey recovery."
         )
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
@@ -109,7 +108,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
                     Future.fromTry(
                       if (shouldSetUkAddress) {
                         cachedDetails.address.toAddressUk.fold {
-                          logger.warn(
+                          logWarn(
                             "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] Unable to convert cached address to AddressUk"
                           )
                           Failure(new IllegalStateException("Unable to convert cached address to AddressUk"))

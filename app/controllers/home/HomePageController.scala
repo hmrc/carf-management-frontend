@@ -20,7 +20,7 @@ import config.Constants.ZERO
 import config.FrontendAppConfig
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
 import models.errors.CarfError
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{AccountService, UploadInformationService}
@@ -42,8 +42,7 @@ class HomePageController @Inject() (
     view: HomePageView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   def onPageLoad(): Action[AnyContent] = (identify() andThen ctUtrRetrievalAction() andThen getData()).async {
     implicit request =>
@@ -64,7 +63,7 @@ class HomePageController @Inject() (
 
       viewModelFuture.value.flatMap {
         case Left(error) =>
-          logger.warn("[HomePageController] Error generating view model!")
+          logWarn("[HomePageController] Error generating view model!")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
 
         case Right(viewModel) =>

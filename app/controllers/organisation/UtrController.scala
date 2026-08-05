@@ -21,7 +21,7 @@ import forms.organisation.UtrFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{OverwritableOrganisationName, UtrPage}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -45,8 +45,7 @@ class UtrController @Inject() (
     view: UtrView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   val form: Form[String] = formProvider()
 
@@ -61,7 +60,7 @@ class UtrController @Inject() (
           Ok(view(preparedForm, mode, orgName))
 
         case None =>
-          logger.warn(
+          logWarn(
             "[UtrController][onPageLoad] No organisation name found in UserAnswers. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
@@ -78,7 +77,7 @@ class UtrController @Inject() (
               case Some(orgName) =>
                 Future.successful(BadRequest(view(formWithErrors, mode, orgName)))
               case None          =>
-                logger.warn(
+                logWarn(
                   "[UtrController][onSubmit] No organisation name found in UserAnswers. Redirecting to journey recovery."
                 )
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))

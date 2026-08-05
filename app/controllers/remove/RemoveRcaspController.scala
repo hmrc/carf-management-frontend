@@ -20,7 +20,7 @@ import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import pages.SubmissionSucceededPage
 import pages.remove.{RcaspRemovedDateTimePage, RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveRcaspPage, RemoveUserAccessPage}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -47,8 +47,7 @@ class RemoveRcaspController @Inject() (
     clock: Clock
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   val form: Form[Boolean] = formProvider("removeRcasp.error.required")
 
@@ -64,7 +63,7 @@ class RemoveRcaspController @Inject() (
           Ok(view(preparedForm, otherAccessAnswer, cachedDetails.getName))
 
         case _ =>
-          logger.warn(
+          logWarn(
             "[RemoveRcaspController][onPageLoad] RemoveRcaspCachedDetails or RemoveOtherAccessPage not found"
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
@@ -102,14 +101,14 @@ class RemoveRcaspController @Inject() (
                       } yield Redirect(controllers.remove.routes.RcaspRemovedController.onPageLoad())
 
                     case Left(error) =>
-                      logger.warn(s"[RemoveRcaspController][onSubmit] Failed to remove RCASP: $error")
+                      logWarn(s"[RemoveRcaspController][onSubmit] Failed to remove RCASP: $error")
                       Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
                   }
                 }
             )
 
         case _ =>
-          logger.warn(
+          logWarn(
             "[RemoveRcaspController][onSubmit] RemoveRcaspCachedDetails, RemoveUserAccessPage or RemoveOtherAccessPage not found"
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))

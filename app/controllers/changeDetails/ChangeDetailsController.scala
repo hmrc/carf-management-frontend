@@ -24,7 +24,7 @@ import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -49,8 +49,7 @@ class ChangeDetailsController @Inject() (
     rcaspSubmissionService: RcaspSubmissionService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
@@ -72,7 +71,7 @@ class ChangeDetailsController @Inject() (
                   Ok(view(Seq(individualSection, contactDetailsSection), name.fullName, rcaspId, hasDataChanged))
                 }
                 .getOrElse {
-                  logger.warn(
+                  logWarn(
                     "[ChangeDetailsController][onPageLoad] Error! Could not load page due to missing answers (individual)"
                   )
                   ifEmptyProtocol
@@ -103,14 +102,14 @@ class ChangeDetailsController @Inject() (
                     )
                 }
                 .getOrElse {
-                  logger.warn(
+                  logWarn(
                     "[ChangeDetailsController][onPageLoad] Error! Could not load page due to missing answers (organisation)"
                   )
                   ifEmptyProtocol
                 }
           }
         case _                                                                                                        =>
-          logger.warn(
+          logWarn(
             "[ChangeDetailsController][onPageLoad] Error! Missing ChangeRcaspCachedDetails or OrganisationOrIndividual"
           )
           ifEmptyProtocol
@@ -128,7 +127,7 @@ class ChangeDetailsController @Inject() (
             controllers.changeDetails.routes.RcaspUpdatedConfirmationController.onPageLoad()
           )
         case Left(error) =>
-          logger.warn(s"[ChangeDetailsController][onSubmit] Unable to update RCASP $rcaspId: $error")
+          logWarn(s"[ChangeDetailsController][onSubmit] Unable to update RCASP $rcaspId: $error")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
     }

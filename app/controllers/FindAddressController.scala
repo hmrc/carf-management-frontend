@@ -22,7 +22,7 @@ import models.requests.DataRequest
 import models.{AddressAndUPRN, AddressUk, FindAddress, Mode, NormalMode}
 import navigation.Navigator
 import pages.*
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.data.{Form, FormError}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -48,8 +48,7 @@ class FindAddressController @Inject() (
     view: FindAddressView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   val form: Form[FindAddress] = formProvider()
 
@@ -72,7 +71,7 @@ class FindAddressController @Inject() (
       } yield request.userAnswers.retrieveRcaspName match {
         case Some(name) => Ok(view(preparedForm, mode, name, manualLink(mode)))
         case None       =>
-          logger.warn(
+          logWarn(
             "[FindAddressController][onPageLoad] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -88,7 +87,7 @@ class FindAddressController @Inject() (
           formWithErrors =>
             request.userAnswers.retrieveRcaspName
               .fold {
-                logger.warn(
+                logWarn(
                   "[FindAddressController][onSubmit] Form with errors: Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
                 )
                 Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
@@ -99,13 +98,13 @@ class FindAddressController @Inject() (
               .value
               .flatMap {
                 case Left(error)                                    =>
-                  logger.error(s"[FindAddressController][onSubmit] Address lookup service failed: $error")
+                  logError(s"[FindAddressController][onSubmit] Address lookup service failed: $error")
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
                 case Right((Nil, _))                                =>
                   val formError =
                     formReturned.withError(FormError("postcode", List("findAddress.postcode.error.notFound")))
                   request.userAnswers.retrieveRcaspName.fold {
-                    logger.warn(
+                    logWarn(
                       "[FindAddressController][onSubmit] Form success: Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
                     )
                     Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))

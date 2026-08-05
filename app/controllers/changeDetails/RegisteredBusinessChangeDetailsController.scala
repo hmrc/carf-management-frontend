@@ -20,7 +20,7 @@ import cats.syntax.all.*
 import controllers.actions.*
 import pages.SubmissionSucceededPage
 import pages.changeDetails.ChangeRcaspCachedDetails
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -47,8 +47,7 @@ class RegisteredBusinessChangeDetailsController @Inject() (
     rcaspSubmissionService: RcaspSubmissionService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
@@ -63,13 +62,13 @@ class RegisteredBusinessChangeDetailsController @Inject() (
           ).mapN { (hasDataChanged, section) =>
             Ok(view(section, rcaspId, hasDataChanged))
           }.getOrElse {
-            logger.warn(
+            logWarn(
               "[RegisteredBusinessChangeDetailsController][onPageLoad] Error! Could not load page due to missing answers"
             )
             ifEmptyProtocol
           }
         case _                                                                               =>
-          logger.warn(
+          logWarn(
             "[RegisteredBusinessChangeDetailsController][onPageLoad] Error! Missing ChangeRcaspCachedDetails."
           )
           ifEmptyProtocol
@@ -93,13 +92,13 @@ class RegisteredBusinessChangeDetailsController @Inject() (
                     controllers.changeDetails.routes.RcaspUpdatedConfirmationController.onPageLoad()
                   )
                 case Left(error) =>
-                  logger.warn(
+                  logWarn(
                     s"[RegisteredBusinessChangeDetailsController][onSubmit] Unable to update RCASP $rcaspId: $error"
                   )
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
               }
           case None      =>
-            logger.warn("[RegisteredBusinessChangeDetailsController][onSubmit] CT UTR not found in request")
+            logWarn("[RegisteredBusinessChangeDetailsController][onSubmit] CT UTR not found in request")
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
     }

@@ -19,7 +19,6 @@ package controllers.actions
 import config.FrontendAppConfig
 import models.requests.IdentifierRequest
 import models.{IdentifierType, UniqueTaxpayerReference}
-import play.api.Logging
 import play.api.mvc.{ActionFunction, Result}
 import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolment}
 
@@ -39,8 +38,7 @@ class CtUtrRetrievalActionImpl @Inject() (
 class CtUtrRetrievalActionProvider @Inject() (
     val config: FrontendAppConfig
 )(implicit val executionContext: ExecutionContext)
-    extends ActionFunction[IdentifierRequest, IdentifierRequest]
-    with Logging {
+    extends ActionFunction[IdentifierRequest, IdentifierRequest] {
 
   override def invokeBlock[A](
       request: IdentifierRequest[A],

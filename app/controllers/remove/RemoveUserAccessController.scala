@@ -22,7 +22,7 @@ import models.{UserAnswers, UserBusinessSubscriptionData}
 import models.viewAndUpdateRcasp.RcaspDetails
 import pages.SubmissionSucceededPage
 import pages.remove.{RemoveRcaspCachedDetails, RemoveUserAccessPage, RemoveUserBusinessInfoCached}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
@@ -49,8 +49,7 @@ class RemoveUserAccessController @Inject() (
     view: RemoveUserAccessView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   private val journeyRecovery: Result = Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
@@ -88,11 +87,11 @@ class RemoveUserAccessController @Inject() (
         accountService.getUserBusinessSubscriptionData(request.carfId).value.flatMap {
           case Right(userInfo) => cacheAndRender(rcaspId, details, userInfo)
           case Left(error)     =>
-            logger.warn(s"[RemoveUserAccessController][onPageLoad] Failed to get user business info: $error")
+            logWarn(s"[RemoveUserAccessController][onPageLoad] Failed to get user business info: $error")
             Future.successful(journeyRecovery)
         }
       case Left(error)    =>
-        logger.warn(s"[RemoveUserAccessController][onPageLoad] Failed to get RCASP details: $error")
+        logWarn(s"[RemoveUserAccessController][onPageLoad] Failed to get RCASP details: $error")
         Future.successful(journeyRecovery)
     }
 
@@ -108,7 +107,7 @@ class RemoveUserAccessController @Inject() (
 
     (cachedRcaspIdMatches, submissionSucceeded) match {
       case (true, true) =>
-        logger.info(
+        logInfo(
           "[RemoveUserAccessController][onPageLoad] RCASP already removed - redirecting to page-unavailable"
         )
         Future.successful(
@@ -159,7 +158,7 @@ class RemoveUserAccessController @Inject() (
             )
 
         case _ =>
-          logger.warn(
+          logWarn(
             "[RemoveUserAccessController][onSubmit] RemoveRcaspCachedDetails or user business info not found in cache"
           )
           Future.successful(journeyRecovery)

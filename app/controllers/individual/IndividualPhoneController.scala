@@ -23,7 +23,7 @@ import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
 import pages.individual.{IndividualNamePage, IndividualPhonePage}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -46,8 +46,7 @@ class IndividualPhoneController @Inject() (
     view: IndividualPhoneView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   val form: Form[String] = formProvider("individualPhone")
 
@@ -59,7 +58,7 @@ class IndividualPhoneController @Inject() (
       request.userAnswers
         .get(IndividualNamePage)
         .fold {
-          logger.warn(
+          logWarn(
             "[IndividualPhoneController][onPageLoad] Error! Individual name could not be retrieved from user answers"
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -75,7 +74,7 @@ class IndividualPhoneController @Inject() (
             request.userAnswers
               .get(IndividualNamePage)
               .fold {
-                logger.warn(
+                logWarn(
                   "[IndividualPhoneController][onSubmit] Error! Individual name could not be retrieved from user answers"
                 )
                 Future.successful(
