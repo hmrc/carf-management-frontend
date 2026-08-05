@@ -23,7 +23,6 @@ import models.{ChangeMode, NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{verify, when}
-import org.scalatestplus.mockito.MockitoSugar
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OrganisationSecondContactPhoneNumberPage, OverwritableOrganisationName}
 import play.api.data.Form
@@ -36,7 +35,7 @@ import views.html.organisation.OrganisationSecondContactHavePhoneView
 import java.time.Clock
 import scala.concurrent.Future
 
-class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with MockitoSugar {
+class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase {
 
   def onwardRoute                                        = Call("GET", "/foo")
   lazy val secondContactHavePhoneRoute: String           =
@@ -263,7 +262,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         }
       }
 
-      "must redirect ChangeDetailsRoutingController and clear data when answer is changed from true -> false" in {
+      "must redirect to EndOfJourneyRoutingController and clear data when answer is changed from true -> false" in {
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationSecondContactHavePhonePage, true)
           .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
@@ -287,9 +286,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
-            .onPageLoad(rcaspId)
-            .url
+          redirectLocation(result).value mustEqual controllers.routes.EndOfJourneyRoutingController.onPageLoad().url
 
           verify(mockSessionRepository).set(argThat { ua =>
             ua.get(OrganisationSecondContactHavePhonePage).contains(false) &&
@@ -298,7 +295,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         }
       }
 
-      "must redirect ChangeDetailsRoutingController when answer is true and does not change" in {
+      "must redirect to EndOfJourneyRoutingController when answer is true and does not change" in {
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationSecondContactHavePhonePage, true)
           .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
@@ -322,9 +319,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
-            .onPageLoad(rcaspId)
-            .url
+          redirectLocation(result).value mustEqual controllers.routes.EndOfJourneyRoutingController.onPageLoad().url
 
           verify(mockSessionRepository).set(argThat { ua =>
             ua.get(OrganisationSecondContactHavePhonePage).contains(true) &&
@@ -333,7 +328,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         }
       }
 
-      "must redirect ChangeDetailsRoutingController when answer is false and does not change" in {
+      "must redirect to EndOfJourneyRoutingController when answer is false and does not change" in {
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationSecondContactHavePhonePage, false)
           .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
@@ -356,9 +351,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
-            .onPageLoad(rcaspId)
-            .url
+          redirectLocation(result).value mustEqual controllers.routes.EndOfJourneyRoutingController.onPageLoad().url
 
           verify(mockSessionRepository).set(argThat { ua =>
             ua.get(OrganisationSecondContactHavePhonePage).contains(false)
@@ -366,7 +359,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
         }
       }
 
-      "must redirect Journey recovery when ChangeRcaspCachedDetails is not in userAnswers" in {
+      "must redirect to EndOfJourneyRoutingController when ChangeRcaspCachedDetails is not in userAnswers" in {
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationSecondContactHavePhonePage, false)
 
@@ -388,7 +381,7 @@ class OrganisationSecondContactHavePhoneControllerSpec extends SpecBase with Moc
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+          redirectLocation(result).value mustEqual controllers.routes.EndOfJourneyRoutingController.onPageLoad().url
 
           verify(mockSessionRepository).set(argThat { ua =>
             ua.get(OrganisationSecondContactHavePhonePage).contains(false)

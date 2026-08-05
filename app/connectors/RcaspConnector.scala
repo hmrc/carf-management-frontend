@@ -46,24 +46,24 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[List[viewAndUpdateRcasp.RcaspDetails]] = {
     val baseUrl = url"${config.carfManagementBaseUrl}/view-rcasp/$carfId/none"
 
-    logDebug(s"[RcaspConnector] Viewing RCASP with ID: $carfId")
+    logDebug(s"[RcaspConnector] Viewing RCASPs for carfId: $carfId")
 
     ResultT.fromFuture {
       http
         .get(baseUrl)
         .execute[HttpResponse]
         .map {
-          case response if response.status == OK =>
+          case response if response.status == OK        =>
             Try(response.json.as[ViewRcaspResponse]) match {
               case Success(viewRcaspResponse) => Right(viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList)
               case Failure(exception)         =>
-                logParseWarning(baseUrl, "viewRcasp")
+                logWarn(s"Error parsing ViewRcaspResponse with endpoint: ${baseUrl.toURI}")
                 Left(JsonValidationError)
             }
-          case res if res.status == NOT_FOUND    =>
+          case response if response.status == NOT_FOUND =>
             logInfo(s"No RCASPs found for carfId $carfId")
             Right(List.empty)
-          case response                          =>
+          case response                                 =>
             logWarn(s"Unexpected response: status code: ${response.status}, from endpoint: ${baseUrl.toURI}")
             Left(InternalServerError)
         }

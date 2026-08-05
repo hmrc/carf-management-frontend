@@ -32,7 +32,7 @@ class DetailsHelperSpec extends SpecBase {
   val testHelper                  = new DetailsHelper()
   implicit val messages: Messages = messages(app)
 
-  "DetailsHelperSpec" - {
+  "DetailsHelper" - {
     "haveAnswersChangedFromApi" - {
       "must return None when ChangeRcaspCachedDetails is missing" in {
         val userAnswers = emptyUserAnswers
@@ -126,7 +126,6 @@ class DetailsHelperSpec extends SpecBase {
             .withPage(OrganisationOrIndividualPage, Organisation)
             .withPage(OverwritableOrganisationName, testOrgName)
             .withPage(TradingNamePage, testTradingName)
-            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
             .withPage(UkAddressInUserAnswers, testAddressUk)
             .withPage(ChangeRcaspCachedDetails, cachedRcaspDetails)
 

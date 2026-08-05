@@ -110,8 +110,6 @@ reportForRegisteredBusiness.changeDetails.change.hidden = Change if this reporti
 registeredBusinessIsThisYourBusinessName.title = Is this still the correct name for the business?
 registeredBusinessIsThisYourBusinessName.heading = Is {0} still the correct name for the business?
 registeredBusinessIsThisYourBusinessName.error.required = Select yes if this is still the correct name for the business
-registeredBusinessIsThisYourBusinessName.checkYourAnswersLabel = What is the name of the organisation?
-registeredBusinessIsThisYourBusinessName.change.hidden = Change organisation name
 
 organisationOrIndividual.title = Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?
 organisationOrIndividual.heading = Would you like to add an organisation or individual as a reporting cryptoasset service provider (RCASP)?

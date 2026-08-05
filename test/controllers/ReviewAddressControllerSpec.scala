@@ -132,6 +132,22 @@ class ReviewAddressControllerSpec extends SpecBase {
       }
     }
 
+    "must redirect to InformationMissingController for a GET when RCASP name is not in user answers" in {
+      val userAnswers = emptyUserAnswers
+        .withPage(AddressPagePrePop, testAddressUk)
+        .withPage(OrganisationOrIndividualPage, Individual)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, reviewAddressRoute)
+        val result  = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+      }
+    }
+
     "must redirect to Journey Recovery when an address is not found in userAnswers on page load" in {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()

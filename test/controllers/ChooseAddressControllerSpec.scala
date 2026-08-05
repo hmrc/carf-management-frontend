@@ -213,7 +213,25 @@ class ChooseAddressControllerSpec extends SpecBase {
       }
     }
 
-    "must return Redirect to journey recovery when FindAddressPage or FindAddressAdditionalCallUa is missing in ua for GET " in {
+    "must redirect to InformationMissingController for a GET when RCASP name is not in user answers" in {
+      val userAnswers = emptyUserAnswers
+        .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
+        .withPage(FindAddressPage, FindAddress(address.postCode, None))
+        .withPage(FindAddressAdditionalCallUa, false)
+        .withPage(OrganisationOrIndividualPage, Individual)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(GET, chooseAddressRoute)
+        val result  = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+      }
+    }
+
+    "must redirect to journey recovery when FindAddressPage or FindAddressAdditionalCallUa is missing in ua for GET " in {
 
       val userAnswers = emptyUserAnswers.withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
 
@@ -403,7 +421,26 @@ class ChooseAddressControllerSpec extends SpecBase {
       }
     }
 
-    "redirect to Journey Recovery for a POST if no existing user answers data is found" in {
+    "must redirect to InformationMissingController when invalid data is submitted but RCASP name is not in user answers" in {
+      val userAnswers = emptyUserAnswers
+        .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
+        .withPage(FindAddressPage, FindAddress(address.postCode, None))
+        .withPage(FindAddressAdditionalCallUa, false)
+        .withPage(OrganisationOrIndividualPage, Organisation)
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
+      running(application) {
+        val request = FakeRequest(POST, chooseAddressRoute).withFormUrlEncodedBody(("value", ""))
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+      }
+    }
+
+    "must redirect to Journey Recovery for a POST if no existing user answers data is found" in {
 
       val application = applicationBuilder(userAnswers = None).build()
 

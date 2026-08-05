@@ -59,7 +59,7 @@ object viewAndUpdateRcasp {
               organisation.IsRCASPUser,
               organisation.RCASPName,
               organisation.TradingName,
-              utr,
+              if organisation.IsRCASPUser then None else Some(utr),
               organisation.AddressDetails,
               organisation.PrimaryContactDetails,
               organisation.SecondaryContactDetails
