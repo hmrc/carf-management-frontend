@@ -23,7 +23,7 @@ import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
 import pages.{RcaspIdPage, SubmissionSucceededPage}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -48,8 +48,7 @@ class CheckDetailsController @Inject() (
     rcaspSubmissionService: RcaspSubmissionService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData) {
     implicit request =>
@@ -60,7 +59,7 @@ class CheckDetailsController @Inject() (
       userAnswers
         .get(OrganisationOrIndividualPage)
         .fold {
-          logger.warn("[CheckDetailsController][onPageLoad] Error! OrganisationOrIndividualPage not populated")
+          logWarn("[CheckDetailsController][onPageLoad] Error! OrganisationOrIndividualPage not populated")
           ifEmptyProtocol
         } {
           case Individual   =>
@@ -73,7 +72,7 @@ class CheckDetailsController @Inject() (
                 Ok(view(Seq(individualSection, contactDetailsSection), name.fullName))
               }
               .getOrElse {
-                logger.warn(
+                logWarn(
                   "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (individual)"
                 )
                 ifEmptyProtocol
@@ -89,7 +88,7 @@ class CheckDetailsController @Inject() (
                 Ok(view(Seq(organisationSection, firstContactDetailsSection, secondContactDetailsSection), orgName))
               }
               .getOrElse {
-                logger.warn(
+                logWarn(
                   "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (organisation)"
                 )
                 ifEmptyProtocol
@@ -108,7 +107,7 @@ class CheckDetailsController @Inject() (
             _                 <- sessionRepository.set(uaWithSuccessFlag)
           } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
         case Left(error)     =>
-          logger.warn(s"[CheckDetailsController][onSubmit] Unable to add RCASP: $error")
+          logWarn(s"[CheckDetailsController][onSubmit] Unable to add RCASP: $error")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }

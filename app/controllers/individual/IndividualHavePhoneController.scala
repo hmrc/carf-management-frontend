@@ -23,7 +23,7 @@ import models.{ChangeMode, Mode, NormalMode, UserAnswers}
 import navigation.Navigator
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.individual.{IndividualHavePhonePage, IndividualNamePage}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
@@ -47,8 +47,7 @@ class IndividualHavePhoneController @Inject() (
     view: IndividualHavePhoneView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   val form: Form[Boolean]         = formProvider("individualHavePhone.error.required")
   private lazy val recovery: Call = routes.JourneyRecoveryController.onPageLoad()
@@ -61,7 +60,7 @@ class IndividualHavePhoneController @Inject() (
       request.userAnswers
         .get(IndividualNamePage)
         .fold {
-          logger.warn(
+          logWarn(
             "[IndividualHavePhoneController][onPageLoad] Error! Individual name could not be retrieved from user answers"
           )
           Redirect(
@@ -85,7 +84,7 @@ class IndividualHavePhoneController @Inject() (
             request.userAnswers
               .get(IndividualNamePage)
               .fold {
-                logger.warn(
+                logWarn(
                   "[IndividualHavePhoneController][onSubmit] Error! Individual name could not be retrieved from user answers"
                 )
                 Future.successful(

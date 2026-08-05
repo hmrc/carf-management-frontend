@@ -19,7 +19,7 @@ package connectors
 import config.FrontendAppConfig
 import models.errors.ApiError.{InternalServerError, JsonValidationError, NotFoundError}
 import models.responses.DisplaySubscriptionResponse
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.http.Status.{NOT_FOUND, OK}
 import types.ResultT
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
@@ -30,14 +30,14 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
-class SubscriptionConnector @Inject() (val config: FrontendAppConfig, val http: HttpClientV2) extends Logging {
+class SubscriptionConnector @Inject() (val config: FrontendAppConfig, val http: HttpClientV2) {
 
   def displaySubscription(
       carfId: String
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[DisplaySubscriptionResponse] = {
     val baseUrl = url"${config.carfRegistrationBaseUrl}/subscription/display/$carfId"
 
-    logger.debug(
+    logDebug(
       s"[SubscriptionConnector] Displaying subscription with ID: $carfId"
     )
 
@@ -51,16 +51,16 @@ class SubscriptionConnector @Inject() (val config: FrontendAppConfig, val http: 
               Try(httpResponse.json.as[DisplaySubscriptionResponse]) match {
                 case Success(data)      => Right(data)
                 case Failure(exception) =>
-                  logger.warn(s"Error parsing DisplaySubscriptionResponse with endpoint: ${baseUrl.toURI}")
+                  logWarn(s"Error parsing DisplaySubscriptionResponse with endpoint: ${baseUrl.toURI}")
                   Left(JsonValidationError)
               }
             case NOT_FOUND =>
-              logger.warn(
+              logWarn(
                 s"No match could be found for carfId $carfId. Status code: ${httpResponse.status}, from endpoint: ${baseUrl.toURI}"
               )
               Left(NotFoundError)
             case _         =>
-              logger.warn(s"Unexpected response. Status code: ${httpResponse.status}, from endpoint: ${baseUrl.toURI}")
+              logWarn(s"Unexpected response. Status code: ${httpResponse.status}, from endpoint: ${baseUrl.toURI}")
               Left(InternalServerError)
           }
         }

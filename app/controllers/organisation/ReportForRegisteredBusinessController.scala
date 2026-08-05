@@ -25,7 +25,7 @@ import models.{CachedBusinessDetails, ChangeMode, Mode, NormalMode, UserAnswers}
 import navigation.Navigator
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Result}
@@ -57,8 +57,7 @@ class ReportForRegisteredBusinessController @Inject() (
     view: ReportForRegisteredBusinessView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   lazy val form: Boolean => Form[Boolean] = isChange =>
     formProvider(
@@ -105,20 +104,19 @@ class ReportForRegisteredBusinessController @Inject() (
                 }
 
               case None =>
-                logger.error(
+                logError(
                   s"[ReportForRegisteredBusinessController][onPageLoad] " +
                     s"Country with code ${businessDetails.address.countryCode} not found in list of countries"
                 )
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
             }
           case Left(error)            =>
-            logger
-              .warn(s"[ReportForRegisteredBusinessController][onPageLoad][Add] Failed to get business details: $error")
+            logWarn(s"[ReportForRegisteredBusinessController][onPageLoad][Add] Failed to get business details: $error")
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
 
       case None =>
-        logger.warn("[ReportForRegisteredBusinessController][onPageLoad][Add] CT UTR not found in request")
+        logWarn("[ReportForRegisteredBusinessController][onPageLoad][Add] CT UTR not found in request")
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
     }
 
@@ -133,15 +131,14 @@ class ReportForRegisteredBusinessController @Inject() (
             .get(ReportForRegisteredBusinessPage)
             .fold(Redirect(recovery))(value => Ok(view(form(isChangeJourney).fill(value), mode, None, isChangeJourney)))
         } else {
-          logger
-            .warn(
-              s"[ReportForRegisteredBusinessController][onPageLoad][Change] Failed verifications as user is not a " +
-                s"registered business"
-            )
+          logWarn(
+            s"[ReportForRegisteredBusinessController][onPageLoad][Change] Failed verifications as user is not a " +
+              s"registered business"
+          )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
         }
       case None      =>
-        logger.warn("[ReportForRegisteredBusinessController][onPageLoad][Change] CT UTR not found in request")
+        logWarn("[ReportForRegisteredBusinessController][onPageLoad][Change] CT UTR not found in request")
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
     }
 
@@ -188,7 +185,7 @@ class ReportForRegisteredBusinessController @Inject() (
           navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers)
         )
       case Left(error)        =>
-        logger.error(
+        logError(
           s"[ReportForRegisteredBusinessController][onSubmit] Error getting how many Rcasps user has: $error"
         )
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
@@ -234,7 +231,7 @@ class ReportForRegisteredBusinessController @Inject() (
           controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode)
         )
       } else {
-        logger.warn(
+        logWarn(
           "[ReportForRegisteredBusinessController][Change Journey] Cannot change RCASP to isRCASPUser to" +
             "true if previously false in API"
         )

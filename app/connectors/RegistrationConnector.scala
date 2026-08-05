@@ -22,7 +22,7 @@ import config.FrontendAppConfig
 import models.errors.ApiError
 import models.requests.RegisterWithIdRequest
 import models.responses.RegisterWithIdResponse
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.libs.json.Json
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
@@ -36,7 +36,7 @@ import scala.util.{Failure, Success, Try}
 
 class RegistrationConnector @Inject() (val config: FrontendAppConfig, val http: HttpClientV2)(implicit
     ec: ExecutionContext
-) extends Logging {
+) {
 
   private val backendBaseUrl = config.carfRegistrationBaseUrl
 
@@ -55,16 +55,16 @@ class RegistrationConnector @Inject() (val config: FrontendAppConfig, val http: 
             Try(response.json.as[RegisterWithIdResponse]) match {
               case Success(data)      => Right(data)
               case Failure(exception) =>
-                logger.warn(s"Error parsing RegisterWithIdResponse with endpoint: ${url.toURI}")
+                logWarn(s"Error parsing RegisterWithIdResponse with endpoint: ${url.toURI}")
                 Left(ApiError.JsonValidationError)
             }
           case response if response.status == NOT_FOUND =>
-            logger.warn(
+            logWarn(
               s"No match found for organisation: status code: ${response.status}, from endpoint: ${url.toURI}"
             )
             Left(ApiError.NotFoundError)
           case response                                 =>
-            logger.warn(
+            logWarn(
               s"Unexpected response for organisation: status code: ${response.status}, from endpoint: ${url.toURI}"
             )
             Left(ApiError.InternalServerError)

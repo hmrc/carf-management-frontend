@@ -23,7 +23,7 @@ import models.{ChangeMode, Mode, NormalMode, UserAnswers}
 import navigation.Navigator
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{HaveTradingNamePage, OverwritableOrganisationName}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
@@ -48,8 +48,7 @@ class HaveTradingNameController @Inject() (
     view: HaveTradingNameView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   val form: Form[Boolean]         = formProvider("haveTradingName.error.required")
   private lazy val recovery: Call = routes.JourneyRecoveryController.onPageLoad()
@@ -62,7 +61,7 @@ class HaveTradingNameController @Inject() (
         request.userAnswers
           .get(OverwritableOrganisationName)
           .fold {
-            logger.warn(
+            logWarn(
               "[HaveTradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
             )
             Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -83,7 +82,7 @@ class HaveTradingNameController @Inject() (
               request.userAnswers
                 .get(OverwritableOrganisationName)
                 .fold {
-                  logger.warn(
+                  logWarn(
                     "[HaveTradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
                   )
                   Future.successful(

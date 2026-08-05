@@ -21,7 +21,7 @@ import forms.AddressFormProvider
 import models.{AddressUk, Mode}
 import navigation.Navigator
 import pages.{AddressPageForNavigatorOnly, AddressPagePrePop, AddressUPRNUserAnswers, UkAddressInUserAnswers}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -45,8 +45,7 @@ class AddressController @Inject() (
     view: AddressView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   val form: Form[AddressUk] = formProvider()
 
@@ -59,7 +58,7 @@ class AddressController @Inject() (
         case Some(name) =>
           Ok(view(preparedForm, mode, name))
         case None       =>
-          logger.warn(
+          logWarn(
             "[AddressController][onPageLoad] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -73,7 +72,7 @@ class AddressController @Inject() (
         .fold(
           formWithErrors =>
             request.userAnswers.retrieveRcaspName.fold {
-              logger.warn(
+              logWarn(
                 "[AddressController][onSubmit] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
               )
               Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))

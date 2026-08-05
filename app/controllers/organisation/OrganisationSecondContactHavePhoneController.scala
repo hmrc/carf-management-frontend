@@ -23,7 +23,7 @@ import models.{ChangeMode, Mode, NormalMode, UserAnswers}
 import navigation.Navigator
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{OrganisationSecondContactHavePhonePage, OrganisationSecondContactNamePage, OverwritableOrganisationName}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
@@ -47,8 +47,7 @@ class OrganisationSecondContactHavePhoneController @Inject() (
     view: OrganisationSecondContactHavePhoneView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   val form: Form[Boolean]         = formProvider("organisationSecondContactHavePhone.error.required")
   private lazy val recovery: Call = routes.JourneyRecoveryController.onPageLoad()
@@ -65,7 +64,7 @@ class OrganisationSecondContactHavePhoneController @Inject() (
         case (Some(secondContactName), Some(rcaspName)) =>
           Ok(view(preparedForm, mode, secondContactName, rcaspName))
         case _                                          =>
-          logger.warn(
+          logWarn(
             "[OrganisationSecondContactHavePhoneController] Could not retrieve OrganisationSecondContactNamePage and/or OverwritableOrganisationName onPageLoad"
           )
           Redirect(
@@ -91,7 +90,7 @@ class OrganisationSecondContactHavePhoneController @Inject() (
               case (Some(secondContactName), Some(organisationName)) =>
                 Future.successful(BadRequest(view(formWithErrors, mode, secondContactName, organisationName)))
               case _                                                 =>
-                logger.warn(
+                logWarn(
                   "[OrganisationSecondContactHavePhoneController] Could not retrieve Contact and/or Org name onPageSubmit"
                 )
                 Future.successful(

@@ -23,7 +23,7 @@ import models.requests.DataRequest
 import models.{format, AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers}
 import navigation.Navigator
 import pages.*
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
@@ -50,8 +50,7 @@ class ChooseAddressController @Inject() (
     view: ChooseAddressView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   private case class WithRadiosResult(result: Result, addresses: Seq[AddressAndUPRN])
 
@@ -83,7 +82,7 @@ class ChooseAddressController @Inject() (
         request.userAnswers.retrieveRcaspName match {
           case Some(name) => Ok(view(preparedForm, mode, radios, generateHtml(maybeFindAddress), name))
           case None       =>
-            logger.warn(
+            logWarn(
               "[ChooseAddressController][onPageLoad] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
             )
             Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -103,7 +102,7 @@ class ChooseAddressController @Inject() (
               request.userAnswers.retrieveRcaspName match {
                 case Some(name) => BadRequest(view(formWithErrors, mode, radios, generateHtml(maybeFindAddress), name))
                 case None       =>
-                  logger.warn(
+                  logWarn(
                     "[ChooseAddressController][onSubmit] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
                   )
                   Redirect(controllers.routes.InformationMissingController.onPageLoad())

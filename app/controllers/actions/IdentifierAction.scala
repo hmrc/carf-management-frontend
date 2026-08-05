@@ -21,7 +21,7 @@ import config.FrontendAppConfig
 import controllers.routes
 import models.IdentifierType
 import models.requests.IdentifierRequest
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.mvc.*
 import play.api.mvc.Results.*
 import uk.gov.hmrc.auth.core.*
@@ -62,8 +62,7 @@ class AuthenticatedIdentifierActionWithRegime @Inject() (
 )(implicit val executionContext: ExecutionContext)
     extends ActionBuilder[IdentifierRequest, AnyContent]
     with ActionFunction[Request, IdentifierRequest]
-    with AuthorisedFunctions
-    with Logging {
+    with AuthorisedFunctions {
 
   private def enrolmentKey: String = config.enrolmentKey
 

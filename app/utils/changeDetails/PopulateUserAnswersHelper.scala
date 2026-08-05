@@ -26,7 +26,7 @@ import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
 import pages.{AddressPagePrePop, UkAddressInUserAnswers}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import repositories.SessionRepository
@@ -42,8 +42,7 @@ class PopulateUserAnswersHelper @Inject() (
     sessionRepository: SessionRepository,
     registrationService: RegistrationService,
     countryListFactory: CountryListFactory
-)(implicit ec: ExecutionContext)
-    extends Logging {
+)(implicit ec: ExecutionContext) {
 
   def populateUserAnswersForIndividual(
       userId: String,
@@ -74,7 +73,7 @@ class PopulateUserAnswersHelper @Inject() (
         )
       }
       .getOrElse {
-        logger.warn(
+        logWarn(
           "[PopulateUserAnswersHelper][populateUserAnswersForIndividual] Unable to populate user answers from IndividualRcaspDetails"
         )
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
@@ -124,7 +123,7 @@ class PopulateUserAnswersHelper @Inject() (
         )
       }
       .getOrElse {
-        logger.warn(
+        logWarn(
           "[PopulateUserAnswersHelper][populateUserAnswersForOrganisation] Unable to populate user answers from OrganisationRcaspDetails"
         )
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
@@ -161,7 +160,7 @@ class PopulateUserAnswersHelper @Inject() (
           case Right(businessDetails) =>
             countryListFactory.getDescriptionFromCode(businessDetails.address.countryCode) match {
               case None =>
-                logger.warn(
+                logWarn(
                   s"[PopulateUserAnswersHelper][populateUserAnswersForRegisteredBusiness] Country with code ${businessDetails.address.countryCode} not found in list of countries"
                 )
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
@@ -193,15 +192,14 @@ class PopulateUserAnswersHelper @Inject() (
                 )
             }
           case Left(error)            =>
-            logger
-              .warn(
-                s"[PopulateUserAnswersHelper][populateUserAnswersForRegisteredBusiness] Failed to get business details: $error"
-              )
+            logWarn(
+              s"[PopulateUserAnswersHelper][populateUserAnswersForRegisteredBusiness] Failed to get business details: $error"
+            )
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
       }
       .getOrElse {
-        logger.warn(
+        logWarn(
           "[PopulateUserAnswersHelper][populateUserAnswersForRegisteredBusiness] Unable to populate user answers from OrganisationRcaspDetails"
         )
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))

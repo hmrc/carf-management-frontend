@@ -22,7 +22,7 @@ import config.FrontendAppConfig
 import models.errors.ApiError
 import models.requests.SearchByPostcodeRequest
 import models.responses.AddressLookupResponse
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.http.Status.OK
 import play.api.libs.json.Json
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
@@ -36,7 +36,7 @@ import scala.util.{Failure, Success, Try}
 
 class AddressLookupConnector @Inject() (val config: FrontendAppConfig, val http: HttpClientV2)(implicit
     ec: ExecutionContext
-) extends Logging {
+) {
 
   private lazy val searchByPostcodeUrl = url"${config.addressLookupBaseUrl}/lookup"
 
@@ -55,13 +55,13 @@ class AddressLookupConnector @Inject() (val config: FrontendAppConfig, val http:
               case Success(data)      =>
                 Right(data)
               case Failure(exception) =>
-                logger.warn(
+                logWarn(
                   s"Error parsing response as AddressResponse with uri: $searchByPostcodeUrl"
                 )
                 Left(ApiError.JsonValidationError)
             }
           case response                              =>
-            logger.warn(
+            logWarn(
               s"Unexpected response: status code: ${response.status}, with message: ${response.body} from uri: $searchByPostcodeUrl"
             )
             Left(ApiError.InternalServerError)

@@ -20,7 +20,7 @@ import cats.syntax.all.*
 import controllers.actions.{CtUtrRetrievalAction, DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import pages.{RcaspIdPage, SubmissionSucceededPage}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -46,8 +46,7 @@ class RegisteredBusinessCheckDetailsController @Inject() (
     rcaspSubmissionService: RcaspSubmissionService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData) {
     implicit request =>
@@ -64,14 +63,14 @@ class RegisteredBusinessCheckDetailsController @Inject() (
               Ok(view(section, name))
             }
             .getOrElse {
-              logger.warn(
+              logWarn(
                 "[RegisteredBusinessCheckDetailsController][onPageLoad] Error! Could not load page missing answers"
               )
               ifEmptyProtocol
             }
 
         case _ =>
-          logger.warn(
+          logWarn(
             "[RegisteredBusinessCheckDetailsController][onPageLoad] ReportForRegisteredBusiness is false or missing. Redirecting to SIIM."
           )
           ifEmptyProtocol
@@ -95,11 +94,11 @@ class RegisteredBusinessCheckDetailsController @Inject() (
                     _                 <- sessionRepository.set(uaWithSuccessFlag)
                   } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
                 case Left(error)     =>
-                  logger.warn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")
+                  logWarn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
               }
           case None      =>
-            logger.warn("[RegisteredBusinessCheckDetailsController][onSubmit] CT UTR not found in request")
+            logWarn("[RegisteredBusinessCheckDetailsController][onSubmit] CT UTR not found in request")
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
     }

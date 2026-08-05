@@ -22,7 +22,7 @@ import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{OrganisationSecondContactNamePage, OrganisationSecondContactPhoneNumberPage}
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -45,8 +45,7 @@ class OrganisationSecondContactPhoneNumberController @Inject() (
     view: OrganisationSecondContactPhoneNumberView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   val form: Form[String] = formProvider("organisationSecondContactPhoneNumber")
 
@@ -58,7 +57,7 @@ class OrganisationSecondContactPhoneNumberController @Inject() (
       request.userAnswers.get(OrganisationSecondContactNamePage) match {
         case Some(usersName) => Ok(view(preparedForm, mode, usersName))
         case None            =>
-          logger.warn(
+          logWarn(
             "[OrganisationSecondContactPhoneNumberController] Could not retrieve OrganisationSecondContactNamePage onPageLoad"
           )
           Redirect(
@@ -76,7 +75,7 @@ class OrganisationSecondContactPhoneNumberController @Inject() (
             request.userAnswers.get(OrganisationSecondContactNamePage) match {
               case Some(usersName) => Future.successful(BadRequest(view(formWithErrors, mode, usersName)))
               case None            =>
-                logger.warn(
+                logWarn(
                   "[OrganisationSecondContactPhoneNumberController] Could not retrieve OrganisationSecondContactNamePage onPageSubmit"
                 )
                 Future.successful(

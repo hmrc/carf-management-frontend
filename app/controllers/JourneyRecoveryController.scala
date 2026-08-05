@@ -17,7 +17,7 @@
 package controllers
 
 import controllers.actions.IdentifierAction
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl._
@@ -33,8 +33,7 @@ class JourneyRecoveryController @Inject() (
     continueView: JourneyRecoveryContinueView,
     startAgainView: JourneyRecoveryStartAgainView
 ) extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] = identify() { implicit request =>
     val safeUrl: Option[String] = continueUrl.flatMap { unsafeUrl =>
@@ -42,7 +41,7 @@ class JourneyRecoveryController @Inject() (
         case Right(safeUrl) =>
           Some(safeUrl.url)
         case Left(message)  =>
-          logger.info(message)
+          logInfo(message)
           None
       }
     }

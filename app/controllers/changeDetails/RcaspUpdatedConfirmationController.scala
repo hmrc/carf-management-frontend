@@ -18,7 +18,7 @@ package controllers.changeDetails
 
 import controllers.actions.*
 import pages.SubmissionSucceededPage
-import play.api.Logging
+import utils.LoggerUtil.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -34,8 +34,7 @@ class RcaspUpdatedConfirmationController @Inject() (
     val controllerComponents: MessagesControllerComponents,
     view: RcaspUpdatedConfirmationView
 ) extends FrontendBaseController
-    with I18nSupport
-    with Logging {
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
     val submissionSucceeded = request.userAnswers.get(SubmissionSucceededPage).contains(true)
@@ -45,7 +44,7 @@ class RcaspUpdatedConfirmationController @Inject() (
       case Some(name) if submissionSucceeded =>
         Ok(view(name))
       case _                                 =>
-        logger.warn(
+        logWarn(
           "[RcaspUpdatedConfirmationController][onPageLoad] Missing submission flag or RCASP name in user answers"
         )
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
