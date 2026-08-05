@@ -19,7 +19,6 @@ package controllers.actions
 import config.FrontendAppConfig
 import models.requests.IdentifierRequest
 import models.{IdentifierType, UniqueTaxpayerReference}
-import utils.LoggerUtil.*
 import play.api.mvc.{ActionFunction, Result}
 import uk.gov.hmrc.auth.core.{AffinityGroup, Enrolment}
 

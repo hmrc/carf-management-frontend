@@ -105,7 +105,7 @@ class ReportForRegisteredBusinessController @Inject() (
 
               case None =>
                 logError(
-                  s"[ReportForRegisteredBusinessController][onPageLoad] " +
+                  "[ReportForRegisteredBusinessController][onPageLoad] " +
                     s"Country with code ${businessDetails.address.countryCode} not found in list of countries"
                 )
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
@@ -132,8 +132,8 @@ class ReportForRegisteredBusinessController @Inject() (
             .fold(Redirect(recovery))(value => Ok(view(form(isChangeJourney).fill(value), mode, None, isChangeJourney)))
         } else {
           logWarn(
-            s"[ReportForRegisteredBusinessController][onPageLoad][Change] Failed verifications as user is not a " +
-              s"registered business"
+            "[ReportForRegisteredBusinessController][onPageLoad][Change] Failed verifications as user is not a " +
+              "registered business"
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
         }

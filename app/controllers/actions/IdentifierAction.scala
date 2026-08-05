@@ -16,12 +16,10 @@
 
 package controllers.actions
 
-import javax.inject.Inject
 import config.FrontendAppConfig
 import controllers.routes
 import models.IdentifierType
 import models.requests.IdentifierRequest
-import utils.LoggerUtil.*
 import play.api.mvc.*
 import play.api.mvc.Results.*
 import uk.gov.hmrc.auth.core.*
@@ -32,6 +30,7 @@ import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 trait IdentifierAction {
