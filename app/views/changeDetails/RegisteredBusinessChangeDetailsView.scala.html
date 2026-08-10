@@ -45,7 +45,7 @@
     ))
 
     @if(hasDataChanged) {
-        @formHelper(action = controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onSubmit(rcaspId), Symbol("autoComplete") -> "on") {
+        @formHelper(action = controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onSubmit(rcaspId), Symbol("autoComplete") -> "off") {
             <h2 class="govuk-heading-m">@messages("registeredBusinessChangeDetails.declaration.subtitle")</h2>
 
             <p class="govuk-body">@messages("registeredBusinessChangeDetails.declaration.p1")</p>
