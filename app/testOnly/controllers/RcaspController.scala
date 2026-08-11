@@ -21,7 +21,6 @@ import models.requests.createRcasp.{RcaspManagementRequest as CreateRcaspManagem
 import models.requests.deleteRcasp.RcaspRequest as DeleteRcaspRequest
 import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
 import models.requests.{createRcasp as createRcaspPackage, deleteRcasp as deleteRcaspPackage, updateRcasp as updateRcaspPackage, RcaspRequestCommon, *}
-import models.responses.SubmitRcaspResponse
 import models.{viewAndUpdateRcasp, RcaspAddress, RcaspContactDetails, TinDetails}
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json

@@ -212,7 +212,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
         |}
         |""".stripMargin
 
-    "successfully retrieve a SubmitRcaspResponse" in {
+    "successfully retrieve a CreateRcaspResponse" in {
 
       stubFor(
         post(urlPathMatching(testUrl))
@@ -224,7 +224,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
       )
 
       val result = connector.createRcasp(createRcaspRequestIndividual).value.futureValue
-      result shouldBe Right(submitRcaspResponse)
+      result shouldBe Right(createRcaspResponse)
     }
 
     "return JsonValidationError when response JSON is invalid" in {
@@ -281,19 +281,9 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
     val testUrl = "/carf-management/update"
 
-    val updateStubResponse =
-      """
-        |{
-        |  "ResponseDetails": {
-        |    "ReturnParameters": {
-        |      "Key": "RCASPID",
-        |      "Value": "ZMCAR0123456789"
-        |    }
-        |  }
-        |}
-        |""".stripMargin
+    val updateStubResponse = "{}"
 
-    "successfully retrieve a UpdateRcaspResponse" in {
+    "successfully retrieve a UpdateDeleteRcaspResponse" in {
 
       stubFor(
         post(urlPathMatching(testUrl))
@@ -305,7 +295,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
       )
 
       val result = connector.updateRcasp(updateRcaspRequestIndividual).value.futureValue
-      result shouldBe Right(submitRcaspResponse)
+      result shouldBe Right(updateDeleteRcaspResponse)
     }
 
     "return JsonValidationError when response JSON is invalid" in {
@@ -314,7 +304,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
           .willReturn(
             aResponse()
               .withStatus(OK)
-              .withBody("""{"incorrect": "structure"}""")
+              .withBody("")
           )
       )
 
@@ -362,19 +352,9 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
     val testUrl = "/carf-management/delete"
 
-    val deleteStubResponse =
-      """
-        |{
-        |  "ResponseDetails": {
-        |    "ReturnParameters": {
-        |      "Key": "RCASPID",
-        |      "Value": "ZMCAR0123456789"
-        |    }
-        |  }
-        |}
-        |""".stripMargin
+    val deleteStubResponse = "{}"
 
-    "successfully retrieve a DeleteRcaspResponse" in {
+    "successfully retrieve an UpdateDeleteRcaspResponse" in {
 
       stubFor(
         delete(urlPathMatching(testUrl))
@@ -386,7 +366,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
       )
 
       val result = connector.deleteRcasp(deleteRcaspRequest).value.futureValue
-      result shouldBe Right(submitRcaspResponse)
+      result shouldBe Right(updateDeleteRcaspResponse)
     }
 
     "return JsonValidationError when response JSON is invalid" in {
@@ -395,7 +375,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
           .willReturn(
             aResponse()
               .withStatus(OK)
-              .withBody("""{"incorrect": "structure"}""")
+              .withBody("")
           )
       )
 

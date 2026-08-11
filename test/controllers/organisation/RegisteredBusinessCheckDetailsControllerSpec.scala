@@ -138,7 +138,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         emptyUserAnswers
       ) {
         when(mockRcaspSubmissionService.createRegisteredBusinessRcasp(any(), any(), any())(any(), any()))
-          .thenReturn(ResultT.fromValue(submitRcaspResponse))
+          .thenReturn(ResultT.fromValue(createRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
         val request                = FakeRequest(POST, cdRoute)
