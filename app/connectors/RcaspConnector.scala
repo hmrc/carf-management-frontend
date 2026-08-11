@@ -72,7 +72,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
 
   def createRcasp(
       createRcaspRequest: CreateRcaspRequest
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] = {
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[CreateRcaspResponse] = {
     val baseUrl = url"${config.carfManagementBaseUrl}/create"
 
     logDebug("[RcaspConnector] Creating RCASP")
@@ -81,7 +81,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
       url = baseUrl,
       requestBuilder = http.post(baseUrl).withBody(Json.toJson(createRcaspRequest))
     ) { httpResponse =>
-      Try(httpResponse.json.as[SubmitRcaspResponse]) match {
+      Try(httpResponse.json.as[CreateRcaspResponse]) match {
         case Success(data)      => Right(data)
         case Failure(exception) =>
           logParseWarning(baseUrl, "createRcasp")
@@ -92,7 +92,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
 
   def updateRcasp(
       updateRcaspRequest: UpdateRcaspRequest
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] = {
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[UpdateDeleteRcaspResponse] = {
     val baseUrl = url"${config.carfManagementBaseUrl}/update"
 
     logDebug("[RcaspConnector] Updating RCASP")
@@ -101,7 +101,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
       url = baseUrl,
       requestBuilder = http.post(baseUrl).withBody(Json.toJson(updateRcaspRequest))
     ) { httpResponse =>
-      Try(httpResponse.json.as[SubmitRcaspResponse]) match {
+      Try(httpResponse.json.as[UpdateDeleteRcaspResponse]) match {
         case Success(data)      => Right(data)
         case Failure(exception) =>
           logParseWarning(baseUrl, "updateRcasp")
@@ -112,7 +112,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
 
   def deleteRcasp(
       deleteRcaspRequest: DeleteRcaspRequest
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] = {
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[UpdateDeleteRcaspResponse] = {
     val baseUrl = url"${config.carfManagementBaseUrl}/delete"
 
     logDebug("[RcaspConnector] Deleting RCASP")
@@ -121,7 +121,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
       url = baseUrl,
       requestBuilder = http.delete(baseUrl).withBody(Json.toJson(deleteRcaspRequest))
     ) { httpResponse =>
-      Try(httpResponse.json.as[SubmitRcaspResponse]) match {
+      Try(httpResponse.json.as[UpdateDeleteRcaspResponse]) match {
         case Success(data)      => Right(data)
         case Failure(exception) =>
           logParseWarning(baseUrl, "deleteRcasp")

@@ -18,14 +18,22 @@ package models.responses
 
 import play.api.libs.json.{Json, OFormat}
 
-case class SubmitRcaspResponse(ResponseDetails: SubmitResponseDetails)
+sealed trait SubmitRcaspResponse
+
+case class CreateRcaspResponse(ResponseDetails: SubmitResponseDetails) extends SubmitRcaspResponse
+
+case class UpdateDeleteRcaspResponse() extends SubmitRcaspResponse
 
 case class SubmitResponseDetails(ReturnParameters: SubmitReturnParameters)
 
 case class SubmitReturnParameters(Key: String, Value: String)
 
-object SubmitRcaspResponse {
-  implicit val format: OFormat[SubmitRcaspResponse] = Json.format[SubmitRcaspResponse]
+object CreateRcaspResponse {
+  implicit val format: OFormat[CreateRcaspResponse] = Json.format[CreateRcaspResponse]
+}
+
+object UpdateDeleteRcaspResponse {
+  implicit val format: OFormat[UpdateDeleteRcaspResponse] = Json.format[UpdateDeleteRcaspResponse]
 }
 
 object SubmitResponseDetails {
