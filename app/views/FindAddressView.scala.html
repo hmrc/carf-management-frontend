@@ -29,7 +29,7 @@
 
 @layout(pageTitle = title(form, messages("findAddress.title"))) {
 
-    @formHelper(action = controllers.routes.FindAddressController.onSubmit(mode)) {
+    @formHelper(action = controllers.routes.FindAddressController.onSubmit(mode), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -53,6 +53,7 @@
             )
             .withWidth(ThreeQuarters)
             .withHint(HintViewModel(messages("findAddress.hint")))
+            .withAutocomplete("address-line1")
         )
 
         <p class="govuk-body">@link(

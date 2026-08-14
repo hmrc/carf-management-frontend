@@ -31,7 +31,7 @@
     pageTitle = title(form, messages("utr.title"))
 ) {
 
-    @formHelper(action = routes.UtrController.onSubmit(mode)) {
+    @formHelper(action = routes.UtrController.onSubmit(mode), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -48,6 +48,7 @@
             .withHint(HintViewModel(messages("utr.hint")))
             .withWidth(ThreeQuarters)
             .withSpellcheck(on = false)
+            .withAutocomplete("utr")
         )
 
         @govukButton(

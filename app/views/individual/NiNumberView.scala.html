@@ -28,7 +28,7 @@
 
 @layout(pageTitle = title(form, messages("niNumber.title"))) {
 
-    @formHelper(action = controllers.individual.routes.NiNumberController.onSubmit(mode)) {
+    @formHelper(action = controllers.individual.routes.NiNumberController.onSubmit(mode), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))
@@ -41,6 +41,7 @@
             )
             .withHint(HintViewModel(HtmlContent(messages("niNumber.hint"))))
             .withWidth(Fixed10)
+            .withAutocomplete("ni-number")
         )
 
         @govukButton(
