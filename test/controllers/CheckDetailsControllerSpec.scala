@@ -196,7 +196,7 @@ class CheckDetailsControllerSpec extends SpecBase {
         when(mockRcaspService.createRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
           .thenReturn(ResultT.fromValue(submitRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-        when(mockAuditService.auditAddRcasp(any())(any())).thenReturn(ResultT.fromValue(()))
+        when(mockAuditService.auditAddRcasp(any(), any())(any())).thenReturn(ResultT.fromValue(()))
 
         val request                = FakeRequest(POST, checkDetailsRoute)
         val result: Future[Result] = route(application, request).value
@@ -205,7 +205,7 @@ class CheckDetailsControllerSpec extends SpecBase {
         redirectLocation(result).value mustEqual controllers.routes.RcaspAddedConfirmationController.onPageLoad().url
 
         verify(mockRcaspService, times(1)).createRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
-        verify(mockAuditService, times(1)).auditAddRcasp(any())(any())
+        verify(mockAuditService, times(1)).auditAddRcasp(any(), any())(any())
         verify(mockSessionRepository, times(1)).set(
           eqTo(
             individualCompleteUserAnswers
@@ -221,7 +221,7 @@ class CheckDetailsControllerSpec extends SpecBase {
         when(mockRcaspService.createRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
           .thenReturn(ResultT.fromValue(submitRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-        when(mockAuditService.auditAddRcasp(any())(any())).thenReturn(ResultT.fromError(InternalServerError))
+        when(mockAuditService.auditAddRcasp(any(), any())(any())).thenReturn(ResultT.fromError(InternalServerError))
 
         val request                = FakeRequest(POST, checkDetailsRoute)
         val result: Future[Result] = route(application, request).value
@@ -230,7 +230,7 @@ class CheckDetailsControllerSpec extends SpecBase {
         redirectLocation(result).value mustEqual controllers.routes.RcaspAddedConfirmationController.onPageLoad().url
 
         verify(mockRcaspService, times(1)).createRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any())
-        verify(mockAuditService, times(1)).auditAddRcasp(any())(any())
+        verify(mockAuditService, times(1)).auditAddRcasp(any(), any())(any())
         verify(mockSessionRepository, times(1)).set(
           eqTo(
             individualCompleteUserAnswers

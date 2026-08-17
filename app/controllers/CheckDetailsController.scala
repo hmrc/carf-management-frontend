@@ -102,7 +102,7 @@ class CheckDetailsController @Inject() (
       rcaspSubmissionService.createRcasp(request.carfId, request.userAnswers).value.flatMap {
         case Right(response) =>
           val rcaspId = response.ResponseDetails.ReturnParameters.Value
-          auditService.auditAddRcasp(request.userAnswers).recover { case e =>
+          auditService.auditAddRcasp(request.userAnswers, request.utr.isDefined).recover { case e =>
             logDebug(s"Auditing Management failed due to $e")
             ()
           }

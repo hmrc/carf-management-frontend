@@ -32,7 +32,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
-import services.RcaspSubmissionService
+import services.{AuditService, RcaspSubmissionService}
 import types.ResultT
 import uk.gov.hmrc.auth.core.AffinityGroup
 import utils.{DetailsHelper, RegisteredBusinessDetailsHelper}
@@ -172,6 +172,7 @@ class RegisteredBusinessChangeDetailsControllerSpec extends SpecBase {
         when(mockRcaspService.updateRegisteredBusinessRcasp(any(), any(), eqTo(testCompleteUserAnswers))(any(), any()))
           .thenReturn(ResultT.fromValue(submitRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+        when(mockAuditService.auditChangeRcasp(any())(any())).thenReturn(ResultT.fromValue(()))
 
         val request                = FakeRequest(POST, changeDetailsRoute)
         val result: Future[Result] = route(application, request).value
@@ -182,6 +183,30 @@ class RegisteredBusinessChangeDetailsControllerSpec extends SpecBase {
 
         verify(mockRcaspService, times(1))
           .updateRegisteredBusinessRcasp(any(), any(), eqTo(testCompleteUserAnswers))(any(), any())
+        verify(mockAuditService, times(1)).auditChangeRcasp(any())(any())
+        verify(mockSessionRepository, times(1)).set(
+          eqTo(testCompleteUserAnswers.withPage(SubmissionSucceededPage, true))
+        )
+      }
+
+      "when the audit service call returns an error the request should still be successful" in new Setup(
+        testCompleteUserAnswers
+      ) {
+        when(mockRcaspService.updateRegisteredBusinessRcasp(any(), any(), eqTo(testCompleteUserAnswers))(any(), any()))
+          .thenReturn(ResultT.fromValue(submitRcaspResponse))
+        when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+        when(mockAuditService.auditChangeRcasp(any())(any())).thenReturn(ResultT.fromValue(InternalServerError))
+
+        val request                = FakeRequest(POST, changeDetailsRoute)
+        val result: Future[Result] = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual
+          controllers.changeDetails.routes.RcaspUpdatedConfirmationController.onPageLoad().url
+
+        verify(mockRcaspService, times(1))
+          .updateRegisteredBusinessRcasp(any(), any(), eqTo(testCompleteUserAnswers))(any(), any())
+        verify(mockAuditService, times(1)).auditChangeRcasp(any())(any())
         verify(mockSessionRepository, times(1)).set(
           eqTo(testCompleteUserAnswers.withPage(SubmissionSucceededPage, true))
         )
@@ -255,13 +280,15 @@ class RegisteredBusinessChangeDetailsControllerSpec extends SpecBase {
     final val mockDetailsHelper                   = mock[DetailsHelper]
     final val mockRegisteredBusinessDetailsHelper = mock[RegisteredBusinessDetailsHelper]
     final val mockRcaspService                    = mock[RcaspSubmissionService]
+    final val mockAuditService                    = mock[AuditService]
 
     val application: Application =
       applicationBuilder(userAnswers = Some(userAnswers), requestUtr = requestUtr)
         .overrides(
           bind[DetailsHelper].toInstance(mockDetailsHelper),
           bind[RegisteredBusinessDetailsHelper].toInstance(mockRegisteredBusinessDetailsHelper),
-          bind[RcaspSubmissionService].toInstance(mockRcaspService)
+          bind[RcaspSubmissionService].toInstance(mockRcaspService),
+          bind[AuditService].toInstance(mockAuditService)
         )
         .build()
   }

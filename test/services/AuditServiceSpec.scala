@@ -34,7 +34,6 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.{Disabled, Failure, Success}
-import utils.LoggerUtil.{logError, logInfo}
 
 import scala.concurrent.Future
 
@@ -103,7 +102,7 @@ class AuditServiceSpec extends SpecBase {
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Success))
 
-        val result = service.auditAddRcasp(userAnswers).value.futureValue
+        val result = service.auditAddRcasp(userAnswers, false).value.futureValue
 
         result mustBe Right(())
 
@@ -182,7 +181,7 @@ class AuditServiceSpec extends SpecBase {
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Success))
 
-        val result = service.auditAddRcasp(userAnswers).value.futureValue
+        val result = service.auditAddRcasp(userAnswers, false).value.futureValue
 
         result mustBe Right(())
 
@@ -202,12 +201,35 @@ class AuditServiceSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
           .withPage(AddressUPRNUserAnswers, testUPRN.toLong)
           .withPage(ChooseAddressPage, "address")
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OrganisationNamePage, testOrgName)
+          .withPage(HaveTradingNamePage, true)
+          .withPage(TradingNamePage, testTradingName)
+          .withPage(UtrPage, testUtr.toString)
+          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+          .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+          .withPage(OrganisationFirstContactEmailPage, testEmail)
+          .withPage(OrganisationFirstContactHavePhonePage, true)
+          .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
+          .withPage(OrganisationHaveSecondContactPage, true)
+          .withPage(OrganisationSecondContactNamePage, testOrgContactName)
+          .withPage(OrganisationSecondContactEmailPage, testEmail)
+          .withPage(OrganisationSecondContactHavePhonePage, true)
+          .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
 
         val expectedAudit = AddRcaspAuditEvent(
           organisationCTMatch = Some(OrganisationCtMatch(isBusinessAnRCASP = true, isBusinessNameCorrect = Some(true))),
           isRCASPAnOrganisationOrIndividual = None,
           addRCASPIndividual = None,
-          addRCASPOrganisation = None,
+          addRCASPOrganisation = Some(
+            AddRcaspOrganisation(
+              organisationName = testOrgName,
+              doesRCASPTradeUnderDifferentName = true,
+              RCASPTradingName = Some(testTradingName),
+              RCASPUTR = Some(testUtr.toString),
+              confirmRCASPregisteredAddress = Some(true)
+            )
+          ),
           addressLookup = Some(
             AddressLookup(
               findAddress = testFindAddress.postcode,
@@ -222,13 +244,25 @@ class AuditServiceSpec extends SpecBase {
             )
           ),
           individualContactDetails = None,
-          organisationContactDetails = None
+          organisationContactDetails = Some(
+            OrganisationContactDetails(
+              Contact1Name = Some(testOrgContactName),
+              Contact1Email = testEmail,
+              Contact1ByPhone = true,
+              Contact1PhoneNumber = Some(testPhone),
+              Contact2 = true,
+              Contact2Name = Some(testOrgContactName),
+              Contact2Email = Some(testEmail),
+              Contact2Phone = Some(true),
+              Contact2PhoneNumber = Some(testPhone)
+            )
+          )
         )
 
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Success))
 
-        val result = service.auditAddRcasp(userAnswers).value.futureValue
+        val result = service.auditAddRcasp(userAnswers, true).value.futureValue
 
         result mustBe Right(())
 
@@ -245,7 +279,7 @@ class AuditServiceSpec extends SpecBase {
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Disabled))
 
-        val result = service.auditAddRcasp(emptyUserAnswers).value.futureValue
+        val result = service.auditAddRcasp(emptyUserAnswers, true).value.futureValue
 
         result mustBe Left(InternalServerError)
 
@@ -256,7 +290,7 @@ class AuditServiceSpec extends SpecBase {
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Failure))
 
-        val result = service.auditAddRcasp(emptyUserAnswers).value.futureValue
+        val result = service.auditAddRcasp(emptyUserAnswers, true).value.futureValue
 
         result mustBe Left(InternalServerError)
 
@@ -267,7 +301,7 @@ class AuditServiceSpec extends SpecBase {
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Future.failed(new Exception("uh oh"))))
 
-        val result = service.auditAddRcasp(emptyUserAnswers).value.futureValue
+        val result = service.auditAddRcasp(emptyUserAnswers, true).value.futureValue
 
         result mustBe Left(InternalServerError)
 

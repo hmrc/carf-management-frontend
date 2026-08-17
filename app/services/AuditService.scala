@@ -44,42 +44,45 @@ import scala.util.control.NonFatal
 class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionContext) {
 
   def auditAddRcasp(
-      userAnswers: UserAnswers
+      userAnswers: UserAnswers,
+      isCtAutoMatched: Boolean
   )(implicit hc: HeaderCarrier): ResultT[Unit] =
     for {
       addRcaspEvent <- ResultT.fromValue(
-                         userAnswers.get(OrganisationOrIndividualPage) match {
-                           case Some(Individual)   =>
-                             AddRcaspAuditEvent(
-                               organisationCTMatch = None,
-                               isRCASPAnOrganisationOrIndividual = userAnswers.get(OrganisationOrIndividualPage),
-                               addRCASPIndividual = getAddRcaspIndividual(userAnswers),
-                               addRCASPOrganisation = None,
-                               addressLookup = getAddressLookup(userAnswers),
-                               individualContactDetails = getIndividualContactDetails(userAnswers),
-                               organisationContactDetails = None
-                             )
-                           case Some(Organisation) =>
-                             AddRcaspAuditEvent(
-                               organisationCTMatch = None,
-                               isRCASPAnOrganisationOrIndividual = userAnswers.get(OrganisationOrIndividualPage),
-                               addRCASPIndividual = None,
-                               addRCASPOrganisation = getAddRcaspOrganisation(userAnswers),
-                               addressLookup = getAddressLookup(userAnswers),
-                               individualContactDetails = None,
-                               organisationContactDetails = getOrganisationContactDetails(userAnswers)
-                             )
-                           case None               =>
-                             AddRcaspAuditEvent(
-                               organisationCTMatch = getOrganisationCtMatch(userAnswers),
-                               isRCASPAnOrganisationOrIndividual = None,
-                               addRCASPIndividual = None,
-                               addRCASPOrganisation = None,
-                               addressLookup = getAddressLookup(userAnswers),
-                               individualContactDetails = None,
-                               organisationContactDetails = None
-                             )
+                         if (isCtAutoMatched) {
+                           AddRcaspAuditEvent(
+                             organisationCTMatch = getOrganisationCtMatch(userAnswers),
+                             isRCASPAnOrganisationOrIndividual = None,
+                             addRCASPIndividual = None,
+                             addRCASPOrganisation = getAddRcaspOrganisation(userAnswers),
+                             addressLookup = getAddressLookup(userAnswers),
+                             individualContactDetails = None,
+                             organisationContactDetails = getOrganisationContactDetails(userAnswers)
+                           )
 
+                         } else {
+                           userAnswers.get(OrganisationOrIndividualPage) match {
+                             case Some(Individual)   =>
+                               AddRcaspAuditEvent(
+                                 organisationCTMatch = None,
+                                 isRCASPAnOrganisationOrIndividual = userAnswers.get(OrganisationOrIndividualPage),
+                                 addRCASPIndividual = getAddRcaspIndividual(userAnswers),
+                                 addRCASPOrganisation = None,
+                                 addressLookup = getAddressLookup(userAnswers),
+                                 individualContactDetails = getIndividualContactDetails(userAnswers),
+                                 organisationContactDetails = None
+                               )
+                             case Some(Organisation) =>
+                               AddRcaspAuditEvent(
+                                 organisationCTMatch = None,
+                                 isRCASPAnOrganisationOrIndividual = userAnswers.get(OrganisationOrIndividualPage),
+                                 addRCASPIndividual = None,
+                                 addRCASPOrganisation = getAddRcaspOrganisation(userAnswers),
+                                 addressLookup = getAddressLookup(userAnswers),
+                                 individualContactDetails = None,
+                                 organisationContactDetails = getOrganisationContactDetails(userAnswers)
+                               )
+                           }
                          }
                        )
       extendedEvent  = convertToExtendedEvent(addRcaspEvent.toJson, "Management")
