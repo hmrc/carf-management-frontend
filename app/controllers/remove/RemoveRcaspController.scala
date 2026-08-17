@@ -19,14 +19,14 @@ package controllers.remove
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import pages.SubmissionSucceededPage
-import pages.remove.{RcaspRemovedDateTimePage, RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveRcaspPage, RemoveUserAccessPage}
-import utils.LoggerUtil.*
+import pages.remove.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
-import services.RcaspSubmissionService
+import services.{AuditService, RcaspSubmissionService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.LoggerUtil.*
 import views.html.remove.RemoveRcaspView
 
 import java.time.{Clock, Instant}
@@ -42,6 +42,7 @@ class RemoveRcaspController @Inject() (
     sessionRepository: SessionRepository,
     formProvider: GenericYesNoPageFormProvider,
     rcaspSubmissionService: RcaspSubmissionService,
+    auditService: AuditService,
     val controllerComponents: MessagesControllerComponents,
     view: RemoveRcaspView,
     clock: Clock
@@ -77,7 +78,7 @@ class RemoveRcaspController @Inject() (
       val maybeOtherAccessAnswer = request.userAnswers.get(RemoveOtherAccessPage)
 
       (maybeCachedDetails, maybeUserAccessAnswer, maybeOtherAccessAnswer) match {
-        case (Some(cachedDetails), Some(_), Some(otherAccessAnswer)) =>
+        case (Some(cachedDetails), Some(userAccessAnswer), Some(otherAccessAnswer)) =>
           form
             .bindFromRequest()
             .fold(
@@ -93,6 +94,10 @@ class RemoveRcaspController @Inject() (
                   rcaspSubmissionService.removeRcasp(request.carfId, cachedDetails.RCASPID).value.flatMap {
                     case Right(_) =>
                       val currentTime = Instant.now(clock)
+                      auditService.auditRemoveRcasp(userAccessAnswer, otherAccessAnswer, value).recover { case e =>
+                        logDebug(s"Auditing Management failed due to $e")
+                        ()
+                      }
                       for {
                         updatedAnswers1 <- Future.fromTry(request.userAnswers.set(RemoveRcaspPage, value))
                         updatedAnswers2 <- Future.fromTry(updatedAnswers1.set(SubmissionSucceededPage, true))

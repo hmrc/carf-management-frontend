@@ -28,7 +28,7 @@ import utils.LoggerUtil.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
-import services.RcaspSubmissionService
+import services.{AuditService, RcaspSubmissionService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.DetailsHelper
 import views.html.changeDetails.ChangeDetailsView
@@ -46,7 +46,8 @@ class ChangeDetailsController @Inject() (
     view: ChangeDetailsView,
     val controllerComponents: MessagesControllerComponents,
     helper: DetailsHelper,
-    rcaspSubmissionService: RcaspSubmissionService
+    rcaspSubmissionService: RcaspSubmissionService,
+    auditService: AuditService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
@@ -120,6 +121,10 @@ class ChangeDetailsController @Inject() (
     (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       rcaspSubmissionService.updateRcasp(request.carfId, request.userAnswers).value.flatMap {
         case Right(_)    =>
+          auditService.auditChangeRcasp(request.userAnswers).recover { case e =>
+            logDebug(s"Auditing Management failed due to $e")
+            ()
+          }
           for {
             uaWithSuccessFlag <- Future.fromTry(request.userAnswers.set(SubmissionSucceededPage, true))
             _                 <- sessionRepository.set(uaWithSuccessFlag)

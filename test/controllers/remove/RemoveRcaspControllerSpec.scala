@@ -21,14 +21,14 @@ import forms.GenericYesNoPageFormProvider
 import models.errors.ApiError.InternalServerError
 import models.viewAndUpdateRcasp.RcaspDetails
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.Mockito.{never, reset, verify, when}
+import org.mockito.Mockito.{never, reset, times, verify, when}
 import pages.SubmissionSucceededPage
-import pages.remove.{RcaspRemovedDateTimePage, RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveRcaspPage, RemoveUserAccessPage}
+import pages.remove.*
 import play.api.data.FormBinding.Implicits.formBinding
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.RcaspSubmissionService
+import services.{AuditService, RcaspSubmissionService}
 import types.ResultT
 import views.html.remove.RemoveRcaspView
 
@@ -45,18 +45,21 @@ class RemoveRcaspControllerSpec extends SpecBase {
 
   val mockRcaspSubmissionService: RcaspSubmissionService = mock[RcaspSubmissionService]
 
+  val mockAuditService: AuditService = mock[AuditService]
+
   private val rcaspDetails: RcaspDetails =
     organisationRcaspDetailsViewUpdate.copy(RCASPID = rcaspId, IsRCASPUser = true)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockRcaspSubmissionService)
+    reset(mockRcaspSubmissionService, mockAuditService)
   }
 
   private def buildApplication(userAnswers: Option[models.UserAnswers]) =
     applicationBuilder(userAnswers = userAnswers)
       .overrides(
         bind[RcaspSubmissionService].toInstance(mockRcaspSubmissionService),
+        bind[AuditService].toInstance(mockAuditService),
         bind[Clock].toInstance(clock)
       )
       .build()
@@ -208,6 +211,9 @@ class RemoveRcaspControllerSpec extends SpecBase {
         when(mockSessionRepository.set(any()))
           .thenReturn(Future.successful(true))
 
+        when(mockAuditService.auditRemoveRcasp(any(), any(), any())(any()))
+          .thenReturn(ResultT.fromValue(()))
+
         val userAnswers = emptyUserAnswers
           .withPage(RemoveRcaspCachedDetails, rcaspDetails)
           .withPage(RemoveUserAccessPage, true)
@@ -227,6 +233,7 @@ class RemoveRcaspControllerSpec extends SpecBase {
             controllers.remove.routes.RcaspRemovedController.onPageLoad().url
 
           verify(mockRcaspSubmissionService).removeRcasp(eqTo(testCarfId), eqTo(rcaspDetails.RCASPID))(any(), any())
+          verify(mockAuditService, times(1)).auditRemoveRcasp(any(), any(), any())(any())
 
           val expectedAnswers = userAnswers
             .withPage(RemoveRcaspPage, true)
@@ -331,6 +338,46 @@ class RemoveRcaspControllerSpec extends SpecBase {
           redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
 
           verify(mockRcaspSubmissionService, never).removeRcasp(any(), any())(any(), any())
+        }
+      }
+
+      "when the audit service call returns an error the request should still be successful" in {
+        when(mockRcaspSubmissionService.removeRcasp(any(), any())(any(), any()))
+          .thenReturn(ResultT.fromValue(()))
+
+        when(mockSessionRepository.set(any()))
+          .thenReturn(Future.successful(true))
+
+        when(mockAuditService.auditRemoveRcasp(any(), any(), any())(any()))
+          .thenReturn(ResultT.fromError(InternalServerError))
+
+        val userAnswers = emptyUserAnswers
+          .withPage(RemoveRcaspCachedDetails, rcaspDetails)
+          .withPage(RemoveUserAccessPage, true)
+          .withPage(RemoveOtherAccessPage, false)
+
+        val application = buildApplication(Some(userAnswers))
+
+        running(application) {
+          val request =
+            FakeRequest(POST, onSubmitRoute)
+              .withFormUrlEncodedBody(("value", "true"))
+
+          val result = route(application, request).value
+
+          status(result)                 mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual
+            controllers.remove.routes.RcaspRemovedController.onPageLoad().url
+
+          verify(mockRcaspSubmissionService).removeRcasp(eqTo(testCarfId), eqTo(rcaspDetails.RCASPID))(any(), any())
+          verify(mockAuditService, times(1)).auditRemoveRcasp(any(), any(), any())(any())
+
+          val expectedAnswers = userAnswers
+            .withPage(RemoveRcaspPage, true)
+            .withPage(SubmissionSucceededPage, true)
+            .withPage(RcaspRemovedDateTimePage, Instant.now(clock))
+
+          verify(mockSessionRepository).set(eqTo(expectedAnswers))
         }
       }
 

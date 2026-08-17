@@ -91,7 +91,7 @@ class RcaspDetailsSpec extends SpecBase {
                 utr = testUtr.uniqueTaxPayerReference,
                 address = testAddressUkRcaspAddress,
                 primaryContactDetails = Some(rcaspContactDetails),
-                secondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = "Prof Turo"))
+                secondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = testOrgContactName))
               )
             )
           }

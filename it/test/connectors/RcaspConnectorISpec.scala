@@ -70,7 +70,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
       |            "PhoneNumber": "07123456789"
       |          },
       |          "SecondaryContactDetails": {
-      |            "ContactName": "Prof Turo",
+      |            "ContactName": "John Doe",
       |            "EmailAddress": "hi@example.com",
       |            "PhoneNumber": "07123456789"
       |          }
