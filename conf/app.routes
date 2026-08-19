@@ -164,6 +164,8 @@ POST        /address                                                      contro
 GET         /change-address                                               controllers.AddressController.onPageLoad(mode: Mode = ChangeMode)
 POST        /change-address                                               controllers.AddressController.onSubmit(mode: Mode = ChangeMode)
 
+GET         /end-of-journey                                               controllers.EndOfJourneyRoutingController.onPageLoad()
+
 GET         /change/:rcaspId                                              controllers.changeDetails.ChangeDetailsRoutingController.onPageLoad(rcaspId: String)
 
 GET         /change-answers/:rcaspId                                      controllers.changeDetails.ChangeDetailsController.onPageLoad(rcaspId: String)
@@ -182,4 +184,5 @@ POST        /remove/other-access                                          contro
 
 GET         /remove/remove-rcasp                                          controllers.remove.RemoveRcaspController.onPageLoad()
 POST        /remove/remove-rcasp                                          controllers.remove.RemoveRcaspController.onSubmit()
+
 GET         /remove/rcasp-removed                                         controllers.remove.RcaspRemovedController.onPageLoad()

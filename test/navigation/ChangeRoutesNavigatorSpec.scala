@@ -23,7 +23,6 @@ import models.{formatAddress, CachedBusinessDetails, ChangeMode}
 import org.scalatest.prop.Tables.Table
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.*
-import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.individual.*
 import pages.organisation.*
 
@@ -72,28 +71,8 @@ class ChangeRoutesNavigatorSpec extends SpecBase with ScalaCheckPropertyChecks {
       }
     }
 
-    "When passed ReviewAddressPage" - {
-      "Should redirect to ChangeDetailsRoutingController when ChangeRcaspCachedDetails is present" in {
-        val userAnswers = emptyUserAnswers.withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
-
-        navigator.nextPage(
-          ReviewAddressPageForNavigatorOnly,
-          ChangeMode,
-          userAnswers
-        ) mustBe controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-      }
-
-      "Should redirect to Journey Recovery when no answer is present" in {
-        navigator.nextPage(
-          ReviewAddressPageForNavigatorOnly,
-          ChangeMode,
-          emptyUserAnswers
-        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
-      }
-    }
-
     "When passed ChooseAddressPage" - {
-      "Should redirect to AddressController when 'none of these' is selected ChangeRcaspCachedDetails is present" in {
+      "Should redirect to AddressController when 'none of these' is selected" in {
         val userAnswers = emptyUserAnswers.withPage(ChooseAddressPage, noneOfTheseValue)
 
         navigator.nextPage(
@@ -103,27 +82,14 @@ class ChangeRoutesNavigatorSpec extends SpecBase with ScalaCheckPropertyChecks {
         ) mustBe controllers.routes.AddressController.onPageLoad(ChangeMode)
       }
 
-      "Should redirect to ChangeDetailsRoutingController when an address is selected ChangeRcaspCachedDetails is present" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(ChooseAddressPage, testAddressUk.formatAddress)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
+      "Should redirect to EndOfJourneyRoutingController when an address is selected" in {
+        val userAnswers = emptyUserAnswers.withPage(ChooseAddressPage, testAddressUk.format)
 
         navigator.nextPage(
           ChooseAddressPage,
           ChangeMode,
           userAnswers
-        ) mustBe controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-      }
-
-      "Should redirect to JourneyRecoveryController when an address is selected and ChangeRcaspCachedDetails is not present" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(ChooseAddressPage, testAddressUk.formatAddress)
-
-        navigator.nextPage(
-          ChooseAddressPage,
-          ChangeMode,
-          userAnswers
-        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
 
       "Should redirect to Journey Recovery when no answer is present" in {
@@ -135,110 +101,16 @@ class ChangeRoutesNavigatorSpec extends SpecBase with ScalaCheckPropertyChecks {
       }
     }
 
-    "When passed AddressPage" - {
-      "Should redirect to ChangeDetailsRoutingController when ChangeRcaspCachedDetails is present" in {
-        val userAnswers = emptyUserAnswers.withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
-
-        navigator.nextPage(
-          AddressPageForNavigatorOnly,
-          ChangeMode,
-          userAnswers
-        ) mustBe controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-      }
-
-      "Should redirect to Journey Recovery when no answer is present" in {
-        navigator.nextPage(
-          AddressPageForNavigatorOnly,
-          ChangeMode,
-          emptyUserAnswers
-        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
-      }
-    }
-
-    "When passed IndividualNamePage" - {
-      "Should redirect to ChangeDetailsRoutingController when ChangeRcaspCachedDetails is present" in {
-        val userAnswers = emptyUserAnswers.withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
-
-        navigator.nextPage(
-          IndividualNamePage,
-          ChangeMode,
-          userAnswers
-        ) mustBe controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-      }
-
-      "Should redirect to Journey Recovery when no answer is present" in {
-        navigator.nextPage(
-          IndividualNamePage,
-          ChangeMode,
-          emptyUserAnswers
-        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
-      }
-    }
-
-    "When passed NiNumberPage" - {
-      "Should redirect to ChangeDetailsRoutingController when ChangeRcaspCachedDetails is present" in {
-        val userAnswers = emptyUserAnswers.withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
-
-        navigator.nextPage(
-          NiNumberPage,
-          ChangeMode,
-          userAnswers
-        ) mustBe controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-      }
-
-      "Should redirect to Journey Recovery when no answer is present" in {
-        navigator.nextPage(
-          NiNumberPage,
-          ChangeMode,
-          emptyUserAnswers
-        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
-      }
-    }
-
-    "When passed IndividualEmailPage" - {
-      "Should redirect to ChangeDetailsRoutingController when ChangeRcaspCachedDetails is present" in {
-        val userAnswers = emptyUserAnswers.withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
-
-        navigator.nextPage(
-          IndividualEmailPage,
-          ChangeMode,
-          userAnswers
-        ) mustBe controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-      }
-
-      "Should redirect to Journey Recovery when no answer is present" in {
-        navigator.nextPage(
-          IndividualEmailPage,
-          ChangeMode,
-          emptyUserAnswers
-        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
-      }
-    }
-
-    "When passed IndividualPhonePage" - {
-      "Should redirect to ChangeDetailsRoutingController when ChangeRcaspCachedDetails is present" in {
-        val userAnswers = emptyUserAnswers.withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
-
-        navigator.nextPage(
-          IndividualPhonePage,
-          ChangeMode,
-          userAnswers
-        ) mustBe controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-      }
-
-      "Should redirect to Journey Recovery when no answer is present" in {
-        navigator.nextPage(
-          IndividualPhonePage,
-          ChangeMode,
-          emptyUserAnswers
-        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
-      }
-    }
-
-    "for pages expecting to go to Change Details navigation" - {
+    "for pages expecting to go to EndOfJourneyRoutingController" - {
 
       val pages = Table(
-        "page expecting to go to change details",
+        "page expecting to go to check/change details",
+        ReviewAddressPageForNavigatorOnly,
+        AddressPageForNavigatorOnly,
+        NiNumberPage,
+        IndividualNamePage,
+        IndividualEmailPage,
+        IndividualPhonePage,
         OrganisationNamePage,
         TradingNamePage,
         UtrPage,
@@ -250,22 +122,13 @@ class ChangeRoutesNavigatorSpec extends SpecBase with ScalaCheckPropertyChecks {
         OrganisationSecondContactPhoneNumberPage
       )
 
-      "Should redirect to ChangeDetailsRoutingController when ChangeRcaspCachedDetails is present" in {
+      "Should redirect to EndOfJourneyRoutingController" in {
         forAll(pages) { page =>
-          val userAnswers = emptyUserAnswers.withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
-
           navigator.nextPage(
             page,
             ChangeMode,
-            userAnswers
-          ) mustBe controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-        }
-      }
-
-      "Should redirect to Journey Recovery when no answer is present" in {
-        forAll(pages) { page =>
-          navigator.nextPage(page, ChangeMode, emptyUserAnswers) mustBe controllers.routes.JourneyRecoveryController
-            .onPageLoad()
+            emptyUserAnswers
+          ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
         }
       }
     }
@@ -281,26 +144,14 @@ class ChangeRoutesNavigatorSpec extends SpecBase with ScalaCheckPropertyChecks {
         ) mustBe controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode)
       }
 
-      "Should redirect to ChangeDetailsRoutingController when answer is true and ChangeRcaspCachedDetails is present" in {
-        val userAnswers = emptyUserAnswers
-          .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
-
-        navigator.nextPage(
-          RegisteredBusinessIsThisYourBusinessNamePage,
-          ChangeMode,
-          userAnswers
-        ) mustBe controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-      }
-
-      "Should redirect to Journey Recovery when answer is true and ChangeRcaspCachedDetails is missing" in {
+      "Should redirect to EndOfJourneyRoutingController when answer is true" in {
         val userAnswers = emptyUserAnswers.withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
 
         navigator.nextPage(
           RegisteredBusinessIsThisYourBusinessNamePage,
           ChangeMode,
           userAnswers
-        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
 
       "Should redirect to Journey Recovery when no answer is present" in {
@@ -313,20 +164,7 @@ class ChangeRoutesNavigatorSpec extends SpecBase with ScalaCheckPropertyChecks {
     }
 
     "When passed RegisteredBusinessIsTheAddressCorrectPage" - {
-      "Should redirect to ChangeDetailsRoutingController when answer is true, country is GB and and ChangeRcaspCachedDetails is present" in {
-        val ua = emptyUserAnswers
-          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
-          .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
-          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
-
-        navigator.nextPage(
-          RegisteredBusinessIsTheAddressCorrectPage,
-          ChangeMode,
-          ua
-        ) mustBe controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-      }
-
-      "Should redirect to Journey Recovery when answer is true, country is GB and and ChangeRcaspCachedDetails is missing" in {
+      "Should redirect to EndOfJourneyRoutingController when answer is true and country is GB" in {
         val ua = emptyUserAnswers
           .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
           .withPage(CachedBusinessDetailsPage, cachedBusinessDetails)
@@ -335,7 +173,7 @@ class ChangeRoutesNavigatorSpec extends SpecBase with ScalaCheckPropertyChecks {
           RegisteredBusinessIsTheAddressCorrectPage,
           ChangeMode,
           ua
-        ) mustBe controllers.routes.JourneyRecoveryController.onPageLoad()
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
 
       "Should redirect to NotInUkController when answer is true and country is not GB" in {

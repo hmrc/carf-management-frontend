@@ -17,11 +17,9 @@
 package controllers.combined
 
 import controllers.actions.*
-import controllers.routes
 import forms.combined.OrganisationOrIndividualFormProvider
-import models.{ChangeMode, Mode, NormalMode, OrganisationOrIndividual, UserAnswers}
+import models.{ChangeMode, Mode, NormalMode, OrganisationOrIndividual}
 import navigation.Navigator
-import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -49,7 +47,6 @@ class OrganisationOrIndividualController @Inject() (
     with I18nSupport {
 
   val form: Form[OrganisationOrIndividual] = formProvider("organisationOrIndividual.error.required")
-  private lazy val recovery: Call          = routes.JourneyRecoveryController.onPageLoad()
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
@@ -76,29 +73,20 @@ class OrganisationOrIndividualController @Inject() (
               case ChangeMode =>
                 Redirect {
                   if (hasValueChanged(value)) {
-                    navigateFromOrganisationOrIndividualPage(updatedAnswers)
+                    navigateFromOrganisationOrIndividualPage(value)
                   } else {
-                    changeDetailsNavigation(updatedAnswers)
+                    controllers.routes.EndOfJourneyRoutingController.onPageLoad()
                   }
                 }
             }
         )
     }
 
-  private def navigateFromOrganisationOrIndividualPage(userAnswers: UserAnswers): Call =
-    userAnswers.get(OrganisationOrIndividualPage) match {
-      case Some(OrganisationOrIndividual.Organisation) =>
+  private def navigateFromOrganisationOrIndividualPage(organisationOrIndividual: OrganisationOrIndividual): Call =
+    organisationOrIndividual match {
+      case OrganisationOrIndividual.Organisation =>
         controllers.organisation.routes.OrganisationNameController.onPageLoad(NormalMode)
-      case Some(OrganisationOrIndividual.Individual)   =>
+      case OrganisationOrIndividual.Individual   =>
         controllers.individual.routes.IndividualNameController.onPageLoad(NormalMode)
-      case None                                        => recovery // Code coverage will never be met here. TODO configure to ignore this line [CARF-525]
     }
-
-  private def changeDetailsNavigation(userAnswers: UserAnswers): Call = {
-    val maybeRcaspId = userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
-
-    maybeRcaspId.fold(routes.JourneyRecoveryController.onPageLoad()) { rcaspId =>
-      controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-    }
-  }
 }

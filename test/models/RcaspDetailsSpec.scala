@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.responses
+package models
 
 import base.SpecBase
 import models.changeDetails.{IndividualRcaspDetailsForComparison, OrganisationRcaspDetailsForComparison}
@@ -88,7 +88,7 @@ class RcaspDetailsSpec extends SpecBase {
                 isRcaspUser = false,
                 rcaspName = testOrgName,
                 tradingName = testTradingName,
-                utr = testUtr.uniqueTaxPayerReference,
+                utr = Some(testUtr.uniqueTaxPayerReference),
                 address = testAddressUkRcaspAddress,
                 primaryContactDetails = Some(rcaspContactDetails),
                 secondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = testOrgContactName))
@@ -109,7 +109,7 @@ class RcaspDetailsSpec extends SpecBase {
                 isRcaspUser = false,
                 rcaspName = testOrgName,
                 tradingName = testTradingName,
-                utr = testUtr.uniqueTaxPayerReference,
+                utr = Some(testUtr.uniqueTaxPayerReference),
                 address = testAddressUkRcaspAddress,
                 primaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None)),
                 secondaryContactDetails = None
@@ -131,7 +131,7 @@ class RcaspDetailsSpec extends SpecBase {
                 isRcaspUser = true,
                 rcaspName = testOrgName,
                 tradingName = testTradingName,
-                utr = testUtr.uniqueTaxPayerReference,
+                utr = None,
                 address = testAddressUkRcaspAddress,
                 primaryContactDetails = None,
                 secondaryContactDetails = None

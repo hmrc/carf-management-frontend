@@ -17,18 +17,16 @@
 package controllers.organisation
 
 import controllers.actions.*
-import controllers.routes
 import forms.GenericYesNoPageFormProvider
-import models.{ChangeMode, Mode, NormalMode, UserAnswers}
+import models.{ChangeMode, Mode, NormalMode}
 import navigation.Navigator
-import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{HaveTradingNamePage, OverwritableOrganisationName}
-import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.LoggerUtil.*
 import views.html.organisation.HaveTradingNameView
 
 import javax.inject.Inject
@@ -50,13 +48,12 @@ class HaveTradingNameController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
-  val form: Form[Boolean]         = formProvider("haveTradingName.error.required")
-  private lazy val recovery: Call = routes.JourneyRecoveryController.onPageLoad()
+  val form: Form[Boolean] = formProvider("haveTradingName.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData) {
       implicit request =>
-        val preparedForm = request.userAnswers.get(HaveTradingNamePage).fold(form)(form.fill)
+        lazy val preparedForm = request.userAnswers.get(HaveTradingNamePage).fold(form)(form.fill)
 
         request.userAnswers
           .get(OverwritableOrganisationName)
@@ -98,27 +95,16 @@ class HaveTradingNameController @Inject() (
                 case ChangeMode =>
                   Redirect {
                     if (hasValueChanged(value)) {
-                      navigateFromHaveTradingNamePage(updatedAnswers)
+                      navigateFromHaveTradingNamePage(value)
                     } else {
-                      changeDetailsNavigation(updatedAnswers)
+                      controllers.routes.EndOfJourneyRoutingController.onPageLoad()
                     }
                   }
               }
           )
       }
 
-  private def navigateFromHaveTradingNamePage(userAnswers: UserAnswers): Call =
-    userAnswers.get(HaveTradingNamePage) match {
-      case Some(true)  => controllers.organisation.routes.TradingNameController.onPageLoad(ChangeMode)
-      case Some(false) => changeDetailsNavigation(userAnswers)
-      case None        => recovery // Code coverage will never be met here. TODO configure to ignore this line [CARF-525]
-    }
-
-  private def changeDetailsNavigation(userAnswers: UserAnswers): Call = {
-    val maybeRcaspId = userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
-
-    maybeRcaspId.fold(recovery) { rcaspId =>
-      controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-    }
-  }
+  private def navigateFromHaveTradingNamePage(haveTradingName: Boolean): Call =
+    if (haveTradingName) controllers.organisation.routes.TradingNameController.onPageLoad(ChangeMode)
+    else controllers.routes.EndOfJourneyRoutingController.onPageLoad()
 }

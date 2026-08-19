@@ -18,16 +18,15 @@ package controllers.organisation
 
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import models.{ChangeMode, Mode, NormalMode, UserAnswers}
+import models.{ChangeMode, Mode, NormalMode}
 import navigation.Navigator
-import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{OrganisationFirstContactNamePage, OrganisationHaveSecondContactPage}
-import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.LoggerUtil.*
 import views.html.organisation.OrganisationHaveSecondContactView
 
 import javax.inject.Inject
@@ -48,13 +47,12 @@ class OrganisationHaveSecondContactController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
-  val form: Form[Boolean]         = formProvider("organisationHaveSecondContact.error.required")
-  private lazy val recovery: Call = controllers.routes.JourneyRecoveryController.onPageLoad()
+  val form: Form[Boolean] = formProvider("organisationHaveSecondContact.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
-      val preparedForm = request.userAnswers.get(OrganisationHaveSecondContactPage).fold(form)(form.fill)
+      lazy val preparedForm = request.userAnswers.get(OrganisationHaveSecondContactPage).fold(form)(form.fill)
 
       request.userAnswers.get(OrganisationFirstContactNamePage) match {
         case Some(contactName) => Ok(view(preparedForm, mode, contactName))
@@ -62,9 +60,7 @@ class OrganisationHaveSecondContactController @Inject() (
           logWarn(
             "[OrganisationHaveSecondContactController] Could not retrieve OrganisationFirstContactNamePage onPageLoad"
           )
-          Redirect(
-            controllers.routes.InformationMissingController.onPageLoad()
-          )
+          Redirect(controllers.routes.InformationMissingController.onPageLoad())
       }
     }
 
@@ -84,11 +80,7 @@ class OrganisationHaveSecondContactController @Inject() (
                 logWarn(
                   "[OrganisationHaveSecondContactController] Could not retrieve OrganisationFirstContactNamePage onPageSubmit"
                 )
-                Future.successful(
-                  Redirect(
-                    controllers.routes.InformationMissingController.onPageLoad()
-                  )
-                )
+                Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
             },
           value =>
             for {
@@ -99,29 +91,17 @@ class OrganisationHaveSecondContactController @Inject() (
               case ChangeMode =>
                 Redirect {
                   if (hasValueChanged(value)) {
-                    navigateFromOrganisationHaveSecondContactController(updatedAnswers)
+                    navigateFromOrganisationHaveSecondContactController(value)
                   } else {
-                    changeDetailsNavigation(updatedAnswers)
+                    controllers.routes.EndOfJourneyRoutingController.onPageLoad()
                   }
                 }
             }
         )
     }
 
-  private def navigateFromOrganisationHaveSecondContactController(userAnswers: UserAnswers): Call =
-    userAnswers.get(OrganisationHaveSecondContactPage) match {
-      case Some(true)  =>
-        controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
-      case Some(false) =>
-        changeDetailsNavigation(userAnswers)
-      case None        => recovery
-    }
-
-  private def changeDetailsNavigation(userAnswers: UserAnswers): Call = {
-    val maybeRcaspId = userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
-
-    maybeRcaspId.fold(recovery) { rcaspId =>
-      controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-    }
-  }
+  private def navigateFromOrganisationHaveSecondContactController(haveSecondContact: Boolean): Call =
+    if (haveSecondContact)
+      controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
+    else controllers.routes.EndOfJourneyRoutingController.onPageLoad()
 }

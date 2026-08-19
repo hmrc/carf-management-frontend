@@ -164,43 +164,36 @@ class ReportForRegisteredBusinessController @Inject() (
                   Future.successful(BadRequest(view(formWithErrors, mode, None, false)))
               },
             value =>
-              userAnswers.get(ChangeRcaspCachedDetails).fold(onSubmitAddVersion(mode, value)) { details =>
-                onSubmitChangeVersion(mode, value, details, userAnswers, hasValueChanged(value))
+              if (hasValueChanged(value)) {
+                userAnswers
+                  .get(ChangeRcaspCachedDetails)
+                  .fold(onSubmitChangedAddVersion(value)) { details =>
+                    onSubmitChangedChangeVersion(value, details, userAnswers)
+                  }
+              } else {
+                Future.successful(onSubmitUnchanged(mode, userAnswers))
               }
           )
     }
 
-  private def onSubmitAddVersion(mode: Mode, value: Boolean)(implicit request: DataRequest[AnyContent]) =
+  private def onSubmitChangedAddVersion(newValue: Boolean)(implicit request: DataRequest[AnyContent]) =
     setRcaspIsRegisteredBusinessFlag(
       userAnswers = request.userAnswers,
-      pageAnswer = value,
+      pageAnswer = newValue,
       carfId = request.carfId,
       ctUtr = request.utr.map(_.uniqueTaxPayerReference)
     ).value.flatMap {
       case Right(userAnswers) =>
         for {
-          updatedAnswers <- Future.fromTry(userAnswers.set(ReportForRegisteredBusinessPage, value))
+          updatedAnswers <- Future.fromTry(userAnswers.set(ReportForRegisteredBusinessPage, newValue))
           _              <- sessionRepository.set(updatedAnswers)
         } yield Redirect(
-          navigator.nextPage(ReportForRegisteredBusinessPage, mode, updatedAnswers)
+          navigator.nextPage(ReportForRegisteredBusinessPage, NormalMode, updatedAnswers)
         )
       case Left(error)        =>
-        logError(
-          s"[ReportForRegisteredBusinessController][onSubmit] Error getting how many Rcasps user has: $error"
-        )
+        logError(s"[ReportForRegisteredBusinessController][onSubmit] Error getting how many Rcasps user has: $error")
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
     }
-
-  private def onSubmitChangeVersion(
-      mode: Mode,
-      value: Boolean,
-      details: RcaspDetails,
-      userAnswers: UserAnswers,
-      hasValueChanged: Boolean
-  ): Future[Result] =
-    if (hasValueChanged) {
-      ifChanged(value, details, userAnswers)
-    } else Future.successful(ifUnchanged(value, details, mode))
 
   private def setRcaspIsRegisteredBusinessFlag(
       userAnswers: UserAnswers,
@@ -216,8 +209,11 @@ class ReportForRegisteredBusinessController @Inject() (
       }
     }
 
-  private def ifChanged(newValue: Boolean, details: RcaspDetails, userAnswers: UserAnswers): Future[Result] = {
-
+  private def onSubmitChangedChangeVersion(
+      newValue: Boolean,
+      details: RcaspDetails,
+      userAnswers: UserAnswers
+  ): Future[Result] = {
     def saveUserAnswersAndRedirect(call: Call) =
       for {
         a <- Future.fromTry(userAnswers.set(ReportForRegisteredBusinessPage, newValue))
@@ -232,8 +228,7 @@ class ReportForRegisteredBusinessController @Inject() (
         )
       } else {
         logWarn(
-          "[ReportForRegisteredBusinessController][Change Journey] Cannot change RCASP to isRCASPUser to" +
-            "true if previously false in API"
+          "[ReportForRegisteredBusinessController][Change Journey] Cannot change isRCASPUser to true if previously false in API"
         )
         Future.successful(Redirect(recovery))
       }
@@ -244,21 +239,11 @@ class ReportForRegisteredBusinessController @Inject() (
     }
   }
 
-  private def ifUnchanged(newValue: Boolean, details: RcaspDetails, mode: Mode): Result =
+  private def onSubmitUnchanged(mode: Mode, userAnswers: UserAnswers): Result =
     Redirect {
       mode match {
-        case NormalMode =>
-          if (newValue) {
-            controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode)
-          } else {
-            controllers.combined.routes.OrganisationOrIndividualController.onPageLoad(NormalMode)
-          }
-        case ChangeMode =>
-          if (newValue) {
-            controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController.onPageLoad(details.RCASPID)
-          } else {
-            controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(details.RCASPID)
-          }
+        case NormalMode => navigator.nextPage(ReportForRegisteredBusinessPage, NormalMode, userAnswers)
+        case ChangeMode => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
     }
 }

@@ -116,7 +116,7 @@ final case class UserAnswers(
         isRcaspUser       <- this.get(ReportForRegisteredBusinessPage)
         rcaspName         <- this.get(OverwritableOrganisationName)
         tradingName        = this.get(TradingNamePage).getOrElse(rcaspName)
-        utr               <- this.get(UtrPage)
+        utr               <- if isRcaspUser then Some(None) else this.get(UtrPage).map(Some(_))
         address           <- this.get(UkAddressInUserAnswers).map(_.toRcaspAddress)
         firstContactName   = this.get(OrganisationFirstContactNamePage)
         firstContactEmail  = this.get(OrganisationFirstContactEmailPage)
