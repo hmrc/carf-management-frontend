@@ -140,7 +140,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         when(mockRcaspSubmissionService.createRegisteredBusinessRcasp(any(), any(), any())(any(), any()))
           .thenReturn(ResultT.fromValue(submitRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-        when(mockAuditService.auditAddRcasp(any(), any())(any())).thenReturn(ResultT.fromValue(()))
+        when(mockAuditService.auditAddRcasp(any())(any())).thenReturn(ResultT.fromValue(()))
 
         val request                = FakeRequest(POST, cdRoute)
         val result: Future[Result] = route(application, request).value
@@ -149,7 +149,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         redirectLocation(result).value mustEqual controllers.routes.RcaspAddedConfirmationController.onPageLoad().url
 
         verify(mockRcaspSubmissionService, times(1)).createRegisteredBusinessRcasp(any(), any(), any())(any(), any())
-        verify(mockAuditService, times(1)).auditAddRcasp(any(), any())(any())
+        verify(mockAuditService, times(1)).auditAddRcasp(any())(any())
         verify(mockSessionRepository, times(1)).set(
           eqTo(
             emptyUserAnswers
@@ -165,7 +165,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         when(mockRcaspSubmissionService.createRegisteredBusinessRcasp(any(), any(), any())(any(), any()))
           .thenReturn(ResultT.fromValue(submitRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-        when(mockAuditService.auditAddRcasp(any(), any())(any())).thenReturn(ResultT.fromError(InternalServerError))
+        when(mockAuditService.auditAddRcasp(any())(any())).thenReturn(ResultT.fromError(InternalServerError))
 
         val request                = FakeRequest(POST, cdRoute)
         val result: Future[Result] = route(application, request).value
@@ -174,7 +174,7 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
         redirectLocation(result).value mustEqual controllers.routes.RcaspAddedConfirmationController.onPageLoad().url
 
         verify(mockRcaspSubmissionService, times(1)).createRegisteredBusinessRcasp(any(), any(), any())(any(), any())
-        verify(mockAuditService, times(1)).auditAddRcasp(any(), any())(any())
+        verify(mockAuditService, times(1)).auditAddRcasp(any())(any())
         verify(mockSessionRepository, times(1)).set(
           eqTo(
             emptyUserAnswers

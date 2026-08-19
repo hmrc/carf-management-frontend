@@ -91,8 +91,8 @@ class AuditServiceSpec extends SpecBase {
           ),
           individualContactDetails = Some(
             IndividualContactDetails(
-              individualEmailAddress = Some(testEmail),
-              individualContactByPhone = Some(true),
+              individualEmailAddress = testEmail,
+              individualContactByPhone = true,
               individualPhoneNumber = Some(testPhone)
             )
           ),
@@ -102,13 +102,13 @@ class AuditServiceSpec extends SpecBase {
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Success))
 
-        val result = service.auditAddRcasp(userAnswers, false).value.futureValue
+        val result = service.auditAddRcasp(userAnswers).value.futureValue
 
         result mustBe Right(())
 
         verify(mockAuditConnector, times(1)).sendExtendedEvent(
           argThat(event =>
-            event.auditSource == "carf-management-frontend" && event.auditType == "Management"
+            event.auditSource == "carf-management-frontend" && event.auditType == "AddRCASP"
               && event.detail == Json.toJson(expectedAudit)
           )
         )(any(), any())
@@ -165,7 +165,7 @@ class AuditServiceSpec extends SpecBase {
           individualContactDetails = None,
           organisationContactDetails = Some(
             OrganisationContactDetails(
-              Contact1Name = Some(testOrgContactName),
+              Contact1Name = testOrgContactName,
               Contact1Email = testEmail,
               Contact1ByPhone = true,
               Contact1PhoneNumber = Some(testPhone),
@@ -181,13 +181,13 @@ class AuditServiceSpec extends SpecBase {
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Success))
 
-        val result = service.auditAddRcasp(userAnswers, false).value.futureValue
+        val result = service.auditAddRcasp(userAnswers).value.futureValue
 
         result mustBe Right(())
 
         verify(mockAuditConnector, times(1)).sendExtendedEvent(
           argThat(event =>
-            event.auditSource == "carf-management-frontend" && event.auditType == "Management"
+            event.auditSource == "carf-management-frontend" && event.auditType == "AddRCASP"
               && event.detail == Json.toJson(expectedAudit)
           )
         )(any(), any())
@@ -201,7 +201,6 @@ class AuditServiceSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
           .withPage(AddressUPRNUserAnswers, testUPRN.toLong)
           .withPage(ChooseAddressPage, "address")
-          .withPage(OrganisationOrIndividualPage, Organisation)
           .withPage(OrganisationNamePage, testOrgName)
           .withPage(HaveTradingNamePage, true)
           .withPage(TradingNamePage, testTradingName)
@@ -219,7 +218,7 @@ class AuditServiceSpec extends SpecBase {
 
         val expectedAudit = AddRcaspAuditEvent(
           organisationCTMatch = Some(OrganisationCtMatch(isBusinessAnRCASP = true, isBusinessNameCorrect = Some(true))),
-          isRCASPAnOrganisationOrIndividual = None,
+          isRCASPAnOrganisationOrIndividual = Some(Organisation),
           addRCASPIndividual = None,
           addRCASPOrganisation = Some(
             AddRcaspOrganisation(
@@ -246,7 +245,7 @@ class AuditServiceSpec extends SpecBase {
           individualContactDetails = None,
           organisationContactDetails = Some(
             OrganisationContactDetails(
-              Contact1Name = Some(testOrgContactName),
+              Contact1Name = testOrgContactName,
               Contact1Email = testEmail,
               Contact1ByPhone = true,
               Contact1PhoneNumber = Some(testPhone),
@@ -262,13 +261,13 @@ class AuditServiceSpec extends SpecBase {
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Success))
 
-        val result = service.auditAddRcasp(userAnswers, true).value.futureValue
+        val result = service.auditAddRcasp(userAnswers).value.futureValue
 
         result mustBe Right(())
 
         verify(mockAuditConnector, times(1)).sendExtendedEvent(
           argThat(event =>
-            event.auditSource == "carf-management-frontend" && event.auditType == "Management"
+            event.auditSource == "carf-management-frontend" && event.auditType == "AddRCASP"
               && event.detail == Json.toJson(expectedAudit)
           )
         )(any(), any())
@@ -279,7 +278,7 @@ class AuditServiceSpec extends SpecBase {
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Disabled))
 
-        val result = service.auditAddRcasp(emptyUserAnswers, true).value.futureValue
+        val result = service.auditAddRcasp(emptyUserAnswers).value.futureValue
 
         result mustBe Left(InternalServerError)
 
@@ -290,7 +289,7 @@ class AuditServiceSpec extends SpecBase {
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Failure))
 
-        val result = service.auditAddRcasp(emptyUserAnswers, true).value.futureValue
+        val result = service.auditAddRcasp(emptyUserAnswers).value.futureValue
 
         result mustBe Left(InternalServerError)
 
@@ -301,7 +300,7 @@ class AuditServiceSpec extends SpecBase {
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Future.failed(new Exception("uh oh"))))
 
-        val result = service.auditAddRcasp(emptyUserAnswers, true).value.futureValue
+        val result = service.auditAddRcasp(emptyUserAnswers).value.futureValue
 
         result mustBe Left(InternalServerError)
 
@@ -351,7 +350,7 @@ class AuditServiceSpec extends SpecBase {
 
         verify(mockAuditConnector, times(1)).sendExtendedEvent(
           argThat(event =>
-            event.auditSource == "carf-management-frontend" && event.auditType == "Management"
+            event.auditSource == "carf-management-frontend" && event.auditType == "ChangeRCASP"
               && event.detail == Json.toJson(expectedAudit)
           )
         )(any(), any())
@@ -444,7 +443,7 @@ class AuditServiceSpec extends SpecBase {
 
         verify(mockAuditConnector, times(1)).sendExtendedEvent(
           argThat(event =>
-            event.auditSource == "carf-management-frontend" && event.auditType == "Management"
+            event.auditSource == "carf-management-frontend" && event.auditType == "ChangeRCASP"
               && event.detail == Json.toJson(expectedAudit)
           )
         )(any(), any())
@@ -529,7 +528,83 @@ class AuditServiceSpec extends SpecBase {
 
         verify(mockAuditConnector, times(1)).sendExtendedEvent(
           argThat(event =>
-            event.auditSource == "carf-management-frontend" && event.auditType == "Management"
+            event.auditSource == "carf-management-frontend" && event.auditType == "ChangeRCASP"
+              && event.detail == Json.toJson(expectedAudit)
+          )
+        )(any(), any())
+      }
+
+      "should return success for rcasp user changing to non rcasp user" in {
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, false)
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OrganisationNamePage, testOrgName)
+          .withPage(HaveTradingNamePage, true)
+          .withPage(TradingNamePage, testTradingName)
+          .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
+          .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+          .withPage(OrganisationFirstContactEmailPage, testEmail)
+          .withPage(OrganisationFirstContactHavePhonePage, true)
+          .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
+          .withPage(OrganisationHaveSecondContactPage, true)
+          .withPage(OrganisationSecondContactNamePage, testOrgContactName)
+          .withPage(OrganisationSecondContactEmailPage, testEmail)
+          .withPage(OrganisationSecondContactHavePhonePage, true)
+          .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
+          .withPage(IndividualNamePage, testIndividualName)
+          .withPage(UkAddressInUserAnswers, testAddressUk)
+
+        val expectedAudit = ChangeRcaspAuditEvent(
+          changeRCASPIsUserUpdatedValues = None,
+          changeRCASPIsUserOriginalValues = Some(
+            ChangeRcaspIsUserValues(
+              isBusinessAnRCASP = true,
+              organisationName = testOrgName,
+              doesRCASPTradeUnderDifferentName = true,
+              RCASPTradingName = Some(testTradingName),
+              RCASPAddress = testAddressUkRcaspAddress.toString
+            )
+          ),
+          changeRCASPisNotUserUpdatedValues = Some(
+            ChangeRcaspIsNotUserValues(
+              isBusinessAnRCASP = false,
+              isRCASPAnOrganisationOrIndividual = "Organisation",
+              organisationName = Some(testOrgName),
+              doesRCASPTradeUnderDifferentName = Some(true),
+              RCASPTradeName = Some(testTradingName),
+              RCASPUTR = Some(testUtr.uniqueTaxPayerReference),
+              IndividualRCASPFirstName = None,
+              IndividualRCASPLastName = None,
+              IndividualRCASPNino = None,
+              IndividualRCASPAddress = None,
+              Contact1Name = Some(testOrgContactName),
+              Contact1EmailAddress = Some(testEmail),
+              Contact1ContactByPhone = Some(true),
+              Contact1PhoneNumber = Some(testPhone),
+              Contact2 = Some(true),
+              Contact2Name = Some(testOrgContactName),
+              Contact2EmailAddress = Some(testEmail),
+              Contact2ContactByPhone = Some(true),
+              Contact2PhoneNumber = Some(testPhone),
+              individualEmailAddress = None,
+              individualContactByPhone = None,
+              individuaPhoneNumber = None
+            )
+          ),
+          changeRCASPisNotUserOriginalValues = None
+        )
+
+        when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
+          .thenReturn(Future.successful(Success))
+
+        val result = service.auditChangeRcasp(userAnswers).value.futureValue
+
+        result mustBe Right(())
+
+        verify(mockAuditConnector, times(1)).sendExtendedEvent(
+          argThat(event =>
+            event.auditSource == "carf-management-frontend" && event.auditType == "ChangeRCASP"
               && event.detail == Json.toJson(expectedAudit)
           )
         )(any(), any())
@@ -537,7 +612,9 @@ class AuditServiceSpec extends SpecBase {
 
       "should return Internal server error when Disabled is returned by audit connector" in {
 
-        val userAnswers = emptyUserAnswers.withPage(ReportForRegisteredBusinessPage, true)
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, true)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
 
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Disabled))
@@ -549,7 +626,9 @@ class AuditServiceSpec extends SpecBase {
       }
 
       "should return Internal server error when Failure is returned by audit connector" in {
-        val userAnswers = emptyUserAnswers.withPage(ReportForRegisteredBusinessPage, true)
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, true)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Failure))
 
@@ -560,7 +639,9 @@ class AuditServiceSpec extends SpecBase {
       }
 
       "should return Internal server error when call to audit connector's future fails" in {
-        val userAnswers = emptyUserAnswers.withPage(ReportForRegisteredBusinessPage, true)
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, true)
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
           .thenReturn(Future.successful(Future.failed(new Exception("uh oh"))))
 
@@ -589,7 +670,7 @@ class AuditServiceSpec extends SpecBase {
 
         verify(mockAuditConnector, times(1)).sendExtendedEvent(
           argThat(event =>
-            event.auditSource == "carf-management-frontend" && event.auditType == "Management"
+            event.auditSource == "carf-management-frontend" && event.auditType == "RemoveRCASP"
               && event.detail == Json.toJson(expectedAudit)
           )
         )(any(), any())

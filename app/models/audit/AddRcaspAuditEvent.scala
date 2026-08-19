@@ -27,7 +27,7 @@ case class AddRcaspAuditEvent(
     addressLookup: Option[AddressLookup],
     individualContactDetails: Option[IndividualContactDetails],
     organisationContactDetails: Option[OrganisationContactDetails]
-) extends AuditEvent
+)
 
 object AddRcaspAuditEvent {
   implicit val format: OFormat[AddRcaspAuditEvent] = Json.format[AddRcaspAuditEvent]
@@ -78,8 +78,8 @@ object AddressLookup {
 }
 
 case class IndividualContactDetails(
-    individualEmailAddress: Option[String],
-    individualContactByPhone: Option[Boolean],
+    individualEmailAddress: String,
+    individualContactByPhone: Boolean,
     individualPhoneNumber: Option[String]
 )
 
@@ -88,7 +88,7 @@ object IndividualContactDetails {
 }
 
 case class OrganisationContactDetails(
-    Contact1Name: Option[String],
+    Contact1Name: String,
     Contact1Email: String,
     Contact1ByPhone: Boolean,
     Contact1PhoneNumber: Option[String],

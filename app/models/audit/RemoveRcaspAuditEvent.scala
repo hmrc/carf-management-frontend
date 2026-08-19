@@ -22,7 +22,7 @@ case class RemoveRcaspAuditEvent(
     removeUserAccessConfirmation: Boolean,
     removeOtherUserAccessConfirmation: Boolean,
     removeRCASP: Boolean
-) extends AuditEvent
+)
 
 object RemoveRcaspAuditEvent {
   implicit val format: OFormat[RemoveRcaspAuditEvent] = Json.format[RemoveRcaspAuditEvent]

@@ -23,7 +23,7 @@ case class ChangeRcaspAuditEvent(
     changeRCASPIsUserOriginalValues: Option[ChangeRcaspIsUserValues],
     changeRCASPisNotUserUpdatedValues: Option[ChangeRcaspIsNotUserValues],
     changeRCASPisNotUserOriginalValues: Option[ChangeRcaspIsNotUserValues]
-) extends AuditEvent
+)
 
 object ChangeRcaspAuditEvent {
   implicit val format: OFormat[ChangeRcaspAuditEvent] = Json.format[ChangeRcaspAuditEvent]
