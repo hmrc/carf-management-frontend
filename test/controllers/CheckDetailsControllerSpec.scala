@@ -194,7 +194,7 @@ class CheckDetailsControllerSpec extends SpecBase {
         individualCompleteUserAnswers
       ) {
         when(mockRcaspService.createRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
-          .thenReturn(ResultT.fromValue(submitRcaspResponse))
+          .thenReturn(ResultT.fromValue(createRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         when(mockAuditService.auditAddRcasp(any())(any())).thenReturn(ResultT.fromValue(()))
 

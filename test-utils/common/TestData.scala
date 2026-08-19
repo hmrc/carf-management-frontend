@@ -340,8 +340,8 @@ trait TestData extends Generators {
       )
     )
 
-  val submitRcaspResponse: SubmitRcaspResponse =
-    SubmitRcaspResponse(
+  val createRcaspResponse: CreateRcaspResponse =
+    CreateRcaspResponse(
       SubmitResponseDetails(
         SubmitReturnParameters(
           Key = "RCASPID",
@@ -349,6 +349,8 @@ trait TestData extends Generators {
         )
       )
     )
+
+  val updateDeleteRcaspResponse: UpdateDeleteRcaspResponse = UpdateDeleteRcaspResponse()
 
   val displaySubscriptionIndividual   =
     DisplaySubscriptionIndividual(firstName = "Joe", middleName = None, lastName = "Smith")

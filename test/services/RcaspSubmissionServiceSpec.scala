@@ -23,7 +23,6 @@ import models.errors.ApiError.InternalServerError
 import models.errors.MandatoryInformationMissingError
 import models.requests.RcaspRequestCommon
 import models.requests.deleteRcasp.{RcaspDetails as DeleteRcaspDetails, RcaspManagementRequest as DeleteRcaspManagementRequest, RcaspRequest as DeleteRcaspRequest}
-import models.responses.SubmitRcaspResponse
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import pages.combined.OrganisationOrIndividualPage
@@ -56,13 +55,13 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         )
 
         when(mockRcaspConnector.createRcasp(eqTo(createRcaspRequestRegisteredBusiness))(any(), any())).thenReturn(
-          ResultT.fromValue(submitRcaspResponse)
+          ResultT.fromValue(createRcaspResponse)
         )
 
         val result =
           rcaspSubmissionService.createRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
 
-        result mustBe Right(submitRcaspResponse)
+        result mustBe Right(createRcaspResponse)
 
         verify(mockRcaspSubmissionHelper, times(1))
           .createRegisteredBusinessRcaspRequest(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
@@ -111,12 +110,12 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         )
 
         when(mockRcaspConnector.createRcasp(eqTo(createRcaspRequestIndividual))(any(), any())).thenReturn(
-          ResultT.fromValue(submitRcaspResponse)
+          ResultT.fromValue(createRcaspResponse)
         )
 
         val result = rcaspSubmissionService.createRcasp(carfId, testUserAnswers).value.futureValue
 
-        result mustBe Right(submitRcaspResponse)
+        result mustBe Right(createRcaspResponse)
 
         verify(mockRcaspSubmissionHelper, times(1)).createRcaspRequest(eqTo(carfId), eqTo(testUserAnswers))
         verify(mockRcaspConnector, times(1)).createRcasp(eqTo(createRcaspRequestIndividual))(any(), any())
@@ -160,13 +159,13 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         )
 
         when(mockRcaspConnector.updateRcasp(eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())).thenReturn(
-          ResultT.fromValue(submitRcaspResponse)
+          ResultT.fromValue(updateDeleteRcaspResponse)
         )
 
         val result =
           rcaspSubmissionService.updateRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
 
-        result mustBe Right(submitRcaspResponse)
+        result mustBe Right(updateDeleteRcaspResponse)
 
         verify(mockRcaspSubmissionHelper, times(1))
           .updateRegisteredBusinessRcaspRequest(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
@@ -215,12 +214,12 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         )
 
         when(mockRcaspConnector.updateRcasp(eqTo(updateRcaspRequestIndividual))(any(), any())).thenReturn(
-          ResultT.fromValue(submitRcaspResponse)
+          ResultT.fromValue(updateDeleteRcaspResponse)
         )
 
         val result = rcaspSubmissionService.updateRcasp(carfId, testUserAnswers).value.futureValue
 
-        result mustBe Right(submitRcaspResponse)
+        result mustBe Right(updateDeleteRcaspResponse)
 
         verify(mockRcaspSubmissionHelper, times(1)).updateRcaspRequest(eqTo(carfId), eqTo(testUserAnswers))
         verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(updateRcaspRequestIndividual))(any(), any())
@@ -260,7 +259,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
     ".removeRcasp" - {
       "must return a Right(()) when the connector call succeeds" in {
         when(mockRcaspConnector.deleteRcasp(any())(any(), any()))
-          .thenReturn(ResultT.fromValue(submitRcaspResponse))
+          .thenReturn(ResultT.fromValue(updateDeleteRcaspResponse))
 
         val result: ResultT[Unit] = rcaspSubmissionService.removeRcasp(testCarfId, rcaspId)
 
@@ -271,7 +270,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
 
       "must build the DeleteRcaspRequest with the correct RequestCommon and RCASPID/SubscriptionID" in {
         when(mockRcaspConnector.deleteRcasp(any())(any(), any()))
-          .thenReturn(ResultT.fromValue(submitRcaspResponse))
+          .thenReturn(ResultT.fromValue(updateDeleteRcaspResponse))
 
         rcaspSubmissionService.removeRcasp(testCarfId, rcaspId).value.futureValue
 

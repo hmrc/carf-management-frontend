@@ -28,7 +28,7 @@
 
 @layout(pageTitle = title(form, messages("organisationName.title"))) {
 
-    @formHelper(action = controllers.organisation.routes.OrganisationNameController.onSubmit(mode)) {
+    @formHelper(action = controllers.organisation.routes.OrganisationNameController.onSubmit(mode), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

@@ -42,7 +42,7 @@
     pageTitle = title(form, messages("registeredBusinessIsTheAddressCorrect.title"))
 ) {
 
-    @formHelper(action = routes.RegisteredBusinessIsTheAddressCorrectController.onSubmit(mode)) {
+    @formHelper(action = routes.RegisteredBusinessIsTheAddressCorrectController.onSubmit(mode), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
             @govukErrorSummary(ErrorSummaryViewModel(form))

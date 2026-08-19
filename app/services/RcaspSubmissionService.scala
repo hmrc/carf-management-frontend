@@ -20,11 +20,11 @@ import connectors.RcaspConnector
 import models.errors.MandatoryInformationMissingError
 import models.requests.deleteRcasp.{RcaspDetails as DeleteRcaspDetails, RcaspManagementRequest as DeleteRcaspManagementRequest, RcaspRequest as DeleteRcaspRequest}
 import models.requests.{RcaspRequestCommon, RequestType}
-import models.responses.SubmitRcaspResponse
+import models.responses.{CreateRcaspResponse, UpdateDeleteRcaspResponse}
 import models.{UniqueTaxpayerReference, UserAnswers}
-import utils.LoggerUtil.*
 import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.LoggerUtil.*
 import utils.RcaspSubmissionHelper
 
 import javax.inject.Inject
@@ -39,7 +39,7 @@ class RcaspSubmissionService @Inject (
       carfId: String,
       utr: UniqueTaxpayerReference,
       userAnswers: UserAnswers
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[CreateRcaspResponse] =
     rcaspSubmissionHelper.createRegisteredBusinessRcaspRequest(carfId, utr, userAnswers) match {
       case Some(request) =>
         rcaspConnector
@@ -58,7 +58,7 @@ class RcaspSubmissionService @Inject (
   def createRcasp(
       carfId: String,
       userAnswers: UserAnswers
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[CreateRcaspResponse] =
     rcaspSubmissionHelper.createRcaspRequest(carfId, userAnswers) match {
       case Some(request) =>
         rcaspConnector
@@ -76,7 +76,7 @@ class RcaspSubmissionService @Inject (
       carfId: String,
       utr: UniqueTaxpayerReference,
       userAnswers: UserAnswers
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[UpdateDeleteRcaspResponse] =
     rcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(carfId, utr, userAnswers) match {
       case Some(request) =>
         rcaspConnector
@@ -95,7 +95,7 @@ class RcaspSubmissionService @Inject (
   def updateRcasp(
       carfId: String,
       userAnswers: UserAnswers
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[SubmitRcaspResponse] =
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[UpdateDeleteRcaspResponse] =
     rcaspSubmissionHelper.updateRcaspRequest(carfId, userAnswers) match {
       case Some(request) =>
         rcaspConnector
