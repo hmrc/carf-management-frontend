@@ -23,6 +23,4 @@ object IdentifierType {
   val CARFID = "CARFID"
 
   val NINO = "NINO"
-
-  val OTHER = "OTHER"
 }
