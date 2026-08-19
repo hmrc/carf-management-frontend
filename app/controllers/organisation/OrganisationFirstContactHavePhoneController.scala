@@ -17,18 +17,16 @@
 package controllers.organisation
 
 import controllers.actions.*
-import controllers.routes
 import forms.GenericYesNoPageFormProvider
-import models.{ChangeMode, Mode, NormalMode, UserAnswers}
+import models.{ChangeMode, Mode, NormalMode}
 import navigation.Navigator
-import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{OrganisationFirstContactHavePhonePage, OrganisationFirstContactNamePage, OverwritableOrganisationName}
-import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.LoggerUtil.*
 import views.html.organisation.OrganisationFirstContactHavePhoneView
 
 import javax.inject.Inject
@@ -49,13 +47,12 @@ class OrganisationFirstContactHavePhoneController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
-  val form: Form[Boolean]         = formProvider("organisationFirstContactHavePhone.error.required")
-  private lazy val recovery: Call = routes.JourneyRecoveryController.onPageLoad()
+  val form: Form[Boolean] = formProvider("organisationFirstContactHavePhone.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
-      val preparedForm = request.userAnswers.get(OrganisationFirstContactHavePhonePage).fold(form)(form.fill)
+      lazy val preparedForm = request.userAnswers.get(OrganisationFirstContactHavePhonePage).fold(form)(form.fill)
 
       (
         request.userAnswers.get(OrganisationFirstContactNamePage),
@@ -67,9 +64,7 @@ class OrganisationFirstContactHavePhoneController @Inject() (
           logWarn(
             "[OrganisationFirstContactHavePhoneController] Could not retrieve OrganisationFirstContactNamePage and/or OverwritableOrganisationName onPageLoad"
           )
-          Redirect(
-            controllers.routes.InformationMissingController.onPageLoad()
-          )
+          Redirect(controllers.routes.InformationMissingController.onPageLoad())
       }
     }
 
@@ -93,11 +88,7 @@ class OrganisationFirstContactHavePhoneController @Inject() (
                 logWarn(
                   "[OrganisationFirstContactHavePhoneController] Could not retrieve Contact and/or Org name onPageSubmit"
                 )
-                Future.successful(
-                  Redirect(
-                    controllers.routes.InformationMissingController.onPageLoad()
-                  )
-                )
+                Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
             },
           value =>
             for {
@@ -109,28 +100,16 @@ class OrganisationFirstContactHavePhoneController @Inject() (
               case ChangeMode =>
                 Redirect {
                   if (hasValueChanged(value)) {
-                    navigateFromOrganisationFirstContactHavePhonePage(updatedAnswers)
+                    navigateFromOrganisationFirstContactHavePhonePage(value)
                   } else {
-                    changeDetailsNavigation(updatedAnswers)
+                    controllers.routes.EndOfJourneyRoutingController.onPageLoad()
                   }
                 }
             }
         )
     }
 
-  private def navigateFromOrganisationFirstContactHavePhonePage(userAnswers: UserAnswers): Call =
-    userAnswers.get(OrganisationFirstContactHavePhonePage) match {
-      case Some(true)  =>
-        controllers.organisation.routes.OrganisationFirstContactPhoneNumberController.onPageLoad(ChangeMode)
-      case Some(false) => changeDetailsNavigation(userAnswers)
-      case None        => recovery
-    }
-
-  private def changeDetailsNavigation(userAnswers: UserAnswers): Call = {
-    val maybeRcaspId = userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
-
-    maybeRcaspId.fold(recovery) { rcaspId =>
-      controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-    }
-  }
+  private def navigateFromOrganisationFirstContactHavePhonePage(havePhone: Boolean): Call =
+    if (havePhone) controllers.organisation.routes.OrganisationFirstContactPhoneNumberController.onPageLoad(ChangeMode)
+    else controllers.routes.EndOfJourneyRoutingController.onPageLoad()
 }

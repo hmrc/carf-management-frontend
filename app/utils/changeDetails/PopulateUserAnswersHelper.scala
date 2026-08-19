@@ -155,7 +155,7 @@ class PopulateUserAnswersHelper @Inject() (
     val maybeAddressUk   = organisationRcaspDetails.AddressDetails.toAddressUk
 
     (maybeCadxUtr, maybeAddressUk)
-      .mapN { (utr, address) =>
+      .mapN { (_, address) =>
         registrationService.getBusinessWithCtUtr(requestUtr.uniqueTaxPayerReference).value.flatMap {
           case Right(businessDetails) =>
             countryListFactory.getDescriptionFromCode(businessDetails.address.countryCode) match {
@@ -180,11 +180,10 @@ class PopulateUserAnswersHelper @Inject() (
                                       if haveTradingName then d.set(TradingNamePage, organisationRcaspDetails.TradingName)
                                       else Success(d)
                                     }
-                  f              <- Future.fromTry(e.set(UtrPage, utr))
-                  g              <- Future.fromTry(f.set(UkAddressInUserAnswers, address))
-                  h              <- Future.fromTry(g.set(AddressPagePrePop, address))
-                  i              <- Future.fromTry(h.set(CachedBusinessDetailsPage, cachedBusinessDetails))
-                  updatedAnswers <- Future.fromTry(i.set(ChangeRcaspCachedDetails, organisationRcaspDetails))
+                  f              <- Future.fromTry(e.set(UkAddressInUserAnswers, address))
+                  g              <- Future.fromTry(f.set(AddressPagePrePop, address))
+                  h              <- Future.fromTry(g.set(CachedBusinessDetailsPage, cachedBusinessDetails))
+                  updatedAnswers <- Future.fromTry(h.set(ChangeRcaspCachedDetails, organisationRcaspDetails))
                   _              <- sessionRepository.set(updatedAnswers)
                 } yield Redirect(
                   controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController

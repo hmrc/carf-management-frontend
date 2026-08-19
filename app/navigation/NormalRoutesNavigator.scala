@@ -64,7 +64,7 @@ trait NormalRoutesNavigator {
     case IndividualHavePhonePage => userAnswers => navigateFromIndividualHavePhonePage(userAnswers)
 
     case IndividualPhonePage =>
-      _ => controllers.routes.CheckDetailsController.onPageLoad
+      _ => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
 
     case OrganisationFirstContactNamePage =>
       _ => controllers.organisation.routes.OrganisationFirstContactEmailController.onPageLoad(NormalMode)
@@ -91,7 +91,7 @@ trait NormalRoutesNavigator {
       userAnswers => navigateFromOrganisationSecondContactHavePhonePage(userAnswers)
 
     case OrganisationSecondContactPhoneNumberPage =>
-      _ => controllers.routes.CheckDetailsController.onPageLoad
+      _ => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
 
     case FindAddressPage =>
       userAnswers => navigateFromFindAddressPage(userAnswers)
@@ -125,7 +125,7 @@ trait NormalRoutesNavigator {
     userAnswers.get(IndividualHavePhonePage) match {
       case Some(true)  => controllers.individual.routes.IndividualPhoneController.onPageLoad(NormalMode)
       case Some(false) =>
-        controllers.routes.CheckDetailsController.onPageLoad
+        controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
     }
 
@@ -161,7 +161,7 @@ trait NormalRoutesNavigator {
       case Some(true)  =>
         controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
       case Some(false) =>
-        controllers.routes.CheckDetailsController.onPageLoad
+        controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       case None        => routes.JourneyRecoveryController.onPageLoad()
     }
 
@@ -170,7 +170,7 @@ trait NormalRoutesNavigator {
       case Some(true)  =>
         controllers.organisation.routes.OrganisationSecondContactPhoneNumberController.onPageLoad(NormalMode)
       case Some(false) =>
-        controllers.routes.CheckDetailsController.onPageLoad
+        controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       case None        =>
         routes.JourneyRecoveryController.onPageLoad()
     }
@@ -184,7 +184,7 @@ trait NormalRoutesNavigator {
             controllers.routes.JourneyRecoveryController.onPageLoad()
           ) { businessDetails =>
             if (Constants.acceptedUkCountryCode.contains(businessDetails.address.countryCode.toUpperCase)) {
-              controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
+              controllers.routes.EndOfJourneyRoutingController.onPageLoad()
             } else {
               controllers.organisation.routes.NotInUkController.onPageLoad()
             }
@@ -226,7 +226,7 @@ trait NormalRoutesNavigator {
 
   private def successfulAddressNavigation(userAnswers: UserAnswers): Call =
     if (userAnswers.rcaspIsRegisteredBusiness) {
-      controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
+      controllers.routes.EndOfJourneyRoutingController.onPageLoad()
     } else {
       userAnswers.get(OrganisationOrIndividualPage) match {
         case Some(Individual)   =>

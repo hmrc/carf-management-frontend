@@ -37,7 +37,7 @@ case class OrganisationRcaspDetailsForComparison(
     isRcaspUser: Boolean,
     rcaspName: String,
     tradingName: String,
-    utr: String,
+    utr: Option[String],
     address: RcaspAddress,
     primaryContactDetails: Option[RcaspContactDetails],
     secondaryContactDetails: Option[RcaspContactDetails]

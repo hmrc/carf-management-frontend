@@ -21,7 +21,6 @@ import config.Constants.noneOfTheseValue
 import controllers.routes
 import models.{ChangeMode, UserAnswers}
 import pages.*
-import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.individual.*
 import pages.organisation.*
 import play.api.mvc.Call
@@ -32,25 +31,30 @@ trait ChangeRoutesNavigator {
 
   val changeRoutes: Page => UserAnswers => Call = {
     case FindAddressPage                          => userAnswers => navigateFromFindAddressPage(userAnswers)
-    case ReviewAddressPageForNavigatorOnly        => userAnswers => changeDetailsNavigation(userAnswers)
+    case ReviewAddressPageForNavigatorOnly        =>
+      userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
     case ChooseAddressPage                        => userAnswers => navigateFromChooseAddressPage(userAnswers)
-    case AddressPageForNavigatorOnly              => userAnswers => changeDetailsNavigation(userAnswers)
-    case IndividualNamePage                       => userAnswers => changeDetailsNavigation(userAnswers)
+    case AddressPageForNavigatorOnly              => userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case IndividualNamePage                       => userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
     case NiNumberPage                             =>
-      userAnswers => changeDetailsNavigation(userAnswers)
-    case IndividualEmailPage                      => userAnswers => changeDetailsNavigation(userAnswers)
-    case IndividualPhonePage                      => userAnswers => changeDetailsNavigation(userAnswers)
-    case OrganisationNamePage                     => userAnswers => changeDetailsNavigation(userAnswers)
-    case TradingNamePage                          => userAnswers => changeDetailsNavigation(userAnswers)
-    case UtrPage                                  => userAnswers => changeDetailsNavigation(userAnswers)
-    case OrganisationFirstContactNamePage         => userAnswers => changeDetailsNavigation(userAnswers)
-    case OrganisationFirstContactEmailPage        => userAnswers => changeDetailsNavigation(userAnswers)
-    case OrganisationFirstContactPhoneNumberPage  => userAnswers => changeDetailsNavigation(userAnswers)
-    case OrganisationSecondContactNamePage        => userAnswers => changeDetailsNavigation(userAnswers)
-    case OrganisationSecondContactEmailPage       => userAnswers => changeDetailsNavigation(userAnswers)
-    case OrganisationSecondContactHavePhonePage   =>
-      userAnswers => navigateFromOrganisationSecondContactHavePhonePage(userAnswers)
-    case OrganisationSecondContactPhoneNumberPage => userAnswers => changeDetailsNavigation(userAnswers)
+      userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case IndividualEmailPage                      => userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case IndividualPhonePage                      => userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case OrganisationNamePage                     => userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case TradingNamePage                          => userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case UtrPage                                  => userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case OrganisationFirstContactNamePage         =>
+      userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case OrganisationFirstContactEmailPage        =>
+      userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case OrganisationFirstContactPhoneNumberPage  =>
+      userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case OrganisationSecondContactNamePage        =>
+      userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case OrganisationSecondContactEmailPage       =>
+      userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+    case OrganisationSecondContactPhoneNumberPage =>
+      userAnswers => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
 
     case RegisteredBusinessIsThisYourBusinessNamePage =>
       userAnswers => navigateFromRegisteredBusinessIsThisYourBusinessNamePage(userAnswers)
@@ -72,38 +76,16 @@ trait ChangeRoutesNavigator {
   private def navigateFromChooseAddressPage(userAnswers: UserAnswers): Call =
     userAnswers
       .get(ChooseAddressPage)
-      .fold {
-        routes.JourneyRecoveryController.onPageLoad()
-      } { answer =>
+      .fold(recovery) { answer =>
         if answer == noneOfTheseValue then controllers.routes.AddressController.onPageLoad(ChangeMode)
-        else changeDetailsNavigation(userAnswers)
+        else controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
-
-  private def changeDetailsNavigation(userAnswers: UserAnswers): Call = {
-    val maybeRcaspId = userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
-
-    maybeRcaspId.fold(recovery) { rcaspId =>
-      controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-    }
-  }
-
-  private def navigateFromOrganisationSecondContactHavePhonePage(userAnswers: UserAnswers): Call =
-    userAnswers.get(OrganisationSecondContactHavePhonePage) match {
-      case Some(true)  =>
-        controllers.organisation.routes.OrganisationSecondContactPhoneNumberController.onPageLoad(ChangeMode)
-      case Some(false) =>
-        changeDetailsNavigation(userAnswers)
-      case None        =>
-        routes.JourneyRecoveryController.onPageLoad()
-    }
 
   private def navigateFromRegisteredBusinessIsThisYourBusinessNamePage(userAnswers: UserAnswers): Call =
     userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage) match {
-      case Some(true)  =>
-        changeDetailsNavigation(userAnswers)
-      case Some(false) =>
-        controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode)
-      case None        => controllers.routes.JourneyRecoveryController.onPageLoad()
+      case Some(true)  => controllers.routes.EndOfJourneyRoutingController.onPageLoad()
+      case Some(false) => controllers.organisation.routes.OrganisationNameController.onPageLoad(ChangeMode)
+      case None        => recovery
     }
 
   private def navigateFromRegisteredBusinessIsTheAddressCorrectPage(userAnswers: UserAnswers): Call =
@@ -111,18 +93,14 @@ trait ChangeRoutesNavigator {
       case Some(true)  =>
         userAnswers
           .get(CachedBusinessDetailsPage)
-          .fold(
-            controllers.routes.JourneyRecoveryController.onPageLoad()
-          ) { businessDetails =>
+          .fold(recovery) { businessDetails =>
             if (Constants.acceptedUkCountryCode.contains(businessDetails.address.countryCode.toUpperCase)) {
-              changeDetailsNavigation(userAnswers)
+              controllers.routes.EndOfJourneyRoutingController.onPageLoad()
             } else {
               controllers.organisation.routes.NotInUkController.onPageLoad()
             }
           }
-      case Some(false) =>
-        controllers.routes.FindAddressController.onPageLoad(ChangeMode)
-      case None        =>
-        controllers.routes.JourneyRecoveryController.onPageLoad()
+      case Some(false) => controllers.routes.FindAddressController.onPageLoad(ChangeMode)
+      case None        => recovery
     }
 }

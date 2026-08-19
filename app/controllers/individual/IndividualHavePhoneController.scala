@@ -17,18 +17,16 @@
 package controllers.individual
 
 import controllers.actions.*
-import controllers.routes
 import forms.GenericYesNoPageFormProvider
-import models.{ChangeMode, Mode, NormalMode, UserAnswers}
+import models.{ChangeMode, Mode, NormalMode}
 import navigation.Navigator
-import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.individual.{IndividualHavePhonePage, IndividualNamePage}
-import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.LoggerUtil.*
 import views.html.individual.IndividualHavePhoneView
 
 import javax.inject.Inject
@@ -49,13 +47,12 @@ class IndividualHavePhoneController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
-  val form: Form[Boolean]         = formProvider("individualHavePhone.error.required")
-  private lazy val recovery: Call = routes.JourneyRecoveryController.onPageLoad()
+  val form: Form[Boolean] = formProvider("individualHavePhone.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
-      val preparedForm = request.userAnswers.get(IndividualHavePhonePage).fold(form)(form.fill)
+      lazy val preparedForm = request.userAnswers.get(IndividualHavePhonePage).fold(form)(form.fill)
 
       request.userAnswers
         .get(IndividualNamePage)
@@ -63,9 +60,7 @@ class IndividualHavePhoneController @Inject() (
           logWarn(
             "[IndividualHavePhoneController][onPageLoad] Error! Individual name could not be retrieved from user answers"
           )
-          Redirect(
-            controllers.routes.InformationMissingController.onPageLoad()
-          )
+          Redirect(controllers.routes.InformationMissingController.onPageLoad())
         }(individualName => Ok(view(preparedForm, mode, individualName.fullName)))
     }
 
@@ -87,11 +82,7 @@ class IndividualHavePhoneController @Inject() (
                 logWarn(
                   "[IndividualHavePhoneController][onSubmit] Error! Individual name could not be retrieved from user answers"
                 )
-                Future.successful(
-                  Redirect(
-                    controllers.routes.InformationMissingController.onPageLoad()
-                  )
-                )
+                Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
               }(individualName => Future.successful(BadRequest(view(formWithErrors, mode, individualName.fullName)))),
           value =>
             for {
@@ -103,27 +94,16 @@ class IndividualHavePhoneController @Inject() (
               case ChangeMode =>
                 Redirect {
                   if (hasValueChanged(value)) {
-                    navigateFromIndividualHavePhonePage(updatedAnswers)
+                    navigateFromIndividualHavePhonePage(value)
                   } else {
-                    changeDetailsNavigation(updatedAnswers)
+                    controllers.routes.EndOfJourneyRoutingController.onPageLoad()
                   }
                 }
             }
         )
     }
 
-  private def navigateFromIndividualHavePhonePage(userAnswers: UserAnswers): Call =
-    userAnswers.get(IndividualHavePhonePage) match {
-      case Some(true)  => controllers.individual.routes.IndividualPhoneController.onPageLoad(ChangeMode)
-      case Some(false) => changeDetailsNavigation(userAnswers)
-      case None        => recovery
-    }
-
-  private def changeDetailsNavigation(userAnswers: UserAnswers): Call = {
-    val maybeRcaspId = userAnswers.get(ChangeRcaspCachedDetails).map(_.RCASPID)
-
-    maybeRcaspId.fold(recovery) { rcaspId =>
-      controllers.changeDetails.routes.ChangeDetailsRoutingController.onPageLoad(rcaspId)
-    }
-  }
+  private def navigateFromIndividualHavePhonePage(havePhone: Boolean): Call =
+    if (havePhone) controllers.individual.routes.IndividualPhoneController.onPageLoad(ChangeMode)
+    else controllers.routes.EndOfJourneyRoutingController.onPageLoad()
 }

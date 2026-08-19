@@ -255,7 +255,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect to ChangeDetailsRoutingController and NOT clear Organisation pages when answer remains unchanged [Organisation -> Organisation]" in {
+      "must redirect to EndOfJourneyRoutingController and NOT clear Organisation pages when answer remains unchanged [Organisation -> Organisation]" in {
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         val userAnswers = emptyUserAnswers
           .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
@@ -290,9 +290,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
-            .onPageLoad(rcaspId)
-            .url
+          redirectLocation(result).value mustEqual controllers.routes.EndOfJourneyRoutingController.onPageLoad().url
 
           verify(mockSessionRepository).set(argThat { ua =>
             ua.get(OrganisationOrIndividualPage).contains(OrganisationOrIndividual.Organisation) &&
@@ -314,7 +312,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect to ChangeDetailsRoutingController and NOT clear Individual pages when answer remains unchanged [Individual -> Individual]" in {
+      "must redirect to EndOfJourneyRoutingController and NOT clear Individual pages when answer remains unchanged [Individual -> Individual]" in {
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         val userAnswers = emptyUserAnswers
           .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
@@ -340,9 +338,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
-            .onPageLoad(rcaspId)
-            .url
+          redirectLocation(result).value mustEqual controllers.routes.EndOfJourneyRoutingController.onPageLoad().url
 
           verify(mockSessionRepository).set(argThat { ua =>
             ua.get(OrganisationOrIndividualPage).contains(OrganisationOrIndividual.Individual) &&
@@ -355,7 +351,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect to Journey Recover when ChangeRcaspCachedDetails is not available when answer remains unchanged [Individual -> Individual]" in {
+      "must redirect to EndOfJourneyRoutingController when ChangeRcaspCachedDetails is not available when answer remains unchanged [Individual -> Individual]" in {
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationOrIndividualPage, OrganisationOrIndividual.Individual)
@@ -380,7 +376,7 @@ class OrganisationOrIndividualControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+          redirectLocation(result).value mustEqual controllers.routes.EndOfJourneyRoutingController.onPageLoad().url
 
           verify(mockSessionRepository).set(argThat { ua =>
             ua.get(OrganisationOrIndividualPage).contains(OrganisationOrIndividual.Individual) &&

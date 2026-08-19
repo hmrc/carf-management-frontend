@@ -135,7 +135,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed RegisteredBusinessIsTheAddressCorrectPage" - {
-      "Should redirect to RegisteredBusinessCheckDetailsController when answer is true and country is GB" in {
+      "Should redirect to EndOfJourneyRoutingController when answer is true and country is GB" in {
         val ua = emptyUserAnswers
           .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
           .withPage(CachedBusinessDetailsPage, cachedBusinessDetailsGb)
@@ -144,11 +144,11 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           RegisteredBusinessIsTheAddressCorrectPage,
           NormalMode,
           ua
-        ) mustBe controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
 
       }
 
-      "Should redirect to RegisteredBusinessCheckDetailsController when answer is true and country is lowercase gb" in {
+      "Should redirect to EndOfJourneyRoutingController when answer is true and country is lowercase gb" in {
         val ua = emptyUserAnswers
           .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
           .withPage(
@@ -162,7 +162,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           RegisteredBusinessIsTheAddressCorrectPage,
           NormalMode,
           ua
-        ) mustBe controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
 
       "Should redirect to NotInUkController when answer is true and country is not GB" in {
@@ -237,14 +237,14 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed IndividualHavePhonePage" - {
-      "Should redirect to Check answers controller when the user answered No on the page" in {
+      "Should redirect to EndOfJourneyRoutingController when the user answered No on the page" in {
         val ua = emptyUserAnswers.withPage(IndividualHavePhonePage, false)
 
         navigator.nextPage(
           IndividualHavePhonePage,
           NormalMode,
           ua
-        ) mustBe controllers.routes.CheckDetailsController.onPageLoad
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
 
       "Should redirect to IndividualPhoneController when the user answered Yes on the page" in {
@@ -267,12 +267,12 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed IndividualPhonePage" - {
-      "Should redirect to Check answers controller" in {
+      "Should redirect to EndOfJourneyRoutingController" in {
         navigator.nextPage(
           IndividualPhonePage,
           NormalMode,
           emptyUserAnswers
-        ) mustBe controllers.routes.CheckDetailsController.onPageLoad
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
     }
 
@@ -438,14 +438,14 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.organisation.routes.OrganisationSecondContactNameController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to CheckDetailsController when the provided answer is No" in {
+      "Should redirect to EndOfJourneyRoutingController when the provided answer is No" in {
         val ua = emptyUserAnswers.withPage(OrganisationHaveSecondContactPage, false)
 
         navigator.nextPage(
           OrganisationHaveSecondContactPage,
           NormalMode,
           ua
-        ) mustBe controllers.routes.CheckDetailsController.onPageLoad
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
 
       "Should redirect to JourneyRecovery when no answer is provided" in {
@@ -492,14 +492,14 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.organisation.routes.OrganisationSecondContactPhoneNumberController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to CheckDetailsController when the provided answer is No" in {
+      "Should redirect to EndOfJourneyRoutingController when the provided answer is No" in {
         val ua = emptyUserAnswers.withPage(OrganisationSecondContactHavePhonePage, false)
 
         navigator.nextPage(
           OrganisationSecondContactHavePhonePage,
           NormalMode,
           ua
-        ) mustBe controllers.routes.CheckDetailsController.onPageLoad
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
 
       "Should redirect to JourneyRecovery when no answer is provided" in {
@@ -512,14 +512,14 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed OrganisationSecondContactPhoneNumberPage" - {
-      "Should redirect to CheckDetailsController" in {
+      "Should redirect to EndOfJourneyRoutingController" in {
         val ua = emptyUserAnswers.withPage(OrganisationSecondContactPhoneNumberPage, "07123412345")
 
         navigator.nextPage(
           OrganisationSecondContactPhoneNumberPage,
           NormalMode,
           ua
-        ) mustBe controllers.routes.CheckDetailsController.onPageLoad
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
     }
 
@@ -578,7 +578,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
         ) mustBe controllers.organisation.routes.OrganisationFirstContactNameController.onPageLoad(NormalMode)
       }
 
-      "Should redirect to RegisteredBusinessCheckDetailsController when address is selected the rcasp is the registered business" in {
+      "Should redirect to EndOfJourneyRoutingController when address is selected the rcasp is the registered business" in {
         val userAnswers = emptyUserAnswers
           .copy(rcaspIsRegisteredBusiness = true)
           .withPage(ChooseAddressPage, testAddressUk.format)
@@ -587,7 +587,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
           ChooseAddressPage,
           NormalMode,
           userAnswers
-        ) mustBe controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
 
       "Should redirect to ReviewAddressPage when none of these is selected" in {
@@ -622,14 +622,14 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed ReviewAddressPage" - {
-      "Should redirect to RegisteredBusinessCheckDetailsController the rcasp is the registered business" in {
+      "Should redirect to EndOfJourneyRoutingController the rcasp is the registered business" in {
         val userAnswers = emptyUserAnswers.copy(rcaspIsRegisteredBusiness = true)
 
         navigator.nextPage(
           ReviewAddressPageForNavigatorOnly,
           NormalMode,
           userAnswers
-        ) mustBe controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
 
       "Should redirect to IndividualEmailPage when address is selected on individual journey and user is not an rcasp" in {
@@ -668,14 +668,14 @@ class NormalRoutesNavigatorSpec extends SpecBase {
     }
 
     "When passed AddressPage" - {
-      "Should redirect to RegisteredBusinessCheckDetailsController the rcasp is the registered business" in {
+      "Should redirect to EndOfJourneyRoutingController the rcasp is the registered business" in {
         val userAnswers = emptyUserAnswers.copy(rcaspIsRegisteredBusiness = true)
 
         navigator.nextPage(
           AddressPageForNavigatorOnly,
           NormalMode,
           userAnswers
-        ) mustBe controllers.organisation.routes.RegisteredBusinessCheckDetailsController.onPageLoad
+        ) mustBe controllers.routes.EndOfJourneyRoutingController.onPageLoad()
       }
 
       "Should redirect to IndividualEmailPage when address is selected on individual journey and user is not an rcasp" in {

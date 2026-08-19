@@ -260,7 +260,7 @@ class OrganisationFirstContactHavePhoneControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect ChangeDetailsRoutingController when answer is changed from true -> false" in {
+      "must redirect to EndOfJourneyRoutingController when answer is changed from true -> false" in {
         val userAnswers = userAnswersWithFirstNameAndRcaspNameTest
           .withPage(OrganisationFirstContactHavePhonePage, true)
           .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
@@ -283,9 +283,7 @@ class OrganisationFirstContactHavePhoneControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
-            .onPageLoad(rcaspId)
-            .url
+          redirectLocation(result).value mustEqual controllers.routes.EndOfJourneyRoutingController.onPageLoad().url
 
           verify(mockSessionRepository).set(argThat { ua =>
             ua.get(OrganisationFirstContactHavePhonePage).contains(false) &&
@@ -294,7 +292,7 @@ class OrganisationFirstContactHavePhoneControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect ChangeDetailsRoutingController when answer is true and does not change" in {
+      "must redirect to EndOfJourneyRoutingController when answer is true and does not change" in {
         val userAnswers = userAnswersWithFirstNameAndRcaspNameTest
           .withPage(OrganisationFirstContactHavePhonePage, true)
           .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
@@ -317,9 +315,7 @@ class OrganisationFirstContactHavePhoneControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
-            .onPageLoad(rcaspId)
-            .url
+          redirectLocation(result).value mustEqual controllers.routes.EndOfJourneyRoutingController.onPageLoad().url
 
           verify(mockSessionRepository).set(argThat { ua =>
             ua.get(OrganisationFirstContactHavePhonePage).contains(true) &&
@@ -328,7 +324,7 @@ class OrganisationFirstContactHavePhoneControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect ChangeDetailsRoutingController when answer is false and does not change" in {
+      "must redirect to EndOfJourneyRoutingController when answer is false and does not change" in {
         val userAnswers = userAnswersWithFirstNameAndRcaspNameTest
           .withPage(OrganisationFirstContactHavePhonePage, false)
           .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
@@ -350,9 +346,7 @@ class OrganisationFirstContactHavePhoneControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.changeDetails.routes.ChangeDetailsRoutingController
-            .onPageLoad(rcaspId)
-            .url
+          redirectLocation(result).value mustEqual controllers.routes.EndOfJourneyRoutingController.onPageLoad().url
 
           verify(mockSessionRepository).set(argThat { ua =>
             ua.get(OrganisationFirstContactHavePhonePage).contains(false)
@@ -360,7 +354,7 @@ class OrganisationFirstContactHavePhoneControllerSpec extends SpecBase {
         }
       }
 
-      "must redirect Journey recovery when ChangeRcaspCachedDetails is not in userAnswers" in {
+      "must redirect to EndOfJourneyRoutingController when ChangeRcaspCachedDetails is not in userAnswers" in {
         val userAnswers = userAnswersWithFirstNameAndRcaspNameTest
           .withPage(OrganisationFirstContactHavePhonePage, false)
 
@@ -381,7 +375,7 @@ class OrganisationFirstContactHavePhoneControllerSpec extends SpecBase {
           val result = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
+          redirectLocation(result).value mustEqual controllers.routes.EndOfJourneyRoutingController.onPageLoad().url
 
           verify(mockSessionRepository).set(argThat { ua =>
             ua.get(OrganisationFirstContactHavePhonePage).contains(false)

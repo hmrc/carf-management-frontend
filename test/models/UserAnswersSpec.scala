@@ -182,7 +182,7 @@ class UserAnswersSpec extends SpecBase {
                 isRcaspUser = false,
                 rcaspName = testOrgName,
                 tradingName = testTradingName,
-                utr = testUtr.uniqueTaxPayerReference,
+                utr = Some(testUtr.uniqueTaxPayerReference),
                 address = testAddressUk.toRcaspAddress,
                 primaryContactDetails = Some(rcaspContactDetails),
                 secondaryContactDetails = Some(rcaspContactDetails)
@@ -205,7 +205,7 @@ class UserAnswersSpec extends SpecBase {
                 isRcaspUser = false,
                 rcaspName = testOrgName,
                 tradingName = testOrgName,
-                utr = testUtr.uniqueTaxPayerReference,
+                utr = Some(testUtr.uniqueTaxPayerReference),
                 address = testAddressUk.toRcaspAddress,
                 primaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None)),
                 secondaryContactDetails = None
@@ -231,7 +231,7 @@ class UserAnswersSpec extends SpecBase {
                 isRcaspUser = false,
                 rcaspName = testOrgName,
                 tradingName = testTradingName,
-                utr = testUtr.uniqueTaxPayerReference,
+                utr = Some(testUtr.uniqueTaxPayerReference),
                 address = testAddressUk.toRcaspAddress,
                 primaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None)),
                 secondaryContactDetails = Some(rcaspContactDetails.copy(PhoneNumber = None))
@@ -261,7 +261,6 @@ class UserAnswersSpec extends SpecBase {
               .withPage(ReportForRegisteredBusinessPage, true)
               .withPage(OverwritableOrganisationName, testOrgName)
               .withPage(TradingNamePage, testTradingName)
-              .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
               .withPage(UkAddressInUserAnswers, testAddressUk)
 
             ua.getRcaspDetailsForComparison mustBe Some(
@@ -269,7 +268,7 @@ class UserAnswersSpec extends SpecBase {
                 isRcaspUser = true,
                 rcaspName = testOrgName,
                 tradingName = testTradingName,
-                utr = testUtr.uniqueTaxPayerReference,
+                utr = None,
                 address = testAddressUk.toRcaspAddress,
                 primaryContactDetails = None,
                 secondaryContactDetails = None
@@ -281,7 +280,6 @@ class UserAnswersSpec extends SpecBase {
             val ua = emptyUserAnswers
               .withPage(ReportForRegisteredBusinessPage, true)
               .withPage(OverwritableOrganisationName, testOrgName)
-              .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
               .withPage(UkAddressInUserAnswers, testAddressUk)
 
             ua.getRcaspDetailsForComparison mustBe Some(
@@ -289,7 +287,7 @@ class UserAnswersSpec extends SpecBase {
                 isRcaspUser = true,
                 rcaspName = testOrgName,
                 tradingName = testOrgName,
-                utr = testUtr.uniqueTaxPayerReference,
+                utr = None,
                 address = testAddressUk.toRcaspAddress,
                 primaryContactDetails = None,
                 secondaryContactDetails = None
@@ -303,7 +301,6 @@ class UserAnswersSpec extends SpecBase {
             .withPage(ReportForRegisteredBusinessPage, true)
             .withPage(OverwritableOrganisationName, testOrgName)
             .withPage(TradingNamePage, testTradingName)
-            .withPage(UtrPage, testUtr.uniqueTaxPayerReference)
 
           ua.getRcaspDetailsForComparison mustBe None
         }

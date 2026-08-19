@@ -383,7 +383,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(OverwritableOrganisationName).contains(testOrgName) &&
             ua.get(HaveTradingNamePage).contains(true) &&
             ua.get(TradingNamePage).contains(testTradingName) &&
-            ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
+            ua.get(UtrPage).isEmpty &&
             ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
             ua.get(AddressPagePrePop).contains(testAddressUk) &&
             ua.get(CachedBusinessDetailsPage).contains(cachedBusinessDetails) &&
@@ -424,7 +424,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(OverwritableOrganisationName).contains(testOrgName) &&
             ua.get(HaveTradingNamePage).contains(false) &&
             ua.get(TradingNamePage).isEmpty &&
-            ua.get(UtrPage).contains(testUtr.uniqueTaxPayerReference) &&
+            ua.get(UtrPage).isEmpty &&
             ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
             ua.get(AddressPagePrePop).contains(testAddressUk) &&
             ua.get(CachedBusinessDetailsPage).contains(cachedBusinessDetails) &&
