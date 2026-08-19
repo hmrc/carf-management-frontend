@@ -294,7 +294,7 @@ class ChangeDetailsControllerSpec extends SpecBase {
         individualCompleteUserAnswers
       ) {
         when(mockRcaspService.updateRcasp(any(), eqTo(individualCompleteUserAnswers))(any(), any()))
-          .thenReturn(ResultT.fromValue(submitRcaspResponse))
+          .thenReturn(ResultT.fromValue(updateDeleteRcaspResponse))
         when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
         when(mockAuditService.auditChangeRcasp(any())(any())).thenReturn(ResultT.fromError(InternalServerError))
 
