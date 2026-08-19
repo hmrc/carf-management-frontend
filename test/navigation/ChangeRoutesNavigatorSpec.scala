@@ -83,7 +83,7 @@ class ChangeRoutesNavigatorSpec extends SpecBase with ScalaCheckPropertyChecks {
       }
 
       "Should redirect to EndOfJourneyRoutingController when an address is selected" in {
-        val userAnswers = emptyUserAnswers.withPage(ChooseAddressPage, testAddressUk.format)
+        val userAnswers = emptyUserAnswers.withPage(ChooseAddressPage, testAddressUk.formatAddress)
 
         navigator.nextPage(
           ChooseAddressPage,

@@ -51,7 +51,7 @@ case class ChangeRcaspIsNotUserValues(
     IndividualRCASPFirstName: Option[String],
     IndividualRCASPLastName: Option[String],
     IndividualRCASPNino: Option[String],
-    IndividualRCASPAddress: Option[String],
+    RCASPAddress: Option[String],
     Contact1Name: Option[String],
     Contact1EmailAddress: Option[String],
     Contact1ContactByPhone: Option[Boolean],
