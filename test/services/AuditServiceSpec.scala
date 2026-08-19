@@ -83,7 +83,7 @@ class AuditServiceSpec extends SpecBase {
               RCASPAddressLine1 = testAddressUk.addressLine1,
               RCASPAddressLine2 = testAddressUk.addressLine2,
               RCASPTown = testAddressUk.townOrCity,
-              RCASPCounty = testAddressUk.addressLine3,
+              RCASPAddressLine3 = testAddressUk.addressLine3,
               RCASPPostcode = testAddressUk.postCode
             )
           ),
@@ -156,7 +156,7 @@ class AuditServiceSpec extends SpecBase {
               RCASPAddressLine1 = testAddressUk.addressLine1,
               RCASPAddressLine2 = testAddressUk.addressLine2,
               RCASPTown = testAddressUk.townOrCity,
-              RCASPCounty = testAddressUk.addressLine3,
+              RCASPAddressLine3 = testAddressUk.addressLine3,
               RCASPPostcode = testAddressUk.postCode
             )
           ),
@@ -227,7 +227,7 @@ class AuditServiceSpec extends SpecBase {
               RCASPAddressLine1 = testAddressUk.addressLine1,
               RCASPAddressLine2 = testAddressUk.addressLine2,
               RCASPTown = testAddressUk.townOrCity,
-              RCASPCounty = testAddressUk.addressLine3,
+              RCASPAddressLine3 = testAddressUk.addressLine3,
               RCASPPostcode = testAddressUk.postCode
             )
           ),
@@ -295,7 +295,7 @@ class AuditServiceSpec extends SpecBase {
               RCASPAddressLine1 = testAddressUk.addressLine1,
               RCASPAddressLine2 = testAddressUk.addressLine2,
               RCASPTown = testAddressUk.townOrCity,
-              RCASPCounty = testAddressUk.addressLine3,
+              RCASPAddressLine3 = testAddressUk.addressLine3,
               RCASPPostcode = testAddressUk.postCode
             )
           ),

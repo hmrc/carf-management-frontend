@@ -209,8 +209,8 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
         userAnswers.get(ChooseAddressPage),
         ukAddress.addressLine1,
         ukAddress.addressLine2,
-        ukAddress.townOrCity,
         ukAddress.addressLine3,
+        ukAddress.townOrCity,
         ukAddress.postCode
       )
     }

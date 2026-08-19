@@ -68,8 +68,8 @@ case class AddressLookup(
     chooseAddress: Option[String],
     RCASPAddressLine1: String,
     RCASPAddressLine2: Option[String],
+    RCASPAddressLine3: Option[String],
     RCASPTown: String,
-    RCASPCounty: Option[String],
     RCASPPostcode: String
 )
 
