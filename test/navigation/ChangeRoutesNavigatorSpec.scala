@@ -19,7 +19,7 @@ package navigation
 import base.SpecBase
 import config.Constants.noneOfTheseValue
 import models.responses.AddressRegistrationResponse
-import models.{format, CachedBusinessDetails, ChangeMode}
+import models.{formatAddress, CachedBusinessDetails, ChangeMode}
 import org.scalatest.prop.Tables.Table
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.*
@@ -105,7 +105,7 @@ class ChangeRoutesNavigatorSpec extends SpecBase with ScalaCheckPropertyChecks {
 
       "Should redirect to ChangeDetailsRoutingController when an address is selected ChangeRcaspCachedDetails is present" in {
         val userAnswers = emptyUserAnswers
-          .withPage(ChooseAddressPage, testAddressUk.format)
+          .withPage(ChooseAddressPage, testAddressUk.formatAddress)
           .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate)
 
         navigator.nextPage(
@@ -117,7 +117,7 @@ class ChangeRoutesNavigatorSpec extends SpecBase with ScalaCheckPropertyChecks {
 
       "Should redirect to JourneyRecoveryController when an address is selected and ChangeRcaspCachedDetails is not present" in {
         val userAnswers = emptyUserAnswers
-          .withPage(ChooseAddressPage, testAddressUk.format)
+          .withPage(ChooseAddressPage, testAddressUk.formatAddress)
 
         navigator.nextPage(
           ChooseAddressPage,

@@ -20,6 +20,8 @@ import config.Constants
 import models.responses.AddressRegistrationResponse
 import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
+import scala.collection.immutable.Seq
+
 case class TinDetails(TINType: String, TIN: String, IssuedBy: String)
 
 case class RcaspContactDetails(ContactName: String, EmailAddress: String, PhoneNumber: Option[String])
@@ -59,6 +61,22 @@ case class RcaspAddress(
     } else {
       None
     }
+
+}
+
+extension (address: RcaspAddress) {
+  def formatRcaspAddress: String = {
+
+    val addressLines: Seq[String] = Seq(
+      Some(address.AddressLine1),
+      address.AddressLine2,
+      address.AddressLine3,
+      address.AddressLine4,
+      Some(address.PostalCode),
+      Some(address.CountryCode)
+    ).flatten
+    addressLines.mkString(", ")
+  }
 }
 
 object TinDetails {

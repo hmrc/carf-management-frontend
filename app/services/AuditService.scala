@@ -22,7 +22,7 @@ import models.audit.*
 import models.errors.ApiError.InternalServerError
 import models.errors.CarfError
 import models.viewAndUpdateRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails}
-import models.{OrganisationOrIndividual, UserAnswers}
+import models.*
 import pages.*
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
@@ -60,24 +60,35 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
                                organisationContactDetails = None
                              )
                            case Some(Organisation) =>
-                             AddRcaspAuditEvent(
-                               organisationCTMatch = None,
-                               isRCASPAnOrganisationOrIndividual = userAnswers.get(OrganisationOrIndividualPage),
-                               addRCASPIndividual = None,
-                               addRCASPOrganisation = getAddRcaspOrganisation(userAnswers),
-                               addressLookup = getAddressLookup(userAnswers),
-                               individualContactDetails = None,
-                               organisationContactDetails = getOrganisationContactDetails(userAnswers)
-                             )
+                             if (userAnswers.get(ReportForRegisteredBusinessPage).contains(false)) {
+                               AddRcaspAuditEvent(
+                                 organisationCTMatch = getOrganisationCtMatch(userAnswers),
+                                 isRCASPAnOrganisationOrIndividual = Some(Organisation),
+                                 addRCASPIndividual = None,
+                                 addRCASPOrganisation = getAddRcaspOrganisation(userAnswers),
+                                 addressLookup = getAddressLookup(userAnswers),
+                                 individualContactDetails = None,
+                                 organisationContactDetails = getOrganisationContactDetails(userAnswers)
+                               )
+                             } else
+                               AddRcaspAuditEvent(
+                                 organisationCTMatch = None,
+                                 isRCASPAnOrganisationOrIndividual = userAnswers.get(OrganisationOrIndividualPage),
+                                 addRCASPIndividual = None,
+                                 addRCASPOrganisation = getAddRcaspOrganisation(userAnswers),
+                                 addressLookup = getAddressLookup(userAnswers),
+                                 individualContactDetails = None,
+                                 organisationContactDetails = getOrganisationContactDetails(userAnswers)
+                               )
                            case None               =>
                              AddRcaspAuditEvent(
                                organisationCTMatch = getOrganisationCtMatch(userAnswers),
-                               isRCASPAnOrganisationOrIndividual = Some(Organisation),
+                               isRCASPAnOrganisationOrIndividual = None,
                                addRCASPIndividual = None,
                                addRCASPOrganisation = getAddRcaspOrganisation(userAnswers),
                                addressLookup = getAddressLookup(userAnswers),
                                individualContactDetails = None,
-                               organisationContactDetails = getOrganisationContactDetails(userAnswers)
+                               organisationContactDetails = None
                              )
                          }
                        )
@@ -90,36 +101,42 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
   )(implicit hc: HeaderCarrier): ResultT[Unit] =
     for {
       changeRcaspEvent <-
-        ResultT.fromValue(
-          (
-            userAnswers.get(ReportForRegisteredBusinessPage),
-            userAnswers.get(ChangeRcaspCachedDetails).map(_.IsRCASPUser)
-          ) match {
-            case (Some(true), Some(true))   =>
+        (
+          userAnswers.get(ReportForRegisteredBusinessPage),
+          userAnswers.get(ChangeRcaspCachedDetails).map(_.IsRCASPUser)
+        ) match {
+          case (Some(true), Some(true))   =>
+            ResultT.fromValue(
               ChangeRcaspAuditEvent(
                 changeRCASPIsUserUpdatedValues = getChangeRcaspUserUpdated(userAnswers),
                 changeRCASPIsUserOriginalValues = getChangeRcaspUserOriginal(userAnswers),
                 changeRCASPisNotUserUpdatedValues = None,
                 changeRCASPisNotUserOriginalValues = None
               )
-            case (Some(false), Some(true))  =>
+            )
+          case (Some(false), Some(true))  =>
+            ResultT.fromValue(
               ChangeRcaspAuditEvent(
                 changeRCASPIsUserUpdatedValues = None,
                 changeRCASPIsUserOriginalValues = getChangeRcaspUserOriginal(userAnswers),
                 changeRCASPisNotUserUpdatedValues = getChangeRcaspNotUserUpdated(userAnswers),
                 changeRCASPisNotUserOriginalValues = None
               )
-            case (Some(false), Some(false)) =>
+            )
+          case (Some(false), Some(false)) =>
+            ResultT.fromValue(
               ChangeRcaspAuditEvent(
                 changeRCASPIsUserUpdatedValues = None,
                 changeRCASPIsUserOriginalValues = None,
                 changeRCASPisNotUserUpdatedValues = getChangeRcaspNotUserUpdated(userAnswers),
                 changeRCASPisNotUserOriginalValues = getChangeRcaspNotUserOriginal(userAnswers)
               )
-          }
-        )
-      extendedEvent     = convertToExtendedEvent(Json.toJson(changeRcaspEvent), "ChangeRCASP")
-      _                <- sendEvent(extendedEvent, "Change")
+            )
+          case _                          => ResultT.fromError(InternalServerError)
+        }
+
+      extendedEvent = convertToExtendedEvent(Json.toJson(changeRcaspEvent), "ChangeRCASP")
+      _            <- sendEvent(extendedEvent, "Change")
     } yield ()
 
   def auditRemoveRcasp(
@@ -251,7 +268,7 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
         orgName,
         haveTrading,
         userAnswers.get(TradingNamePage),
-        address.toString
+        address.formatAddress
       )
 
     }
@@ -259,16 +276,16 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
   private def getChangeRcaspUserOriginal(userAnswers: UserAnswers): Option[ChangeRcaspIsUserValues] =
     userAnswers
       .get(ChangeRcaspCachedDetails)
-      .map { case organisation: OrganisationRcaspDetails =>
+      .collect { case organisation: OrganisationRcaspDetails =>
         ChangeRcaspIsUserValues(
           isBusinessAnRCASP = organisation.IsRCASPUser,
           organisationName = organisation.RCASPName,
           doesRCASPTradeUnderDifferentName = organisation.TradingName != organisation.RCASPName,
-          RCASPTradingName = if (organisation.TradingName != organisation.RCASPName) { Some(organisation.TradingName) }
-          else None,
-          RCASPAddress = organisation.AddressDetails.toString
+          RCASPTradingName = if (organisation.TradingName != organisation.RCASPName) {
+            Some(organisation.TradingName)
+          } else None,
+          RCASPAddress = organisation.AddressDetails.formatRcaspAddress
         )
-
       }
 
   private def getChangeRcaspNotUserUpdated(userAnswers: UserAnswers): Option[ChangeRcaspIsNotUserValues] =
@@ -357,7 +374,7 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
             Contact2ContactByPhone = None,
             Contact2PhoneNumber = None,
             individualEmailAddress = individual.PrimaryContactDetails.map(_.EmailAddress),
-            individualContactByPhone = Some(individual.PrimaryContactDetails.map(_.PhoneNumber).isDefined),
+            individualContactByPhone = Some(individual.PrimaryContactDetails.flatMap(_.PhoneNumber).isDefined),
             individuaPhoneNumber = individual.PrimaryContactDetails.flatMap(_.PhoneNumber)
           )
 
@@ -376,13 +393,13 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
             IndividualRCASPAddress = None,
             Contact1Name = organisation.PrimaryContactDetails.map(_.ContactName),
             Contact1EmailAddress = organisation.PrimaryContactDetails.map(_.EmailAddress),
-            Contact1ContactByPhone = Some(organisation.PrimaryContactDetails.map(_.PhoneNumber).isDefined),
+            Contact1ContactByPhone = Some(organisation.PrimaryContactDetails.flatMap(_.PhoneNumber).isDefined),
             Contact1PhoneNumber = organisation.PrimaryContactDetails.flatMap(_.PhoneNumber),
             Contact2 = Some(organisation.SecondaryContactDetails.isDefined),
             Contact2Name = organisation.SecondaryContactDetails.map(_.ContactName),
             Contact2EmailAddress = organisation.SecondaryContactDetails.map(_.EmailAddress),
             Contact2ContactByPhone = if (organisation.SecondaryContactDetails.isDefined) {
-              Some(organisation.SecondaryContactDetails.map(_.PhoneNumber).isDefined)
+              Some(organisation.SecondaryContactDetails.flatMap(_.PhoneNumber).isDefined)
             } else None,
             Contact2PhoneNumber = organisation.SecondaryContactDetails.flatMap(_.PhoneNumber),
             individualEmailAddress = None,

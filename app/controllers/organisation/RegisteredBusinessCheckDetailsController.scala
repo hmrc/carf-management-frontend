@@ -89,11 +89,15 @@ class RegisteredBusinessCheckDetailsController @Inject() (
               .flatMap {
                 case Right(response) =>
                   val rcaspId = response.ResponseDetails.ReturnParameters.Value
-                  auditService.auditAddRcasp(request.userAnswers).recover { case e =>
-                    logDebug(s"Auditing Management failed due to $e")
-                    ()
-                  }
+
                   for {
+                    _                 <- auditService
+                                           .auditAddRcasp(request.userAnswers)
+                                           .recover { case e =>
+                                             logDebug(s"Auditing Management failed due to $e")
+                                             ()
+                                           }
+                                           .value
                     ua                <- Future.fromTry(request.userAnswers.set(RcaspIdPage, rcaspId))
                     uaWithSuccessFlag <- Future.fromTry(ua.set(SubmissionSucceededPage, true))
                     _                 <- sessionRepository.set(uaWithSuccessFlag)

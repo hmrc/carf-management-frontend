@@ -86,11 +86,14 @@ class RegisteredBusinessChangeDetailsController @Inject() (
               .value
               .flatMap {
                 case Right(_)    =>
-                  auditService.auditChangeRcasp(request.userAnswers).recover { case e =>
-                    logDebug(s"Auditing Management failed due to $e")
-                    ()
-                  }
                   for {
+                    _                 <- auditService
+                                           .auditChangeRcasp(request.userAnswers)
+                                           .recover { case e =>
+                                             logDebug(s"Auditing Management failed due to $e")
+                                             ()
+                                           }
+                                           .value
                     uaWithSuccessFlag <- Future.fromTry(request.userAnswers.set(SubmissionSucceededPage, true))
                     _                 <- sessionRepository.set(uaWithSuccessFlag)
                   } yield Redirect(

@@ -22,6 +22,7 @@ import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.audit.*
 import models.errors.ApiError.InternalServerError
 import models.individual.IndividualName
+import models.{formatAddress, formatRcaspAddress}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalactic.Prettifier.default
@@ -31,7 +32,6 @@ import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.{Disabled, Failure, Success}
 
@@ -41,8 +41,6 @@ class AuditServiceSpec extends SpecBase {
 
   private val mockAuditConnector = mock[AuditConnector]
   private val service            = new AuditService(mockAuditConnector)
-
-  override implicit val hc: HeaderCarrier = HeaderCarrier()
 
   override def beforeEach(): Unit = {
     reset(mockAuditConnector)
@@ -218,6 +216,74 @@ class AuditServiceSpec extends SpecBase {
 
         val expectedAudit = AddRcaspAuditEvent(
           organisationCTMatch = Some(OrganisationCtMatch(isBusinessAnRCASP = true, isBusinessNameCorrect = Some(true))),
+          isRCASPAnOrganisationOrIndividual = None,
+          addRCASPIndividual = None,
+          addRCASPOrganisation = Some(
+            AddRcaspOrganisation(
+              organisationName = testOrgName,
+              doesRCASPTradeUnderDifferentName = true,
+              RCASPTradingName = Some(testTradingName),
+              RCASPUTR = Some(testUtr.toString),
+              confirmRCASPregisteredAddress = Some(true)
+            )
+          ),
+          addressLookup = Some(
+            AddressLookup(
+              findAddress = testFindAddress.postcode,
+              propertyNameOrNumber = testFindAddress.propertyNameOrNumber,
+              UPRN = Some(testUPRN),
+              chooseAddress = Some("address"),
+              RCASPAddressLine1 = testAddressUk.addressLine1,
+              RCASPAddressLine2 = testAddressUk.addressLine2,
+              RCASPTown = testAddressUk.townOrCity,
+              RCASPCounty = testAddressUk.addressLine3,
+              RCASPPostcode = testAddressUk.postCode
+            )
+          ),
+          individualContactDetails = None,
+          organisationContactDetails = None
+        )
+
+        when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
+          .thenReturn(Future.successful(Success))
+
+        val result = service.auditAddRcasp(userAnswers).value.futureValue
+
+        result mustBe Right(())
+
+        verify(mockAuditConnector, times(1)).sendExtendedEvent(
+          argThat(event =>
+            event.auditSource == "carf-management-frontend" && event.auditType == "AddRCASP"
+              && event.detail == Json.toJson(expectedAudit)
+          )
+        )(any(), any())
+      }
+
+      "should return success for Organisation CT Automatch when answering no to ReportForRegisteredBusiness" - {
+        val userAnswers = emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, false)
+          .withPage(OrganisationOrIndividualPage, Organisation)
+          .withPage(OrganisationNamePage, testOrgName)
+          .withPage(HaveTradingNamePage, true)
+          .withPage(FindAddressPage, testFindAddress)
+          .withPage(UkAddressInUserAnswers, testAddressUk)
+          .withPage(AddressUPRNUserAnswers, testUPRN.toLong)
+          .withPage(ChooseAddressPage, "address")
+          .withPage(TradingNamePage, testTradingName)
+          .withPage(UtrPage, testUtr.toString)
+          .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
+          .withPage(OrganisationFirstContactNamePage, testOrgContactName)
+          .withPage(OrganisationFirstContactEmailPage, testEmail)
+          .withPage(OrganisationFirstContactHavePhonePage, true)
+          .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
+          .withPage(OrganisationHaveSecondContactPage, true)
+          .withPage(OrganisationSecondContactNamePage, testOrgContactName)
+          .withPage(OrganisationSecondContactEmailPage, testEmail)
+          .withPage(OrganisationSecondContactHavePhonePage, true)
+          .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
+
+        val expectedAudit = AddRcaspAuditEvent(
+          organisationCTMatch = Some(OrganisationCtMatch(isBusinessAnRCASP = false, isBusinessNameCorrect = None)),
           isRCASPAnOrganisationOrIndividual = Some(Organisation),
           addRCASPIndividual = None,
           addRCASPOrganisation = Some(
@@ -287,7 +353,7 @@ class AuditServiceSpec extends SpecBase {
       "should return Internal server error when Failure is returned by audit connector" in {
 
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
-          .thenReturn(Future.successful(Failure))
+          .thenReturn(Future.successful(Failure("uh oh")))
 
         val result = service.auditAddRcasp(emptyUserAnswers).value.futureValue
 
@@ -325,7 +391,7 @@ class AuditServiceSpec extends SpecBase {
               organisationName = testOrgName,
               doesRCASPTradeUnderDifferentName = true,
               RCASPTradingName = Some(testTradingName),
-              RCASPAddress = testAddressUk.toString
+              RCASPAddress = testAddressUk.formatAddress
             )
           ),
           changeRCASPIsUserOriginalValues = Some(
@@ -334,7 +400,7 @@ class AuditServiceSpec extends SpecBase {
               organisationName = testOrgName,
               doesRCASPTradeUnderDifferentName = true,
               RCASPTradingName = Some(testTradingName),
-              RCASPAddress = testAddressUkRcaspAddress.toString
+              RCASPAddress = testAddressUkRcaspAddress.formatRcaspAddress
             )
           ),
           changeRCASPisNotUserUpdatedValues = None,
@@ -563,7 +629,7 @@ class AuditServiceSpec extends SpecBase {
               organisationName = testOrgName,
               doesRCASPTradeUnderDifferentName = true,
               RCASPTradingName = Some(testTradingName),
-              RCASPAddress = testAddressUkRcaspAddress.toString
+              RCASPAddress = testAddressUkRcaspAddress.formatRcaspAddress
             )
           ),
           changeRCASPisNotUserUpdatedValues = Some(
@@ -630,7 +696,7 @@ class AuditServiceSpec extends SpecBase {
           .withPage(ReportForRegisteredBusinessPage, true)
           .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
-          .thenReturn(Future.successful(Failure))
+          .thenReturn(Future.successful(Failure("uh oh")))
 
         val result = service.auditChangeRcasp(userAnswers).value.futureValue
 
@@ -690,7 +756,7 @@ class AuditServiceSpec extends SpecBase {
       "should return Internal server error when Failure is returned by audit connector" in {
 
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
-          .thenReturn(Future.successful(Failure))
+          .thenReturn(Future.successful(Failure("uh oh")))
 
         val result = service.auditRemoveRcasp(true, true, true).value.futureValue
 

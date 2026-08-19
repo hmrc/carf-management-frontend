@@ -94,11 +94,15 @@ class RemoveRcaspController @Inject() (
                   rcaspSubmissionService.removeRcasp(request.carfId, cachedDetails.RCASPID).value.flatMap {
                     case Right(_) =>
                       val currentTime = Instant.now(clock)
-                      auditService.auditRemoveRcasp(userAccessAnswer, otherAccessAnswer, value).recover { case e =>
-                        logDebug(s"Auditing Management failed due to $e")
-                        ()
-                      }
+
                       for {
+                        _               <- auditService
+                                             .auditRemoveRcasp(userAccessAnswer, otherAccessAnswer, value)
+                                             .recover { case e =>
+                                               logDebug(s"Auditing Management failed due to $e")
+                                               ()
+                                             }
+                                             .value
                         updatedAnswers1 <- Future.fromTry(request.userAnswers.set(RemoveRcaspPage, value))
                         updatedAnswers2 <- Future.fromTry(updatedAnswers1.set(SubmissionSucceededPage, true))
                         updatedAnswers3 <- Future.fromTry(updatedAnswers2.set(RcaspRemovedDateTimePage, currentTime))
