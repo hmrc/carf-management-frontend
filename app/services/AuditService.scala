@@ -51,7 +51,7 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
                          userAnswers.get(OrganisationOrIndividualPage) match {
                            case Some(Individual)   =>
                              AddRcaspAuditEvent(
-                               organisationCTMatch = None,
+                               organisationCTMatch = getOrganisationCtMatch(userAnswers),
                                isRCASPAnOrganisationOrIndividual = userAnswers.get(OrganisationOrIndividualPage),
                                addRCASPIndividual = getAddRcaspIndividual(userAnswers),
                                addRCASPOrganisation = None,
@@ -60,26 +60,15 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
                                organisationContactDetails = None
                              )
                            case Some(Organisation) =>
-                             if (userAnswers.get(ReportForRegisteredBusinessPage).contains(false)) {
-                               AddRcaspAuditEvent(
-                                 organisationCTMatch = getOrganisationCtMatch(userAnswers),
-                                 isRCASPAnOrganisationOrIndividual = Some(Organisation),
-                                 addRCASPIndividual = None,
-                                 addRCASPOrganisation = getAddRcaspOrganisation(userAnswers),
-                                 addressLookup = getAddressLookup(userAnswers),
-                                 individualContactDetails = None,
-                                 organisationContactDetails = getOrganisationContactDetails(userAnswers)
-                               )
-                             } else
-                               AddRcaspAuditEvent(
-                                 organisationCTMatch = None,
-                                 isRCASPAnOrganisationOrIndividual = userAnswers.get(OrganisationOrIndividualPage),
-                                 addRCASPIndividual = None,
-                                 addRCASPOrganisation = getAddRcaspOrganisation(userAnswers),
-                                 addressLookup = getAddressLookup(userAnswers),
-                                 individualContactDetails = None,
-                                 organisationContactDetails = getOrganisationContactDetails(userAnswers)
-                               )
+                             AddRcaspAuditEvent(
+                               organisationCTMatch = getOrganisationCtMatch(userAnswers),
+                               isRCASPAnOrganisationOrIndividual = Some(Organisation),
+                               addRCASPIndividual = None,
+                               addRCASPOrganisation = getAddRcaspOrganisation(userAnswers),
+                               addressLookup = getAddressLookup(userAnswers),
+                               individualContactDetails = None,
+                               organisationContactDetails = getOrganisationContactDetails(userAnswers)
+                             )
                            case None               =>
                              AddRcaspAuditEvent(
                                organisationCTMatch = getOrganisationCtMatch(userAnswers),

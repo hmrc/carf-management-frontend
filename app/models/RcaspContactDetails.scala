@@ -72,8 +72,7 @@ extension (address: RcaspAddress) {
       address.AddressLine2,
       address.AddressLine3,
       address.AddressLine4,
-      Some(address.PostalCode),
-      Some(address.CountryCode)
+      Some(address.PostalCode)
     ).flatten
     addressLines.mkString(", ")
   }

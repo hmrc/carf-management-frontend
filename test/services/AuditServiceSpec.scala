@@ -50,7 +50,7 @@ class AuditServiceSpec extends SpecBase {
   "AuditService" - {
     "Add RCASP Audit Event" - {
 
-      "should return success for Individual" - {
+      "should return success for Individual" in {
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationOrIndividualPage, Individual)
           .withPage(IndividualNamePage, testIndividualName)
@@ -112,7 +112,7 @@ class AuditServiceSpec extends SpecBase {
         )(any(), any())
       }
 
-      "should return success for Organisation" - {
+      "should return success for Organisation" in {
         val userAnswers = emptyUserAnswers
           .withPage(OrganisationOrIndividualPage, Organisation)
           .withPage(OrganisationNamePage, testOrgName)
@@ -191,7 +191,7 @@ class AuditServiceSpec extends SpecBase {
         )(any(), any())
       }
 
-      "should return success for Organisation CT Automatch" - {
+      "should return success for Organisation CT Automatch" in {
         val userAnswers = emptyUserAnswers
           .withPage(ReportForRegisteredBusinessPage, true)
           .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
@@ -204,15 +204,6 @@ class AuditServiceSpec extends SpecBase {
           .withPage(TradingNamePage, testTradingName)
           .withPage(UtrPage, testUtr.toString)
           .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
-          .withPage(OrganisationFirstContactNamePage, testOrgContactName)
-          .withPage(OrganisationFirstContactEmailPage, testEmail)
-          .withPage(OrganisationFirstContactHavePhonePage, true)
-          .withPage(OrganisationFirstContactPhoneNumberPage, testPhone)
-          .withPage(OrganisationHaveSecondContactPage, true)
-          .withPage(OrganisationSecondContactNamePage, testOrgContactName)
-          .withPage(OrganisationSecondContactEmailPage, testEmail)
-          .withPage(OrganisationSecondContactHavePhonePage, true)
-          .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
 
         val expectedAudit = AddRcaspAuditEvent(
           organisationCTMatch = Some(OrganisationCtMatch(isBusinessAnRCASP = true, isBusinessNameCorrect = Some(true))),
@@ -259,7 +250,7 @@ class AuditServiceSpec extends SpecBase {
         )(any(), any())
       }
 
-      "should return success for Organisation CT Automatch when answering no to ReportForRegisteredBusiness" - {
+      "should return success for Organisation CT Automatch when answering no to ReportForRegisteredBusiness" in {
         val userAnswers = emptyUserAnswers
           .withPage(ReportForRegisteredBusinessPage, false)
           .withPage(OrganisationOrIndividualPage, Organisation)
