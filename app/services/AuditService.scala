@@ -248,7 +248,7 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
   private def getChangeRcaspUserUpdated(userAnswers: UserAnswers): Option[ChangeRcaspIsUserValues] =
     (
       userAnswers.get(ReportForRegisteredBusinessPage),
-      userAnswers.get(OrganisationNamePage),
+      userAnswers.get(OverwritableOrganisationName),
       userAnswers.get(HaveTradingNamePage),
       userAnswers.get(UkAddressInUserAnswers)
     ).mapN { (isRcasp, orgName, haveTrading, address) =>
@@ -280,8 +280,9 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
   private def getChangeRcaspNotUserUpdated(userAnswers: UserAnswers): Option[ChangeRcaspIsNotUserValues] =
     (
       userAnswers.get(ReportForRegisteredBusinessPage),
-      userAnswers.get(OrganisationOrIndividualPage)
-    ).mapN { (isRcasp, orgOrInd) =>
+      userAnswers.get(OrganisationOrIndividualPage),
+      userAnswers.get(UkAddressInUserAnswers)
+    ).mapN { (isRcasp, orgOrInd, address) =>
       orgOrInd match {
         case OrganisationOrIndividual.Individual   =>
           ChangeRcaspIsNotUserValues(
@@ -294,7 +295,7 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
             IndividualRCASPFirstName = userAnswers.get(IndividualNamePage).map(_.firstName),
             IndividualRCASPLastName = userAnswers.get(IndividualNamePage).map(_.lastName),
             IndividualRCASPNino = userAnswers.get(NiNumberPage),
-            RCASPAddress = userAnswers.get(UkAddressInUserAnswers).map(_.formatAddress),
+            RCASPAddress = address.formatAddress,
             Contact1Name = None,
             Contact1EmailAddress = None,
             Contact1ContactByPhone = None,
@@ -319,7 +320,7 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
             IndividualRCASPFirstName = None,
             IndividualRCASPLastName = None,
             IndividualRCASPNino = None,
-            RCASPAddress = userAnswers.get(UkAddressInUserAnswers).map(_.formatAddress),
+            RCASPAddress = address.formatAddress,
             Contact1Name = userAnswers.get(OrganisationFirstContactNamePage),
             Contact1EmailAddress = userAnswers.get(OrganisationFirstContactEmailPage),
             Contact1ContactByPhone = userAnswers.get(OrganisationFirstContactHavePhonePage),
@@ -352,7 +353,7 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
             IndividualRCASPFirstName = Some(individual.FirstName),
             IndividualRCASPLastName = Some(individual.LastName),
             IndividualRCASPNino = individual.TINDetails.flatMap(_.headOption.map(_.TIN)),
-            RCASPAddress = Some(individual.AddressDetails.formatRcaspAddress),
+            RCASPAddress = individual.AddressDetails.formatRcaspAddress,
             Contact1Name = None,
             Contact1EmailAddress = None,
             Contact1ContactByPhone = None,
@@ -379,7 +380,7 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
             IndividualRCASPFirstName = None,
             IndividualRCASPLastName = None,
             IndividualRCASPNino = None,
-            RCASPAddress = Some(organisation.AddressDetails.formatRcaspAddress),
+            RCASPAddress = organisation.AddressDetails.formatRcaspAddress,
             Contact1Name = organisation.PrimaryContactDetails.map(_.ContactName),
             Contact1EmailAddress = organisation.PrimaryContactDetails.map(_.EmailAddress),
             Contact1ContactByPhone = Some(organisation.PrimaryContactDetails.flatMap(_.PhoneNumber).isDefined),

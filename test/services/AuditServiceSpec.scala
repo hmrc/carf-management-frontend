@@ -369,7 +369,7 @@ class AuditServiceSpec extends SpecBase {
       "should return success for rcasp user" in {
         val userAnswers = emptyUserAnswers
           .withPage(ReportForRegisteredBusinessPage, true)
-          .withPage(OrganisationNamePage, testOrgName)
+          .withPage(OverwritableOrganisationName, testOrgName)
           .withPage(HaveTradingNamePage, true)
           .withPage(TradingNamePage, testTradingName)
           .withPage(UkAddressInUserAnswers, testAddressUk)
@@ -448,7 +448,7 @@ class AuditServiceSpec extends SpecBase {
               IndividualRCASPFirstName = None,
               IndividualRCASPLastName = None,
               IndividualRCASPNino = None,
-              RCASPAddress = Some(testAddressUkRcaspAddress.formatRcaspAddress),
+              RCASPAddress = testAddressUkRcaspAddress.formatRcaspAddress,
               Contact1Name = Some(testOrgContactName),
               Contact1EmailAddress = Some(testEmail),
               Contact1ContactByPhone = Some(true),
@@ -474,7 +474,7 @@ class AuditServiceSpec extends SpecBase {
               IndividualRCASPFirstName = None,
               IndividualRCASPLastName = None,
               IndividualRCASPNino = None,
-              RCASPAddress = Some(testAddressUk.formatAddress),
+              RCASPAddress = testAddressUk.formatAddress,
               Contact1Name = Some(rcaspContactDetails.ContactName),
               Contact1EmailAddress = Some(rcaspContactDetails.EmailAddress),
               Contact1ContactByPhone = Some(true),
@@ -532,7 +532,7 @@ class AuditServiceSpec extends SpecBase {
               IndividualRCASPFirstName = Some(testIndividualName.firstName),
               IndividualRCASPLastName = Some(testIndividualName.lastName),
               IndividualRCASPNino = Some(testNiNumber),
-              RCASPAddress = Some(testAddressUk.formatAddress),
+              RCASPAddress = testAddressUk.formatAddress,
               Contact1Name = None,
               Contact1EmailAddress = None,
               Contact1ContactByPhone = None,
@@ -558,7 +558,7 @@ class AuditServiceSpec extends SpecBase {
               IndividualRCASPFirstName = Some(individualRcaspDetailsViewUpdate.FirstName),
               IndividualRCASPLastName = Some(individualRcaspDetailsViewUpdate.LastName),
               IndividualRCASPNino = individualRcaspDetailsViewUpdate.TINDetails.flatMap(_.headOption.map(_.TIN)),
-              RCASPAddress = Some(individualRcaspDetailsViewUpdate.AddressDetails.formatRcaspAddress),
+              RCASPAddress = individualRcaspDetailsViewUpdate.AddressDetails.formatRcaspAddress,
               Contact1Name = None,
               Contact1EmailAddress = None,
               Contact1ContactByPhone = None,
@@ -634,7 +634,7 @@ class AuditServiceSpec extends SpecBase {
               IndividualRCASPFirstName = None,
               IndividualRCASPLastName = None,
               IndividualRCASPNino = None,
-              RCASPAddress = Some(testAddressUk.formatAddress),
+              RCASPAddress = testAddressUk.formatAddress,
               Contact1Name = Some(testOrgContactName),
               Contact1EmailAddress = Some(testEmail),
               Contact1ContactByPhone = Some(true),
