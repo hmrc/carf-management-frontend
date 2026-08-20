@@ -184,18 +184,19 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
     }
 
   private def getAddRcaspOrganisation(userAnswers: UserAnswers): Option[AddRcaspOrganisation] =
-    (
-      userAnswers.get(OrganisationNamePage),
-      userAnswers.get(HaveTradingNamePage)
-    ).mapN { (orgName, haveTradingName) =>
-      AddRcaspOrganisation(
-        orgName,
-        haveTradingName,
-        userAnswers.get(TradingNamePage),
-        userAnswers.get(UtrPage),
-        userAnswers.get(RegisteredBusinessIsTheAddressCorrectPage)
-      )
-    }
+    userAnswers
+      .get(HaveTradingNamePage)
+      .map { haveTradingName =>
+        AddRcaspOrganisation(
+          if (userAnswers.get(RegisteredBusinessIsThisYourBusinessNamePage).contains(true))
+            None
+          else userAnswers.get(OrganisationNamePage),
+          haveTradingName,
+          userAnswers.get(TradingNamePage),
+          userAnswers.get(UtrPage),
+          userAnswers.get(RegisteredBusinessIsTheAddressCorrectPage)
+        )
+      }
 
   private def getAddressLookup(userAnswers: UserAnswers): Option[AddressLookup] =
     (

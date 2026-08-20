@@ -50,7 +50,7 @@ object AddRcaspIndividual {
 }
 
 case class AddRcaspOrganisation(
-    organisationName: String,
+    organisationName: Option[String],
     doesRCASPTradeUnderDifferentName: Boolean,
     RCASPTradingName: Option[String],
     RCASPUTR: Option[String],

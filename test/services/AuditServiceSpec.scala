@@ -140,7 +140,7 @@ class AuditServiceSpec extends SpecBase {
           addRCASPIndividual = None,
           addRCASPOrganisation = Some(
             AddRcaspOrganisation(
-              organisationName = testOrgName,
+              organisationName = Some(testOrgName),
               doesRCASPTradeUnderDifferentName = true,
               RCASPTradingName = Some(testTradingName),
               RCASPUTR = Some(testUtr.toString),
@@ -211,7 +211,7 @@ class AuditServiceSpec extends SpecBase {
           addRCASPIndividual = None,
           addRCASPOrganisation = Some(
             AddRcaspOrganisation(
-              organisationName = testOrgName,
+              organisationName = None,
               doesRCASPTradeUnderDifferentName = true,
               RCASPTradingName = Some(testTradingName),
               RCASPUTR = Some(testUtr.toString),
@@ -279,7 +279,7 @@ class AuditServiceSpec extends SpecBase {
           addRCASPIndividual = None,
           addRCASPOrganisation = Some(
             AddRcaspOrganisation(
-              organisationName = testOrgName,
+              organisationName = Some(testOrgName),
               doesRCASPTradeUnderDifferentName = true,
               RCASPTradingName = Some(testTradingName),
               RCASPUTR = Some(testUtr.toString),
