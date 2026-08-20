@@ -75,7 +75,9 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
                                isRCASPAnOrganisationOrIndividual = None,
                                addRCASPIndividual = None,
                                addRCASPOrganisation = getAddRcaspOrganisation(userAnswers),
-                               addressLookup = getAddressLookup(userAnswers),
+                               addressLookup =
+                                 if (userAnswers.get(RegisteredBusinessIsTheAddressCorrectPage).contains(true)) { None }
+                                 else getAddressLookup(userAnswers),
                                individualContactDetails = None,
                                organisationContactDetails = None
                              )

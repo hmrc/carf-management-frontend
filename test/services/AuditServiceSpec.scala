@@ -195,10 +195,6 @@ class AuditServiceSpec extends SpecBase {
         val userAnswers = emptyUserAnswers
           .withPage(ReportForRegisteredBusinessPage, true)
           .withPage(RegisteredBusinessIsThisYourBusinessNamePage, true)
-          .withPage(FindAddressPage, testFindAddress)
-          .withPage(UkAddressInUserAnswers, testAddressUk)
-          .withPage(AddressUPRNUserAnswers, testUPRN.toLong)
-          .withPage(ChooseAddressPage, "address")
           .withPage(OrganisationNamePage, testOrgName)
           .withPage(HaveTradingNamePage, true)
           .withPage(TradingNamePage, testTradingName)
@@ -218,19 +214,7 @@ class AuditServiceSpec extends SpecBase {
               confirmRCASPregisteredAddress = Some(true)
             )
           ),
-          addressLookup = Some(
-            AddressLookup(
-              findAddress = testFindAddress.postcode,
-              propertyNameOrNumber = testFindAddress.propertyNameOrNumber,
-              UPRN = Some(testUPRN),
-              chooseAddress = Some("address"),
-              RCASPAddressLine1 = testAddressUk.addressLine1,
-              RCASPAddressLine2 = testAddressUk.addressLine2,
-              RCASPTown = testAddressUk.townOrCity,
-              RCASPAddressLine3 = testAddressUk.addressLine3,
-              RCASPPostcode = testAddressUk.postCode
-            )
-          ),
+          addressLookup = None,
           individualContactDetails = None,
           organisationContactDetails = None
         )
