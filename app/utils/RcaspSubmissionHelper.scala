@@ -177,7 +177,7 @@ class RcaspSubmissionHelper {
       TINDetails = Some(
         List(
           TinDetails(
-            TINType = IdentifierType.OTHER,
+            TINType = IdentifierType.NINO,
             TIN = nino,
             IssuedBy = ukCountryCode
           )
@@ -209,7 +209,7 @@ class RcaspSubmissionHelper {
       TINDetails = Some(
         List(
           TinDetails(
-            TINType = IdentifierType.OTHER,
+            TINType = IdentifierType.NINO,
             TIN = nino,
             IssuedBy = ukCountryCode
           )
