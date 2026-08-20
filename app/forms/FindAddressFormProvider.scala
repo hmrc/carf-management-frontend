@@ -16,7 +16,7 @@
 
 package forms
 
-import config.Constants.{postCodeAllowedChars, regexPostcode}
+import config.Constants.{addressMaxLength, postCodeAllowedChars, regexPostcode}
 import forms.mappings.Mappings
 import models.FindAddress
 import play.api.data.Form
@@ -25,8 +25,6 @@ import play.api.data.Forms.*
 import javax.inject.Inject
 
 class FindAddressFormProvider @Inject() extends Mappings {
-
-  private val propertyNameOrNumberLength = 35
 
   def apply(): Form[FindAddress] =
     Form(
@@ -42,10 +40,9 @@ class FindAddressFormProvider @Inject() extends Mappings {
             Some("findAddress.postcode.error.notUK")
           ),
         "propertyNameOrNumber" ->
-          optional(
-            text().verifying(
-              maxLength(propertyNameOrNumberLength, "findAddress.property.error.length")
-            )
+          validatedOptionalTextNoRegex(
+            lengthKey = "findAddress.property.error.length",
+            maxLength = addressMaxLength
           )
       )(FindAddress.apply)(x => Some((x.postcode, x.propertyNameOrNumber)))
     )
