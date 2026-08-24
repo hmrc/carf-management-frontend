@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 class TradingNameFormProvider @Inject() extends Mappings {
 
-  private val maxTradingNameLength = 105
+  private val maxTradingNameLength = 80
 
   def apply(): Form[String] =
     Form(
