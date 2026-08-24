@@ -33,13 +33,13 @@ class CountryListFactorySpec extends SpecBase {
       "must return the country description when the code exists" in {
         val factory = new CountryListFactory(app.environment, app.injector.instanceOf[FrontendAppConfig])
 
-        factory.getDescriptionFromCode("GB") mustEqual Some("United Kingdom")
+        factory.getDescriptionFromCode("GB") mustBe Some("United Kingdom")
       }
 
       "must return None when the code does not exist" in {
         val factory = new CountryListFactory(app.environment, app.injector.instanceOf[FrontendAppConfig])
 
-        factory.getDescriptionFromCode("XX") mustEqual None
+        factory.getDescriptionFromCode("XX") mustBe None
       }
 
       "must return None when countries.json cannot be found" in {
@@ -48,7 +48,7 @@ class CountryListFactorySpec extends SpecBase {
 
         val factory = new CountryListFactory(mockEnvironment, mockAppConfig)
 
-        factory.getDescriptionFromCode("GB") mustEqual None
+        factory.getDescriptionFromCode("GB") mustBe None
       }
     }
   }

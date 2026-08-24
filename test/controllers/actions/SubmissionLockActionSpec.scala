@@ -19,7 +19,7 @@ package controllers.actions
 import base.SpecBase
 import models.requests.OptionalDataRequest
 import pages.SubmissionSucceededPage
-import play.api.mvc.BodyParsers
+import play.api.mvc.{BodyParsers, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
@@ -32,7 +32,7 @@ class SubmissionLockActionSpec extends SpecBase {
 
   class TestableSubmissionLockAction(parsers: BodyParsers.Default) extends SubmissionLockAction(parsers) {
 
-    def callFilter[A](request: OptionalDataRequest[A]) =
+    def callFilter[A](request: OptionalDataRequest[A]): Future[Option[Result]] =
       super.filter(request)
   }
   private val action = new TestableSubmissionLockAction(parsers)

@@ -55,8 +55,8 @@ class DataRequiredActionSpec extends SpecBase {
           )
           .header
 
-      result.status                mustEqual SEE_OTHER
-      result.headers.get(LOCATION) mustEqual Some(routes.JourneyRecoveryController.onPageLoad().url)
+      result.status             mustEqual SEE_OTHER
+      result.headers.get(LOCATION) mustBe Some(routes.JourneyRecoveryController.onPageLoad().url)
     }
 
     "must return a DataRequest with the correct values when User Answeres exists" in {
