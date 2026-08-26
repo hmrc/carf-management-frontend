@@ -30,8 +30,6 @@ class FakeIdentifierAction @Inject() (
     affinityGroup: AffinityGroup,
     requestUtr: Option[String]
 ) extends IdentifierAction
-    with ActionBuilder[IdentifierRequest, AnyContent]
-    with ActionFunction[Request, IdentifierRequest]
     with SpecBase {
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] =
@@ -50,9 +48,4 @@ class FakeIdentifierAction @Inject() (
 
   override protected def executionContext: ExecutionContext =
     scala.concurrent.ExecutionContext.Implicits.global
-
-  override def apply(
-      redirect: Boolean = true
-  ): ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest] = this
-
 }

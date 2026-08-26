@@ -52,7 +52,7 @@ class RemoveRcaspController @Inject() (
   val form: Form[Boolean] = formProvider("removeRcasp.error.required")
 
   def onPageLoad(): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       lazy val preparedForm = request.userAnswers.get(RemoveRcaspPage).fold(form)(form.fill)
 
       val maybeCachedDetails     = request.userAnswers.get(RemoveRcaspCachedDetails)
@@ -71,7 +71,7 @@ class RemoveRcaspController @Inject() (
     }
 
   def onSubmit(): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       val maybeCachedDetails     = request.userAnswers.get(RemoveRcaspCachedDetails)
       val maybeUserAccessAnswer  = request.userAnswers.get(RemoveUserAccessPage)
       val maybeOtherAccessAnswer = request.userAnswers.get(RemoveOtherAccessPage)

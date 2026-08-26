@@ -75,7 +75,7 @@ class ChooseAddressController @Inject() (
     }
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       lazy val preparedForm: Form[String] = request.userAnswers.get(ChooseAddressPage).fold(form)(form.fill)
 
       val WithRadiosResult(result, _) = resultWithRadios(mode) { (radios, maybeFindAddress) =>
@@ -93,7 +93,7 @@ class ChooseAddressController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(

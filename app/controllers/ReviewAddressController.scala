@@ -45,7 +45,7 @@ class ReviewAddressController @Inject() (
     with I18nSupport {
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val editAddressLink: String =
         routes.AddressController.onPageLoad(mode).url
@@ -67,7 +67,7 @@ class ReviewAddressController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       request.userAnswers.get(AddressPagePrePop) match {
         case Some(address) =>
           for {

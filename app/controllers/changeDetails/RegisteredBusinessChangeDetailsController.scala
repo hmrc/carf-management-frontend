@@ -50,7 +50,7 @@ class RegisteredBusinessChangeDetailsController @Inject() (
     with I18nSupport {
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       val userAnswers          = request.userAnswers
       lazy val ifEmptyProtocol = Redirect(controllers.routes.InformationMissingController.onPageLoad())
 
@@ -76,7 +76,7 @@ class RegisteredBusinessChangeDetailsController @Inject() (
     }
 
   def onSubmit(rcaspId: String): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+    (identify andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
       implicit request =>
         request.utr match {
           case Some(utr) =>

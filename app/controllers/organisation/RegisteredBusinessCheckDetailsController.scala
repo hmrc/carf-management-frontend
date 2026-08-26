@@ -48,7 +48,7 @@ class RegisteredBusinessCheckDetailsController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData) {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData() andThen submissionLock andThen requireData) {
     implicit request =>
       val userAnswers          = request.userAnswers
       lazy val ifEmptyProtocol = Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -78,7 +78,7 @@ class RegisteredBusinessCheckDetailsController @Inject() (
   }
 
   def onSubmit: Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+    (identify andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
       implicit request =>
         request.utr match {
           case Some(utr) =>

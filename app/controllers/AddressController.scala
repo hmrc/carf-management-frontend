@@ -50,7 +50,7 @@ class AddressController @Inject() (
   val form: Form[AddressUk] = formProvider()
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       lazy val preparedForm = request.userAnswers.get(AddressPagePrePop).fold(form)(form.fill)
 
@@ -66,7 +66,7 @@ class AddressController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(

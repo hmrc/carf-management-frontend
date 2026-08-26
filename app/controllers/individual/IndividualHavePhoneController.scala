@@ -50,7 +50,7 @@ class IndividualHavePhoneController @Inject() (
   val form: Form[Boolean] = formProvider("individualHavePhone.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       lazy val preparedForm = request.userAnswers.get(IndividualHavePhonePage).fold(form)(form.fill)
 
@@ -65,7 +65,7 @@ class IndividualHavePhoneController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
 
       val userAnswers = request.userAnswers
 

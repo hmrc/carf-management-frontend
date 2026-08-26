@@ -29,7 +29,7 @@ class $className;format="cap"$Controller @Inject()(
 
   val form: Form[Boolean] = formProvider("$className;format="decap"$.error.required")
 
-  def onPageLoad(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData) {
+  def onPageLoad(mode: Mode): Action[AnyContent] = (identify andThen getData() andThen requireData) {
     implicit request =>
 
       val preparedForm = request.userAnswers.get($className$Page).fold(form)(form.fill)
@@ -37,7 +37,7 @@ class $className;format="cap"$Controller @Inject()(
       Ok(view(preparedForm, mode))
   }
 
-  def onSubmit(mode: Mode): Action[AnyContent] = (identify() andThen getData() andThen requireData).async {
+  def onSubmit(mode: Mode): Action[AnyContent] = (identify andThen getData() andThen requireData).async {
     implicit request =>
 
       form.bindFromRequest().fold(

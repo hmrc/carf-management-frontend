@@ -50,7 +50,7 @@ class OrganisationSecondContactHavePhoneController @Inject() (
   val form: Form[Boolean] = formProvider("organisationSecondContactHavePhone.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       lazy val preparedForm = request.userAnswers.get(OrganisationSecondContactHavePhonePage).fold(form)(form.fill)
 
@@ -69,7 +69,7 @@ class OrganisationSecondContactHavePhoneController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       val userAnswers                              = request.userAnswers
       lazy val hasValueChanged: Boolean => Boolean =
         newValue => !userAnswers.get(OrganisationSecondContactHavePhonePage).contains(newValue)

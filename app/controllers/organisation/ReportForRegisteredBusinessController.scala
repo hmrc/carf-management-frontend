@@ -71,7 +71,7 @@ class ReportForRegisteredBusinessController @Inject() (
   private lazy val recovery: Call = controllers.routes.JourneyRecoveryController.onPageLoad()
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+    (identify andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
       implicit request =>
         request.userAnswers.get(ChangeRcaspCachedDetails).fold(onPageLoadAddVersion(mode)) { details =>
           Future.successful(onPageLoadChangeDetailsVersion(mode, details.IsRCASPUser))
@@ -143,7 +143,7 @@ class ReportForRegisteredBusinessController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+    (identify andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
       implicit request =>
         val userAnswers                              = request.userAnswers
         lazy val hasValueChanged: Boolean => Boolean =

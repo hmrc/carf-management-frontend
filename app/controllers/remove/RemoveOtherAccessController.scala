@@ -47,7 +47,7 @@ class RemoveOtherAccessController @Inject() (
   private val journeyRecovery: Result = Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
   def onPageLoad(): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       val cachedDetails  = request.userAnswers.get(RemoveRcaspCachedDetails)
       val cachedUserInfo = request.userAnswers.get(RemoveUserBusinessInfoCached)
 
@@ -69,7 +69,7 @@ class RemoveOtherAccessController @Inject() (
     }
 
   def onSubmit(): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       val cachedDetails  = request.userAnswers.get(RemoveRcaspCachedDetails)
       val cachedUserInfo = request.userAnswers.get(RemoveUserBusinessInfoCached)
 

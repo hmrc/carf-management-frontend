@@ -44,7 +44,7 @@ class YourRcaspsController @Inject() (
 
   val form: Form[Boolean] = formProvider("yourRcasps.error.required")
 
-  def onPageLoad(): Action[AnyContent] = identify().async { implicit request =>
+  def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
     rcaspConnector.viewRcasp(request.carfId).value.map {
       case Left(error)      =>
         logWarn(s"[YourRcaspsController][onPageLoad] Error! Could not view rcasps: $error")
@@ -55,7 +55,7 @@ class YourRcaspsController @Inject() (
     }
   }
 
-  def onSubmit(): Action[AnyContent] = identify().async { implicit request =>
+  def onSubmit(): Action[AnyContent] = identify.async { implicit request =>
     form
       .bindFromRequest()
       .fold(

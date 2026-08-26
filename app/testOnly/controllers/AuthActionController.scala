@@ -35,7 +35,7 @@ class AuthActionController @Inject() (
 ) extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad(): Action[AnyContent] = (identify() andThen ctUtrRetrievalAction() andThen getData()).async {
+  def onPageLoad(): Action[AnyContent] = (identify andThen ctUtrRetrievalAction() andThen getData()).async {
     implicit request =>
       val carfIdAndEnrolment: String = s"CARF-ID = ${request.carfId}, CT-UTR = ${request.utr}"
       Future.successful(Ok(view(carfIdAndEnrolment)))

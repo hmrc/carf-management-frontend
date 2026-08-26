@@ -52,7 +52,7 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
   val form: Form[Boolean] = formProvider("registeredBusinessIsThisYourBusinessName.error.required")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+    (identify andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
       implicit request =>
         request.userAnswers.get(CachedBusinessDetailsPage) match {
           case Some(businessDetails) =>
@@ -70,7 +70,7 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
+    (identify andThen ctUtrRetrievalAction() andThen getData() andThen submissionLock andThen requireData).async {
       implicit request =>
         request.userAnswers.get(CachedBusinessDetailsPage) match {
           case Some(businessDetails) =>

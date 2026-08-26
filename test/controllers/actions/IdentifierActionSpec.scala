@@ -60,14 +60,14 @@ class IdentifierActionSpec extends SpecBase {
   )
   val emptyEnrolments                     = Enrolments(Set.empty[Enrolment])
 
-  val testIdentifierAction: AuthenticatedIdentifierActionWithRegime =
-    new AuthenticatedIdentifierActionWithRegime(mockAuthConnector, mockAppConfig, defaultBodyParser, true)
+  val testIdentifierAction: AuthenticatedIdentifierAction =
+    new AuthenticatedIdentifierAction(mockAuthConnector, mockAppConfig, defaultBodyParser)
 
   val testAction: Request[_] => Future[Result] = { _ =>
     Future(Ok(testContent))
   }
 
-  "AuthenticatedIdentifierActionWithRegime.invokeBlock" - {
+  "AuthenticatedIdentifierAction.invokeBlock" - {
     "execute the block and return OK if authorised" in {
       when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
       when(
