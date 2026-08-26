@@ -76,7 +76,7 @@ class AuditServiceSpec extends SpecBase {
           addRCASPOrganisation = None,
           addressLookup = Some(
             AddressLookup(
-              findAddress = testFindAddress.postcode,
+              findAddress = Some(testFindAddress.postcode),
               propertyNameOrNumber = testFindAddress.propertyNameOrNumber,
               UPRN = Some(testUPRN),
               chooseAddress = Some("address"),
@@ -149,7 +149,7 @@ class AuditServiceSpec extends SpecBase {
           ),
           addressLookup = Some(
             AddressLookup(
-              findAddress = testFindAddress.postcode,
+              findAddress = Some(testFindAddress.postcode),
               propertyNameOrNumber = testFindAddress.propertyNameOrNumber,
               UPRN = Some(testUPRN),
               chooseAddress = Some("address"),
@@ -170,7 +170,7 @@ class AuditServiceSpec extends SpecBase {
               Contact2 = true,
               Contact2Name = Some(testOrgContactName),
               Contact2Email = Some(testEmail),
-              Contact2Phone = Some(true),
+              Contact2ByPhone = Some(true),
               Contact2PhoneNumber = Some(testPhone)
             )
           )
@@ -272,7 +272,7 @@ class AuditServiceSpec extends SpecBase {
           ),
           addressLookup = Some(
             AddressLookup(
-              findAddress = testFindAddress.postcode,
+              findAddress = Some(testFindAddress.postcode),
               propertyNameOrNumber = testFindAddress.propertyNameOrNumber,
               UPRN = Some(testUPRN),
               chooseAddress = Some("address"),
@@ -293,7 +293,7 @@ class AuditServiceSpec extends SpecBase {
               Contact2 = true,
               Contact2Name = Some(testOrgContactName),
               Contact2Email = Some(testEmail),
-              Contact2Phone = Some(true),
+              Contact2ByPhone = Some(true),
               Contact2PhoneNumber = Some(testPhone)
             )
           )

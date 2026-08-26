@@ -201,13 +201,10 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
       }
 
   private def getAddressLookup(userAnswers: UserAnswers): Option[AddressLookup] =
-    (
-      userAnswers.get(FindAddressPage),
-      userAnswers.get(UkAddressInUserAnswers)
-    ).mapN { (findAddress, ukAddress) =>
+    userAnswers.get(UkAddressInUserAnswers).map { ukAddress =>
       AddressLookup(
-        findAddress.postcode,
-        findAddress.propertyNameOrNumber,
+        userAnswers.get(FindAddressPage).map(_.postcode),
+        userAnswers.get(FindAddressPage).flatMap(_.propertyNameOrNumber),
         userAnswers.get(AddressUPRNUserAnswers),
         userAnswers.get(ChooseAddressPage),
         ukAddress.addressLine1,

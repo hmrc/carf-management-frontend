@@ -62,7 +62,7 @@ object AddRcaspOrganisation {
 }
 
 case class AddressLookup(
-    findAddress: String,
+    findAddress: Option[String],
     propertyNameOrNumber: Option[String],
     UPRN: Option[Long],
     chooseAddress: Option[String],
@@ -95,7 +95,7 @@ case class OrganisationContactDetails(
     Contact2: Boolean,
     Contact2Name: Option[String],
     Contact2Email: Option[String],
-    Contact2Phone: Option[Boolean],
+    Contact2ByPhone: Option[Boolean],
     Contact2PhoneNumber: Option[String]
 )
 
