@@ -195,7 +195,7 @@ trait TestData extends Generators {
       PartyType = individualPartyType,
       FirstName = testIndividualName.firstName,
       LastName = testIndividualName.lastName,
-      TINDetails = Some(List(TinDetails(TINType = IdentifierType.OTHER, TIN = testNiNumber, IssuedBy = ukCountryCode))),
+      TINDetails = Some(List(TinDetails(TINType = IdentifierType.NINO, TIN = testNiNumber, IssuedBy = ukCountryCode))),
       AddressDetails = testAddressUkRcaspAddress,
       PrimaryContactDetails = Some(rcaspContactDetails)
     )
@@ -235,7 +235,7 @@ trait TestData extends Generators {
       PartyType = individualPartyType,
       FirstName = testIndividualName.firstName,
       LastName = testIndividualName.lastName,
-      TINDetails = Some(List(TinDetails(TINType = IdentifierType.OTHER, TIN = testNiNumber, IssuedBy = ukCountryCode))),
+      TINDetails = Some(List(TinDetails(TINType = IdentifierType.NINO, TIN = testNiNumber, IssuedBy = ukCountryCode))),
       AddressDetails = testAddressUkRcaspAddress,
       PrimaryContactDetails = Some(rcaspContactDetails)
     )

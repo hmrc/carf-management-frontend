@@ -17,6 +17,7 @@
 package forms
 
 import forms.behaviours.StringFieldBehaviours
+import models.FindAddress
 import play.api.data.FormError
 
 class FindAddressFormProviderSpec extends StringFieldBehaviours {
@@ -93,6 +94,13 @@ class FindAddressFormProviderSpec extends StringFieldBehaviours {
       result.value.flatMap(_.propertyNameOrNumber) mustBe None
     }
 
+    "must bind a whitespace string as None" in {
+      val result = form.bind(Map("postcode" -> "SW1A 1AA", fieldName -> " "))
+      result.value mustBe Some(FindAddress("SW1A 1AA", None))
+
+      result.errors mustBe empty
+    }
+
     "must not bind when field is missing" in {
       val result = form.bind(Map("postcode" -> "SW1A 1AA"))
       result.value.flatMap(_.propertyNameOrNumber) mustBe None
@@ -101,7 +109,7 @@ class FindAddressFormProviderSpec extends StringFieldBehaviours {
     "must not bind strings longer than 35 characters" in {
       forAll(stringsLongerThan(maxLength) -> "longString") { string =>
         val result = form.bind(Map("postcode" -> "SW1A 1AA", fieldName -> string))
-        result.errors must contain only FormError(fieldName, lengthKey, Seq(maxLength))
+        result.errors must contain only FormError(fieldName, lengthKey, Seq.empty)
       }
     }
 
@@ -115,7 +123,7 @@ class FindAddressFormProviderSpec extends StringFieldBehaviours {
       form,
       fieldName,
       maxLength = maxLength,
-      lengthError = FormError(fieldName, lengthKey, Seq(maxLength))
+      lengthError = FormError(fieldName, lengthKey, Seq.empty)
     )
 
   }
