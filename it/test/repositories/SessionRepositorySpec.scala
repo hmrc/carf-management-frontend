@@ -159,8 +159,8 @@ class SessionRepositorySpec
 
       MDC.put("test", "foo")
 
-      (f.map { _ =>
+      f.map { _ =>
         Option(MDC.get("test"))
-      }.futureValue) mustEqual Some("foo")
+      }.futureValue mustBe Some("foo")
     }
 }
