@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import forms.ChooseAddressFormProvider
 import models.OrganisationOrIndividual.{Individual, Organisation}
-import models.{format, AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers}
+import models.{formatAddress, AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{times, verify, when}
@@ -31,7 +31,7 @@ import play.api.data.Form
 import play.api.inject.bind
 import play.api.mvc.Call
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{redirectLocation, *}
+import play.api.test.Helpers.*
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import views.html.ChooseAddressView
@@ -184,7 +184,7 @@ class ChooseAddressControllerSpec extends SpecBase {
 
       val userAnswers =
         emptyUserAnswers
-          .withPage(ChooseAddressPage, address.format)
+          .withPage(ChooseAddressPage, address.formatAddress)
           .withPage(AddressLookupResult, Seq(AddressAndUPRN(address, testUPRN)))
           .withPage(FindAddressPage, FindAddress(address.postCode, None))
           .withPage(FindAddressAdditionalCallUa, false)
@@ -201,7 +201,7 @@ class ChooseAddressControllerSpec extends SpecBase {
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(
-          form.fill(address.format),
+          form.fill(address.formatAddress),
           NormalMode,
           createAddressRadios(Seq(address)),
           None,
@@ -304,7 +304,7 @@ class ChooseAddressControllerSpec extends SpecBase {
       running(application) {
         val request =
           FakeRequest(POST, chooseAddressRoute)
-            .withFormUrlEncodedBody(("value", address.format))
+            .withFormUrlEncodedBody(("value", address.formatAddress))
 
         val result = route(application, request).value
 

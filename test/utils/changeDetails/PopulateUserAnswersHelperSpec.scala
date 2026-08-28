@@ -194,7 +194,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(OrganisationFirstContactHavePhonePage).contains(true) &&
             ua.get(OrganisationFirstContactPhoneNumberPage).contains(testPhone) &&
             ua.get(OrganisationHaveSecondContactPage).contains(true) &&
-            ua.get(OrganisationSecondContactNamePage).contains("Prof Turo") &&
+            ua.get(OrganisationSecondContactNamePage).contains(testOrgContactName) &&
             ua.get(OrganisationSecondContactEmailPage).contains(testEmail) &&
             ua.get(OrganisationSecondContactHavePhonePage).contains(true) &&
             ua.get(OrganisationSecondContactPhoneNumberPage).contains(testPhone) &&
@@ -250,7 +250,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
       "must populate user answers and redirect to ChangeDetails when only second contact phone is absent" in {
         val rcaspDetails: OrganisationRcaspDetails =
           organisationRcaspDetailsViewUpdate.copy(
-            SecondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = "Prof Turo", PhoneNumber = None))
+            SecondaryContactDetails =
+              Some(rcaspContactDetails.copy(ContactName = testOrgContactName, PhoneNumber = None))
           )
 
         when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
@@ -279,7 +280,7 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(OrganisationFirstContactHavePhonePage).contains(true) &&
             ua.get(OrganisationFirstContactPhoneNumberPage).contains(testPhone) &&
             ua.get(OrganisationHaveSecondContactPage).contains(true) &&
-            ua.get(OrganisationSecondContactNamePage).contains("Prof Turo") &&
+            ua.get(OrganisationSecondContactNamePage).contains(testOrgContactName) &&
             ua.get(OrganisationSecondContactEmailPage).contains(testEmail) &&
             ua.get(OrganisationSecondContactHavePhonePage).contains(false) &&
             ua.get(OrganisationSecondContactPhoneNumberPage).isEmpty &&

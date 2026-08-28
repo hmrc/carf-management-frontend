@@ -213,7 +213,7 @@ trait TestData extends Generators {
       ),
       AddressDetails = testAddressUkRcaspAddress,
       PrimaryContactDetails = Some(rcaspContactDetails),
-      SecondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = "Prof Turo"))
+      SecondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = testOrgContactName))
     )
 
   val testViewRcaspResponse: ViewRcaspResponse =
@@ -251,7 +251,7 @@ trait TestData extends Generators {
     ),
     AddressDetails = testAddressUkRcaspAddress,
     PrimaryContactDetails = Some(rcaspContactDetails),
-    SecondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = "Prof Turo"))
+    SecondaryContactDetails = Some(rcaspContactDetails.copy(ContactName = testOrgContactName))
   )
 
   val deleteRcaspDetailsRequest: deleteRcasp.RcaspDetails =

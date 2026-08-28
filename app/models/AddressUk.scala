@@ -50,7 +50,7 @@ extension (address: AddressUk) {
     htmlLines.mkString("<br>")
   }
 
-  def format: String = {
+  def formatAddress: String = {
 
     val addressLines: Seq[String] = Seq(
       Some(address.addressLine1),

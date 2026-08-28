@@ -20,10 +20,9 @@ import config.Constants.noneOfTheseValue
 import controllers.actions.*
 import forms.ChooseAddressFormProvider
 import models.requests.DataRequest
-import models.{format, AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers}
+import models.{formatAddress, AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers}
 import navigation.Navigator
 import pages.*
-import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
@@ -31,6 +30,7 @@ import repositories.SessionRepository
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.LoggerUtil.*
 import views.html.ChooseAddressView
 
 import javax.inject.Inject
@@ -141,7 +141,7 @@ class ChooseAddressController @Inject() (
 
     val exception = new Exception("Failed to find address")
     addresses
-      .find(_.address.format == value)
+      .find(_.address.formatAddress == value)
       .fold {
         if (value == noneOfTheseValue) {
           Success(None)
@@ -153,7 +153,7 @@ class ChooseAddressController @Inject() (
 
   private def createAddressRadios(addresses: => Seq[AddressUk]): Seq[RadioItem] =
     addresses.map { address =>
-      val addressFormatted = address.format
+      val addressFormatted = address.formatAddress
       RadioItem(content = Text(s"$addressFormatted"), value = Some(s"$addressFormatted"))
     }
 

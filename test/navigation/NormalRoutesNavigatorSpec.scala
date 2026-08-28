@@ -555,7 +555,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
       "Should redirect to IndividualEmailPage when address is selected on individual journey and user is not an rcasp" in {
         val userAnswers = emptyUserAnswers
           .copy(rcaspIsRegisteredBusiness = false)
-          .withPage(ChooseAddressPage, testAddressUk.format)
+          .withPage(ChooseAddressPage, testAddressUk.formatAddress)
           .withPage(OrganisationOrIndividualPage, Individual)
 
         navigator.nextPage(
@@ -568,7 +568,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
       "Should redirect to OrganisationFirstContactNamePage when address is selected on organisation journey and user is not an rcasp" in {
         val userAnswers = emptyUserAnswers
           .copy(rcaspIsRegisteredBusiness = false)
-          .withPage(ChooseAddressPage, testAddressUk.format)
+          .withPage(ChooseAddressPage, testAddressUk.formatAddress)
           .withPage(OrganisationOrIndividualPage, Organisation)
 
         navigator.nextPage(
@@ -581,7 +581,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
       "Should redirect to EndOfJourneyRoutingController when address is selected the rcasp is the registered business" in {
         val userAnswers = emptyUserAnswers
           .copy(rcaspIsRegisteredBusiness = true)
-          .withPage(ChooseAddressPage, testAddressUk.format)
+          .withPage(ChooseAddressPage, testAddressUk.formatAddress)
 
         navigator.nextPage(
           ChooseAddressPage,
@@ -603,7 +603,7 @@ class NormalRoutesNavigatorSpec extends SpecBase {
 
       "Should redirect to JourneyRecovery when address is selected but OrganisationOrIndividual is missing" in {
         val userAnswers = emptyUserAnswers
-          .withPage(ChooseAddressPage, testAddressUk.format)
+          .withPage(ChooseAddressPage, testAddressUk.formatAddress)
 
         navigator.nextPage(
           ChooseAddressPage,

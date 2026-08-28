@@ -19,7 +19,7 @@ package navigation
 import base.SpecBase
 import config.Constants.noneOfTheseValue
 import models.responses.AddressRegistrationResponse
-import models.{format, CachedBusinessDetails, ChangeMode}
+import models.{formatAddress, CachedBusinessDetails, ChangeMode}
 import org.scalatest.prop.Tables.Table
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.*
@@ -83,7 +83,7 @@ class ChangeRoutesNavigatorSpec extends SpecBase with ScalaCheckPropertyChecks {
       }
 
       "Should redirect to EndOfJourneyRoutingController when an address is selected" in {
-        val userAnswers = emptyUserAnswers.withPage(ChooseAddressPage, testAddressUk.format)
+        val userAnswers = emptyUserAnswers.withPage(ChooseAddressPage, testAddressUk.formatAddress)
 
         navigator.nextPage(
           ChooseAddressPage,
