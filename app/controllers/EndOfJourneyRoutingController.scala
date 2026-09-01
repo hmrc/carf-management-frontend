@@ -32,7 +32,7 @@ class EndOfJourneyRoutingController @Inject() (
 ) extends FrontendBaseController {
 
   def onPageLoad(): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       val userAnswers = request.userAnswers
 
       userAnswers

@@ -35,7 +35,7 @@ class JourneyRecoveryController @Inject() (
 ) extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] = identify() { implicit request =>
+  def onPageLoad(continueUrl: Option[RedirectUrl] = None): Action[AnyContent] = identify { implicit request =>
     val safeUrl: Option[String] = continueUrl.flatMap { unsafeUrl =>
       unsafeUrl.getEither(OnlyRelative) match {
         case Right(safeUrl) =>

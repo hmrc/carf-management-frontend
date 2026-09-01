@@ -42,7 +42,7 @@ class RoutingController @Inject() (
     extends FrontendBaseController {
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData()).async { implicit request =>
+    (identify andThen ctUtrRetrievalAction() andThen getData()).async { implicit request =>
       val carfId = request.carfId
 
       accountService.getNumberOfRcaspsCurrentlyAdded(carfId).value.flatMap {

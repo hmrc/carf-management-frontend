@@ -95,7 +95,7 @@ class RemoveUserAccessController @Inject() (
         Future.successful(journeyRecovery)
     }
 
-  def onPageLoad(rcaspId: String): Action[AnyContent] = (identify() andThen getData()).async { implicit request =>
+  def onPageLoad(rcaspId: String): Action[AnyContent] = (identify andThen getData()).async { implicit request =>
     val submissionSucceeded = request.userAnswers.flatMap(_.get(SubmissionSucceededPage)).contains(true)
 
     val cachedDetails = request.userAnswers.flatMap(_.get(RemoveRcaspCachedDetails))
@@ -133,7 +133,7 @@ class RemoveUserAccessController @Inject() (
   }
 
   def onSubmit(rcaspId: String): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       val cachedDetails = request.userAnswers
         .get(RemoveRcaspCachedDetails)
         .filter(_.RCASPID.equalsIgnoreCase(rcaspId))

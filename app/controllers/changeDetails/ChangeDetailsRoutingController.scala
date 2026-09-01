@@ -41,7 +41,7 @@ class ChangeDetailsRoutingController @Inject() (
     extends FrontendBaseController {
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
-    (identify() andThen ctUtrRetrievalAction() andThen getData()).async { implicit request =>
+    (identify andThen ctUtrRetrievalAction() andThen getData()).async { implicit request =>
       val submissionFlagSet = request.userAnswers.flatMap(_.get(SubmissionSucceededPage)).contains(true)
       (
         request.userAnswers.flatMap(_.get(ChangeRcaspCachedDetails)),

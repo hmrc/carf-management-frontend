@@ -24,7 +24,6 @@ import play.api.mvc.*
 import play.api.mvc.Results.*
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.AffinityGroup.Agent
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{affinityGroup, allEnrolments, internalId}
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
@@ -33,11 +32,9 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-trait IdentifierAction {
-  def apply(
-      redirect: Boolean = true
-  ): ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest]
-}
+trait IdentifierAction
+    extends ActionBuilder[IdentifierRequest, AnyContent]
+    with ActionFunction[Request, IdentifierRequest]
 
 class AuthenticatedIdentifierAction @Inject() (
     override val authConnector: AuthConnector,
@@ -45,22 +42,6 @@ class AuthenticatedIdentifierAction @Inject() (
     val parser: BodyParsers.Default
 )(implicit val executionContext: ExecutionContext)
     extends IdentifierAction
-    with AuthorisedFunctions {
-
-  override def apply(
-      redirect: Boolean = true
-  ): ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest] =
-    new AuthenticatedIdentifierActionWithRegime(authConnector, config, parser, redirect)
-}
-
-class AuthenticatedIdentifierActionWithRegime @Inject() (
-    override val authConnector: AuthConnector,
-    config: FrontendAppConfig,
-    val parser: BodyParsers.Default,
-    val redirect: Boolean
-)(implicit val executionContext: ExecutionContext)
-    extends ActionBuilder[IdentifierRequest, AnyContent]
-    with ActionFunction[Request, IdentifierRequest]
     with AuthorisedFunctions {
 
   private def enrolmentKey: String = config.enrolmentKey
@@ -93,7 +74,7 @@ class AuthenticatedIdentifierActionWithRegime @Inject() (
       enrolments: Enrolments,
       affinityGroup: AffinityGroup
   ): Future[Result] =
-    if (enrolments.enrolments.exists(_.key == enrolmentKey) && redirect) {
+    if (enrolments.enrolments.exists(_.key == enrolmentKey)) {
       getCarfId(enrolments) match {
         case Some(carfId) =>
           block(IdentifierRequest(request, internalID, affinityGroup, enrolments.enrolments, carfId))

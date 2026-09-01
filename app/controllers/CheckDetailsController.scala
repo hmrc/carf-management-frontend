@@ -51,7 +51,7 @@ class CheckDetailsController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData) {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData() andThen submissionLock andThen requireData) {
     implicit request =>
       val userAnswers          = request.userAnswers
       lazy val ifEmptyProtocol =
@@ -97,7 +97,7 @@ class CheckDetailsController @Inject() (
         }
   }
 
-  def onSubmit: Action[AnyContent] = (identify() andThen getData() andThen submissionLock andThen requireData).async {
+  def onSubmit: Action[AnyContent] = (identify andThen getData() andThen submissionLock andThen requireData).async {
     implicit request =>
       rcaspSubmissionService.createRcasp(request.carfId, request.userAnswers).value.flatMap {
         case Right(response) =>

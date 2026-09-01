@@ -37,7 +37,7 @@ class NotInUkController @Inject() (
     with I18nSupport {
 
   def onPageLoad(): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       request.userAnswers.getRegisteredBusinessOrganisationNameMaybe
         .fold {
           logWarn(

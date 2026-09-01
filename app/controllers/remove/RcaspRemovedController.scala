@@ -39,7 +39,7 @@ class RcaspRemovedController @Inject() (
 ) extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad(): Action[AnyContent] = (identify() andThen getData() andThen requireData) { implicit request =>
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData() andThen requireData) { implicit request =>
     val submissionSucceeded = request.userAnswers.get(SubmissionSucceededPage).contains(true)
 
     val cachedDetails = request.userAnswers.get(RemoveRcaspCachedDetails)

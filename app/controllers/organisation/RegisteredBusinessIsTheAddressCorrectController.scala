@@ -60,7 +60,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
     } yield (name, cachedDetails)
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       getNameAndDetailsMaybe(userAnswers = request.userAnswers).fold {
         logWarn(
           "[RegisteredBusinessIsTheAddressCorrectController][onPageLoad] No cached business details found. Redirecting to journey recovery."
@@ -85,7 +85,7 @@ class RegisteredBusinessIsTheAddressCorrectController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       getNameAndDetailsMaybe(userAnswers = request.userAnswers).fold {
         logWarn(
           "[RegisteredBusinessIsTheAddressCorrectController][onSubmit] No name or cached business details found. Redirecting to journey recovery."

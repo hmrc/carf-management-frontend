@@ -44,7 +44,7 @@ class HomePageController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad(): Action[AnyContent] = (identify() andThen ctUtrRetrievalAction() andThen getData()).async {
+  def onPageLoad(): Action[AnyContent] = (identify andThen ctUtrRetrievalAction() andThen getData()).async {
     implicit request =>
       val carfId = request.carfId
 

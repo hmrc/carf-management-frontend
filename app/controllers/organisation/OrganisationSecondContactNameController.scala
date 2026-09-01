@@ -50,7 +50,7 @@ class OrganisationSecondContactNameController @Inject() (
   val form: Form[String] = formProvider("organisationSecondContactName")
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData) { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
 
       val preparedForm = request.userAnswers.get(OrganisationSecondContactNamePage).fold(form)(form.fill)
 
@@ -67,7 +67,7 @@ class OrganisationSecondContactNameController @Inject() (
     }
 
   def onSubmit(mode: Mode): Action[AnyContent] =
-    (identify() andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
+    (identify andThen getData() andThen submissionLock andThen requireData).async { implicit request =>
       form
         .bindFromRequest()
         .fold(
