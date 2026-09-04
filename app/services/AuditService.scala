@@ -148,7 +148,9 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
       detail = eventJsValue
     )
 
-  private def sendEvent(extendedEvent: ExtendedDataEvent, eventType: String): ResultT[Unit] =
+  private def sendEvent(extendedEvent: ExtendedDataEvent, eventType: String)(implicit
+      hc: HeaderCarrier
+  ): ResultT[Unit] =
     ResultT.fromFuture(auditConnector.sendExtendedEvent(extendedEvent).map {
       case Success         =>
         logDebug(s"Successfully sent Management audit event for $eventType RCASP")
