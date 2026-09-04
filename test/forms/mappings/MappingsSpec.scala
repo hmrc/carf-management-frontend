@@ -17,6 +17,7 @@
 package forms.mappings
 
 import base.TestConstants.{invalidPhoneNumber25Chars, validPhoneNumber24Chars}
+import config.Constants.phoneNumberRegex
 import models.Enumerable
 import org.scalatest.OptionValues
 import org.scalatest.freespec.AnyFreeSpec
@@ -416,7 +417,8 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
         requiredKey = testRequiredKey,
         invalidKey = testInvalidKey,
         lengthKey = testLengthKey,
-        notRealPhoneNumberKey = testNotRealPhoneNumberKey
+        notRealPhoneNumberKey = testNotRealPhoneNumberKey,
+        regex = phoneNumberRegex
       )
     )
 
