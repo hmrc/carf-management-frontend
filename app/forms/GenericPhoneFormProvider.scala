@@ -16,6 +16,7 @@
 
 package forms
 
+import config.Constants.phoneNumberRegex
 import forms.mappings.Mappings
 import play.api.data.Form
 
@@ -29,7 +30,8 @@ class GenericPhoneFormProvider @Inject() extends Mappings {
         requiredKey = s"$messageKey.error.required",
         invalidKey = s"$messageKey.error.invalid",
         lengthKey = s"$messageKey.error.length",
-        notRealPhoneNumberKey = s"$messageKey.error.notReal"
+        notRealPhoneNumberKey = s"$messageKey.error.notReal",
+        regex = phoneNumberRegex
       )
     )
 }
