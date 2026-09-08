@@ -99,8 +99,10 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
           case (Some(true), Some(true))   =>
             ResultT.fromValue(
               ChangeRcaspAuditEvent(
-                changeRegisteredBusinessRCASPUpdatedInformation = getChangeRcaspUserUpdated(userAnswers),
-                changeRegisteredBusinessRCASPOriginalInformation = getChangeRcaspUserOriginal(userAnswers),
+                changeRegisteredBusinessRCASPUpdatedInformation =
+                  getChangeRegisteredBusinessRCASPUpdatedInformation(userAnswers),
+                changeRegisteredBusinessRCASPOriginalInformation =
+                  getChangeRegisteredBusinessRCASPOriginalInformation(userAnswers),
                 changeOtherBusinessRCASPUpdatedInformation = None,
                 changeOtherBusinessRCASPOriginalInformation = None
               )
@@ -109,8 +111,9 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
             ResultT.fromValue(
               ChangeRcaspAuditEvent(
                 changeRegisteredBusinessRCASPUpdatedInformation = None,
-                changeRegisteredBusinessRCASPOriginalInformation = getChangeRcaspUserOriginal(userAnswers),
-                changeOtherBusinessRCASPUpdatedInformation = getChangeRcaspNotUserUpdated(userAnswers),
+                changeRegisteredBusinessRCASPOriginalInformation =
+                  getChangeRegisteredBusinessRCASPOriginalInformation(userAnswers),
+                changeOtherBusinessRCASPUpdatedInformation = getChangeOtherBusinessRCASPUpdatedInformation(userAnswers),
                 changeOtherBusinessRCASPOriginalInformation = None
               )
             )
@@ -119,8 +122,9 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
               ChangeRcaspAuditEvent(
                 changeRegisteredBusinessRCASPUpdatedInformation = None,
                 changeRegisteredBusinessRCASPOriginalInformation = None,
-                changeOtherBusinessRCASPUpdatedInformation = getChangeRcaspNotUserUpdated(userAnswers),
-                changeOtherBusinessRCASPOriginalInformation = getChangeRcaspNotUserOriginal(userAnswers)
+                changeOtherBusinessRCASPUpdatedInformation = getChangeOtherBusinessRCASPUpdatedInformation(userAnswers),
+                changeOtherBusinessRCASPOriginalInformation =
+                  getChangeOtherBusinessRCASPOriginalInformation(userAnswers)
               )
             )
           case _                          => ResultT.fromError(InternalServerError)
@@ -245,7 +249,9 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
       )
     }
 
-  private def getChangeRcaspUserUpdated(userAnswers: UserAnswers): Option[ChangeRegisteredBusinessRcaspInformation] =
+  private def getChangeRegisteredBusinessRCASPUpdatedInformation(
+      userAnswers: UserAnswers
+  ): Option[ChangeRegisteredBusinessRcaspInformation] =
     (
       userAnswers.get(ReportForRegisteredBusinessPage),
       userAnswers.get(OverwritableOrganisationName),
@@ -262,7 +268,9 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
 
     }
 
-  private def getChangeRcaspUserOriginal(userAnswers: UserAnswers): Option[ChangeRegisteredBusinessRcaspInformation] =
+  private def getChangeRegisteredBusinessRCASPOriginalInformation(
+      userAnswers: UserAnswers
+  ): Option[ChangeRegisteredBusinessRcaspInformation] =
     userAnswers
       .get(ChangeRcaspCachedDetails)
       .collect { case organisation: OrganisationRcaspDetails =>
@@ -277,7 +285,9 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
         )
       }
 
-  private def getChangeRcaspNotUserUpdated(userAnswers: UserAnswers): Option[ChangeOtherBusinessRcaspInformation] =
+  private def getChangeOtherBusinessRCASPUpdatedInformation(
+      userAnswers: UserAnswers
+  ): Option[ChangeOtherBusinessRcaspInformation] =
     (
       userAnswers.get(ReportForRegisteredBusinessPage),
       userAnswers.get(OrganisationOrIndividualPage),
@@ -338,7 +348,9 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
 
     }
 
-  private def getChangeRcaspNotUserOriginal(userAnswers: UserAnswers): Option[ChangeOtherBusinessRcaspInformation] =
+  private def getChangeOtherBusinessRCASPOriginalInformation(
+      userAnswers: UserAnswers
+  ): Option[ChangeOtherBusinessRcaspInformation] =
     userAnswers
       .get(ChangeRcaspCachedDetails)
       .map {
