@@ -409,7 +409,10 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
       "+999999999",
       "+44",
       "071234567890", // too long
-      "+44 123"
+      "+44 123",
+      "++44123456789",
+      "abc44123456789",
+      "*-#07123456789"
     )
 
     val testPhoneNumberForm: Form[String] = Form(
@@ -476,7 +479,6 @@ class MappingsSpec extends AnyFreeSpec with Matchers with OptionValues with Mapp
         "+49 30 123456",
         "+91 98765 43210",
         "07400111222 ext 5",
-        "++447123456789", // google lib tries to recover extra punctuation where possible, like parsing ++44 as +44
         "+1 (650) 253-0000 x123",
         "07700 899 999", // one below test numbers
         "07700a899g999",
