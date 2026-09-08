@@ -55,7 +55,6 @@ class AuditServiceSpec extends SpecBase {
           .withPage(OrganisationOrIndividualPage, Individual)
           .withPage(IndividualNamePage, testIndividualName)
           .withPage(NiNumberPage, testNiNumber)
-          .withPage(FindAddressPage, testFindAddress)
           .withPage(UkAddressInUserAnswers, testAddressUk)
           .withPage(AddressUPRNUserAnswers, testUPRN.toLong)
           .withPage(ChooseAddressPage, "address")
@@ -64,7 +63,7 @@ class AuditServiceSpec extends SpecBase {
           .withPage(IndividualPhonePage, testPhone)
 
         val expectedAudit = AddRcaspAuditEvent(
-          organisationCTMatch = None,
+          organisationCorporationTaxEnrolmentMatch = None,
           isRCASPAnOrganisationOrIndividual = Some(Individual),
           addRCASPIndividual = Some(
             AddRcaspIndividual(
@@ -76,8 +75,6 @@ class AuditServiceSpec extends SpecBase {
           addRCASPOrganisation = None,
           addressLookup = Some(
             AddressLookup(
-              findAddress = Some(testFindAddress.postcode),
-              propertyNameOrNumber = testFindAddress.propertyNameOrNumber,
               UPRN = Some(testUPRN),
               chooseAddress = Some("address"),
               RCASPAddressLine1 = testAddressUk.addressLine1,
@@ -117,7 +114,6 @@ class AuditServiceSpec extends SpecBase {
           .withPage(OrganisationOrIndividualPage, Organisation)
           .withPage(OrganisationNamePage, testOrgName)
           .withPage(HaveTradingNamePage, true)
-          .withPage(FindAddressPage, testFindAddress)
           .withPage(UkAddressInUserAnswers, testAddressUk)
           .withPage(AddressUPRNUserAnswers, testUPRN.toLong)
           .withPage(ChooseAddressPage, "address")
@@ -135,7 +131,7 @@ class AuditServiceSpec extends SpecBase {
           .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
 
         val expectedAudit = AddRcaspAuditEvent(
-          organisationCTMatch = None,
+          organisationCorporationTaxEnrolmentMatch = None,
           isRCASPAnOrganisationOrIndividual = Some(Organisation),
           addRCASPIndividual = None,
           addRCASPOrganisation = Some(
@@ -149,8 +145,6 @@ class AuditServiceSpec extends SpecBase {
           ),
           addressLookup = Some(
             AddressLookup(
-              findAddress = Some(testFindAddress.postcode),
-              propertyNameOrNumber = testFindAddress.propertyNameOrNumber,
               UPRN = Some(testUPRN),
               chooseAddress = Some("address"),
               RCASPAddressLine1 = testAddressUk.addressLine1,
@@ -202,7 +196,8 @@ class AuditServiceSpec extends SpecBase {
           .withPage(RegisteredBusinessIsTheAddressCorrectPage, true)
 
         val expectedAudit = AddRcaspAuditEvent(
-          organisationCTMatch = Some(OrganisationCtMatch(isBusinessAnRCASP = true, isBusinessNameCorrect = Some(true))),
+          organisationCorporationTaxEnrolmentMatch =
+            Some(OrganisationCtMatch(isBusinessAnRCASP = true, isBusinessNameCorrect = Some(true))),
           isRCASPAnOrganisationOrIndividual = None,
           addRCASPIndividual = None,
           addRCASPOrganisation = Some(
@@ -240,7 +235,6 @@ class AuditServiceSpec extends SpecBase {
           .withPage(OrganisationOrIndividualPage, Organisation)
           .withPage(OrganisationNamePage, testOrgName)
           .withPage(HaveTradingNamePage, true)
-          .withPage(FindAddressPage, testFindAddress)
           .withPage(UkAddressInUserAnswers, testAddressUk)
           .withPage(AddressUPRNUserAnswers, testUPRN.toLong)
           .withPage(ChooseAddressPage, "address")
@@ -258,7 +252,8 @@ class AuditServiceSpec extends SpecBase {
           .withPage(OrganisationSecondContactPhoneNumberPage, testPhone)
 
         val expectedAudit = AddRcaspAuditEvent(
-          organisationCTMatch = Some(OrganisationCtMatch(isBusinessAnRCASP = false, isBusinessNameCorrect = None)),
+          organisationCorporationTaxEnrolmentMatch =
+            Some(OrganisationCtMatch(isBusinessAnRCASP = false, isBusinessNameCorrect = None)),
           isRCASPAnOrganisationOrIndividual = Some(Organisation),
           addRCASPIndividual = None,
           addRCASPOrganisation = Some(
@@ -272,8 +267,6 @@ class AuditServiceSpec extends SpecBase {
           ),
           addressLookup = Some(
             AddressLookup(
-              findAddress = Some(testFindAddress.postcode),
-              propertyNameOrNumber = testFindAddress.propertyNameOrNumber,
               UPRN = Some(testUPRN),
               chooseAddress = Some("address"),
               RCASPAddressLine1 = testAddressUk.addressLine1,
@@ -360,8 +353,8 @@ class AuditServiceSpec extends SpecBase {
           .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
 
         val expectedAudit = ChangeRcaspAuditEvent(
-          changeRCASPIsUserUpdatedValues = Some(
-            ChangeRcaspIsUserValues(
+          changeRegisteredBusinessRCASPUpdatedInformation = Some(
+            ChangeRegisteredBusinessRcaspInformation(
               isBusinessAnRCASP = true,
               organisationName = testOrgName,
               doesRCASPTradeUnderDifferentName = true,
@@ -369,8 +362,8 @@ class AuditServiceSpec extends SpecBase {
               RCASPAddress = testAddressUk.formatAddress
             )
           ),
-          changeRCASPIsUserOriginalValues = Some(
-            ChangeRcaspIsUserValues(
+          changeRegisteredBusinessRCASPOriginalInformation = Some(
+            ChangeRegisteredBusinessRcaspInformation(
               isBusinessAnRCASP = true,
               organisationName = testOrgName,
               doesRCASPTradeUnderDifferentName = true,
@@ -378,8 +371,8 @@ class AuditServiceSpec extends SpecBase {
               RCASPAddress = testAddressUkRcaspAddress.formatRcaspAddress
             )
           ),
-          changeRCASPisNotUserUpdatedValues = None,
-          changeRCASPisNotUserOriginalValues = None
+          changeOtherBusinessRCASPUpdatedInformation = None,
+          changeOtherBusinessRCASPOriginalInformation = None
         )
 
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
@@ -419,10 +412,10 @@ class AuditServiceSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val expectedAudit = ChangeRcaspAuditEvent(
-          changeRCASPIsUserUpdatedValues = None,
-          changeRCASPIsUserOriginalValues = None,
-          changeRCASPisNotUserUpdatedValues = Some(
-            ChangeRcaspIsNotUserValues(
+          changeRegisteredBusinessRCASPUpdatedInformation = None,
+          changeRegisteredBusinessRCASPOriginalInformation = None,
+          changeOtherBusinessRCASPUpdatedInformation = Some(
+            ChangeOtherBusinessRcaspInformation(
               isBusinessAnRCASP = false,
               isRCASPAnOrganisationOrIndividual = "Organisation",
               organisationName = Some(testOrgName),
@@ -447,8 +440,8 @@ class AuditServiceSpec extends SpecBase {
               individuaPhoneNumber = None
             )
           ),
-          changeRCASPisNotUserOriginalValues = Some(
-            ChangeRcaspIsNotUserValues(
+          changeOtherBusinessRCASPOriginalInformation = Some(
+            ChangeOtherBusinessRcaspInformation(
               isBusinessAnRCASP = false,
               isRCASPAnOrganisationOrIndividual = organisationPartyType,
               organisationName = Some(organisationRcaspDetailsViewUpdate.RCASPName),
@@ -503,10 +496,10 @@ class AuditServiceSpec extends SpecBase {
           .withPage(ChangeRcaspCachedDetails, individualRcaspDetailsViewUpdate)
 
         val expectedAudit = ChangeRcaspAuditEvent(
-          changeRCASPIsUserUpdatedValues = None,
-          changeRCASPIsUserOriginalValues = None,
-          changeRCASPisNotUserUpdatedValues = Some(
-            ChangeRcaspIsNotUserValues(
+          changeRegisteredBusinessRCASPUpdatedInformation = None,
+          changeRegisteredBusinessRCASPOriginalInformation = None,
+          changeOtherBusinessRCASPUpdatedInformation = Some(
+            ChangeOtherBusinessRcaspInformation(
               isBusinessAnRCASP = false,
               isRCASPAnOrganisationOrIndividual = "Individual",
               organisationName = None,
@@ -531,8 +524,8 @@ class AuditServiceSpec extends SpecBase {
               individuaPhoneNumber = Some(testPhone)
             )
           ),
-          changeRCASPisNotUserOriginalValues = Some(
-            ChangeRcaspIsNotUserValues(
+          changeOtherBusinessRCASPOriginalInformation = Some(
+            ChangeOtherBusinessRcaspInformation(
               isBusinessAnRCASP = false,
               isRCASPAnOrganisationOrIndividual = individualRcaspDetailsViewUpdate.PartyType,
               organisationName = None,
@@ -597,9 +590,9 @@ class AuditServiceSpec extends SpecBase {
           .withPage(UkAddressInUserAnswers, testAddressUk)
 
         val expectedAudit = ChangeRcaspAuditEvent(
-          changeRCASPIsUserUpdatedValues = None,
-          changeRCASPIsUserOriginalValues = Some(
-            ChangeRcaspIsUserValues(
+          changeRegisteredBusinessRCASPUpdatedInformation = None,
+          changeRegisteredBusinessRCASPOriginalInformation = Some(
+            ChangeRegisteredBusinessRcaspInformation(
               isBusinessAnRCASP = true,
               organisationName = testOrgName,
               doesRCASPTradeUnderDifferentName = true,
@@ -607,8 +600,8 @@ class AuditServiceSpec extends SpecBase {
               RCASPAddress = testAddressUkRcaspAddress.formatRcaspAddress
             )
           ),
-          changeRCASPisNotUserUpdatedValues = Some(
-            ChangeRcaspIsNotUserValues(
+          changeOtherBusinessRCASPUpdatedInformation = Some(
+            ChangeOtherBusinessRcaspInformation(
               isBusinessAnRCASP = false,
               isRCASPAnOrganisationOrIndividual = "Organisation",
               organisationName = Some(testOrgName),
@@ -633,7 +626,7 @@ class AuditServiceSpec extends SpecBase {
               individuaPhoneNumber = None
             )
           ),
-          changeRCASPisNotUserOriginalValues = None
+          changeOtherBusinessRCASPOriginalInformation = None
         )
 
         when(mockAuditConnector.sendExtendedEvent(any())(any(), any()))
