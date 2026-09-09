@@ -20,7 +20,7 @@ import models.OrganisationOrIndividual
 import play.api.libs.json.*
 
 case class AddRcaspAuditEvent(
-    organisationCTMatch: Option[OrganisationCtMatch],
+    organisationCorporationTaxEnrolmentMatch: Option[OrganisationCtMatch],
     isRCASPAnOrganisationOrIndividual: Option[OrganisationOrIndividual],
     addRCASPIndividual: Option[AddRcaspIndividual],
     addRCASPOrganisation: Option[AddRcaspOrganisation],
@@ -62,8 +62,6 @@ object AddRcaspOrganisation {
 }
 
 case class AddressLookup(
-    findAddress: Option[String],
-    propertyNameOrNumber: Option[String],
     UPRN: Option[Long],
     chooseAddress: Option[String],
     RCASPAddressLine1: String,
