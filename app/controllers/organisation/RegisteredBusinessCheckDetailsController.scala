@@ -18,6 +18,7 @@ package controllers.organisation
 
 import cats.syntax.all.*
 import controllers.actions.{CtUtrRetrievalAction, DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
+import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import pages.{RcaspIdPage, SubmissionSucceededPage}
 import utils.LoggerUtil.*
@@ -54,28 +55,34 @@ class RegisteredBusinessCheckDetailsController @Inject() (
       val userAnswers          = request.userAnswers
       lazy val ifEmptyProtocol = Redirect(controllers.routes.InformationMissingController.onPageLoad())
 
-      userAnswers.get(ReportForRegisteredBusinessPage) match {
-        case Some(true) =>
-          (
-            userAnswers.get(OverwritableOrganisationName),
-            helper.getRegisteredBusinessSection(userAnswers, changeJourney = false)
-          )
-            .mapN { (name, section) =>
-              Ok(view(section, name))
-            }
-            .getOrElse {
+      userAnswers
+        .get(ChangeRcaspCachedDetails)
+        .fold {
+          userAnswers.get(ReportForRegisteredBusinessPage) match {
+            case Some(true) =>
+              (
+                userAnswers.get(OverwritableOrganisationName),
+                helper.getRegisteredBusinessSection(userAnswers, changeJourney = false)
+              ).mapN { (name, section) =>
+                Ok(view(section, name))
+              }.getOrElse {
+                logWarn(
+                  "[RegisteredBusinessCheckDetailsController][onPageLoad] Error! Could not load page due to missing answers"
+                )
+                ifEmptyProtocol
+              }
+            case _          =>
               logWarn(
-                "[RegisteredBusinessCheckDetailsController][onPageLoad] Error! Could not load page missing answers"
+                "[RegisteredBusinessCheckDetailsController][onPageLoad] ReportForRegisteredBusiness is false or missing. Redirecting to SIIM."
               )
               ifEmptyProtocol
-            }
-
-        case _ =>
+          }
+        } { _ =>
           logWarn(
-            "[RegisteredBusinessCheckDetailsController][onPageLoad] ReportForRegisteredBusiness is false or missing. Redirecting to SIIM."
+            "[RegisteredBusinessCheckDetailsController][onPageLoad] ChangeRcaspCachedDetails must not be populated on RegisteredBusinessCheckDetails"
           )
-          ifEmptyProtocol
-      }
+          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
+        }
   }
 
   def onSubmit: Action[AnyContent] =
