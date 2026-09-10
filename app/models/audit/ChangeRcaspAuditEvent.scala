@@ -19,17 +19,17 @@ package models.audit
 import play.api.libs.json.{JsValue, Json, OFormat}
 
 case class ChangeRcaspAuditEvent(
-    changeRCASPIsUserUpdatedValues: Option[ChangeRcaspIsUserValues],
-    changeRCASPIsUserOriginalValues: Option[ChangeRcaspIsUserValues],
-    changeRCASPisNotUserUpdatedValues: Option[ChangeRcaspIsNotUserValues],
-    changeRCASPisNotUserOriginalValues: Option[ChangeRcaspIsNotUserValues]
+    changeRegisteredBusinessRCASPUpdatedInformation: Option[ChangeRegisteredBusinessRcaspInformation],
+    changeRegisteredBusinessRCASPOriginalInformation: Option[ChangeRegisteredBusinessRcaspInformation],
+    changeOtherBusinessRCASPUpdatedInformation: Option[ChangeOtherBusinessRcaspInformation],
+    changeOtherBusinessRCASPOriginalInformation: Option[ChangeOtherBusinessRcaspInformation]
 )
 
 object ChangeRcaspAuditEvent {
   implicit val format: OFormat[ChangeRcaspAuditEvent] = Json.format[ChangeRcaspAuditEvent]
 }
 
-case class ChangeRcaspIsUserValues(
+case class ChangeRegisteredBusinessRcaspInformation(
     isBusinessAnRCASP: Boolean,
     organisationName: String,
     doesRCASPTradeUnderDifferentName: Boolean,
@@ -37,11 +37,12 @@ case class ChangeRcaspIsUserValues(
     RCASPAddress: String
 )
 
-object ChangeRcaspIsUserValues {
-  implicit val format: OFormat[ChangeRcaspIsUserValues] = Json.format[ChangeRcaspIsUserValues]
+object ChangeRegisteredBusinessRcaspInformation {
+  implicit val format: OFormat[ChangeRegisteredBusinessRcaspInformation] =
+    Json.format[ChangeRegisteredBusinessRcaspInformation]
 }
 
-case class ChangeRcaspIsNotUserValues(
+case class ChangeOtherBusinessRcaspInformation(
     isBusinessAnRCASP: Boolean,
     isRCASPAnOrganisationOrIndividual: String,
     organisationName: Option[String],
@@ -66,6 +67,6 @@ case class ChangeRcaspIsNotUserValues(
     individuaPhoneNumber: Option[String]
 )
 
-object ChangeRcaspIsNotUserValues {
-  implicit val format: OFormat[ChangeRcaspIsNotUserValues] = Json.format[ChangeRcaspIsNotUserValues]
+object ChangeOtherBusinessRcaspInformation {
+  implicit val format: OFormat[ChangeOtherBusinessRcaspInformation] = Json.format[ChangeOtherBusinessRcaspInformation]
 }
