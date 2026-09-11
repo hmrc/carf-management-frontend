@@ -19,6 +19,7 @@ package controllers
 import cats.syntax.all.*
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction, SubmissionLockAction}
 import models.OrganisationOrIndividual.*
+import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
@@ -58,42 +59,49 @@ class CheckDetailsController @Inject() (
         Redirect(controllers.routes.InformationMissingController.onPageLoad())
 
       userAnswers
-        .get(OrganisationOrIndividualPage)
+        .get(ChangeRcaspCachedDetails)
         .fold {
-          logWarn("[CheckDetailsController][onPageLoad] Error! OrganisationOrIndividualPage not populated")
-          ifEmptyProtocol
-        } {
-          case Individual   =>
-            (
-              userAnswers.get(IndividualNamePage),
-              helper.getIndividualSectionMaybe(userAnswers, changeJourney = false),
-              helper.getIndividualContactDetailsMaybe(userAnswers)
-            )
-              .mapN { (name, individualSection, contactDetailsSection) =>
-                Ok(view(Seq(individualSection, contactDetailsSection), name.fullName))
-              }
-              .getOrElse {
-                logWarn(
-                  "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (individual)"
+          userAnswers
+            .get(OrganisationOrIndividualPage)
+            .fold {
+              logWarn("[CheckDetailsController][onPageLoad] Error! OrganisationOrIndividualPage not populated")
+              ifEmptyProtocol
+            } {
+              case Individual   =>
+                (
+                  userAnswers.get(IndividualNamePage),
+                  helper.getIndividualSectionMaybe(userAnswers, changeJourney = false),
+                  helper.getIndividualContactDetailsMaybe(userAnswers)
                 )
-                ifEmptyProtocol
-              }
-          case Organisation =>
-            (
-              userAnswers.get(OverwritableOrganisationName),
-              helper.getOrganisationSectionMaybe(userAnswers, changeJourney = false),
-              helper.getOrganisationFirstContactDetailsMaybe(userAnswers),
-              helper.getOrganisationSecondContactDetailsMaybe(userAnswers)
-            )
-              .mapN { (orgName, organisationSection, firstContactDetailsSection, secondContactDetailsSection) =>
-                Ok(view(Seq(organisationSection, firstContactDetailsSection, secondContactDetailsSection), orgName))
-              }
-              .getOrElse {
-                logWarn(
-                  "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (organisation)"
+                  .mapN { (name, individualSection, contactDetailsSection) =>
+                    Ok(view(Seq(individualSection, contactDetailsSection), name.fullName))
+                  }
+                  .getOrElse {
+                    logWarn(
+                      "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (individual)"
+                    )
+                    ifEmptyProtocol
+                  }
+              case Organisation =>
+                (
+                  userAnswers.get(OverwritableOrganisationName),
+                  helper.getOrganisationSectionMaybe(userAnswers, changeJourney = false),
+                  helper.getOrganisationFirstContactDetailsMaybe(userAnswers),
+                  helper.getOrganisationSecondContactDetailsMaybe(userAnswers)
                 )
-                ifEmptyProtocol
-              }
+                  .mapN { (orgName, organisationSection, firstContactDetailsSection, secondContactDetailsSection) =>
+                    Ok(view(Seq(organisationSection, firstContactDetailsSection, secondContactDetailsSection), orgName))
+                  }
+                  .getOrElse {
+                    logWarn(
+                      "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (organisation)"
+                    )
+                    ifEmptyProtocol
+                  }
+            }
+        } { _ =>
+          logWarn("[CheckDetailsController][onPageLoad] ChangeRcaspCachedDetails must not be populated on CheckDetails")
+          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
         }
   }
 
