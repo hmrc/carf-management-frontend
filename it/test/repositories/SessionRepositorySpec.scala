@@ -16,9 +16,11 @@
 
 package repositories
 
-import config.FrontendAppConfig
+import config.{CryptoProvider, FrontendAppConfig}
 import models.UserAnswers
+import models.crypto.CryptoType.{randomAesKey, CryptoT}
 import org.mockito.Mockito.when
+import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.model.Filters
 import org.scalactic.source.Position
 import org.scalatest.OptionValues
@@ -27,7 +29,9 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import org.slf4j.MDC
+import play.api.Configuration
 import play.api.libs.json.Json
+import uk.gov.hmrc.crypto.Crypted
 import uk.gov.hmrc.mdc.MdcExecutionContext
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
@@ -51,6 +55,9 @@ class SessionRepositorySpec
 
   private val mockAppConfig = mock[FrontendAppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1L
+  when(mockAppConfig.mongoEncryptionEnabled) thenReturn true
+
+  private implicit val crypto: CryptoT = new CryptoProvider(Configuration("crypto.key" -> randomAesKey)).get()
 
   implicit val productionLikeTestMdcExecutionContext: ExecutionContext = MdcExecutionContext()
 
@@ -71,6 +78,23 @@ class SessionRepositorySpec
 
       setResult     mustEqual true
       updatedRecord mustEqual expectedResult
+    }
+
+    "must persist the data in encrypted format" in {
+      val setResult = repository.set(userAnswers).futureValue
+
+      setResult mustEqual true
+
+      val retrievedRecord = repository.collection
+        .find[BsonDocument](Filters.and(Filters.equal("_id", userAnswers.id)))
+        .headOption()
+        .futureValue
+        .value
+
+      val rawData       = retrievedRecord.get("data").asString().getValue
+      val decryptedData = crypto.decrypt(Crypted(rawData)).value
+
+      Json.parse(decryptedData) mustBe userAnswers.data
     }
 
     mustPreserveMdc(repository.set(userAnswers))
