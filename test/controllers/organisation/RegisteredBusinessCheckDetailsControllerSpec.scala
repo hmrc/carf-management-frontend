@@ -22,6 +22,7 @@ import models.UserAnswers
 import models.errors.ApiError.InternalServerError
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{times, verify, when}
+import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import pages.{RcaspIdPage, SubmissionSucceededPage}
 import play.api.Application
@@ -118,6 +119,19 @@ class RegisteredBusinessCheckDetailsControllerSpec extends SpecBase {
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual controllers.routes.InformationMissingController.onPageLoad().url
+      }
+
+      "must redirect to Journey Recovery for a GET when ChangeRcaspCachedDetails is populated" in new Setup(
+        emptyUserAnswers
+          .withPage(ReportForRegisteredBusinessPage, true)
+          .withPage(OverwritableOrganisationName, "Test Business Ltd")
+          .withPage(ChangeRcaspCachedDetails, organisationRcaspDetailsViewUpdate.copy(IsRCASPUser = true))
+      ) {
+        val request                = FakeRequest(GET, cdRoute)
+        val result: Future[Result] = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.routes.JourneyRecoveryController.onPageLoad().url
       }
 
       "must redirect to Journey Recovery for a GET if no existing data is found" in {
