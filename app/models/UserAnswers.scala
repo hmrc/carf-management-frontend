@@ -19,12 +19,15 @@ package models
 import cats.syntax.all.*
 import models.OrganisationOrIndividual.Individual
 import models.changeDetails.{IndividualRcaspDetailsForComparison, OrganisationRcaspDetailsForComparison, RcaspDetailsForComparison}
+import models.crypto.CryptoType.CryptoT
+import models.crypto.SensitiveJsObject
 import pages.UkAddressInUserAnswers
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
 import play.api.libs.json.*
 import queries.{Gettable, Settable}
+import uk.gov.hmrc.crypto.json.JsonEncryption
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.Instant
@@ -142,30 +145,26 @@ final case class UserAnswers(
 
 object UserAnswers {
 
-  val reads: Reads[UserAnswers] = {
+  import play.api.libs.functional.syntax.*
 
-    import play.api.libs.functional.syntax.*
-
-    (
-      (__ \ "_id").read[String] and
-        (__ \ "rcaspIsRegisteredBusiness").read[Boolean] and
-        (__ \ "data").read[JsObject] and
-        (__ \ "lastUpdated").read(MongoJavatimeFormats.instantFormat)
-    )(UserAnswers.apply _)
-  }
-
-  val writes: OWrites[UserAnswers] = {
-
-    import play.api.libs.functional.syntax.*
+  def mongoFormat(encryptionEnabled: Boolean)(implicit crypto: CryptoT): OFormat[UserAnswers] = {
+    implicit val sensitiveJsObjectFormat: Format[SensitiveJsObject] =
+      if (encryptionEnabled) {
+        JsonEncryption.sensitiveEncrypterDecrypter(SensitiveJsObject.apply)
+      } else {
+        Json.format[SensitiveJsObject]
+      }
 
     (
-      (__ \ "_id").write[String] and
-        (__ \ "rcaspIsRegisteredBusiness").write[Boolean] and
-        (__ \ "data").write[JsObject] and
-        (__ \ "lastUpdated").write(MongoJavatimeFormats.instantFormat)
-    )(ua => (ua.id, ua.rcaspIsRegisteredBusiness, ua.data, ua.lastUpdated))
+      (__ \ "_id").format[String] and
+        (__ \ "rcaspIsRegisteredBusiness").format[Boolean] and
+        (__ \ "data").format[SensitiveJsObject] and
+        (__ \ "lastUpdated").format(MongoJavatimeFormats.instantFormat)
+    )(
+      (id, rcaspIsRegisteredBusiness, data, lastUpdated) =>
+        UserAnswers(id, rcaspIsRegisteredBusiness, data.decryptedValue, lastUpdated),
+      ua => (ua.id, ua.rcaspIsRegisteredBusiness, SensitiveJsObject(ua.data), ua.lastUpdated)
+    )
   }
-
-  implicit val format: OFormat[UserAnswers] = OFormat(reads, writes)
 
 }

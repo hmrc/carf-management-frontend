@@ -8,6 +8,7 @@ object AppDependencies {
   private val catsCoreVersion         = "2.13.0"
   private val commonsValidatorVersion = "1.10.1"
   private val libphonenumberVersion   = "9.0.30"
+  private val cryptoVersion           = "8.4.0"
 
   val compile: Seq[ModuleID] = Seq(
     "commons-validator"             % "commons-validator"          % commonsValidatorVersion,
@@ -16,7 +17,8 @@ object AppDependencies {
     "uk.gov.hmrc"                  %% "bootstrap-frontend-play-30" % bootstrapVersion,
     "uk.gov.hmrc.mongo"            %% "hmrc-mongo-play-30"         % hmrcMongoVersion,
     "com.googlecode.libphonenumber" % "libphonenumber"             % libphonenumberVersion,
-    "org.typelevel"                %% "cats-core"                  % catsCoreVersion
+    "org.typelevel"                %% "cats-core"                  % catsCoreVersion,
+    "uk.gov.hmrc"                  %% "crypto-json-play-30"        % cryptoVersion
   )
 
   val test: Seq[ModuleID] = Seq(
