@@ -18,16 +18,12 @@ package controllers
 
 import base.SpecBase
 import forms.FindAddressFormProvider
-import generators.Generators
 import models.OrganisationOrIndividual.*
 import models.errors.ApiError.BadRequestError
 import models.individual.IndividualName
-import models.responses.{AddressLookupResponse, AddressRecord, CountryRecord}
-import models.{AddressAndUPRN, ChangeMode, FindAddress, NormalMode, UserAnswers}
+import models.{formatAddress, AddressAndUPRN, ChangeMode, FindAddress, NormalMode, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
 import org.mockito.Mockito.*
-import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar
 import pages.*
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
@@ -42,7 +38,7 @@ import views.html.FindAddressView
 
 import scala.concurrent.Future
 
-class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach with Generators {
+class FindAddressControllerSpec extends SpecBase {
 
   val formProvider: FindAddressFormProvider          = new FindAddressFormProvider()
   val form: Form[FindAddress]                        = formProvider()
@@ -53,22 +49,8 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
 
   override def beforeEach(): Unit = {
     reset(mockAddressLookupService)
-    reset(mockSessionRepository)
     super.beforeEach()
   }
-
-  val searchByPostcodeValidResponse: Seq[AddressLookupResponse] = Seq(
-    AddressLookupResponse(
-      id = "Test-Id",
-      uprn = 123456,
-      address = AddressRecord(
-        lines = List("Address-Line1", "Address-Line2"),
-        town = "Bristol",
-        postcode = validGBOnlyNonCDPostcodes.sample.value,
-        country = CountryRecord(code = "UK", name = "United Kingdom")
-      )
-    )
-  )
 
   private def expectedManualUrl: String       = controllers.routes.AddressController.onPageLoad(NormalMode).url
   private def expectedManualChangeUrl: String = controllers.routes.AddressController.onPageLoad(ChangeMode).url
@@ -215,7 +197,7 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
       }
     }
 
-    "must redirect to the next page and clear FindAddressAdditionalCallUa and AddressLookupResult when postcode has returned one address" in {
+    "must redirect to the next page and clear the required pages when postcode has returned one address" in {
 
       val userAnswersWithName =
         emptyUserAnswers
@@ -223,6 +205,8 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
           .withPage(OverwritableOrganisationName, testName)
           .withPage(FindAddressAdditionalCallUa, true)
           .withPage(AddressLookupResult, testAddressAndUprns)
+          .withPage(ChooseAddressPage, testAddressUk.formatAddress)
+          .withPage(SelectedChooseAddressPage, testAddressUk)
 
       val onwardRouteOneAddress =
         controllers.routes.ReviewAddressController.onPageLoad(NormalMode)
@@ -250,8 +234,12 @@ class FindAddressControllerSpec extends SpecBase with MockitoSugar with BeforeAn
         verify(mockAddressLookupService, times(1)).postcodeSearch(eqTo("TE1 1ST"), eqTo(Some("value 2")))(any(), any())
         verify(mockSessionRepository, times(1)).set(
           argThat(ua =>
-            ua.get(AddressUPRNUserAnswers).get == testUPRN && ua.get(FindAddressAdditionalCallUa).isEmpty
-              && ua.get(AddressLookupResult).isEmpty
+            ua.get(AddressUPRNUserAnswers).contains(testUPRN) &&
+              ua.get(AddressPagePrePop).contains(testAddressUk) &&
+              ua.get(FindAddressAdditionalCallUa).isEmpty &&
+              ua.get(AddressLookupResult).isEmpty &&
+              ua.get(ChooseAddressPage).isEmpty &&
+              ua.get(SelectedChooseAddressPage).isEmpty
           )
         )
       }
