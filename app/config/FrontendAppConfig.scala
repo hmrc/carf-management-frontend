@@ -54,7 +54,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val aeoiEmailAddress: String = configuration.get("email.aeoi")
 
   private val exitSurveyBaseUrl: String = configuration.get[Service]("microservice.services.feedback-frontend").baseUrl
-  val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/carf-management-frontend"
+  val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/carf-management-frontend?useServiceNavigation"
 
   val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("features.welsh-translation")
