@@ -16,7 +16,6 @@
 
 @this(
         layout: templates.Layout,
-        govukButton: GovukButton,
         link: components.Link
 )
 
@@ -28,5 +27,5 @@
 
     <p class="govuk-body">@messages("journeyRecovery.guidance")</p>
 
-    <p class="govuk-body">@Html(messages("journeyRecovery.link", link(s"mailto:$emailLink", s"$emailLink")))</p>
+    <p class="govuk-body">@Html(messages("journeyRecovery.link", link(s"mailto:$emailLink", emailLink)))</p>
 }

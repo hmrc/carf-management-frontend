@@ -28,7 +28,7 @@
 
     <h1 class="govuk-heading-l">@messages("unauthorised.heading")</h1>
 
-    <p class="govuk-body">@Html(messages("unauthorised.guidance", link(s"mailto:$emailLink", s"$emailLink")))</p>
+    <p class="govuk-body">@Html(messages("unauthorised.guidance", link(s"mailto:$emailLink", emailLink)))</p>
 
     <p class="govuk-body">@{
         link(guidanceLink, messages("unauthorised.link"))
