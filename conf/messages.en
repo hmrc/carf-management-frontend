@@ -30,6 +30,12 @@ error.title.prefix = Error:
 error.prefix = Error
 error.summary.title = There is a problem
 
+pageNotFound.title = Page not found
+pageNotFound.heading = Page not found
+pageNotFound.p1 = If you typed the web address, check it is correct.
+pageNotFound.p2 = If you pasted the web address, check you copied the entire address.
+pageNotFound.link = You can email {0} if you have any questions about this service.
+
 index.title = carf-management-frontend
 index.heading = carf-management-frontend
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
@@ -37,19 +43,19 @@ index.guidance = Welcome to your new frontend. Please see the README file for a 
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers
 
-journeyRecovery.continue.title = Sorry, there is a problem with the service
-journeyRecovery.continue.heading = Sorry, there is a problem with the service
-journeyRecovery.continue.guidance = [Add content to explain how to proceed.]
-journeyRecovery.startAgain.title = Sorry, there is a problem with the service
-journeyRecovery.startAgain.heading = Sorry, there is a problem with the service
-journeyRecovery.startAgain.guidance = [Add content to explain why the user needs to start again.]
+journeyRecovery.title = Sorry, there is a problem with the service
+journeyRecovery.heading = Sorry, there is a problem with the service
+journeyRecovery.guidance = Try again later.
+journeyRecovery.link = You can email {0} if you need to contact someone about your cryptoasset reporting.
 
 signedOut.title = For your security, we signed you out
 signedOut.heading = For your security, we signed you out
 signedOut.guidance = We did not save your answers.
 
-unauthorised.title = You can’t access this service with this account
-unauthorised.heading = You can’t access this service with this account
+unauthorised.title = You cannot access this page
+unauthorised.heading = You cannot access this page
+unauthorised.guidance = You can email {0} if you need support with using the service.
+unauthorised.link = Refer to the cryptoasset reporting guidance
 
 homePage.title = Manage your cryptoasset reports
 homePage.heading = Manage your cryptoasset reports
@@ -427,3 +433,7 @@ rcaspRemoved.panel.content = on {0} at {1}
 rcaspRemoved.p1 = You have permanently removed {0} with the RCASP ID {1}.
 rcaspRemoved.backToRcasps = Back to manage your reporting cryptoasset service providers (RCASPs)
 rcaspRemoved.backToReports = Back to manage your cryptoasset reports
+
+pageUnavailable.title = This page is no longer available
+pageUnavailable.heading = This page is no longer available
+pageUnavailable.link.text = Back to manage your cryptoasset reports
