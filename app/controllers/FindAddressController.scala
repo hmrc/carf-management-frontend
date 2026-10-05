@@ -142,7 +142,11 @@ class FindAddressController @Inject() (
   )(implicit request: DataRequest[AnyContent]) =
     for {
       uaWithMultipleAddressDataCleared <-
-        Future.fromTry(request.userAnswers.remove(List(FindAddressAdditionalCallUa, AddressLookupResult)))
+        Future.fromTry(
+          request.userAnswers.remove(
+            List(FindAddressAdditionalCallUa, AddressLookupResult, ChooseAddressPage, SelectedChooseAddressPage)
+          )
+        )
       uaWithPageAnswer                 <-
         Future.fromTry(uaWithMultipleAddressDataCleared.set(FindAddressPage, findAddress))
       uaWithPrePop                     <-
