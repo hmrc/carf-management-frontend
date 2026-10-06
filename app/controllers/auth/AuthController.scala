@@ -24,7 +24,7 @@ import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class AuthController @Inject() (
     val controllerComponents: MessagesControllerComponents,
@@ -43,7 +43,7 @@ class AuthController @Inject() (
       }
   }
 
-  def signOutNoSurvey(): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Redirect(config.signOutUrl, Map("continue" -> Seq(config.signedOutPageUrl))))
+  def signOutNoSurvey(): Action[AnyContent] = Action { implicit request =>
+    Redirect(config.signOutUrl, Map("continue" -> Seq(config.signedOutPageUrl)))
   }
 }
