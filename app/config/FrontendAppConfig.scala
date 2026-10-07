@@ -27,10 +27,9 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val host: String    = configuration.get[String]("host")
   val appName: String = configuration.get[String]("appName")
 
-  private val carfManagementHost: String = servicesConfig.baseUrl("carf-management")
+  private val carfAccountHost: String = servicesConfig.baseUrl("carf-account")
 
-  val carfManagementBaseUrl: String   = s"$carfManagementHost/carf-management"
-  val carfRegistrationBaseUrl: String = s"$carfManagementHost/carf-registration"
+  val carfAccountBaseUrl: String = s"$carfAccountHost/carf-account"
 
   private val addressLookupHost: String = servicesConfig.baseUrl("address-lookup")
   lazy val addressLookupBaseUrl: String = s"$addressLookupHost/address-lookup"

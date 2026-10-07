@@ -44,7 +44,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   def viewRcasp(
       carfId: String
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[List[viewAndUpdateRcasp.RcaspDetails]] = {
-    val baseUrl = url"${config.carfManagementBaseUrl}/view-rcasp/$carfId/none"
+    val baseUrl = url"${config.carfAccountBaseUrl}/view-rcasp/$carfId/none"
 
     logDebug(s"[RcaspConnector] Viewing RCASPs for carfId: $carfId")
 
@@ -73,7 +73,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   def createRcasp(
       createRcaspRequest: CreateRcaspRequest
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[CreateRcaspResponse] = {
-    val baseUrl = url"${config.carfManagementBaseUrl}/create"
+    val baseUrl = url"${config.carfAccountBaseUrl}/create"
 
     logDebug("[RcaspConnector] Creating RCASP")
 
@@ -93,7 +93,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   def updateRcasp(
       updateRcaspRequest: UpdateRcaspRequest
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[UpdateDeleteRcaspResponse] = {
-    val baseUrl = url"${config.carfManagementBaseUrl}/update"
+    val baseUrl = url"${config.carfAccountBaseUrl}/update"
 
     logDebug("[RcaspConnector] Updating RCASP")
 
@@ -113,7 +113,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   def deleteRcasp(
       deleteRcaspRequest: DeleteRcaspRequest
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[UpdateDeleteRcaspResponse] = {
-    val baseUrl = url"${config.carfManagementBaseUrl}/delete"
+    val baseUrl = url"${config.carfAccountBaseUrl}/delete"
 
     logDebug("[RcaspConnector] Deleting RCASP")
 

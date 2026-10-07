@@ -38,7 +38,7 @@ class RegistrationConnector @Inject() (val config: FrontendAppConfig, val http: 
     ec: ExecutionContext
 ) {
 
-  private val backendBaseUrl = config.carfRegistrationBaseUrl
+  private val backendBaseUrl = config.carfAccountBaseUrl
 
   def registerOrganisationWithUtrCtAutoMatch(
       request: RegisterWithIdRequest

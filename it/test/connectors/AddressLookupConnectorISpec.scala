@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor
 import itutil.ApplicationWithWiremock
 import models.errors.ApiError
 import models.requests.SearchByPostcodeRequest
-import models.responses.{AddressRecord, AddressLookupResponse, CountryRecord}
+import models.responses.{AddressLookupResponse, AddressRecord, CountryRecord}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import play.api.http.Status.{NOT_FOUND, OK}
