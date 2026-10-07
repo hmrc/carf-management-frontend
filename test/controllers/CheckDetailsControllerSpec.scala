@@ -193,9 +193,7 @@ class CheckDetailsControllerSpec extends SpecBase {
           val result  = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.PlaceholderController
-            .onPageLoad("Should nav to /problem/page-unavailable (CARF-308)")
-            .url
+          redirectLocation(result).value mustEqual controllers.routes.PageUnavailableController.onPageLoad().url
         }
       }
     }
@@ -295,9 +293,7 @@ class CheckDetailsControllerSpec extends SpecBase {
           val result  = route(application, request).value
 
           status(result)                 mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.PlaceholderController
-            .onPageLoad("Should nav to /problem/page-unavailable (CARF-308)")
-            .url
+          redirectLocation(result).value mustEqual controllers.routes.PageUnavailableController.onPageLoad().url
         }
       }
     }

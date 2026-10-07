@@ -112,7 +112,7 @@ class RemoveUserAccessController @Inject() (
         )
         Future.successful(
           Redirect(
-            controllers.routes.PlaceholderController.onPageLoad("Should nav to /problem/page-unavailable (CARF-308)")
+            controllers.routes.PageUnavailableController.onPageLoad().url
           )
         )
 

@@ -16,21 +16,16 @@
 
 @this(
         layout: templates.Layout,
-        govukButton: GovukButton
+        link: components.Link
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(emailLink: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("journeyRecovery.startAgain.title"))) {
+@layout(pageTitle = titleNoForm(messages("journeyRecovery.title")), showBackLink = false) {
 
-    <h1 class="govuk-heading-l">@messages("journeyRecovery.startAgain.heading")</h1>
+    <h1 class="govuk-heading-l">@messages("journeyRecovery.heading")</h1>
 
-    <p class="govuk-body">@messages("journeyRecovery.startAgain.guidance")</p>
+    <p class="govuk-body">@messages("journeyRecovery.guidance")</p>
 
-    <p class="govuk-body">
-    @govukButton(
-        ButtonViewModel(messages("site.startAgain"))
-        .asLink(controllers.home.routes.HomePageController.onPageLoad().url)
-    )
-    </p>
+    <p class="govuk-body">@Html(messages("journeyRecovery.link", link(s"mailto:$emailLink", emailLink)))</p>
 }

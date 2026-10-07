@@ -64,7 +64,7 @@ class RemoveUserAccessControllerSpec extends SpecBase {
     UserBusinessSubscriptionData(hasOrganisationContactDetails = true, organisationName = Some("My Business"))
 
   private val pageUnavailableUrl: String =
-    controllers.routes.PlaceholderController.onPageLoad("Should nav to /problem/page-unavailable (CARF-308)").url
+    controllers.routes.PageUnavailableController.onPageLoad().url
 
   override def beforeEach(): Unit = {
     super.beforeEach()

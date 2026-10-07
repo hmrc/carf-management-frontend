@@ -51,6 +51,7 @@
         keepAliveUrl = Some(routes.KeepAliveController.keepAlive().url),
         keepAliveButtonText = Some(messages("timeout.keepAlive")),
         signOutUrl = Some(controllers.auth.routes.AuthController.signOut().url),
+        timeoutUrl = Some(controllers.auth.routes.AuthController.signOutNoSurvey().url),
         signOutButtonText = Some(messages("timeout.signOut")),
         title = Some(messages("timeout.title")),
         message = Some(messages("timeout.message")),
@@ -85,11 +86,11 @@
 }
 
 @variableWidthContent(contentBlock: Html) = {
-    @if(fullWidth) {
-        @fullWidthContent(contentBlock)
-    } else {
-        @twoThirdsWidthContent(contentBlock)
-    }
+@if(fullWidth) {
+    @fullWidthContent(contentBlock)
+} else {
+    @twoThirdsWidthContent(contentBlock)
+}
 
     <div class="govuk-!-margin-top-8">
     @hmrcReportTechnicalIssueHelper()
