@@ -67,4 +67,4 @@ trait ApplicationWithWiremock
     wireMock.stop()
     super.afterAll()
 
-  val baseUrl: String = s"http://localhost:$port/carf-management"
+  val baseUrl: String = s"http://localhost:$port/carf-account"
