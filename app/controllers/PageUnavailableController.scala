@@ -14,36 +14,22 @@
  * limitations under the License.
  */
 
-package controllers.auth
+package controllers
 
-import config.FrontendAppConfig
-import controllers.actions.IdentifierAction
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import views.html.problem.PageUnavailableView
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
-class AuthController @Inject() (
+class PageUnavailableController @Inject() (
     val controllerComponents: MessagesControllerComponents,
-    config: FrontendAppConfig,
-    sessionRepository: SessionRepository,
-    identify: IdentifierAction
-)(implicit ec: ExecutionContext)
-    extends FrontendBaseController
+    view: PageUnavailableView
+) extends FrontendBaseController
     with I18nSupport {
 
-  def signOut(): Action[AnyContent] = identify.async { implicit request =>
-    sessionRepository
-      .clear(request.userId)
-      .map { _ =>
-        Redirect(config.signOutUrl, Map("continue" -> Seq(config.exitSurveyUrl)))
-      }
-  }
-
-  def signOutNoSurvey(): Action[AnyContent] = Action { implicit request =>
-    Redirect(config.signOutUrl, Map("continue" -> Seq(config.signedOutPageUrl)))
+  def onPageLoad: Action[AnyContent] = Action { implicit request =>
+    Ok(view(controllers.home.routes.HomePageController.onPageLoad().url))
   }
 }

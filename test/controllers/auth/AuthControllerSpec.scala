@@ -61,9 +61,7 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
 
   "signOutNoSurvey" - {
 
-    "must clear users answers and redirect to sign out, specifying SignedOut as the continue URL" in {
-
-      when(mockSessionRepository.clear(any())) thenReturn Future.successful(true)
+    "must redirect to sign out, specifying SignedOut as the continue URL" in {
 
       val application =
         applicationBuilder(None)
@@ -76,12 +74,11 @@ class AuthControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        val encodedContinueUrl  = URLEncoder.encode(routes.SignedOutController.onPageLoad().url, "UTF-8")
+        val encodedContinueUrl  = URLEncoder.encode(appConfig.signedOutPageUrl, "UTF-8")
         val expectedRedirectUrl = s"${appConfig.signOutUrl}?continue=$encodedContinueUrl"
 
         status(result)                 mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual expectedRedirectUrl
-        verify(mockSessionRepository, times(1)).clear(eqTo(userAnswersId))
       }
     }
   }

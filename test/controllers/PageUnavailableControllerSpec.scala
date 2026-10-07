@@ -17,37 +17,27 @@
 package controllers
 
 import base.SpecBase
-import config.FrontendAppConfig
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import views.html.problem.UnauthorisedView
+import views.html.problem.PageUnavailableView
 
-class UnauthorisedControllerSpec extends SpecBase {
+class PageUnavailableControllerSpec extends SpecBase {
 
-  val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
-
-  "Unauthorised Controller" - {
+  "PageUnavailable Controller" - {
 
     "must return OK and the correct view for a GET" in {
-      when(mockAppConfig.aeoiEmailAddress).thenReturn(testEmail)
-      when(mockAppConfig.feedbackUrl(any())).thenReturn("foo")
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[FrontendAppConfig].toInstance(mockAppConfig))
-        .build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       running(application) {
-        val request = FakeRequest(GET, routes.UnauthorisedController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.PageUnavailableController.onPageLoad().url)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[UnauthorisedView]
+        val view = application.injector.instanceOf[PageUnavailableView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(testEmail, routes.UnauthorisedController.onPageLoad().url)(
+        contentAsString(result) mustEqual view(controllers.home.routes.HomePageController.onPageLoad().url)(
           request,
           messages(application)
         ).toString

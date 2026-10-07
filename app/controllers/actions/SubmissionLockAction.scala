@@ -16,11 +16,10 @@
 
 package controllers.actions
 
-import controllers.routes
 import models.requests.OptionalDataRequest
 import pages.SubmissionSucceededPage
-import utils.LoggerUtil.*
 import play.api.mvc.*
+import utils.LoggerUtil.*
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,7 +42,7 @@ class SubmissionLockAction @Inject() (val parser: BodyParsers.Default)(implicit 
       Future.successful(
         Some(
           Results.Redirect(
-            routes.PlaceholderController.onPageLoad("Should nav to /problem/page-unavailable (CARF-308)")
+            controllers.routes.PageUnavailableController.onPageLoad().url
           )
         )
       )
