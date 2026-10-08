@@ -50,6 +50,13 @@ class GenericPhoneFormProviderSpec extends StringFieldBehaviours {
       result.get  mustBe "(0121) 234 5678"
     }
 
+    "must reduce duplicate spaces down to one space for phone numbers" in {
+      val result = form.bind(Map(fieldName -> "07 1111    11 111"))
+
+      result.errors.isEmpty mustBe true
+      result.value.get      mustBe "07 1111 11 111"
+    }
+
     behave like mandatoryField(
       form,
       fieldName,

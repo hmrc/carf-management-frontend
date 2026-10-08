@@ -243,4 +243,22 @@ class AddressFormProviderSpec extends StringFieldBehaviours {
     }
   }
 
+  "combinations" - {
+    "must return an unduplicated spaces character when duplicated spaces are applied to all relevant fields" in {
+      val formData = baseFormData ++ Map(
+        "addressLine1" -> "addres sLine    1",
+        "addressLine2" -> "addres sLine    2",
+        "addressLine3" -> "addres sLine    3",
+        "townOrCity"   -> "t ow   n",
+        "country"      -> "GB",
+        "postcode"     -> "NW4 1QS"
+      )
+      val result   = form.bind(formData)
+      result.errors                     mustBe empty
+      result.value.get.addressLine1     mustBe "addres sLine 1"
+      result.value.get.addressLine2.get mustBe "addres sLine 2"
+      result.value.get.addressLine3.get mustBe "addres sLine 3"
+      result.value.get.townOrCity       mustBe "t ow n"
+    }
+  }
 }

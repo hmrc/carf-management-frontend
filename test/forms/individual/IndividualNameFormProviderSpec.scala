@@ -106,4 +106,18 @@ class IndividualNameFormProviderSpec extends StringFieldBehaviours {
       result.errors must contain only FormError(fieldName, lengthKey, Seq.empty)
     }
   }
+
+  "combined" - {
+    "must be valid when firstName and lastName contains duplicate spaces" in {
+      val result = form.bind(
+        Map(
+          "firstName" -> "Ar  te t   a",
+          "lastName"  -> "S  mi th"
+        )
+      )
+      result.errors mustBe empty
+      result.value.get.firstName mustBe "Ar te t a"
+      result.value.get.lastName  mustBe "S mi th"
+    }
+  }
 }

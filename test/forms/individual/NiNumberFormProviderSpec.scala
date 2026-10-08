@@ -99,6 +99,7 @@ class NiNumberFormProviderSpec extends StringFieldBehaviours {
         ("ab123456c", "AB123456C"),
         ("Ab123456C", "AB123456C"),
         ("AB123456 C", "AB123456C"),
+        ("AB12   3456   C", "AB123456C"),
         (" AB123456C", "AB123456C")
       )
 
