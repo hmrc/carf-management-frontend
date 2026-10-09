@@ -39,7 +39,8 @@
         showSignOut: Boolean = true,
         showAutoComplete: Boolean = false,
         showHmrcBanner: Boolean = false,
-        fullWidth: Boolean = false
+        fullWidth: Boolean = false,
+        threeQuartersWidth: Boolean = false
 )(contentBlock: Html)(implicit rh: RequestHeader, messages: Messages)
 
 @head = {
@@ -77,6 +78,14 @@
     </div>
 }
 
+@threeQuartersWidthContent(contentBlock: Html) = {
+    <div class="govuk-grid-row wrappable">
+        <div class="govuk-grid-column-three-quarters">
+        @contentBlock
+        </div>
+    </div>
+}
+
 @twoThirdsWidthContent(contentBlock: Html) = {
     <div class="govuk-grid-row wrappable">
         <div class="govuk-grid-column-two-thirds">
@@ -88,6 +97,8 @@
 @variableWidthContent(contentBlock: Html) = {
 @if(fullWidth) {
     @fullWidthContent(contentBlock)
+} else if(threeQuartersWidth) {
+    @threeQuartersWidthContent(contentBlock)
 } else {
     @twoThirdsWidthContent(contentBlock)
 }

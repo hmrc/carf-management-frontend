@@ -28,8 +28,10 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val appName: String = configuration.get[String]("appName")
 
   private val carfAccountHost: String = servicesConfig.baseUrl("carf-account")
+  val carfAccountBaseUrl: String      = s"$carfAccountHost/carf-account"
 
-  val carfAccountBaseUrl: String = s"$carfAccountHost/carf-account"
+  private val carfReportingHost: String = servicesConfig.baseUrl("carf-reporting")
+  val carfReportingBaseUrl: String      = s"$carfReportingHost/carf-reporting"
 
   private val addressLookupHost: String = servicesConfig.baseUrl("address-lookup")
   lazy val addressLookupBaseUrl: String = s"$addressLookupHost/address-lookup"
@@ -50,6 +52,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   private lazy val carfReportingFrontendBaseUrl: String = configuration.get[String]("urls.reportingFrontendBaseUrl")
   lazy val carfReportingFrontendUploadFileUrl: String   =
     s"$carfReportingFrontendBaseUrl/send-a-cryptoasset-report/upload-file"
+  lazy val carfReportingFrontendResultsPageUrl: String  =
+    s"$carfReportingFrontendBaseUrl/send-a-cryptoasset-report/details-of-files-you-have-sent"
 
   val aeoiEmailAddress: String = configuration.get("email.aeoi")
 

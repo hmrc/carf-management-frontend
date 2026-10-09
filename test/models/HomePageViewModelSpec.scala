@@ -25,7 +25,7 @@ class HomePageViewModelSpec extends SpecBase {
   val basicViewModel: HomePageViewModel = HomePageViewModel(
     isBusiness = true,
     hasZeroRcaspsAdded = true,
-    hasSentFilesInLast28Days = true,
+    hasSentFiles = true,
     organisationName = Some("Timmy Ltd"),
     ctUtr = Some(testUtr),
     carfId = testCarfId
@@ -57,18 +57,6 @@ class HomePageViewModelSpec extends SpecBase {
         val viewModel   = basicViewModel
         val result      = viewModel.getNoRcaspsSectionLink
         val expectedUrl = controllers.routes.RoutingController.onPageLoad(NormalMode).url
-
-        result mustBe expectedUrl
-      }
-    }
-
-    "getViewResultsLink val" - {
-      "must return the url for the view results page" in {
-        val viewModel   = basicViewModel
-        val result      = viewModel.getViewResultsLink
-        val expectedUrl = controllers.routes.PlaceholderController
-          .onPageLoad("Should redirect to /result-of-automatic-checks (part of file upload journey)")
-          .url
 
         result mustBe expectedUrl
       }

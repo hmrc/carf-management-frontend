@@ -22,7 +22,13 @@
         link: components.Link
 )
 
-@(viewModel: HomePageViewModel, aeoiEmail: String, changeContactDetailsUrl: String, uploadFileUrl: String)(implicit request: Request[_], messages: Messages)
+@(
+        viewModel: HomePageViewModel,
+        aeoiEmail: String,
+        changeContactDetailsUrl: String,
+        uploadFileUrl: String,
+        uploadResultsUrl: String
+)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("homePage.title")), showBackLink = false) {
 
@@ -40,8 +46,8 @@
             <h2 class="govuk-heading-m">@messages("homePage.yourReports.subheading")</h2>
             <p class="govuk-body govuk-!-margin-bottom-2">@link(uploadFileUrl, messages("homePage.yourReports.linkText"))</p>
 
-            @if(viewModel.hasSentFilesInLast28Days) {
-                <p class="govuk-body">@link(viewModel.getViewResultsLink, messages("homePage.viewResults.linkText"))</p>
+            @if(viewModel.hasSentFiles) {
+                <p class="govuk-body">@link(uploadResultsUrl, messages("homePage.viewResults.linkText"))</p>
             }
         </div>
 
@@ -62,6 +68,5 @@
         <h2 class="govuk-heading-m">@messages("homePage.help.subheading")</h2>
         <p class="govuk-body">@messages("homePage.help.linkText") @link("mailto:" + aeoiEmail, aeoiEmail)</p>
     </div>
-
 
 }
