@@ -3,6 +3,10 @@
     If you encounter any issue with Sass compilation using the plugin, please reach out to the PlatUI team.
  */
 
+.text-overflow{
+  overflow-wrap: break-word;
+}
+
 .js-visible {
   display: none !important;
 }
@@ -21,4 +25,20 @@
 
 dd.govuk-summary-list__actions.hmrc-summary-list__actions {
   width: 18% !important;
+}
+
+.govuk-heading-l,
+.govuk-heading-m,
+.govuk-body,
+.govuk-tag,
+.govuk-fieldset__legend,
+.govuk-fieldset__legend--xl,
+.govuk-fieldset__legend--l,
+.govuk-fieldset__legend--m,
+.govuk-fieldset__legend--s,
+.govuk-fieldset__heading,
+.govuk-summary-list__value,
+.govuk-summary-list__key {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
