@@ -38,12 +38,12 @@ trait ApplicationWithWiremock
 
   val extraConfig: Map[String, Any] =
     Map[String, Any](
-      "microservice.services.auth.host"            -> WireMockConstants.stubHost,
-      "microservice.services.auth.port"            -> WireMockConstants.stubPort,
-      "microservice.services.carf-management.host" -> WireMockConstants.stubHost,
-      "microservice.services.carf-management.port" -> WireMockConstants.stubPort,
-      "microservice.services.address-lookup.host"  -> WireMockConstants.stubHost,
-      "microservice.services.address-lookup.port"  -> WireMockConstants.stubPort
+      "microservice.services.auth.host"           -> WireMockConstants.stubHost,
+      "microservice.services.auth.port"           -> WireMockConstants.stubPort,
+      "microservice.services.carf-account.host"   -> WireMockConstants.stubHost,
+      "microservice.services.carf-account.port"   -> WireMockConstants.stubPort,
+      "microservice.services.address-lookup.host" -> WireMockConstants.stubHost,
+      "microservice.services.address-lookup.port" -> WireMockConstants.stubPort
     )
 
   override lazy val app: Application = new GuiceApplicationBuilder()
@@ -67,4 +67,4 @@ trait ApplicationWithWiremock
     wireMock.stop()
     super.afterAll()
 
-  val baseUrl: String = s"http://localhost:$port/carf-management"
+  val baseUrl: String = s"http://localhost:$port/carf-account"

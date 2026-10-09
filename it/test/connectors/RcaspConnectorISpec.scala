@@ -82,7 +82,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
   "viewRcasp" should {
 
-    val baseUrlPattern = "/carf-management/view-rcasp/.*"
+    val baseUrlPattern = "/carf-account/view-rcasp/.*"
 
     "successfully retrieve a ViewRcaspResponse and return the RCASP list" in {
       stubFor(
@@ -198,7 +198,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
   "createRcasp" should {
 
-    val testUrl = "/carf-management/create"
+    val testUrl = "/carf-account/create"
 
     val submitStubResponse =
       """
@@ -279,7 +279,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
   "updateRcasp" should {
 
-    val testUrl = "/carf-management/update"
+    val testUrl = "/carf-account/update"
 
     val updateStubResponse = "{}"
 
@@ -350,7 +350,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
   "deleteRcasp" should {
 
-    val testUrl = "/carf-management/delete"
+    val testUrl = "/carf-account/delete"
 
     val deleteStubResponse = "{}"
 
