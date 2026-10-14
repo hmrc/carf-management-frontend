@@ -57,14 +57,14 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
             Try(response.json.as[ViewRcaspResponse]) match {
               case Success(viewRcaspResponse) => Right(viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList)
               case Failure(exception)         =>
-                logWarn(s"Error parsing ViewRcaspResponse with endpoint: ${baseUrl.toURI}")
+                logError(s"Error parsing ViewRcaspResponse with endpoint: ${baseUrl.toURI}")
                 Left(JsonValidationError)
             }
           case response if response.status == NOT_FOUND =>
             logInfo(s"No RCASPs found for carfId $carfId")
             Right(List.empty)
           case response                                 =>
-            logWarn(s"Unexpected response: status code: ${response.status}, from endpoint: ${baseUrl.toURI}")
+            logError(s"Unexpected response: status code: ${response.status}, from endpoint: ${baseUrl.toURI}")
             Left(InternalServerError)
         }
     }
@@ -84,7 +84,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
       Try(httpResponse.json.as[CreateRcaspResponse]) match {
         case Success(data)      => Right(data)
         case Failure(exception) =>
-          logParseWarning(baseUrl, "createRcasp")
+          logParseError(baseUrl, "createRcasp")
           Left(JsonValidationError)
       }
     }
@@ -104,7 +104,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
       Try(httpResponse.json.as[UpdateDeleteRcaspResponse]) match {
         case Success(data)      => Right(data)
         case Failure(exception) =>
-          logParseWarning(baseUrl, "updateRcasp")
+          logParseError(baseUrl, "updateRcasp")
           Left(JsonValidationError)
       }
     }
@@ -124,7 +124,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
       Try(httpResponse.json.as[UpdateDeleteRcaspResponse]) match {
         case Success(data)      => Right(data)
         case Failure(exception) =>
-          logParseWarning(baseUrl, "deleteRcasp")
+          logParseError(baseUrl, "deleteRcasp")
           Left(JsonValidationError)
       }
     }
@@ -142,15 +142,15 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
           httpResponse.status match {
             case OK => successfulResult(httpResponse)
             case _  =>
-              logWarn(s"Unexpected response: status code: ${httpResponse.status}, from endpoint: ${url.toURI}")
+              logError(s"Unexpected response: status code: ${httpResponse.status}, from endpoint: ${url.toURI}")
               Left(InternalServerError)
           }
         }
     )
   }
 
-  private def logParseWarning(baseUrl: URL, originatingMethod: String): Unit =
-    logWarn(
+  private def logParseError(baseUrl: URL, originatingMethod: String): Unit =
+    logError(
       s"[RcaspConnector][$originatingMethod] Error parsing SubmitRcaspResponse with endpoint: ${baseUrl.toURI}"
     )
 }

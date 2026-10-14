@@ -55,16 +55,16 @@ class RegistrationConnector @Inject() (val config: FrontendAppConfig, val http: 
             Try(response.json.as[RegisterWithIdResponse]) match {
               case Success(data)      => Right(data)
               case Failure(exception) =>
-                logWarn(s"Error parsing RegisterWithIdResponse with endpoint: ${url.toURI}")
+                logError(s"Error parsing RegisterWithIdResponse with endpoint: ${url.toURI}")
                 Left(ApiError.JsonValidationError)
             }
           case response if response.status == NOT_FOUND =>
-            logWarn(
+            logError( // error as this would stop the progress of the user journey and needs rectifying
               s"No match found for organisation: status code: ${response.status}, from endpoint: ${url.toURI}"
             )
             Left(ApiError.NotFoundError)
           case response                                 =>
-            logWarn(
+            logError(
               s"Unexpected response for organisation: status code: ${response.status}, from endpoint: ${url.toURI}"
             )
             Left(ApiError.InternalServerError)

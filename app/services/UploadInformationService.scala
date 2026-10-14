@@ -28,7 +28,7 @@ class UploadInformationService @Inject() {
   def hasUserUploadedFilesInLast28Days(carfId: String): ResultT[Boolean] =
     carfId.dropRight(1).last.toString match {
       case "9" =>
-        logWarn("[hasUserUploadedFilesInLast28Days] Error!")
+        logDebug("[hasUserUploadedFilesInLast28Days] Error!")
         ResultT.fromError(InternalServerError)
       case "1" => ResultT.fromValue(true)
       case _   => ResultT.fromValue(false)

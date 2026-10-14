@@ -35,7 +35,7 @@ class SubmissionLockAction @Inject() (val parser: BodyParsers.Default)(implicit 
 
     if (submitted) {
 
-      logInfo(
+      logWarn(
         s"[SubmissionLockAction] Blocking request after submission. path=${request.uri}"
       )
 

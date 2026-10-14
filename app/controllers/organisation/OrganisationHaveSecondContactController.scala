@@ -58,7 +58,7 @@ class OrganisationHaveSecondContactController @Inject() (
         case Some(contactName) => Ok(view(preparedForm, mode, contactName))
         case None              =>
           logWarn(
-            "[OrganisationHaveSecondContactController] Could not retrieve OrganisationFirstContactNamePage onPageLoad"
+            "[OrganisationHaveSecondContactController][onPageLoad] Could not retrieve OrganisationFirstContactNamePage onPageLoad"
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
       }
@@ -78,7 +78,7 @@ class OrganisationHaveSecondContactController @Inject() (
               case Some(contactName) => Future.successful(BadRequest(view(formWithErrors, mode, contactName)))
               case None              =>
                 logWarn(
-                  "[OrganisationHaveSecondContactController] Could not retrieve OrganisationFirstContactNamePage onPageSubmit"
+                  "[OrganisationHaveSecondContactController][onSubmit] Could not retrieve OrganisationFirstContactNamePage onPageSubmit"
                 )
                 Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
             },
