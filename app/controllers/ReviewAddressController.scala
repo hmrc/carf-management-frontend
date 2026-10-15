@@ -75,7 +75,7 @@ class ReviewAddressController @Inject() (
             _              <- sessionRepository.set(updatedAnswers)
           } yield Redirect(navigator.nextPage(ReviewAddressPageForNavigatorOnly, mode, updatedAnswers))
         case None          =>
-          logError("[ReviewAddressController][onSubmit] No address found in user answers")
+          logWarn("[ReviewAddressController][onSubmit] No address found in user answers")
           Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       }
     }

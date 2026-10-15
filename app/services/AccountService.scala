@@ -38,7 +38,7 @@ class AccountService @Inject() (
       .viewRcasp(carfId)
       .bimap(
         error => {
-          logWarn(s"[AccountService][getNumberOfRcaspsCurrentlyAdded] Error calling viewRcasp: $error")
+          logError(s"[AccountService][getNumberOfRcaspsCurrentlyAdded] Error calling viewRcasp: $error")
           error
         },
         rcaspList => rcaspList.size
@@ -51,7 +51,7 @@ class AccountService @Inject() (
     rcaspConnector
       .viewRcasp(carfId)
       .leftMap { error =>
-        logWarn(s"[AccountService][getRcaspDetails] Error calling viewRcasp: $error")
+        logError(s"[AccountService][getRcaspDetails] Error calling viewRcasp: $error")
         error
       }
       .subflatMap { rcaspList =>
@@ -69,7 +69,7 @@ class AccountService @Inject() (
     subscriptionConnector
       .displaySubscription(carfId)
       .leftMap { error =>
-        logWarn(s"[AccountService][getUserBusinessSubscriptionData] Error calling displaySubscription: $error")
+        logError(s"[AccountService][getUserBusinessSubscriptionData] Error calling displaySubscription: $error")
         error
       }
       .subflatMap { displaySubscriptionResponse =>

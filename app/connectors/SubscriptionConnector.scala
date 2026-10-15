@@ -51,7 +51,7 @@ class SubscriptionConnector @Inject() (val config: FrontendAppConfig, val http: 
               Try(httpResponse.json.as[DisplaySubscriptionResponse]) match {
                 case Success(data)      => Right(data)
                 case Failure(exception) =>
-                  logWarn(s"Error parsing DisplaySubscriptionResponse with endpoint: ${baseUrl.toURI}")
+                  logError(s"Critical Error parsing DisplaySubscriptionResponse with endpoint: ${baseUrl.toURI}")
                   Left(JsonValidationError)
               }
             case NOT_FOUND =>
@@ -60,7 +60,7 @@ class SubscriptionConnector @Inject() (val config: FrontendAppConfig, val http: 
               )
               Left(NotFoundError)
             case _         =>
-              logWarn(s"Unexpected response. Status code: ${httpResponse.status}, from endpoint: ${baseUrl.toURI}")
+              logError(s"Unexpected response. Status code: ${httpResponse.status}, from endpoint: ${baseUrl.toURI}")
               Left(InternalServerError)
           }
         }
