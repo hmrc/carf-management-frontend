@@ -56,13 +56,13 @@ class AddressLookupConnector @Inject() (val config: FrontendAppConfig, val http:
                 Right(data)
               case Failure(exception) =>
                 logError(
-                  s"Error parsing response as AddressResponse with uri: $searchByPostcodeUrl"
+                  s"[AddressLookupConnector][searchByPostcode] Error parsing response as AddressResponse with uri: $searchByPostcodeUrl"
                 )
                 Left(ApiError.JsonValidationError)
             }
           case response                              =>
             logError(
-              s"Unexpected response: status code: ${response.status}, with message: ${response.body} from uri: $searchByPostcodeUrl"
+              s"[AddressLookupConnector][searchByPostcode] Unexpected response: status code: ${response.status}, with message: ${response.body} from uri: $searchByPostcodeUrl"
             )
             Left(ApiError.InternalServerError)
         }
