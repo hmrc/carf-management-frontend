@@ -22,13 +22,13 @@ import models.requests.DataRequest
 import models.{AddressAndUPRN, AddressUk, FindAddress, Mode, NormalMode}
 import navigation.Navigator
 import pages.*
-import utils.LoggerUtil.*
 import play.api.data.{Form, FormError}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.AddressLookupService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.LoggerUtil.*
 import views.html.FindAddressView
 
 import javax.inject.Inject
@@ -98,7 +98,7 @@ class FindAddressController @Inject() (
               .value
               .flatMap {
                 case Left(error)                                    =>
-                  logError(s"[FindAddressController][onSubmit] Address lookup service failed: $error")
+                  logWarn(s"[FindAddressController][onSubmit] Address lookup service failed: $error")
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
                 case Right((Nil, _))                                =>
                   val formError =

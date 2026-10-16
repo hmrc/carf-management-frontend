@@ -62,7 +62,7 @@ class OrganisationSecondContactHavePhoneController @Inject() (
           Ok(view(preparedForm, mode, secondContactName, rcaspName))
         case _                                          =>
           logWarn(
-            "[OrganisationSecondContactHavePhoneController] Could not retrieve OrganisationSecondContactNamePage and/or OverwritableOrganisationName onPageLoad"
+            "[OrganisationSecondContactHavePhoneController][onPageLoad] Could not retrieve OrganisationSecondContactNamePage and/or OverwritableOrganisationName"
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
       }
@@ -86,7 +86,7 @@ class OrganisationSecondContactHavePhoneController @Inject() (
                 Future.successful(BadRequest(view(formWithErrors, mode, secondContactName, organisationName)))
               case _                                                 =>
                 logWarn(
-                  "[OrganisationSecondContactHavePhoneController] Could not retrieve Contact and/or Org name onPageSubmit"
+                  "[OrganisationSecondContactHavePhoneController][onPageSubmit] Could not retrieve Contact and/or Org name"
                 )
                 Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))
             },

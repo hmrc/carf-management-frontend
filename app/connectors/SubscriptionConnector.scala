@@ -57,7 +57,7 @@ class SubscriptionConnector @Inject() (val config: FrontendAppConfig, val http: 
                   Left(JsonValidationError)
               }
             case NOT_FOUND =>
-              logWarn(
+              logError(
                 s"[SubscriptionConnector][displaySubscription] No match could be found for carfId $carfId. Status code: ${httpResponse.status}, from endpoint: ${baseUrl.toURI}"
               )
               Left(NotFoundError)
