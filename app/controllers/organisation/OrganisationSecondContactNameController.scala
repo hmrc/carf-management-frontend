@@ -58,7 +58,7 @@ class OrganisationSecondContactNameController @Inject() (
         case Some(organisationName) => Ok(view(preparedForm, mode, organisationName))
         case None                   =>
           logWarn(
-            "[OrganisationSecondContactNameController] Could not retrieve OverwritableOrganisationName onPageLoad"
+            "[OrganisationSecondContactNameController][onPageLoad] Could not retrieve OverwritableOrganisationName"
           )
           Redirect(
             controllers.routes.InformationMissingController.onPageLoad()
@@ -76,7 +76,7 @@ class OrganisationSecondContactNameController @Inject() (
               case Some(organisationName) => Future.successful(BadRequest(view(formWithErrors, mode, organisationName)))
               case None                   =>
                 logWarn(
-                  "[OrganisationSecondContactNameController] Could not retrieve OverwritableOrganisationName onPageSubmit"
+                  "[OrganisationSecondContactNameController][onPageSubmit] Could not retrieve OverwritableOrganisationName"
                 )
                 Future.successful(
                   Redirect(

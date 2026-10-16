@@ -58,7 +58,7 @@ class OrganisationFirstContactPhoneNumberController @Inject() (
         case Some(contactName) => Ok(view(preparedForm, mode, contactName))
         case None              =>
           logWarn(
-            "[OrganisationFirstContactPhoneNumberController] Could not retrieve OrganisationFirstContactNamePage onPageLoad"
+            "[OrganisationFirstContactPhoneNumberController][onPageLoad] Could not retrieve OrganisationFirstContactNamePage onPageLoad"
           )
           Redirect(
             controllers.routes.InformationMissingController.onPageLoad()
@@ -76,7 +76,7 @@ class OrganisationFirstContactPhoneNumberController @Inject() (
               case Some(contactName) => Future.successful(BadRequest(view(formWithErrors, mode, contactName)))
               case None              =>
                 logWarn(
-                  "[OrganisationFirstContactPhoneNumberController] Could not retrieve OrganisationFirstContactNamePage onPageSubmit"
+                  "[OrganisationFirstContactPhoneNumberController][onSubmit] Could not retrieve OrganisationFirstContactNamePage onPageSubmit"
                 )
                 Future.successful(
                   Redirect(

@@ -125,7 +125,7 @@ class ChangeDetailsController @Inject() (
             _                 <- auditService
                                    .auditChangeRcasp(request.userAnswers)
                                    .recover { case e =>
-                                     logDebug(s"Auditing Management failed due to $e")
+                                     logDebug(s"[ChangeDetailsController][onSubmit] Auditing Management failed due to $e")
                                      ()
                                    }
                                    .value

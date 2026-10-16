@@ -25,16 +25,16 @@ import models.{CachedBusinessDetails, ChangeMode, Mode, NormalMode, UserAnswers}
 import navigation.Navigator
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
-import utils.LoggerUtil.*
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents, Result}
+import play.api.mvc.*
 import repositories.SessionRepository
 import services.{AccountService, RegistrationService}
 import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CountryListFactory
+import utils.LoggerUtil.*
 import views.html.organisation.ReportForRegisteredBusinessView
 
 import javax.inject.Inject
@@ -191,7 +191,7 @@ class ReportForRegisteredBusinessController @Inject() (
           navigator.nextPage(ReportForRegisteredBusinessPage, NormalMode, updatedAnswers)
         )
       case Left(error)        =>
-        logError(s"[ReportForRegisteredBusinessController][onSubmit] Error getting how many Rcasps user has: $error")
+        logWarn(s"[ReportForRegisteredBusinessController][onSubmit] Error getting how many Rcasps user has: $error")
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
     }
 
