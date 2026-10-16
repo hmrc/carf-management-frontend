@@ -42,6 +42,8 @@ trait ApplicationWithWiremock
       "microservice.services.auth.port"           -> WireMockConstants.stubPort,
       "microservice.services.carf-account.host"   -> WireMockConstants.stubHost,
       "microservice.services.carf-account.port"   -> WireMockConstants.stubPort,
+      "microservice.services.carf-reporting.host" -> WireMockConstants.stubHost,
+      "microservice.services.carf-reporting.port" -> WireMockConstants.stubPort,
       "microservice.services.address-lookup.host" -> WireMockConstants.stubHost,
       "microservice.services.address-lookup.port" -> WireMockConstants.stubPort
     )

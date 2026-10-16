@@ -16,7 +16,6 @@
 
 package connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import itutil.ApplicationWithWiremock
 import models.errors.ApiError.*

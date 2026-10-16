@@ -36,13 +36,6 @@ pageNotFound.p1 = If you typed the web address, check it is correct.
 pageNotFound.p2 = If you pasted the web address, check you copied the entire address.
 pageNotFound.link = You can email {0} if you have any questions about this service.
 
-index.title = carf-management-frontend
-index.heading = carf-management-frontend
-index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
-
-checkYourAnswers.title = Check your answers
-checkYourAnswers.heading = Check your answers
-
 journeyRecovery.title = Sorry, there is a problem with the service
 journeyRecovery.heading = Sorry, there is a problem with the service
 journeyRecovery.guidance = Try again later.
@@ -63,7 +56,7 @@ homePage.noRcasps.p1 = To send a report, you must
 homePage.noRcasps.p1.link = add a reporting cryptoasset service provider (RCASP)
 homePage.carfId.p1 = For reference, your CARF user ID is:
 homePage.yourReports.subheading = Your reports
-homePage.viewResults.linkText = View results of checks on recently sent files
+homePage.viewResults.linkText = Details of files you have sent
 homePage.yourReports.linkText = Upload an XML file for a reporting cryptoasset service provider (RCASP)
 homePage.yourRcasps.subheading = Your RCASPs
 homePage.yourRcasps.add.linkText = Add an RCASP

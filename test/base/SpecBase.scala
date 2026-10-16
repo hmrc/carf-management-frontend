@@ -25,7 +25,6 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{BeforeAndAfterEach, OptionValues, TryValues}
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
@@ -41,7 +40,6 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.Section
 
-import java.time.Instant
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
@@ -90,8 +88,7 @@ trait SpecBase
   extension (userAnswers: UserAnswers) {
 
     def withPage[T](page: Settable[T] & Gettable[T], value: T)(implicit
-        writes: Writes[T],
-        rds: Reads[T]
+        writes: Writes[T]
     ): UserAnswers = {
       val updatedData = userAnswers.data.setObject(page.path, Json.toJson(value)) match {
         case JsSuccess(jsValue, _) =>
@@ -102,7 +99,7 @@ trait SpecBase
       userAnswers.copy(data = updatedData.success.value)
     }
 
-    def withoutPage[T](page: Settable[T])(implicit writes: Writes[T]): UserAnswers =
+    def withoutPage[T](page: Settable[T]): UserAnswers =
       userAnswers.remove(page).success.value
 
   }

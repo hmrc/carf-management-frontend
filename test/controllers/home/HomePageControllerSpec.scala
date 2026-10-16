@@ -18,6 +18,7 @@ package controllers.home
 
 import base.SpecBase
 import config.FrontendAppConfig
+import connectors.SubmissionDetailsConnector
 import models.errors.ApiError.InternalServerError
 import models.{UserAnswers, UserBusinessSubscriptionData}
 import org.mockito.ArgumentMatchers.any
@@ -26,7 +27,7 @@ import play.api.Application
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import services.{AccountService, UploadInformationService}
+import services.AccountService
 import types.ResultT
 import viewmodels.HomePageViewModel
 import views.html.HomePageView
@@ -38,7 +39,7 @@ class HomePageControllerSpec extends SpecBase {
   val basicViewModel: HomePageViewModel = HomePageViewModel(
     isBusiness = true,
     hasZeroRcaspsAdded = true,
-    hasSentFilesInLast28Days = true,
+    hasSentFiles = true,
     organisationName = Some("Timmy Ltd"),
     ctUtr = Some(testUtr),
     carfId = testCarfId
@@ -47,7 +48,7 @@ class HomePageControllerSpec extends SpecBase {
   val negativeViewModel: HomePageViewModel = HomePageViewModel(
     isBusiness = false,
     hasZeroRcaspsAdded = false,
-    hasSentFilesInLast28Days = false,
+    hasSentFiles = false,
     organisationName = None,
     ctUtr = None,
     carfId = testCarfId
@@ -63,8 +64,9 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
       when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
+      when(mockAppConfig.carfReportingFrontendResultsPageUrl) thenReturn "results"
 
-      when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
+      when(mockSubmissionDetailsConnector.checkForSentFiles(any())(any(), any())).thenReturn(ResultT.fromValue(true))
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
@@ -77,7 +79,7 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(basicViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb", "ddd")(
+        contentAsString(result) mustEqual view(basicViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb", "ddd", "results")(
           request,
           messages(application)
         ).toString
@@ -91,8 +93,9 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
       when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
+      when(mockAppConfig.carfReportingFrontendResultsPageUrl) thenReturn "results"
 
-      when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
+      when(mockSubmissionDetailsConnector.checkForSentFiles(any())(any(), any())).thenReturn(ResultT.fromValue(true))
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
@@ -107,10 +110,13 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(expectedViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb", "ddd")(
-          request,
-          messages(application)
-        ).toString
+        contentAsString(result) mustEqual view(
+          expectedViewModel,
+          "aeoi.enquiries@hmrc.gov.uk",
+          "bbb",
+          "ddd",
+          "results"
+        )(request, messages(application)).toString
       }
     }
 
@@ -121,8 +127,9 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
       when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
+      when(mockAppConfig.carfReportingFrontendResultsPageUrl) thenReturn "results"
 
-      when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(false))
+      when(mockSubmissionDetailsConnector.checkForSentFiles(any())(any(), any())).thenReturn(ResultT.fromValue(false))
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(2))
       when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
@@ -135,28 +142,21 @@ class HomePageControllerSpec extends SpecBase {
         val view    = application.injector.instanceOf[HomePageView]
 
         status(result)          mustEqual OK
-        contentAsString(result) mustEqual view(negativeViewModel, "aeoi.enquiries@hmrc.gov.uk", "bbb", "ddd")(
-          request,
-          messages(application)
-        ).toString
+        contentAsString(result) mustEqual view(
+          negativeViewModel,
+          "aeoi.enquiries@hmrc.gov.uk",
+          "bbb",
+          "ddd",
+          "results"
+        )(request, messages(application)).toString
       }
     }
 
     "must redirect to journey recovery when the call to getNumberOfRcaspsCurrentlyAdded fails" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
-      when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
-      when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
-      when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
-      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
-
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
         .thenReturn(ResultT.fromError(InternalServerError))
-      when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
-        ResultT.fromValue(UserBusinessSubscriptionData(hasOrganisationContactDetails = true, Some("Timmy Ltd")))
-      )
-
-      when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
       running(application) {
         val request = FakeRequest(GET, routes.HomePageController.onPageLoad().url)
@@ -166,23 +166,16 @@ class HomePageControllerSpec extends SpecBase {
         redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
         verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
         verify(mockAccountService, times(0)).getUserBusinessSubscriptionData(any())(any(), any())
-        verify(mockUploadInformationService, times(0)).hasUserUploadedFilesInLast28Days(any())
+        verify(mockSubmissionDetailsConnector, times(0)).checkForSentFiles(any())(any(), any())
       }
     }
 
     "must redirect to journey recovery when the call to getUserBusinessSubscriptionData fails" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
-      when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
-      when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
-      when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
-      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
-
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any()))
         .thenReturn(ResultT.fromError(InternalServerError))
-
-      when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any())).thenReturn(ResultT.fromValue(true))
 
       running(application) {
         val request = FakeRequest(GET, routes.HomePageController.onPageLoad().url)
@@ -192,11 +185,11 @@ class HomePageControllerSpec extends SpecBase {
         redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
         verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
         verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
-        verify(mockUploadInformationService, times(0)).hasUserUploadedFilesInLast28Days(any())
+        verify(mockSubmissionDetailsConnector, times(0)).checkForSentFiles(any())(any(), any())
       }
     }
 
-    "must redirect to journey recovery when the call to hasUserUploadedFilesInLast28Days fails" in new Setup(
+    "must redirect to journey recovery when the call to checkForSentFiles fails" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
       when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
@@ -209,7 +202,7 @@ class HomePageControllerSpec extends SpecBase {
         ResultT.fromValue(UserBusinessSubscriptionData(hasOrganisationContactDetails = true, Some("Timmy Ltd")))
       )
 
-      when(mockUploadInformationService.hasUserUploadedFilesInLast28Days(any()))
+      when(mockSubmissionDetailsConnector.checkForSentFiles(any())(any(), any()))
         .thenReturn(ResultT.fromError(InternalServerError))
 
       running(application) {
@@ -220,7 +213,7 @@ class HomePageControllerSpec extends SpecBase {
         redirectLocation(result).value mustBe controllers.routes.JourneyRecoveryController.onPageLoad().url
         verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
         verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
-        verify(mockUploadInformationService).hasUserUploadedFilesInLast28Days(any())
+        verify(mockSubmissionDetailsConnector).checkForSentFiles(any())(any(), any())
       }
     }
   }
@@ -229,15 +222,15 @@ class HomePageControllerSpec extends SpecBase {
       requestUtr: Option[String] = None,
       userAnswers: Option[UserAnswers] = None
   ) {
-    val mockAccountService: AccountService                     = mock[AccountService]
-    val mockUploadInformationService: UploadInformationService = mock[UploadInformationService]
-    val mockAppConfig: FrontendAppConfig                       = mock[FrontendAppConfig]
+    val mockAccountService: AccountService                         = mock[AccountService]
+    val mockSubmissionDetailsConnector: SubmissionDetailsConnector = mock[SubmissionDetailsConnector]
+    val mockAppConfig: FrontendAppConfig                           = mock[FrontendAppConfig]
 
     val application: Application =
       applicationBuilder(requestUtr = requestUtr, userAnswers = userAnswers)
         .overrides(
           bind[AccountService].toInstance(mockAccountService),
-          bind[UploadInformationService].toInstance(mockUploadInformationService),
+          bind[SubmissionDetailsConnector].toInstance(mockSubmissionDetailsConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
         )
         .build()

@@ -21,7 +21,6 @@ import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.requests.createRcasp.RcaspRequest as CreateRcaspRequest
 import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
 import models.requests.{createRcasp, updateRcasp, RequestType}
-import models.{RcaspAddress, RcaspContactDetails, TinDetails}
 import pages.UkAddressInUserAnswers
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
