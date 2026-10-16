@@ -301,7 +301,9 @@ trait Formatters {
                 case Success(value)                   => value
                 case Failure(_: NumberParseException) => formErrorInvalidKey
                 case Failure(exception)               =>
-                  logError(s"Unexpected phone number form error occurred with message: ${exception.getMessage}")
+                  logError(
+                    s"[Formatters][phoneNumberFormatter] Unexpected phone number form error occurred with message: ${exception.getMessage}"
+                  )
                   formErrorInvalidKey
               }
             }

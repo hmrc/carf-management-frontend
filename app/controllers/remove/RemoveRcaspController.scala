@@ -99,7 +99,7 @@ class RemoveRcaspController @Inject() (
                         _               <- auditService
                                              .auditRemoveRcasp(userAccessAnswer, otherAccessAnswer, value)
                                              .recover { case e =>
-                                               logDebug(s"Auditing Management failed due to $e")
+                                               logDebug(s"[RemoveRcaspController][onSubmit] Auditing Management failed due to $e")
                                                ()
                                              }
                                              .value

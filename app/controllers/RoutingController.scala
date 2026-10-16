@@ -47,7 +47,7 @@ class RoutingController @Inject() (
 
       accountService.getNumberOfRcaspsCurrentlyAdded(carfId).value.flatMap {
         case Left(error) =>
-          logWarn(s"[RoutingController] Failed to get RCASP count: $error")
+          logWarn(s"[RoutingController][onPageLoad] Failed to get RCASP count: $error")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
 
         case Right(numberOfRcasps) =>

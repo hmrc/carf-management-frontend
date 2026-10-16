@@ -157,17 +157,19 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
   ): ResultT[Unit] =
     ResultT.fromFuture(auditConnector.sendExtendedEvent(extendedEvent).map {
       case Success         =>
-        logDebug(s"Successfully sent Management audit event for $eventType RCASP")
+        logDebug(s"[AuditService][sendEvent] Successfully sent Management audit event for $eventType RCASP")
         Right[CarfError, Unit](())
       case Disabled        =>
-        logError(s"Failed to audit Management for $eventType RCASP - Disabled result returned")
+        logError(
+          s"[AuditService][sendEvent] Failed to audit Management for $eventType RCASP - Disabled result returned"
+        )
         Left[CarfError, Unit](InternalServerError)
       case Failure(msg, _) =>
-        logError(s"Failed to audit Management for $eventType RCASP with message $msg")
+        logError(s"[AuditService][sendEvent] Failed to audit Management for $eventType RCASP with message $msg")
         Left[CarfError, Unit](InternalServerError)
     } recover {
       case e if NonFatal(e) =>
-        logError(s"Failed to audit Management for $eventType RCASP")
+        logError(s"[AuditService] Failed to audit Management for $eventType RCASP")
         Left[CarfError, Unit](InternalServerError)
     })
 
