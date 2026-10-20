@@ -73,7 +73,7 @@ class PopulateUserAnswersHelper @Inject() (
         )
       }
       .getOrElse {
-        logWarn(
+        logError(
           "[PopulateUserAnswersHelper][populateUserAnswersForIndividual] Unable to populate user answers from IndividualRcaspDetails"
         )
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
@@ -123,7 +123,7 @@ class PopulateUserAnswersHelper @Inject() (
         )
       }
       .getOrElse {
-        logWarn(
+        logError(
           "[PopulateUserAnswersHelper][populateUserAnswersForOrganisation] Unable to populate user answers from OrganisationRcaspDetails"
         )
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
@@ -160,7 +160,7 @@ class PopulateUserAnswersHelper @Inject() (
           case Right(businessDetails) =>
             countryListFactory.getDescriptionFromCode(businessDetails.address.countryCode) match {
               case None =>
-                logWarn(
+                logError(
                   s"[PopulateUserAnswersHelper][populateUserAnswersForRegisteredBusiness] Country with code ${businessDetails.address.countryCode} not found in list of countries"
                 )
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
@@ -198,7 +198,7 @@ class PopulateUserAnswersHelper @Inject() (
         }
       }
       .getOrElse {
-        logWarn(
+        logError(
           "[PopulateUserAnswersHelper][populateUserAnswersForRegisteredBusiness] Unable to populate user answers from OrganisationRcaspDetails"
         )
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
