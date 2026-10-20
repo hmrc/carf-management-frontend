@@ -59,7 +59,7 @@ class AddressFormProvider @Inject() extends Mappings {
         regexPostcode,
         "address.postcode.error.invalid",
         postCodeAllowedChars,
-        Some("address.postcode.error.notUK")
+        "address.postcode.error.notUK"
       )
     )(AddressUk.apply)(x => Some(x.addressLine1, x.addressLine2, x.addressLine3, x.townOrCity, x.postCode))
   )

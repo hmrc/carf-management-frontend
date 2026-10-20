@@ -23,7 +23,6 @@ import models.Enumerable
 import utils.LoggerUtil.*
 import play.api.data.FormError
 import play.api.data.format.Formatter
-import utils.PostcodeUtil
 
 import scala.util.control.Exception.nonFatalCatch
 import scala.util.{Failure, Success, Try}
@@ -345,7 +344,7 @@ trait Formatters {
       regex: String,
       invalidCharKey: String,
       validCharRegex: String,
-      notRealKey: Option[String]
+      notUkKey: String
   ): Formatter[String] =
     new Formatter[String] {
       override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], String] = {
@@ -355,13 +354,16 @@ trait Formatters {
         postCode match {
           case Some(postCode) if postCode.isEmpty => Left(Seq(FormError(key, requiredKey)))
           case Some(postCode)                     =>
-            val sanitisedPostcode = postCode.replaceAll("\\s+", "")
+            val sanitisedPostcode = postCode.replaceAll("\\s+", " ")
             sanitisedPostcode match {
-              case s if s.length > maxLengthPostcode => Left(Seq(FormError(key, lengthKey)))
-              case s if !s.matches(validCharRegex)   => Left(Seq(FormError(key, invalidCharKey)))
-              case s if !s.matches(regex)            => Left(Seq(FormError(key, invalidKey)))
-              case s                                 =>
-                filterCDPostcodes(postCode, notRealKey)
+              case s if s.length > maxLengthPostcode             => Left(Seq(FormError(key, lengthKey)))
+              case s if !s.matches(validCharRegex)               => Left(Seq(FormError(key, invalidCharKey)))
+              case s if data.getOrElse("townOrCity", "").isEmpty =>
+                val postCodeNoSpaces = postCode.replaceAll("\\s+", "")
+                if (!postCodeNoSpaces.matches(regex)) { Left(Seq(FormError(key, invalidKey))) }
+                else { filterCDPostcodes(postCodeNoSpaces, notUkKey, onFindAddress = true) }
+              case s                                             =>
+                filterCDPostcodes(s, notUkKey, onFindAddress = false)
             }
           case _                                  => Left(Seq(FormError(key, requiredKey)))
         }
@@ -374,12 +376,20 @@ trait Formatters {
 
   private def filterCDPostcodes(
       postcode: String,
-      invalidKey: Option[String]
+      notUkKey: String,
+      onFindAddress: Boolean
   ): Either[Seq[FormError], String] =
-    postcode.take(2).toUpperCase match {
-      case "GY" | "JE" | "IM" => Left(Seq(FormError("postcode", invalidKey.get)))
-      case _                  => Right(PostcodeUtil.normalise(true, postcode))
+    val postCodeNoSpaces = postcode.replaceAll("\\s+", "")
+    postCodeNoSpaces.take(2).toUpperCase match {
+      case "GY" | "JE" | "IM" => Left(Seq(FormError("postcode", notUkKey)))
+      case _                  =>
+        if onFindAddress then Right(formatForFindAddress(postcode)) else Right(postcode)
     }
+
+  private def formatForFindAddress(postCodeNoSpaces: String): String =
+    val tail = postCodeNoSpaces.substring(postCodeNoSpaces.length - 3)
+    val head = postCodeNoSpaces.substring(0, postCodeNoSpaces.length - 3)
+    s"$head $tail".toUpperCase
 
   protected def validatedOptionalTextFormatter(
       lengthKey: String,
