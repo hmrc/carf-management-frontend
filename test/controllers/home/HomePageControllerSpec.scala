@@ -65,6 +65,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
       when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
       when(mockAppConfig.carfReportingFrontendResultsPageUrl) thenReturn "results"
+      when(mockAppConfig.fileUploadResultsEnabled) thenReturn true
 
       when(mockSubmissionDetailsConnector.checkForSentFiles(any())(any(), any())).thenReturn(ResultT.fromValue(true))
 
@@ -94,6 +95,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
       when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
       when(mockAppConfig.carfReportingFrontendResultsPageUrl) thenReturn "results"
+      when(mockAppConfig.fileUploadResultsEnabled) thenReturn true
 
       when(mockSubmissionDetailsConnector.checkForSentFiles(any())(any(), any())).thenReturn(ResultT.fromValue(true))
 
@@ -128,6 +130,7 @@ class HomePageControllerSpec extends SpecBase {
       when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
       when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
       when(mockAppConfig.carfReportingFrontendResultsPageUrl) thenReturn "results"
+      when(mockAppConfig.fileUploadResultsEnabled) thenReturn true
 
       when(mockSubmissionDetailsConnector.checkForSentFiles(any())(any(), any())).thenReturn(ResultT.fromValue(false))
 
@@ -192,10 +195,7 @@ class HomePageControllerSpec extends SpecBase {
     "must redirect to journey recovery when the call to checkForSentFiles fails" in new Setup(
       requestUtr = Some(testUtr.uniqueTaxPayerReference)
     ) {
-      when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
-      when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
-      when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
-      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
+      when(mockAppConfig.fileUploadResultsEnabled) thenReturn true
 
       when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
       when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
@@ -214,6 +214,43 @@ class HomePageControllerSpec extends SpecBase {
         verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
         verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
         verify(mockSubmissionDetailsConnector).checkForSentFiles(any())(any(), any())
+      }
+    }
+
+    "must return OK with hasSentFiles = false without calling SubmissionDetailsConnector when file-upload-results-enabled is false in config" in new Setup(
+      requestUtr = Some(testUtr.uniqueTaxPayerReference)
+    ) {
+      when(mockAppConfig.aeoiEmailAddress) thenReturn "aeoi.enquiries@hmrc.gov.uk"
+      when(mockAppConfig.changeContactDetailsIndexUrl) thenReturn "bbb"
+      when(mockAppConfig.feedbackUrl(any())) thenReturn "ccc"
+      when(mockAppConfig.carfReportingFrontendUploadFileUrl) thenReturn "ddd"
+      when(mockAppConfig.carfReportingFrontendResultsPageUrl) thenReturn "results"
+      when(mockAppConfig.fileUploadResultsEnabled) thenReturn false
+
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any())).thenReturn(ResultT.fromValue(0))
+      when(mockAccountService.getUserBusinessSubscriptionData(any())(any(), any())).thenReturn(
+        ResultT.fromValue(UserBusinessSubscriptionData(hasOrganisationContactDetails = true, None))
+      )
+
+      val expectedViewModel: HomePageViewModel = basicViewModel.copy(organisationName = None, hasSentFiles = false)
+
+      running(application) {
+        val request = FakeRequest(GET, routes.HomePageController.onPageLoad().url)
+        val result  = route(application, request).value
+        val view    = application.injector.instanceOf[HomePageView]
+
+        status(result)          mustEqual OK
+        contentAsString(result) mustEqual view(
+          expectedViewModel,
+          "aeoi.enquiries@hmrc.gov.uk",
+          "bbb",
+          "ddd",
+          "results"
+        )(request, messages(application)).toString
+
+        verify(mockAccountService).getNumberOfRcaspsCurrentlyAdded(any())(any(), any())
+        verify(mockAccountService).getUserBusinessSubscriptionData(any())(any(), any())
+        verify(mockSubmissionDetailsConnector, times(0)).checkForSentFiles(any())(any(), any())
       }
     }
   }
