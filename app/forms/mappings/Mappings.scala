@@ -111,7 +111,7 @@ trait Mappings extends Formatters with Constraints {
       regex: String,
       invalidCharKey: String,
       InvalidCharRegex: String,
-      notRealKey: Option[String]
+      notUkKey: String
   ): Mapping[String] =
     of(
       mandatoryPostcodeFormatter(
@@ -121,7 +121,7 @@ trait Mappings extends Formatters with Constraints {
         regex,
         invalidCharKey,
         InvalidCharRegex,
-        notRealKey
+        notUkKey
       )
     )
 

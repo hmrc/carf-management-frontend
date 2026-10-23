@@ -178,16 +178,6 @@ class AddressFormProviderSpec extends StringFieldBehaviours {
       result.errors must contain(FormError("postcode", "address.postcode.error.invalid"))
     }
 
-    "must return an 'invalid format' error for N123456" in {
-      val formData = Map(
-        "addressLine1" -> "addressLine1",
-        "townOrCity"   -> "town",
-        "postcode"     -> "N123456"
-      )
-      val result   = form.bind(formData)
-      result.errors must contain(FormError("postcode", "address.postcode.error.invalidFormat"))
-    }
-
     "must return a 'not uk' if Jersey postcode is present" in {
       val formData = Map(
         "addressLine1" -> "addressLine1",
@@ -235,9 +225,19 @@ class AddressFormProviderSpec extends StringFieldBehaviours {
       result.hasErrors mustBe false
     }
 
-    "must be valid if a Birmingham postcode is provided in a valid format" in {
+    "must be valid if a Birmingham postcode is provided in a valid format with multiple spaces" in {
       val formData =
-        Map("addressLine1" -> "addressLine1", "townOrCity" -> "town", "postcode" -> "B23 2AZ")
+        Map("addressLine1" -> "addressLine1", "townOrCity" -> "town", "postcode" -> "B 23  2AZ")
+      val result   = form.bind(formData)
+      result.hasErrors mustBe false
+    }
+
+    "must bind if the postcode satisfies the length and character requirements even if not a valid UK postcode" in {
+      val formData = Map(
+        "addressLine1" -> "addressLine1",
+        "townOrCity"   -> "town",
+        "postcode"     -> "n123456"
+      )
       val result   = form.bind(formData)
       result.hasErrors mustBe false
     }
