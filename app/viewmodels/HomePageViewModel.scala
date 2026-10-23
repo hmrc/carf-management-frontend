@@ -22,7 +22,7 @@ import play.api.i18n.Messages
 case class HomePageViewModel(
     isBusiness: Boolean,
     hasZeroRcaspsAdded: Boolean,
-    hasSentFilesInLast28Days: Boolean,
+    hasSentFiles: Boolean,
     organisationName: Option[String],
     ctUtr: Option[UniqueTaxpayerReference],
     carfId: String
@@ -36,11 +36,6 @@ case class HomePageViewModel(
     }
 
   lazy val getNoRcaspsSectionLink: String = controllers.routes.RoutingController.onPageLoad(NormalMode).url
-
-  lazy val getViewResultsLink: String =
-    controllers.routes.PlaceholderController
-      .onPageLoad("Should redirect to /result-of-automatic-checks (part of file upload journey)")
-      .url
 
   lazy val getAddRcaspLink: String = controllers.routes.RoutingController.onPageLoad(NormalMode).url
 

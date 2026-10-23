@@ -23,7 +23,6 @@ import play.api.http.Status.SEE_OTHER
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.LOCATION
-import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 
 import scala.concurrent.Future

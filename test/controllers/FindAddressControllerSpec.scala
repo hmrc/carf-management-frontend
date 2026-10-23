@@ -21,7 +21,7 @@ import forms.FindAddressFormProvider
 import models.OrganisationOrIndividual.*
 import models.errors.ApiError.BadRequestError
 import models.individual.IndividualName
-import models.{formatAddress, AddressAndUPRN, ChangeMode, FindAddress, NormalMode, UserAnswers}
+import models.{formatAddress, AddressAndUPRN, ChangeMode, FindAddress, NormalMode}
 import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
 import org.mockito.Mockito.*
 import pages.*
