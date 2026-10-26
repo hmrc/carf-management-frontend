@@ -17,7 +17,7 @@
 package controllers.auth
 
 import controllers.actions.PasscodeAction
-import models.UserAnswers
+import models.{NormalMode, UserAnswers}
 import pages.PasscodePage
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -39,6 +39,6 @@ class PasscodeController @Inject() (
     for {
       updatedAnswers <- Future.fromTry(UserAnswers(request.userId, false).set(PasscodePage, passcode))
       _              <- sessionRepository.set(updatedAnswers)
-    } yield Redirect(controllers.home.routes.HomePageController.onPageLoad())
+    } yield Redirect(controllers.routes.RoutingController.onPageLoad(NormalMode))
   }
 }

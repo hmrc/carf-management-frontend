@@ -80,7 +80,7 @@ class AuthenticatedIdentifierAction @Inject() (
     if (enrolments.enrolments.exists(_.key == enrolmentKey)) {
       getCarfId(enrolments) match {
         case Some(carfId) =>
-          passcodeEnabledCheck(internalID).flatMap {
+          handlePasscodeCheck(internalID).flatMap {
             case true => block(IdentifierRequest(request, internalID, affinityGroup, enrolments.enrolments, carfId))
             case _    => Future.successful(Redirect(routes.PlaceholderController.onPageLoad("Content not yet available")))
           }
@@ -99,7 +99,7 @@ class AuthenticatedIdentifierAction @Inject() (
       carfId    <- if (id.value.nonEmpty) Some(id.value) else None
     } yield carfId
 
-  private def passcodeEnabledCheck(userId: String): Future[Boolean] =
+  private def handlePasscodeCheck(userId: String): Future[Boolean] =
     if (config.passcodeCheckEnabled)
       passcodeCheck(userId)
     else
