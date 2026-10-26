@@ -70,4 +70,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val ctEnrolmentKey: String = configuration.get[String]("keys.enrolmentKey.ct")
 
   val countryCodeJson: String = configuration.get[String]("countryCodeJson")
+
+  val passcode: String              = configuration.get[String]("features.passcode")
+  val passcodeCheckEnabled: Boolean = configuration.get[Boolean]("features.passcodeCheckEnabled")
 }
