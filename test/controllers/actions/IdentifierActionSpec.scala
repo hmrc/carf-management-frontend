@@ -110,6 +110,30 @@ class IdentifierActionSpec extends SpecBase {
       contentAsString(result) mustBe testContent
     }
 
+    "redirect to Placeholder page if passcode is enabled and passcode is incorrect" in {
+      when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
+      when(mockAppConfig.passcodeCheckEnabled).thenReturn(true)
+      when(mockAppConfig.passcode).thenReturn("foo")
+      when(mockSessionRepository.get(any))
+        .thenReturn(Future.successful(Some(emptyUserAnswers.withPage(PasscodePage, "bar"))))
+      when(
+        mockAuthConnector.authorise(
+          ArgumentMatchers.eq(EmptyPredicate),
+          ArgumentMatchers.eq(
+            internalId and allEnrolments and affinityGroup
+          )
+        )(any(), any())
+      )
+        .thenReturn(Future(new ~(new ~(Some(testInternalId), carfEnrolment), Some(Organisation))))
+
+      val result: Future[Result] = testIdentifierAction.invokeBlock(FakeRequest(), testAction)
+
+      status(result)           mustBe SEE_OTHER
+      redirectLocation(result) mustBe Some(
+        controllers.routes.PlaceholderController.onPageLoad("Content not yet available").url
+      )
+    }
+
     "redirect to Placeholder page if passcode is enabled and passcode is not present" in {
       when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
       when(mockAppConfig.passcodeCheckEnabled).thenReturn(true)
