@@ -26,13 +26,13 @@ import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
 import pages.{AddressPagePrePop, UkAddressInUserAnswers}
-import utils.LoggerUtil.*
 import play.api.mvc.Result
 import play.api.mvc.Results.Redirect
 import repositories.SessionRepository
 import services.RegistrationService
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.CountryListFactory
+import utils.LoggerUtil.*
+import utils.{CountryListFactory, PasscodeHelper}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,12 +41,14 @@ import scala.util.Success
 class PopulateUserAnswersHelper @Inject() (
     sessionRepository: SessionRepository,
     registrationService: RegistrationService,
-    countryListFactory: CountryListFactory
+    countryListFactory: CountryListFactory,
+    passcodeHelper: PasscodeHelper
 )(implicit ec: ExecutionContext) {
 
   def populateUserAnswersForIndividual(
       userId: String,
-      individualRcaspDetails: IndividualRcaspDetails
+      individualRcaspDetails: IndividualRcaspDetails,
+      passcode: Option[String] = None
   ): Future[Result] = {
     val emptyUserAnswers    = UserAnswers(id = userId, rcaspIsRegisteredBusiness = false)
     val individualName      = IndividualName(individualRcaspDetails.FirstName, individualRcaspDetails.LastName)
@@ -57,17 +59,18 @@ class PopulateUserAnswersHelper @Inject() (
     (maybeNino, maybeAddressUk, maybeContactDetails)
       .mapN { (nino, address, contactDetails) =>
         for {
-          a              <- Future.fromTry(emptyUserAnswers.set(ReportForRegisteredBusinessPage, false))
-          b              <- Future.fromTry(a.set(OrganisationOrIndividualPage, Individual))
-          c              <- Future.fromTry(b.set(IndividualNamePage, individualName))
-          d              <- Future.fromTry(c.set(NiNumberPage, nino))
-          e              <- Future.fromTry(d.set(UkAddressInUserAnswers, address))
-          f              <- Future.fromTry(e.set(AddressPagePrePop, address))
-          g              <- Future.fromTry(f.set(IndividualEmailPage, contactDetails.EmailAddress))
-          h              <- Future.fromTry(g.set(IndividualHavePhonePage, contactDetails.PhoneNumber.nonEmpty))
-          i              <- Future.fromTry(contactDetails.PhoneNumber.fold(Success(h))(h.set(IndividualPhonePage, _)))
-          updatedAnswers <- Future.fromTry(i.set(ChangeRcaspCachedDetails, individualRcaspDetails))
-          _              <- sessionRepository.set(updatedAnswers)
+          passcodeAnswers <- passcodeHelper.handlePasscodePersistence(emptyUserAnswers, passcode)
+          a               <- Future.fromTry(passcodeAnswers.set(ReportForRegisteredBusinessPage, false))
+          b               <- Future.fromTry(a.set(OrganisationOrIndividualPage, Individual))
+          c               <- Future.fromTry(b.set(IndividualNamePage, individualName))
+          d               <- Future.fromTry(c.set(NiNumberPage, nino))
+          e               <- Future.fromTry(d.set(UkAddressInUserAnswers, address))
+          f               <- Future.fromTry(e.set(AddressPagePrePop, address))
+          g               <- Future.fromTry(f.set(IndividualEmailPage, contactDetails.EmailAddress))
+          h               <- Future.fromTry(g.set(IndividualHavePhonePage, contactDetails.PhoneNumber.nonEmpty))
+          i               <- Future.fromTry(contactDetails.PhoneNumber.fold(Success(h))(h.set(IndividualPhonePage, _)))
+          updatedAnswers  <- Future.fromTry(i.set(ChangeRcaspCachedDetails, individualRcaspDetails))
+          _               <- sessionRepository.set(updatedAnswers)
         } yield Redirect(
           controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(individualRcaspDetails.RCASPID)
         )
@@ -82,7 +85,8 @@ class PopulateUserAnswersHelper @Inject() (
 
   def populateUserAnswersForOrganisation(
       userId: String,
-      organisationRcaspDetails: OrganisationRcaspDetails
+      organisationRcaspDetails: OrganisationRcaspDetails,
+      passcode: Option[String] = None
   ): Future[Result] = {
     val emptyUserAnswers         = UserAnswers(id = userId, rcaspIsRegisteredBusiness = false)
     val haveTradingName          = organisationRcaspDetails.TradingName != organisationRcaspDetails.RCASPName
@@ -93,31 +97,32 @@ class PopulateUserAnswersHelper @Inject() (
     (maybeUtr, maybeAddressUk, maybeFirstContactDetails)
       .mapN { (utr, address, firstContactDetails) =>
         for {
-          a              <- Future.fromTry(emptyUserAnswers.set(ReportForRegisteredBusinessPage, false))
-          b              <- Future.fromTry(a.set(OrganisationOrIndividualPage, Organisation))
-          c              <- Future.fromTry(b.set(OrganisationNamePage, organisationRcaspDetails.RCASPName))
-          d              <- Future.fromTry(c.set(OverwritableOrganisationName, organisationRcaspDetails.RCASPName))
-          e              <- Future.fromTry(d.set(HaveTradingNamePage, haveTradingName))
-          f              <- Future.fromTry {
-                              if haveTradingName then e.set(TradingNamePage, organisationRcaspDetails.TradingName) else Success(e)
-                            }
-          g              <- Future.fromTry(f.set(UtrPage, utr))
-          h              <- Future.fromTry(g.set(UkAddressInUserAnswers, address))
-          i              <- Future.fromTry(h.set(AddressPagePrePop, address))
-          j              <- Future.fromTry(i.set(OrganisationFirstContactNamePage, firstContactDetails.ContactName))
-          k              <- Future.fromTry(j.set(OrganisationFirstContactEmailPage, firstContactDetails.EmailAddress))
-          l              <- Future.fromTry(k.set(OrganisationFirstContactHavePhonePage, firstContactDetails.PhoneNumber.nonEmpty))
-          m              <- Future.fromTry(
-                              firstContactDetails.PhoneNumber.fold(Success(l))(l.set(OrganisationFirstContactPhoneNumberPage, _))
-                            )
-          n              <- Future.fromTry(
-                              m.set(OrganisationHaveSecondContactPage, organisationRcaspDetails.SecondaryContactDetails.nonEmpty)
-                            )
-          o              <- organisationRcaspDetails.SecondaryContactDetails.fold(Future.successful(n))(
-                              addSecondContactDetailsToUserAnswers(_, n)
-                            )
-          updatedAnswers <- Future.fromTry(o.set(ChangeRcaspCachedDetails, organisationRcaspDetails))
-          _              <- sessionRepository.set(updatedAnswers)
+          passcodeAnswers <- passcodeHelper.handlePasscodePersistence(emptyUserAnswers, passcode)
+          a               <- Future.fromTry(passcodeAnswers.set(ReportForRegisteredBusinessPage, false))
+          b               <- Future.fromTry(a.set(OrganisationOrIndividualPage, Organisation))
+          c               <- Future.fromTry(b.set(OrganisationNamePage, organisationRcaspDetails.RCASPName))
+          d               <- Future.fromTry(c.set(OverwritableOrganisationName, organisationRcaspDetails.RCASPName))
+          e               <- Future.fromTry(d.set(HaveTradingNamePage, haveTradingName))
+          f               <- Future.fromTry {
+                               if haveTradingName then e.set(TradingNamePage, organisationRcaspDetails.TradingName) else Success(e)
+                             }
+          g               <- Future.fromTry(f.set(UtrPage, utr))
+          h               <- Future.fromTry(g.set(UkAddressInUserAnswers, address))
+          i               <- Future.fromTry(h.set(AddressPagePrePop, address))
+          j               <- Future.fromTry(i.set(OrganisationFirstContactNamePage, firstContactDetails.ContactName))
+          k               <- Future.fromTry(j.set(OrganisationFirstContactEmailPage, firstContactDetails.EmailAddress))
+          l               <- Future.fromTry(k.set(OrganisationFirstContactHavePhonePage, firstContactDetails.PhoneNumber.nonEmpty))
+          m               <- Future.fromTry(
+                               firstContactDetails.PhoneNumber.fold(Success(l))(l.set(OrganisationFirstContactPhoneNumberPage, _))
+                             )
+          n               <- Future.fromTry(
+                               m.set(OrganisationHaveSecondContactPage, organisationRcaspDetails.SecondaryContactDetails.nonEmpty)
+                             )
+          o               <- organisationRcaspDetails.SecondaryContactDetails.fold(Future.successful(n))(
+                               addSecondContactDetailsToUserAnswers(_, n)
+                             )
+          updatedAnswers  <- Future.fromTry(o.set(ChangeRcaspCachedDetails, organisationRcaspDetails))
+          _               <- sessionRepository.set(updatedAnswers)
         } yield Redirect(
           controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(organisationRcaspDetails.RCASPID)
         )
@@ -147,7 +152,8 @@ class PopulateUserAnswersHelper @Inject() (
   def populateUserAnswersForRegisteredBusiness(
       userId: String,
       requestUtr: UniqueTaxpayerReference,
-      organisationRcaspDetails: OrganisationRcaspDetails
+      organisationRcaspDetails: OrganisationRcaspDetails,
+      passcode: Option[String] = None
   )(implicit hc: HeaderCarrier): Future[Result] = {
     val emptyUserAnswers = UserAnswers(id = userId, rcaspIsRegisteredBusiness = true)
     val haveTradingName  = organisationRcaspDetails.TradingName != organisationRcaspDetails.RCASPName
@@ -172,19 +178,20 @@ class PopulateUserAnswersHelper @Inject() (
                   countryName = countryName
                 )
                 for {
-                  a              <- Future.fromTry(emptyUserAnswers.set(ReportForRegisteredBusinessPage, true))
-                  b              <- Future.fromTry(a.set(OrganisationNamePage, organisationRcaspDetails.RCASPName))
-                  c              <- Future.fromTry(b.set(OverwritableOrganisationName, organisationRcaspDetails.RCASPName))
-                  d              <- Future.fromTry(c.set(HaveTradingNamePage, haveTradingName))
-                  e              <- Future.fromTry {
-                                      if haveTradingName then d.set(TradingNamePage, organisationRcaspDetails.TradingName)
-                                      else Success(d)
-                                    }
-                  f              <- Future.fromTry(e.set(UkAddressInUserAnswers, address))
-                  g              <- Future.fromTry(f.set(AddressPagePrePop, address))
-                  h              <- Future.fromTry(g.set(CachedBusinessDetailsPage, cachedBusinessDetails))
-                  updatedAnswers <- Future.fromTry(h.set(ChangeRcaspCachedDetails, organisationRcaspDetails))
-                  _              <- sessionRepository.set(updatedAnswers)
+                  passcodeAnswers <- passcodeHelper.handlePasscodePersistence(emptyUserAnswers, passcode)
+                  a               <- Future.fromTry(emptyUserAnswers.set(ReportForRegisteredBusinessPage, true))
+                  b               <- Future.fromTry(a.set(OrganisationNamePage, organisationRcaspDetails.RCASPName))
+                  c               <- Future.fromTry(b.set(OverwritableOrganisationName, organisationRcaspDetails.RCASPName))
+                  d               <- Future.fromTry(c.set(HaveTradingNamePage, haveTradingName))
+                  e               <- Future.fromTry {
+                                       if haveTradingName then d.set(TradingNamePage, organisationRcaspDetails.TradingName)
+                                       else Success(d)
+                                     }
+                  f               <- Future.fromTry(e.set(UkAddressInUserAnswers, address))
+                  g               <- Future.fromTry(f.set(AddressPagePrePop, address))
+                  h               <- Future.fromTry(g.set(CachedBusinessDetailsPage, cachedBusinessDetails))
+                  updatedAnswers  <- Future.fromTry(h.set(ChangeRcaspCachedDetails, organisationRcaspDetails))
+                  _               <- sessionRepository.set(updatedAnswers)
                 } yield Redirect(
                   controllers.changeDetails.routes.RegisteredBusinessChangeDetailsController
                     .onPageLoad(organisationRcaspDetails.RCASPID)
@@ -204,4 +211,5 @@ class PopulateUserAnswersHelper @Inject() (
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }
+
 }

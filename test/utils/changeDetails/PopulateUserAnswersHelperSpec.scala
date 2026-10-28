@@ -33,7 +33,7 @@ import play.api.mvc.Result
 import play.api.test.Helpers.*
 import services.RegistrationService
 import types.ResultT
-import utils.CountryListFactory
+import utils.{CountryListFactory, PasscodeHelper}
 
 import scala.concurrent.Future
 
@@ -41,8 +41,14 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
   val mockRegistrationService: RegistrationService = mock[RegistrationService]
   val mockCountryListFactory: CountryListFactory   = mock[CountryListFactory]
+  val mockPasscodeHelper: PasscodeHelper           = mock[PasscodeHelper]
 
-  val helper = new PopulateUserAnswersHelper(mockSessionRepository, mockRegistrationService, mockCountryListFactory)
+  val helper = new PopulateUserAnswersHelper(
+    mockSessionRepository,
+    mockRegistrationService,
+    mockCountryListFactory,
+    mockPasscodeHelper
+  )
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -50,6 +56,9 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
   }
 
   "PopulateUserAnswersHelper" - {
+
+    when(mockPasscodeHelper.handlePasscodePersistence(any(), any())).thenReturn(Future.successful(emptyUserAnswers))
+
     ".populateUserAnswersForIndividual" - {
       "must populate user answers and redirect to ChangeDetails when all fields are present" in {
         val rcaspDetails: IndividualRcaspDetails = individualRcaspDetailsViewUpdate
