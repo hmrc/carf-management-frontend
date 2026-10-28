@@ -17,9 +17,10 @@
 package controllers
 
 import config.Constants.ZERO
+import config.FrontendAppConfig
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
 import models.{ChangeMode, Mode, NormalMode, UserAnswers}
-import pages.SubmissionSucceededPage
+import pages.{PasscodePage, SubmissionSucceededPage}
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.remove.RemoveRcaspCachedDetails
 import utils.LoggerUtil.*
@@ -37,6 +38,7 @@ class RoutingController @Inject() (
     accountService: AccountService,
     sessionRepository: SessionRepository,
     getData: DataRetrievalAction,
+    appConfig: FrontendAppConfig,
     val controllerComponents: MessagesControllerComponents
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController {
@@ -51,7 +53,7 @@ class RoutingController @Inject() (
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
 
         case Right(numberOfRcasps) =>
-          val updatedAnswers = mode match {
+          val updatedAnswers: UserAnswers = mode match {
             case NormalMode =>
               request.userAnswers
                 .flatMap(ua =>
@@ -75,7 +77,20 @@ class RoutingController @Inject() (
             }
 
           for {
-            _ <- sessionRepository.set(updatedAnswers)
+            passcodeAnswers <- if (appConfig.passcodeCheckEnabled) {
+                                 Future
+                                   .fromTry(
+                                     updatedAnswers.set(
+                                       PasscodePage,
+                                       request.userAnswers
+                                         .getOrElse(updatedAnswers)
+                                         .get(PasscodePage)
+                                         .getOrElse("")
+                                     )
+                                   )
+                               } else Future.successful(updatedAnswers)
+            _               <- sessionRepository.set(passcodeAnswers)
+
           } yield Redirect(redirectUrl)
       }
     }
