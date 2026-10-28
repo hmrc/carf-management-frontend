@@ -20,7 +20,6 @@ import base.SpecBase
 import config.Constants.noneOfTheseValue
 import models.responses.AddressRegistrationResponse
 import models.{formatAddress, CachedBusinessDetails, ChangeMode}
-import org.scalatest.prop.Tables.Table
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.*
 import pages.individual.*

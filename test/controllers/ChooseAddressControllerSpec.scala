@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import forms.ChooseAddressFormProvider
 import models.OrganisationOrIndividual.{Individual, Organisation}
-import models.{formatAddress, AddressAndUPRN, AddressUk, FindAddress, NormalMode, UserAnswers}
+import models.{formatAddress, AddressAndUPRN, AddressUk, FindAddress, NormalMode}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{times, verify, when}

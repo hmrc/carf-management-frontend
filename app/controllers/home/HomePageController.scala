@@ -18,25 +18,25 @@ package controllers.home
 
 import config.Constants.ZERO
 import config.FrontendAppConfig
+import connectors.SubmissionDetailsConnector
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
-import models.errors.CarfError
-import utils.LoggerUtil.*
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.{AccountService, UploadInformationService}
+import services.AccountService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.LoggerUtil.*
 import viewmodels.HomePageViewModel
 import views.html.HomePageView
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class HomePageController @Inject() (
     val controllerComponents: MessagesControllerComponents,
     identify: IdentifierAction,
     ctUtrRetrievalAction: CtUtrRetrievalAction,
     accountService: AccountService,
-    uploadInformationService: UploadInformationService,
+    submissionDetailsConnector: SubmissionDetailsConnector,
     appConfig: FrontendAppConfig,
     getData: DataRetrievalAction,
     view: HomePageView
@@ -49,28 +49,29 @@ class HomePageController @Inject() (
       val carfId = request.carfId
 
       val viewModelFuture = for {
-        numberOfRcaspsCurrentlyAdded     <- accountService.getNumberOfRcaspsCurrentlyAdded(carfId)
-        subscriptionData                 <- accountService.getUserBusinessSubscriptionData(carfId)
-        hasUserUploadedFilesInLast28Days <- uploadInformationService.hasUserUploadedFilesInLast28Days(carfId)
+        numberOfRcaspsCurrentlyAdded <- accountService.getNumberOfRcaspsCurrentlyAdded(carfId)
+        subscriptionData             <- accountService.getUserBusinessSubscriptionData(carfId)
+        hasSentFiles                 <- submissionDetailsConnector.checkForSentFiles(carfId)
       } yield HomePageViewModel(
         isBusiness = subscriptionData.hasOrganisationContactDetails,
         hasZeroRcaspsAdded = numberOfRcaspsCurrentlyAdded == ZERO,
-        hasSentFilesInLast28Days = hasUserUploadedFilesInLast28Days,
+        hasSentFiles = hasSentFiles,
         organisationName = subscriptionData.organisationName,
         ctUtr = request.utr,
         carfId = carfId
       )
 
-      viewModelFuture.value.flatMap {
+      viewModelFuture.value.map {
         case Left(error) =>
-          logWarn("[HomePageController] Error generating view model!")
-          Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
+          logWarn(s"[HomePageController][onPageLoad] Error generating view model: $error")
+          Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
         case Right(viewModel) =>
           val aeoiEmail: String               = appConfig.aeoiEmailAddress
           val changeContactDetailsUrl: String = appConfig.changeContactDetailsIndexUrl
           val uploadFileUrl: String           = appConfig.carfReportingFrontendUploadFileUrl
-          Future.successful(Ok(view(viewModel, aeoiEmail, changeContactDetailsUrl, uploadFileUrl)))
+          val uploadResultsUrl: String        = appConfig.carfReportingFrontendResultsPageUrl
+          Ok(view(viewModel, aeoiEmail, changeContactDetailsUrl, uploadFileUrl, uploadResultsUrl))
       }
   }
 }
