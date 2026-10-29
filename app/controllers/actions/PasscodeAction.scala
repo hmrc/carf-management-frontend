@@ -25,6 +25,7 @@ import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import utils.LoggerUtil.logWarn
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -57,7 +58,9 @@ class PasscodeActionExtractor @Inject() (
     authorised()
       .retrieve(Retrievals.internalId) {
         case Some(id) => block(PasscodeRequest(request = request, userId = id))
-        case _        => Future.successful(Redirect(routes.PlaceholderController.onPageLoad("Could not retrieve id!")))
+        case _        =>
+          logWarn("[PasscodeActionExtractor][invokeBlock] Could not retrieve internalId")
+          Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       } recover { case _: NoActiveSession =>
       Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))
     }

@@ -82,10 +82,7 @@ class RoutingController @Inject() (
                                    .fromTry(
                                      updatedAnswers.set(
                                        PasscodePage,
-                                       request.userAnswers
-                                         .getOrElse(updatedAnswers)
-                                         .get(PasscodePage)
-                                         .getOrElse("")
+                                       request.userAnswers.flatMap(_.get(PasscodePage)).getOrElse("")
                                      )
                                    )
                                } else Future.successful(updatedAnswers)

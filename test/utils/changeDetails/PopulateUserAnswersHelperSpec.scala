@@ -17,14 +17,14 @@
 package utils.changeDetails
 
 import base.SpecBase
-import models.BusinessDetails
+import models.{BusinessDetails, UserAnswers}
 import models.OrganisationOrIndividual.{Individual, Organisation}
 import models.errors.ApiError.InternalServerError
 import models.responses.AddressRegistrationResponse
 import models.viewAndUpdateRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails}
 import org.mockito.ArgumentMatchers.{any, argThat, eq as eqTo}
 import org.mockito.Mockito.{reset, times, verify, when}
-import pages.{AddressPagePrePop, UkAddressInUserAnswers}
+import pages.{AddressPagePrePop, PasscodePage, UkAddressInUserAnswers}
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
@@ -52,18 +52,18 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockRegistrationService, mockCountryListFactory)
+    reset(mockRegistrationService, mockCountryListFactory, mockPasscodeHelper)
+    when(mockPasscodeHelper.handlePasscodePersistence(any(), any())).thenReturn(Future.successful(emptyUserAnswers))
   }
 
   "PopulateUserAnswersHelper" - {
-
-    when(mockPasscodeHelper.handlePasscodePersistence(any(), any())).thenReturn(Future.successful(emptyUserAnswers))
-
     ".populateUserAnswersForIndividual" - {
       "must populate user answers and redirect to ChangeDetails when all fields are present" in {
         val rcaspDetails: IndividualRcaspDetails = individualRcaspDetailsViewUpdate
 
         when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+        when(mockPasscodeHelper.handlePasscodePersistence(any(), any()))
+          .thenReturn(Future.successful(emptyUserAnswers.withPage(PasscodePage, "abc123")))
 
         val result: Future[Result] = helper.populateUserAnswersForIndividual(userAnswersId, rcaspDetails)
 
@@ -85,7 +85,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(IndividualEmailPage).contains(testEmail) &&
             ua.get(IndividualHavePhonePage).contains(true) &&
             ua.get(IndividualPhonePage).contains(testPhone) &&
-            ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
+            ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails) &&
+            ua.get(PasscodePage).contains("abc123")
           }
         )
       }
@@ -177,6 +178,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
         val rcaspDetails: OrganisationRcaspDetails = organisationRcaspDetailsViewUpdate
 
         when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+        when(mockPasscodeHelper.handlePasscodePersistence(any(), any()))
+          .thenReturn(Future.successful(emptyUserAnswers.withPage(PasscodePage, "abc123")))
 
         val result: Future[Result] = helper.populateUserAnswersForOrganisation(userAnswersId, rcaspDetails)
 
@@ -207,7 +210,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(OrganisationSecondContactEmailPage).contains(testEmail) &&
             ua.get(OrganisationSecondContactHavePhonePage).contains(true) &&
             ua.get(OrganisationSecondContactPhoneNumberPage).contains(testPhone) &&
-            ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
+            ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails) &&
+            ua.get(PasscodePage).contains("abc123")
           }
         )
       }
@@ -363,6 +367,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
         )
 
       "must populate user answers and redirect to RegisteredBusinessChangeDetails when trading name is different from RCASP name" in {
+        val startingUserAnswers = UserAnswers(id = userAnswersId, rcaspIsRegisteredBusiness = true)
+
         val rcaspDetails: OrganisationRcaspDetails =
           organisationRcaspDetailsViewUpdate.copy(
             IsRCASPUser = true,
@@ -374,6 +380,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
           .thenReturn(ResultT.fromValue(businessDetailsFromService))
         when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(Some("United Kingdom"))
         when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+        when(mockPasscodeHelper.handlePasscodePersistence(any(), any()))
+          .thenReturn(Future.successful(startingUserAnswers.withPage(PasscodePage, "abc123")))
 
         val result: Future[Result] =
           helper.populateUserAnswersForRegisteredBusiness(userAnswersId, testUtr, rcaspDetails)
@@ -397,12 +405,15 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
             ua.get(UkAddressInUserAnswers).contains(testAddressUk) &&
             ua.get(AddressPagePrePop).contains(testAddressUk) &&
             ua.get(CachedBusinessDetailsPage).contains(cachedBusinessDetails) &&
-            ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails)
+            ua.get(ChangeRcaspCachedDetails).contains(rcaspDetails) &&
+            ua.get(PasscodePage).contains("abc123")
           }
         )
       }
 
       "must populate user answers and redirect to RegisteredBusinessChangeDetails when trading name is the same as RCASP name" in {
+        val startingUserAnswers = UserAnswers(id = userAnswersId, rcaspIsRegisteredBusiness = true)
+
         val rcaspDetails: OrganisationRcaspDetails =
           organisationRcaspDetailsViewUpdate.copy(
             IsRCASPUser = true,
@@ -415,6 +426,8 @@ class PopulateUserAnswersHelperSpec extends SpecBase {
           .thenReturn(ResultT.fromValue(businessDetailsFromService))
         when(mockCountryListFactory.getDescriptionFromCode(any())).thenReturn(Some("United Kingdom"))
         when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+        when(mockPasscodeHelper.handlePasscodePersistence(any(), any()))
+          .thenReturn(Future.successful(startingUserAnswers))
 
         val result: Future[Result] =
           helper.populateUserAnswersForRegisteredBusiness(userAnswersId, testUtr, rcaspDetails)

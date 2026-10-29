@@ -40,6 +40,16 @@ class PasscodeHelperSpec extends SpecBase {
       result mustBe expectedUserAnswers
     }
 
+    "must add an incorrect passcode in user answers when passcode check is enabled but no passcode is present" in {
+      when(mockAppConfig.passcodeCheckEnabled).thenReturn(true)
+
+      val expectedUserAnswers = emptyUserAnswers.withPage(PasscodePage, "incorrect")
+
+      val result: UserAnswers = testHelper.handlePasscodePersistence(emptyUserAnswers, None).futureValue
+
+      result mustBe expectedUserAnswers
+    }
+
     "must do nothing to user answers when passcode check is disabled" in {
       when(mockAppConfig.passcodeCheckEnabled).thenReturn(false)
 

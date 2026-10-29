@@ -179,7 +179,7 @@ class PopulateUserAnswersHelper @Inject() (
                 )
                 for {
                   passcodeAnswers <- passcodeHelper.handlePasscodePersistence(emptyUserAnswers, passcode)
-                  a               <- Future.fromTry(emptyUserAnswers.set(ReportForRegisteredBusinessPage, true))
+                  a               <- Future.fromTry(passcodeAnswers.set(ReportForRegisteredBusinessPage, true))
                   b               <- Future.fromTry(a.set(OrganisationNamePage, organisationRcaspDetails.RCASPName))
                   c               <- Future.fromTry(b.set(OverwritableOrganisationName, organisationRcaspDetails.RCASPName))
                   d               <- Future.fromTry(c.set(HaveTradingNamePage, haveTradingName))

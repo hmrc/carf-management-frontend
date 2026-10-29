@@ -30,7 +30,7 @@ class PasscodeHelper @Inject() (
   def handlePasscodePersistence(userAnswers: UserAnswers, passcode: Option[String]): Future[UserAnswers] =
     if (appConfig.passcodeCheckEnabled) {
       for {
-        updatedAnswers: UserAnswers <- Future.fromTry(userAnswers.set(PasscodePage, passcode.getOrElse("")))
+        updatedAnswers: UserAnswers <- Future.fromTry(userAnswers.set(PasscodePage, passcode.getOrElse("incorrect")))
       } yield updatedAnswers
     } else Future.successful(userAnswers)
 
