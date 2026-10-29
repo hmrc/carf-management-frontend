@@ -191,4 +191,4 @@ GET         /remove/rcasp-removed                                             co
 
 GET         /problem/page-unavailable                                         controllers.PageUnavailableController.onPageLoad()
 
-GET         /problem/service-unavailable                                      controllers.combined.PasscodeIncorrectPageController.onPageLoad()
+GET         /problem/service-unavailable                                      controllers.combined.PasscodeIncorrectController.onPageLoad()

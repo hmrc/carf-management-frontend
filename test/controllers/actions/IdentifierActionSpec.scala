@@ -129,7 +129,7 @@ class IdentifierActionSpec extends SpecBase {
       val result: Future[Result] = testIdentifierAction.invokeBlock(FakeRequest(), testAction)
 
       status(result)           mustBe SEE_OTHER
-      redirectLocation(result) mustBe Some(controllers.combined.routes.PasscodeIncorrectPageController.onPageLoad().url)
+      redirectLocation(result) mustBe Some(controllers.combined.routes.PasscodeIncorrectController.onPageLoad().url)
     }
 
     "redirect to the Passcode Incorrect Page if passcode is enabled and passcode is not present" in {
@@ -150,7 +150,7 @@ class IdentifierActionSpec extends SpecBase {
       val result: Future[Result] = testIdentifierAction.invokeBlock(FakeRequest(), testAction)
 
       status(result)           mustBe SEE_OTHER
-      redirectLocation(result) mustBe Some(controllers.combined.routes.PasscodeIncorrectPageController.onPageLoad().url)
+      redirectLocation(result) mustBe Some(controllers.combined.routes.PasscodeIncorrectController.onPageLoad().url)
     }
 
     "return redirect if carfId exists but has no value" in {

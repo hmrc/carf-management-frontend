@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.combined.PasscodeIncorrectPageView
 
-class PasscodeIncorrectPageControllerSpec extends SpecBase {
+class PasscodeIncorrectControllerSpec extends SpecBase {
 
   val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
@@ -40,7 +40,7 @@ class PasscodeIncorrectPageControllerSpec extends SpecBase {
         .build()
 
       running(application) {
-        val request = FakeRequest(GET, controllers.combined.routes.PasscodeIncorrectPageController.onPageLoad().url)
+        val request = FakeRequest(GET, controllers.combined.routes.PasscodeIncorrectController.onPageLoad().url)
 
         val result = route(application, request).value
 

@@ -25,7 +25,7 @@ import views.html.combined.PasscodeIncorrectPageView
 
 import javax.inject.Inject
 
-class PasscodeIncorrectPageController @Inject() (
+class PasscodeIncorrectController @Inject() (
     override val messagesApi: MessagesApi,
     passcodeAction: PasscodeAction,
     val controllerComponents: MessagesControllerComponents,

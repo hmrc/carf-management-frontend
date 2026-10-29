@@ -83,7 +83,7 @@ class AuthenticatedIdentifierAction @Inject() (
           handlePasscodeCheck(internalID).flatMap {
             case true => block(IdentifierRequest(request, internalID, affinityGroup, enrolments.enrolments, carfId))
             case _    =>
-              Future.successful(Redirect(controllers.combined.routes.PasscodeIncorrectPageController.onPageLoad()))
+              Future.successful(Redirect(controllers.combined.routes.PasscodeIncorrectController.onPageLoad()))
           }
         case None         => Future.successful(Redirect(config.registrationUrl))
       }
