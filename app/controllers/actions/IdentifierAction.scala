@@ -82,7 +82,8 @@ class AuthenticatedIdentifierAction @Inject() (
         case Some(carfId) =>
           handlePasscodeCheck(internalID).flatMap {
             case true => block(IdentifierRequest(request, internalID, affinityGroup, enrolments.enrolments, carfId))
-            case _    => Future.successful(Redirect(routes.PlaceholderController.onPageLoad("Content not yet available")))
+            case _    =>
+              Future.successful(Redirect(controllers.combined.routes.PasscodeIncorrectPageController.onPageLoad()))
           }
         case None         => Future.successful(Redirect(config.registrationUrl))
       }
