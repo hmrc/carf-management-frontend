@@ -16,24 +16,27 @@
 
 package controllers.combined
 
-import controllers.actions._
+import config.FrontendAppConfig
+import controllers.actions.*
+
 import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.combined.PasscodeIncorrectPageView
 
-class PasscodeIncorrectPageController @Inject()(
-                                       override val messagesApi: MessagesApi,
-                                       identify: IdentifierAction,
-                                       getData: DataRetrievalAction,
-                                       requireData: DataRequiredAction,
-                                       val controllerComponents: MessagesControllerComponents,
-                                       view: PasscodeIncorrectPageView
-                                     ) extends FrontendBaseController with I18nSupport {
+class PasscodeIncorrectPageController @Inject() (
+    override val messagesApi: MessagesApi,
+    identify: IdentifierAction,
+    getData: DataRetrievalAction,
+    requireData: DataRequiredAction,
+    val controllerComponents: MessagesControllerComponents,
+    view: PasscodeIncorrectPageView,
+    appConfig: FrontendAppConfig
+) extends FrontendBaseController
+    with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify) {
-    implicit request =>
-      Ok(view())
+  def onPageLoad: Action[AnyContent] = identify { implicit request =>
+    Ok(view(appConfig.carfDigitalEmailAddress))
   }
 }

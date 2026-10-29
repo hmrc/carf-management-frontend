@@ -19,9 +19,34 @@
         govukButton: GovukButton
 )
 
-@()(implicit request: Request[_], messages: Messages)
+@(carfEmail: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = titleNoForm(messages("passcodeIncorrectPage.title"))) {
+@layout(pageTitle = titleNoForm(messages("passcodeIncorrectPage.title")), showBackLink = false) {
 
     <h1 class="govuk-heading-l">@messages("passcodeIncorrectPage.heading")</h1>
+
+    <h2 class="govuk-heading-m">@messages("passcodeIncorrectPage.sub-heading1")</h2>
+    <p class="govuk-body">@messages("passcodeIncorrectPage.para1")</p>
+    <p class="govuk-body">@messages("passcodeIncorrectPage.para2")</p>
+
+    <h3 class="govuk-heading-s">@messages("passcodeIncorrectPage.sub-heading2")</h3>
+    <p class="govuk-body">
+    @Html(
+        messages("passcodeIncorrectPage.para3",
+            s"""<a class="govuk-link" href="mailto:$carfEmail">$carfEmail</a>"""
+        )
+    )
+    </p>
+
+    <h3 class="govuk-heading-s">@messages("passcodeIncorrectPage.sub-heading3")</h3>
+    <p class="govuk-body">@messages("passcodeIncorrectPage.para4")</p>
+
+    <h3 class="govuk-heading-s">@messages("passcodeIncorrectPage.sub-heading4")</h3>
+    <p class="govuk-body">@messages("passcodeIncorrectPage.para5")</p>
+    <ul class="govuk-list govuk-list--bullet">
+        <li>@messages("passcodeIncorrectPage.bullet1")</li>
+        <li>@messages("passcodeIncorrectPage.bullet2")</li>
+    </ul>
+    <p class="govuk-body">@messages("passcodeIncorrectPage.para6")</p>
+
 }

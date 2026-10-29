@@ -55,7 +55,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   lazy val carfReportingFrontendResultsPageUrl: String  =
     s"$carfReportingFrontendBaseUrl/send-a-cryptoasset-report/details-of-files-you-have-sent"
 
-  val aeoiEmailAddress: String = configuration.get("email.aeoi")
+  val aeoiEmailAddress: String             = configuration.get("email.aeoi")
+  lazy val carfDigitalEmailAddress: String = configuration.get("email.carfDigital")
 
   private val exitSurveyBaseUrl: String = configuration.get[String]("urls.feedbackFrontendBase")
   val exitSurveyUrl: String             = s"$exitSurveyBaseUrl/feedback/carf-management-frontend?useServiceNavigation"
