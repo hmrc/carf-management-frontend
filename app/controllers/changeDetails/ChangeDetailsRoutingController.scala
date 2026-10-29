@@ -18,7 +18,7 @@ package controllers.changeDetails
 
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
 import models.viewAndUpdateRcasp.{IndividualRcaspDetails, OrganisationRcaspDetails}
-import pages.SubmissionSucceededPage
+import pages.{PasscodePage, SubmissionSucceededPage}
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.*
 import utils.LoggerUtil.*
@@ -66,7 +66,11 @@ class ChangeDetailsRoutingController @Inject() (
                 )
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
               } else {
-                populateUserAnswersHelper.populateUserAnswersForIndividual(request.userId, individualRcaspDetails)
+                populateUserAnswersHelper.populateUserAnswersForIndividual(
+                  request.userId,
+                  individualRcaspDetails,
+                  request.userAnswers.flatMap(_.get(PasscodePage))
+                )
               }
             case Right(organisationRcaspDetails: OrganisationRcaspDetails) =>
               if (organisationRcaspDetails.IsRCASPUser) {
@@ -77,10 +81,19 @@ class ChangeDetailsRoutingController @Inject() (
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
                 } { utr =>
                   populateUserAnswersHelper
-                    .populateUserAnswersForRegisteredBusiness(request.userId, utr, organisationRcaspDetails)
+                    .populateUserAnswersForRegisteredBusiness(
+                      request.userId,
+                      utr,
+                      organisationRcaspDetails,
+                      request.userAnswers.flatMap(_.get(PasscodePage))
+                    )
                 }
               } else
-                populateUserAnswersHelper.populateUserAnswersForOrganisation(request.userId, organisationRcaspDetails)
+                populateUserAnswersHelper.populateUserAnswersForOrganisation(
+                  request.userId,
+                  organisationRcaspDetails,
+                  request.userAnswers.flatMap(_.get(PasscodePage))
+                )
           }
       }
     }

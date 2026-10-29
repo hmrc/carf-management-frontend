@@ -195,7 +195,8 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
         when(mockAccountService.getRcaspDetails(any(), eqTo(rcaspId))(any(), any()))
           .thenReturn(ResultT.fromValue(individualRcaspDetailsViewUpdate))
         when(
-          mockPopulateUserAnswersHelper.populateUserAnswersForIndividual(any(), eqTo(individualRcaspDetailsViewUpdate))
+          mockPopulateUserAnswersHelper
+            .populateUserAnswersForIndividual(any(), eqTo(individualRcaspDetailsViewUpdate), any())
         ).thenReturn(
           Future.successful(Redirect(controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId)))
         )
@@ -210,7 +211,7 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
 
         verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
         verify(mockPopulateUserAnswersHelper, times(1))
-          .populateUserAnswersForIndividual(any(), eqTo(individualRcaspDetailsViewUpdate))
+          .populateUserAnswersForIndividual(any(), eqTo(individualRcaspDetailsViewUpdate), any())
       }
 
       "must call PopulateUserAnswersHelper when an OrganisationRcaspDetails is returned and IsRCASPUser = false" in new Setup(
@@ -221,7 +222,8 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
         when(
           mockPopulateUserAnswersHelper.populateUserAnswersForOrganisation(
             any(),
-            eqTo(organisationRcaspDetailsViewUpdate)
+            eqTo(organisationRcaspDetailsViewUpdate),
+            any()
           )
         ).thenReturn(
           Future.successful(Redirect(controllers.changeDetails.routes.ChangeDetailsController.onPageLoad(rcaspId)))
@@ -237,7 +239,7 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
 
         verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
         verify(mockPopulateUserAnswersHelper, times(1))
-          .populateUserAnswersForOrganisation(any(), eqTo(organisationRcaspDetailsViewUpdate))
+          .populateUserAnswersForOrganisation(any(), eqTo(organisationRcaspDetailsViewUpdate), any())
       }
 
       "must call PopulateUserAnswersHelper when an OrganisationRcaspDetails is returned, IsRCASPUser = true and CT UTR is found in the request" in new Setup(
@@ -254,7 +256,7 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
           .thenReturn(ResultT.fromValue(rcaspDetails))
         when(
           mockPopulateUserAnswersHelper
-            .populateUserAnswersForRegisteredBusiness(any(), eqTo(testUtr), eqTo(rcaspDetails))(any())
+            .populateUserAnswersForRegisteredBusiness(any(), eqTo(testUtr), eqTo(rcaspDetails), any())(any())
         )
           .thenReturn(
             Future.successful(
@@ -271,7 +273,7 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
 
         verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
         verify(mockPopulateUserAnswersHelper, times(1))
-          .populateUserAnswersForRegisteredBusiness(any(), eqTo(testUtr), eqTo(rcaspDetails))(any())
+          .populateUserAnswersForRegisteredBusiness(any(), eqTo(testUtr), eqTo(rcaspDetails), any())(any())
       }
 
       "must redirect to journey recovery when an OrganisationRcaspDetails is returned, IsRCASPUser = true and CT UTR is not found in the request" in new Setup(
@@ -296,7 +298,7 @@ class ChangeDetailsRoutingControllerSpec extends SpecBase {
 
         verify(mockAccountService, times(1)).getRcaspDetails(any(), eqTo(rcaspId))(any(), any())
         verify(mockPopulateUserAnswersHelper, times(0))
-          .populateUserAnswersForRegisteredBusiness(any(), any(), any())(any())
+          .populateUserAnswersForRegisteredBusiness(any(), any(), any(), any())(any())
       }
     }
   }

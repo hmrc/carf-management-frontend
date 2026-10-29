@@ -64,6 +64,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("features.welsh-translation")
 
+  val fileUploadResultsEnabled: Boolean = configuration.get[Boolean]("features.file-upload-results-enabled")
+
   val timeout: Int   = configuration.get[Int]("timeout-dialog.timeout")
   val countdown: Int = configuration.get[Int]("timeout-dialog.countdown")
 
@@ -75,4 +77,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
   val ctEnrolmentKey: String = configuration.get[String]("keys.enrolmentKey.ct")
 
   val countryCodeJson: String = configuration.get[String]("countryCodeJson")
+
+  val passcode: String              = configuration.get[String]("passcode")
+  val passcodeCheckEnabled: Boolean = configuration.get[Boolean]("features.passcodeCheckEnabled")
 }

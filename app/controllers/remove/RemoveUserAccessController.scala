@@ -18,18 +18,19 @@ package controllers.remove
 
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
-import models.{UserAnswers, UserBusinessSubscriptionData}
+import models.requests.OptionalDataRequest
 import models.viewAndUpdateRcasp.RcaspDetails
-import pages.SubmissionSucceededPage
+import models.{UserAnswers, UserBusinessSubscriptionData}
 import pages.remove.{RemoveRcaspCachedDetails, RemoveUserAccessPage, RemoveUserBusinessInfoCached}
-import utils.LoggerUtil.*
+import pages.{PasscodePage, SubmissionSucceededPage}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
+import play.api.mvc.*
 import repositories.SessionRepository
-import models.requests.OptionalDataRequest
 import services.AccountService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.LoggerUtil.*
+import utils.PasscodeHelper
 import viewmodels.remove.RemoveUserAccessViewModel
 import views.html.remove.RemoveUserAccessView
 
@@ -45,6 +46,7 @@ class RemoveUserAccessController @Inject() (
     sessionRepository: SessionRepository,
     formProvider: GenericYesNoPageFormProvider,
     accountService: AccountService,
+    passcodeHelper: PasscodeHelper,
     val controllerComponents: MessagesControllerComponents,
     view: RemoveUserAccessView
 )(implicit ec: ExecutionContext)
@@ -63,15 +65,17 @@ class RemoveUserAccessController @Inject() (
   private def cacheAndRender(
       rcaspId: String,
       details: RcaspDetails,
-      userInfo: UserBusinessSubscriptionData
+      userInfo: UserBusinessSubscriptionData,
+      passcode: Option[String]
   )(implicit request: OptionalDataRequest[AnyContent], messages: Messages): Future[Result] =
     for {
-      answers        <- Future.fromTry(
+      a              <- Future.fromTry(
                           UserAnswers(id = request.userId, rcaspIsRegisteredBusiness = false)
                             .set(RemoveRcaspCachedDetails, details)
                         )
+      b              <- passcodeHelper.handlePasscodePersistence(a, passcode)
       updatedAnswers <- Future.fromTry(
-                          answers.set(RemoveUserBusinessInfoCached, userInfo)
+                          b.set(RemoveUserBusinessInfoCached, userInfo)
                         )
       _              <- sessionRepository.set(updatedAnswers)
     } yield {
@@ -85,7 +89,8 @@ class RemoveUserAccessController @Inject() (
     accountService.getRcaspDetails(request.carfId, rcaspId).value.flatMap {
       case Right(details) =>
         accountService.getUserBusinessSubscriptionData(request.carfId).value.flatMap {
-          case Right(userInfo) => cacheAndRender(rcaspId, details, userInfo)
+          case Right(userInfo) =>
+            cacheAndRender(rcaspId, details, userInfo, request.userAnswers.flatMap(_.get(PasscodePage)))
           case Left(error)     =>
             logWarn(s"[RemoveUserAccessController][onPageLoad] Failed to get user business info: $error")
             Future.successful(journeyRecovery)
