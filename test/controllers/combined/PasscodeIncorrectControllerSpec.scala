@@ -23,13 +23,13 @@ import org.mockito.Mockito.when
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import views.html.combined.PasscodeIncorrectPageView
+import views.html.combined.PasscodeIncorrectView
 
 class PasscodeIncorrectControllerSpec extends SpecBase {
 
   val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
-  "PasscodeIncorrectPage Controller" - {
+  "PasscodeIncorrect Controller" - {
 
     "must return OK and the correct view for a GET" in {
       when(mockAppConfig.carfDigitalEmailAddress).thenReturn(testEmail)
@@ -44,7 +44,7 @@ class PasscodeIncorrectControllerSpec extends SpecBase {
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[PasscodeIncorrectPageView]
+        val view = application.injector.instanceOf[PasscodeIncorrectView]
 
         status(result)          mustEqual OK
         contentAsString(result) mustEqual view(testEmail)(request, messages(application)).toString
