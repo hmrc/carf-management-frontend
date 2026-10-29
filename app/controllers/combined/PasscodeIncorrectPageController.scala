@@ -27,14 +27,14 @@ import javax.inject.Inject
 
 class PasscodeIncorrectPageController @Inject() (
     override val messagesApi: MessagesApi,
-    identify: IdentifierAction,
+    passcodeAction: PasscodeAction,
     val controllerComponents: MessagesControllerComponents,
     view: PasscodeIncorrectPageView,
     appConfig: FrontendAppConfig
 ) extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = identify { implicit request =>
+  def onPageLoad: Action[AnyContent] = passcodeAction() { implicit request =>
     Ok(view(appConfig.carfDigitalEmailAddress))
   }
 }
