@@ -21,7 +21,7 @@ import controllers.actions.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import views.html.combined.PasscodeIncorrectPageView
+import views.html.combined.PasscodeIncorrectView
 
 import javax.inject.Inject
 
@@ -29,7 +29,7 @@ class PasscodeIncorrectController @Inject() (
     override val messagesApi: MessagesApi,
     passcodeAction: PasscodeAction,
     val controllerComponents: MessagesControllerComponents,
-    view: PasscodeIncorrectPageView,
+    view: PasscodeIncorrectView,
     appConfig: FrontendAppConfig
 ) extends FrontendBaseController
     with I18nSupport {
