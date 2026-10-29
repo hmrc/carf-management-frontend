@@ -188,3 +188,5 @@ POST        /remove/remove-rcasp                                              co
 GET         /remove/rcasp-removed                                             controllers.remove.RcaspRemovedController.onPageLoad()
 
 GET         /problem/page-unavailable                                         controllers.PageUnavailableController.onPageLoad()
+
+GET         /problem/service-unavailable                                      controllers.combined.PasscodeIncorrectPageController.onPageLoad()
