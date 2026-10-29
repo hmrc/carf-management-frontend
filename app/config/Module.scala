@@ -30,6 +30,7 @@ class Module extends AbstractModule {
     bind(classOf[DataRequiredAction]).to(classOf[DataRequiredActionImpl]).asEagerSingleton()
     bind(classOf[CtUtrRetrievalAction]).to(classOf[CtUtrRetrievalActionImpl]).asEagerSingleton()
     bind(classOf[UserIdRetrievalAction]).to(classOf[UserIdRetrievalActionImpl]).asEagerSingleton()
+    bind(classOf[PasscodeAction]).to(classOf[PasscodeActionImpl]).asEagerSingleton()
     bind(classOf[Encrypter]).toProvider(classOf[CryptoProvider])
     bind(classOf[Decrypter]).toProvider(classOf[CryptoProvider])
 

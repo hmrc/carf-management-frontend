@@ -17,13 +17,14 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
 import models.errors.ApiError.InternalServerError
 import models.{ChangeMode, NormalMode, UserAnswers}
 import org.mockito.ArgumentMatchers.{any, argThat}
 import org.mockito.Mockito.{verify, when}
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.OverwritableOrganisationName
-import pages.{RcaspIdPage, SubmissionSucceededPage}
+import pages.{PasscodePage, RcaspIdPage, SubmissionSucceededPage}
 import pages.remove.RemoveRcaspCachedDetails
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -36,6 +37,7 @@ import scala.concurrent.Future
 class RoutingControllerSpec extends SpecBase {
 
   val mockAccountService: AccountService = mock[AccountService]
+  val mockAppConfig: FrontendAppConfig   = mock[FrontendAppConfig]
 
   lazy val routeUnderTest: String =
     controllers.routes.RoutingController.onPageLoad(NormalMode).url
@@ -233,6 +235,44 @@ class RoutingControllerSpec extends SpecBase {
 
         verify(mockSessionRepository).set(
           argThat((answers: UserAnswers) => answers.get(RemoveRcaspCachedDetails).isEmpty)
+        )
+      }
+    }
+
+    "must preserve PasscodePage when passcode is enabled" in {
+      val staleUserAnswers = emptyUserAnswers
+        .withPage(SubmissionSucceededPage, true)
+        .withPage(RcaspIdPage, rcaspId)
+        .withPage(OverwritableOrganisationName, testOrgName)
+        .withPage(PasscodePage, "foo")
+
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockAppConfig.passcodeCheckEnabled).thenReturn(true)
+      when(mockAccountService.getNumberOfRcaspsCurrentlyAdded(any())(any(), any()))
+        .thenReturn(ResultT.fromValue(0))
+
+      val application =
+        applicationBuilder(
+          userAnswers = Some(staleUserAnswers),
+          requestUtr = Some(testUtr.uniqueTaxPayerReference)
+        ).overrides(
+          bind[AccountService].toInstance(mockAccountService),
+          bind[FrontendAppConfig].toInstance(mockAppConfig)
+        ).build()
+
+      running(application) {
+        val request = FakeRequest(GET, routeUnderTest)
+        val result  = route(application, request).value
+
+        status(result) mustEqual SEE_OTHER
+
+        verify(mockSessionRepository).set(
+          argThat((answers: UserAnswers) =>
+            answers.get(SubmissionSucceededPage).isEmpty &&
+              answers.get(RcaspIdPage).isEmpty &&
+              answers.get(OverwritableOrganisationName).isEmpty &&
+              answers.get(PasscodePage).contains("foo")
+          )
         )
       }
     }

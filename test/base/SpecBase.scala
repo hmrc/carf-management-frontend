@@ -78,6 +78,7 @@ trait SpecBase
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[IdentifierAction].toInstance(new FakeIdentifierAction(injectedParsers, affinityGroup, requestUtr)),
         bind[DataRetrievalAction].toInstance(new FakeDataRetrievalActionProvider(userAnswers)),
+        bind[PasscodeAction].toInstance(new FakePasscodeAction(injectedParsers)),
         bind[SubmissionLockAction].to[FakeSubmissionLockAction],
         bind[SessionRepository].toInstance(mockSessionRepository)
       )
