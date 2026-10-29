@@ -23,6 +23,7 @@ import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, Identifie
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.AccountService
+import types.ResultT
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.LoggerUtil.*
 import viewmodels.HomePageViewModel
@@ -51,7 +52,8 @@ class HomePageController @Inject() (
       val viewModelFuture = for {
         numberOfRcaspsCurrentlyAdded <- accountService.getNumberOfRcaspsCurrentlyAdded(carfId)
         subscriptionData             <- accountService.getUserBusinessSubscriptionData(carfId)
-        hasSentFiles                 <- submissionDetailsConnector.checkForSentFiles(carfId)
+        hasSentFiles                 <- if (appConfig.fileUploadResultsEnabled) submissionDetailsConnector.checkForSentFiles(carfId)
+                                        else ResultT.fromValue(false)
       } yield HomePageViewModel(
         isBusiness = subscriptionData.hasOrganisationContactDetails,
         hasZeroRcaspsAdded = numberOfRcaspsCurrentlyAdded == ZERO,
