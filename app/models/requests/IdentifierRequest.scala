@@ -28,3 +28,5 @@ case class IdentifierRequest[A](
     carfId: String,
     utr: Option[UniqueTaxpayerReference] = None
 ) extends WrappedRequest[A](request)
+
+case class PasscodeRequest[A](request: Request[A], userId: String) extends WrappedRequest[A](request)

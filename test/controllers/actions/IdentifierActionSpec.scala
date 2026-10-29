@@ -21,6 +21,7 @@ import config.FrontendAppConfig
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
+import pages.PasscodePage
 import play.api.http.Status.{OK, SEE_OTHER}
 import play.api.mvc.Results.Ok
 import play.api.mvc.{BodyParsers, Request, Result}
@@ -61,15 +62,16 @@ class IdentifierActionSpec extends SpecBase {
   val emptyEnrolments                     = Enrolments(Set.empty[Enrolment])
 
   val testIdentifierAction: AuthenticatedIdentifierAction =
-    new AuthenticatedIdentifierAction(mockAuthConnector, mockAppConfig, defaultBodyParser)
+    new AuthenticatedIdentifierAction(mockAuthConnector, mockAppConfig, defaultBodyParser, mockSessionRepository)
 
   val testAction: Request[_] => Future[Result] = { _ =>
     Future(Ok(testContent))
   }
 
   "AuthenticatedIdentifierAction.invokeBlock" - {
-    "execute the block and return OK if authorised" in {
+    "execute the block and return OK if authorised when passcode is disabled" in {
       when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
+      when(mockAppConfig.passcodeCheckEnabled).thenReturn(false)
       when(
         mockAuthConnector.authorise(
           ArgumentMatchers.eq(EmptyPredicate),
@@ -85,6 +87,76 @@ class IdentifierActionSpec extends SpecBase {
       status(result)          mustBe OK
       contentAsString(result) mustBe testContent
     }
+
+    "execute the block and return OK if authorised when passcode is enabled and passcode is correct" in {
+      when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
+      when(mockAppConfig.passcodeCheckEnabled).thenReturn(true)
+      when(mockAppConfig.passcode).thenReturn("foo")
+      when(mockSessionRepository.get(any))
+        .thenReturn(Future.successful(Some(emptyUserAnswers.withPage(PasscodePage, "foo"))))
+      when(
+        mockAuthConnector.authorise(
+          ArgumentMatchers.eq(EmptyPredicate),
+          ArgumentMatchers.eq(
+            internalId and allEnrolments and affinityGroup
+          )
+        )(any(), any())
+      )
+        .thenReturn(Future(new ~(new ~(Some(testInternalId), carfEnrolment), Some(Organisation))))
+
+      val result: Future[Result] = testIdentifierAction.invokeBlock(FakeRequest(), testAction)
+
+      status(result)          mustBe OK
+      contentAsString(result) mustBe testContent
+    }
+
+    "redirect to Placeholder page if passcode is enabled and passcode is incorrect" in {
+      when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
+      when(mockAppConfig.passcodeCheckEnabled).thenReturn(true)
+      when(mockAppConfig.passcode).thenReturn("foo")
+      when(mockSessionRepository.get(any))
+        .thenReturn(Future.successful(Some(emptyUserAnswers.withPage(PasscodePage, "bar"))))
+      when(
+        mockAuthConnector.authorise(
+          ArgumentMatchers.eq(EmptyPredicate),
+          ArgumentMatchers.eq(
+            internalId and allEnrolments and affinityGroup
+          )
+        )(any(), any())
+      )
+        .thenReturn(Future(new ~(new ~(Some(testInternalId), carfEnrolment), Some(Organisation))))
+
+      val result: Future[Result] = testIdentifierAction.invokeBlock(FakeRequest(), testAction)
+
+      status(result)           mustBe SEE_OTHER
+      redirectLocation(result) mustBe Some(
+        controllers.routes.PlaceholderController.onPageLoad("Content not yet available").url
+      )
+    }
+
+    "redirect to Placeholder page if passcode is enabled and passcode is not present" in {
+      when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
+      when(mockAppConfig.passcodeCheckEnabled).thenReturn(true)
+      when(mockAppConfig.passcode).thenReturn("foo")
+      when(mockSessionRepository.get(any)).thenReturn(Future.successful(None))
+      when(
+        mockAuthConnector.authorise(
+          ArgumentMatchers.eq(EmptyPredicate),
+          ArgumentMatchers.eq(
+            internalId and allEnrolments and affinityGroup
+          )
+        )(any(), any())
+      )
+        .thenReturn(Future(new ~(new ~(Some(testInternalId), carfEnrolment), Some(Organisation))))
+
+      val result: Future[Result] = testIdentifierAction.invokeBlock(FakeRequest(), testAction)
+
+      status(result)           mustBe SEE_OTHER
+      redirectLocation(result) mustBe Some(
+        controllers.routes.PlaceholderController.onPageLoad("Content not yet available").url
+      )
+    }
+
     "return redirect if carfId exists but has no value" in {
       when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
       when(mockAppConfig.registrationUrl).thenReturn("/test")
@@ -103,6 +175,7 @@ class IdentifierActionSpec extends SpecBase {
       status(result)                 mustBe SEE_OTHER
       redirectLocation(result).value mustBe s"/test"
     }
+
     "return redirect if enrolment is empty" in {
       when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
       when(mockAppConfig.registrationUrl).thenReturn("/test")
@@ -121,6 +194,7 @@ class IdentifierActionSpec extends SpecBase {
       status(result)                 mustBe SEE_OTHER
       redirectLocation(result).value mustBe s"/test"
     }
+
     "return redirect if affinity group is Agent" in {
       when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
       when(mockAppConfig.registrationUrl).thenReturn("/test")
@@ -139,6 +213,7 @@ class IdentifierActionSpec extends SpecBase {
       status(result)                 mustBe SEE_OTHER
       redirectLocation(result).value mustBe s"/test"
     }
+
     "throw an exception if affinity group cannot be retrieved" in {
       when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
       when(
@@ -157,6 +232,7 @@ class IdentifierActionSpec extends SpecBase {
 
       result.getMessage must include("Failed to retrieve valid auth data")
     }
+
     "throw an exception if internal id cannot be retrieved" in {
       when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
       when(
@@ -175,6 +251,7 @@ class IdentifierActionSpec extends SpecBase {
 
       result.getMessage must include("Failed to retrieve valid auth data")
     }
+
     "throw an exception when the auth connector call fails" in {
       when(mockAppConfig.enrolmentKey).thenReturn(carfKey)
       when(
@@ -193,6 +270,7 @@ class IdentifierActionSpec extends SpecBase {
 
       result.getMessage must include("bang")
     }
+
     "redirect to the login page if no longer authorised or never logged in" in {
       List(
         BearerTokenExpired(),
