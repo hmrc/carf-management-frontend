@@ -17,7 +17,7 @@
 package controllers.auth
 
 import config.FrontendAppConfig
-import controllers.actions.{IdentifierAction, UserIdRetrievalAction}
+import controllers.actions.{PasscodeAction, UserIdRetrievalAction}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
@@ -30,13 +30,13 @@ class AuthController @Inject() (
     val controllerComponents: MessagesControllerComponents,
     config: FrontendAppConfig,
     sessionRepository: SessionRepository,
-    identify: IdentifierAction,
+    passcodeAction: PasscodeAction,
     userIdRetrieval: UserIdRetrievalAction
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
 
-  def signOut(): Action[AnyContent] = identify.async { implicit request =>
+  def signOut(): Action[AnyContent] = passcodeAction().async { implicit request =>
     sessionRepository
       .clear(request.userId)
       .map { _ =>
