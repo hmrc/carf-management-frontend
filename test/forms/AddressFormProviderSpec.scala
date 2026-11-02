@@ -211,6 +211,28 @@ class AddressFormProviderSpec extends StringFieldBehaviours {
       result.errors must contain(FormError("postcode", "address.postcode.error.notUK"))
     }
 
+    "must return a 'not real' error if The postcode is AA11AA" in {
+      val formData = Map(
+        "addressLine1" -> "addressLine1",
+        "townOrCity"   -> "town",
+        "postcode"     -> "AA11AA"
+      )
+
+      val result = form.bind(formData)
+      result.errors must contain(FormError("postcode", "address.postcode.error.notReal"))
+    }
+
+    "must return a 'not real' error if The postcode is AA1 1AA" in {
+      val formData = Map(
+        "addressLine1" -> "addressLine1",
+        "townOrCity"   -> "town",
+        "postcode"     -> "AA1 1AA"
+      )
+
+      val result = form.bind(formData)
+      result.errors must contain(FormError("postcode", "address.postcode.error.notReal"))
+    }
+
     "must be valid if postcode is provided in a valid format" in {
       val formData =
         Map("addressLine1" -> "addressLine1", "townOrCity" -> "town", "postcode" -> "NW4 1QS")

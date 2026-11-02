@@ -37,7 +37,8 @@ class FindAddressFormProvider @Inject() extends Mappings {
             regexPostcode,
             "findAddress.postcode.error.invalid.characters",
             postCodeAllowedChars,
-            "findAddress.postcode.error.notUK"
+            "findAddress.postcode.error.notUK",
+            None
           ),
         "propertyNameOrNumber" ->
           validatedOptionalTextNoRegex(

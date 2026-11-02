@@ -344,7 +344,8 @@ trait Formatters {
       regex: String,
       invalidCharKey: String,
       validCharRegex: String,
-      notUkKey: String
+      notUkKey: String,
+      notRealKey: Option[String]
   ): Formatter[String] =
     new Formatter[String] {
       override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], String] = {
@@ -356,13 +357,14 @@ trait Formatters {
           case Some(postCode)                     =>
             val sanitisedPostcode = postCode.replaceAll("\\s+", " ")
             sanitisedPostcode match {
-              case s if s.length > maxLengthPostcode             => Left(Seq(FormError(key, lengthKey)))
-              case s if !s.matches(validCharRegex)               => Left(Seq(FormError(key, invalidCharKey)))
-              case s if data.getOrElse("townOrCity", "").isEmpty =>
+              case s if s.length > maxLengthPostcode                     => Left(Seq(FormError(key, lengthKey)))
+              case s if !s.matches(validCharRegex)                       => Left(Seq(FormError(key, invalidCharKey)))
+              case s if isPostcodeNotReal(sanitisedPostcode, notRealKey) => Left(Seq(FormError(key, notRealKey.get)))
+              case s if data.getOrElse("townOrCity", "").isEmpty         =>
                 val postCodeNoSpaces = postCode.replaceAll("\\s+", "")
                 if (!postCodeNoSpaces.matches(regex)) { Left(Seq(FormError(key, invalidKey))) }
                 else { filterCDPostcodes(postCodeNoSpaces, notUkKey, onFindAddress = true) }
-              case s                                             =>
+              case s                                                     =>
                 filterCDPostcodes(s, notUkKey, onFindAddress = false)
             }
           case _                                  => Left(Seq(FormError(key, requiredKey)))
@@ -428,4 +430,14 @@ trait Formatters {
       override def unbind(key: String, value: Option[String]): Map[String, String] =
         value.map(key -> _).toMap
     }
+
+  private def isPostcodeNotReal(postcode: String, notRealKey: Option[String]): Boolean = {
+    val postCodeNoSpacesToUpper = postcode.replaceAll("\\s+", "").toUpperCase
+
+    if (notRealKey.isEmpty) {
+      false
+    } else {
+      postCodeNoSpacesToUpper == Constants.notRealPostcode
+    }
+  }
 }
