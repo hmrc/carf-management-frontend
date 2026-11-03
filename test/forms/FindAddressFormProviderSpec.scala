@@ -75,6 +75,11 @@ class FindAddressFormProviderSpec extends StringFieldBehaviours {
       result.errors.filter(_.key == fieldName) mustBe empty
     }
 
+    "must bind a valid postcode with the not real postcode (AA11AA)" in {
+      val result = form.bind(Map(fieldName -> "AA11AA"))
+      result.errors.filter(_.key == fieldName) mustBe empty
+    }
+
     "must not bind postcodes with crown dependency codes" in {
       val result = form.bind(Map(fieldName -> "GY1 1AA"))
       result.errors must contain(FormError(fieldName, notUK))
