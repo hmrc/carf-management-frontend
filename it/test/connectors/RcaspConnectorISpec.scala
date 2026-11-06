@@ -30,8 +30,9 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
   val connector: RcaspConnector = app.injector.instanceOf[RcaspConnector]
 
+  private inline val subscriptionId = "XCCAR0024000102"
   val testViewRcaspResponseJson: String =
-    """{
+    s"""{
       |  "ViewRCASP": {
       |    "ResponseCommon": {
       |      "OriginatingSystem": "CADX",
@@ -42,7 +43,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
       |    "ResponseDetails": {
       |      "RCASPList": [
       |        {
-      |          "SubscriptionID": "XCCAR0024000102",
+      |          "SubscriptionID": "$subscriptionId",
       |          "RCASPID": "ZMCAR0123456789",
       |          "IsRCASPUser": false,
       |          "PartyType": "Organisation",
@@ -197,7 +198,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
   "createRcasp" should {
 
-    val testUrl = "/carf-account/create"
+    val testUrl = s"/carf-account/create/$subscriptionId"
 
     val submitStubResponse =
       """
@@ -278,7 +279,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
   "updateRcasp" should {
 
-    val testUrl = "/carf-account/update"
+    val testUrl = s"/carf-account/update/$subscriptionId"
 
     val updateStubResponse = "{}"
 
@@ -349,7 +350,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
 
   "deleteRcasp" should {
 
-    val testUrl = "/carf-account/delete"
+    val testUrl = s"/carf-account/delete/$subscriptionId"
 
     val deleteStubResponse = "{}"
 

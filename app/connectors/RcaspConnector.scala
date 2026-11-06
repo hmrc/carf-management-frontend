@@ -25,7 +25,6 @@ import models.requests.deleteRcasp.RcaspRequest as DeleteRcaspRequest
 import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
 import models.responses.*
 import models.viewAndUpdateRcasp
-import utils.LoggerUtil.*
 import play.api.http.Status.*
 import play.api.libs.json.*
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
@@ -33,6 +32,7 @@ import types.ResultT
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import utils.LoggerUtil.*
 
 import java.net.URL
 import javax.inject.Inject
@@ -75,7 +75,8 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   def createRcasp(
       createRcaspRequest: CreateRcaspRequest
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[CreateRcaspResponse] = {
-    val baseUrl = url"${config.carfAccountBaseUrl}/create"
+    val carfId  = createRcaspRequest.RCASPManagement.RequestDetails.SubscriptionID
+    val baseUrl = url"${config.carfAccountBaseUrl}/create/$carfId"
 
     logDebug("[RcaspConnector][createRcasp] Creating RCASP")
 
@@ -95,7 +96,9 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   def updateRcasp(
       updateRcaspRequest: UpdateRcaspRequest
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[UpdateDeleteRcaspResponse] = {
-    val baseUrl = url"${config.carfAccountBaseUrl}/update"
+
+    val carfId  = updateRcaspRequest.RCASPManagement.RequestDetails.SubscriptionID
+    val baseUrl = url"${config.carfAccountBaseUrl}/update/$carfId"
 
     logDebug("[RcaspConnector][createRcasp] Updating RCASP")
 
@@ -115,7 +118,9 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   def deleteRcasp(
       deleteRcaspRequest: DeleteRcaspRequest
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[UpdateDeleteRcaspResponse] = {
-    val baseUrl = url"${config.carfAccountBaseUrl}/delete"
+
+    val carfId  = deleteRcaspRequest.RCASPManagement.RequestDetails.SubscriptionID
+    val baseUrl = url"${config.carfAccountBaseUrl}/delete/$carfId"
 
     logDebug("[RcaspConnector][deleteRcasp] Deleting RCASP")
 
