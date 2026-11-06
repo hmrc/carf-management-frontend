@@ -19,12 +19,12 @@ package connectors
 import config.FrontendAppConfig
 import models.errors.ApiError.{InternalServerError, JsonValidationError, NotFoundError}
 import models.responses.DisplaySubscriptionResponse
-import utils.LoggerUtil.*
 import play.api.http.Status.{NOT_FOUND, OK}
 import types.ResultT
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import utils.LoggerUtil.*
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
