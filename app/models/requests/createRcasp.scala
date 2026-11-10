@@ -16,8 +16,8 @@
 
 package models.requests
 
-import play.api.libs.json.{Json, OFormat, Reads, Writes}
 import models.{RcaspAddress, RcaspContactDetails, TinDetails}
+import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
 object createRcasp {
   case class RcaspRequest(RCASPManagement: RcaspManagementRequest)
