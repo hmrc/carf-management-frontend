@@ -94,11 +94,11 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   }
 
   def updateRcasp(
+      requestCarfID: String,
       updateRcaspRequest: UpdateRcaspRequest
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[UpdateDeleteRcaspResponse] = {
 
-    val carfId  = updateRcaspRequest.RCASPManagement.RequestDetails.SubscriptionID
-    val baseUrl = url"${config.carfAccountBaseUrl}/update/$carfId"
+    val baseUrl = url"${config.carfAccountBaseUrl}/update/$requestCarfID"
 
     logDebug("[RcaspConnector][createRcasp] Updating RCASP")
 

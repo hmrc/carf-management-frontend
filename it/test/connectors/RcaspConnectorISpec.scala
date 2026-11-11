@@ -294,7 +294,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
           )
       )
 
-      val result = connector.updateRcasp(updateRcaspRequestIndividual).value.futureValue
+      val result = connector.updateRcasp(subscriptionId, updateRcaspRequestIndividual).value.futureValue
       result shouldBe Right(updateDeleteRcaspResponse)
     }
 
@@ -308,7 +308,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
           )
       )
 
-      val result = connector.updateRcasp(updateRcaspRequestIndividual).value.futureValue
+      val result = connector.updateRcasp(subscriptionId, updateRcaspRequestIndividual).value.futureValue
       result shouldBe Left(JsonValidationError)
     }
 
@@ -328,7 +328,33 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
           )
       )
 
-      val result = connector.updateRcasp(updateRcaspRequestIndividual).value.futureValue
+      val result = connector.updateRcasp(subscriptionId, updateRcaspRequestIndividual).value.futureValue
+      result shouldBe Left(InternalServerError)
+    }
+    
+    "ensure the carfId in url and carfId in response come from different sources" in {
+
+      val carfIdFromRequest = "carfIdFromRequest"
+      
+      val errorResponse = Json.obj(
+        "status"  -> "Unprocessable Entity",
+        "message" -> "Invalid ID"
+      )
+
+      stubFor(
+        post(
+          urlPathMatching(s"/carf-account/update/$carfIdFromRequest")
+        ).withRequestBody(
+            equalToJson(Json.toJson(updateRcaspRequestIndividual).toString)
+          )
+          .willReturn(
+            aResponse()
+              .withStatus(UNAUTHORIZED)
+              .withBody(errorResponse.toString)
+          )
+      )
+
+      val result = connector.updateRcasp(carfIdFromRequest, updateRcaspRequestIndividual).value.futureValue
       result shouldBe Left(InternalServerError)
     }
 
@@ -343,7 +369,7 @@ class RcaspConnectorISpec extends ApplicationWithWiremock with Matchers with Sca
           )
       )
 
-      val result = connector.updateRcasp(updateRcaspRequestIndividual).value.futureValue
+      val result = connector.updateRcasp(subscriptionId, updateRcaspRequestIndividual).value.futureValue
       result shouldBe Left(InternalServerError)
     }
   }

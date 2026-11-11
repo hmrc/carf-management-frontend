@@ -184,7 +184,9 @@ class RcaspController @Inject() (
         )
       )
 
-    connector.updateRcasp(updateRcaspRequest).processResponse(data => Ok(Json.prettyPrint(Json.toJson(data))))
+    connector
+      .updateRcasp(subscriptionId, updateRcaspRequest)
+      .processResponse(data => Ok(Json.prettyPrint(Json.toJson(data))))
   }
 
   def deleteRcasp(subscriptionId: String): Action[AnyContent] = Action.async { implicit request =>
