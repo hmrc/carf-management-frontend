@@ -80,7 +80,7 @@ class RcaspSubmissionService @Inject (
     rcaspSubmissionHelper.updateRegisteredBusinessRcaspRequest(carfId, utr, userAnswers) match {
       case Some(request) =>
         rcaspConnector
-          .updateRcasp(request)
+          .updateRcasp(carfId, request)
           .leftMap { error =>
             logWarn(s"[RcaspSubmissionService][updateRegisteredBusinessRcasp] Failed to update RCASP: $error")
             error
@@ -99,7 +99,7 @@ class RcaspSubmissionService @Inject (
     rcaspSubmissionHelper.updateRcaspRequest(carfId, userAnswers) match {
       case Some(request) =>
         rcaspConnector
-          .updateRcasp(request)
+          .updateRcasp(carfId, request)
           .leftMap { error =>
             logWarn(s"[RcaspSubmissionService][updateRcasp] Failed to update RCASP: $error")
             error

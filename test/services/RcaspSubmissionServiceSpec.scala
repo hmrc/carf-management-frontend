@@ -158,9 +158,10 @@ class RcaspSubmissionServiceSpec extends SpecBase {
           Some(updateRcaspRequestRegisteredBusiness)
         )
 
-        when(mockRcaspConnector.updateRcasp(eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())).thenReturn(
-          ResultT.fromValue(updateDeleteRcaspResponse)
-        )
+        when(mockRcaspConnector.updateRcasp(eqTo(carfId), eqTo(updateRcaspRequestRegisteredBusiness))(any(), any()))
+          .thenReturn(
+            ResultT.fromValue(updateDeleteRcaspResponse)
+          )
 
         val result =
           rcaspSubmissionService.updateRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
@@ -169,7 +170,8 @@ class RcaspSubmissionServiceSpec extends SpecBase {
 
         verify(mockRcaspSubmissionHelper, times(1))
           .updateRegisteredBusinessRcaspRequest(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
-        verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())
+        verify(mockRcaspConnector, times(1))
+          .updateRcasp(eqTo(carfId), eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())
       }
 
       "when the RcaspRequest is built but the connector returns an error" in {
@@ -177,9 +179,10 @@ class RcaspSubmissionServiceSpec extends SpecBase {
           Some(updateRcaspRequestRegisteredBusiness)
         )
 
-        when(mockRcaspConnector.updateRcasp(eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())).thenReturn(
-          ResultT.fromError(InternalServerError)
-        )
+        when(mockRcaspConnector.updateRcasp(eqTo(carfId), eqTo(updateRcaspRequestRegisteredBusiness))(any(), any()))
+          .thenReturn(
+            ResultT.fromError(InternalServerError)
+          )
 
         val result =
           rcaspSubmissionService.updateRegisteredBusinessRcasp(carfId, testUtr, testUserAnswers).value.futureValue
@@ -188,7 +191,8 @@ class RcaspSubmissionServiceSpec extends SpecBase {
 
         verify(mockRcaspSubmissionHelper, times(1))
           .updateRegisteredBusinessRcaspRequest(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
-        verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())
+        verify(mockRcaspConnector, times(1))
+          .updateRcasp(eqTo(carfId), eqTo(updateRcaspRequestRegisteredBusiness))(any(), any())
       }
 
       "when the helper fails to build the RcaspRequest" in {
@@ -203,7 +207,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
 
         verify(mockRcaspSubmissionHelper, times(1))
           .updateRegisteredBusinessRcaspRequest(eqTo(carfId), eqTo(testUtr), eqTo(testUserAnswers))
-        verify(mockRcaspConnector, times(0)).updateRcasp(any())(any(), any())
+        verify(mockRcaspConnector, times(0)).updateRcasp(eqTo(carfId), any())(any(), any())
       }
     }
 
@@ -213,7 +217,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
           Some(updateRcaspRequestIndividual)
         )
 
-        when(mockRcaspConnector.updateRcasp(eqTo(updateRcaspRequestIndividual))(any(), any())).thenReturn(
+        when(mockRcaspConnector.updateRcasp(eqTo(carfId), eqTo(updateRcaspRequestIndividual))(any(), any())).thenReturn(
           ResultT.fromValue(updateDeleteRcaspResponse)
         )
 
@@ -222,7 +226,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         result mustBe Right(updateDeleteRcaspResponse)
 
         verify(mockRcaspSubmissionHelper, times(1)).updateRcaspRequest(eqTo(carfId), eqTo(testUserAnswers))
-        verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(updateRcaspRequestIndividual))(any(), any())
+        verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(carfId), eqTo(updateRcaspRequestIndividual))(any(), any())
       }
 
       "when the RcaspRequest is built but the connector returns an error" in {
@@ -230,7 +234,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
           Some(updateRcaspRequestIndividual)
         )
 
-        when(mockRcaspConnector.updateRcasp(eqTo(updateRcaspRequestIndividual))(any(), any())).thenReturn(
+        when(mockRcaspConnector.updateRcasp(eqTo(carfId), eqTo(updateRcaspRequestIndividual))(any(), any())).thenReturn(
           ResultT.fromError(InternalServerError)
         )
 
@@ -239,7 +243,7 @@ class RcaspSubmissionServiceSpec extends SpecBase {
         result mustBe Left(InternalServerError)
 
         verify(mockRcaspSubmissionHelper, times(1)).updateRcaspRequest(eqTo(carfId), eqTo(testUserAnswers))
-        verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(updateRcaspRequestIndividual))(any(), any())
+        verify(mockRcaspConnector, times(1)).updateRcasp(eqTo(carfId), eqTo(updateRcaspRequestIndividual))(any(), any())
       }
 
       "when the helper fails to build the RcaspRequest" in {
