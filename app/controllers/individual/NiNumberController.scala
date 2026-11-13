@@ -21,7 +21,7 @@ import forms.individual.NiNumberFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.individual.{IndividualNamePage, NiNumberPage}
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -45,7 +45,8 @@ class NiNumberController @Inject() (
     view: NiNumberView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[String] = formProvider()
 
@@ -57,7 +58,7 @@ class NiNumberController @Inject() (
       request.userAnswers
         .get(IndividualNamePage)
         .fold {
-          logWarn(
+          logger.warn(
             "[NiNumberController][onPageLoad] Error! Individual name could not be retrieved from user answers"
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -74,7 +75,7 @@ class NiNumberController @Inject() (
             request.userAnswers
               .get(IndividualNamePage)
               .fold {
-                logWarn(
+                logger.warn(
                   "[NiNumberController][onSubmit] Error! Individual name could not be retrieved from user answers"
                 )
                 Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))

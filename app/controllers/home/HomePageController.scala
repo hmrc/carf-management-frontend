@@ -20,12 +20,12 @@ import config.Constants.ZERO
 import config.FrontendAppConfig
 import connectors.SubmissionDetailsConnector
 import controllers.actions.{CtUtrRetrievalAction, DataRetrievalAction, IdentifierAction}
+import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.AccountService
 import types.ResultT
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.LoggerUtil.*
 import viewmodels.HomePageViewModel
 import views.html.HomePageView
 
@@ -43,7 +43,8 @@ class HomePageController @Inject() (
     view: HomePageView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad(): Action[AnyContent] = (identify andThen ctUtrRetrievalAction() andThen getData()).async {
     implicit request =>
@@ -65,7 +66,7 @@ class HomePageController @Inject() (
 
       viewModelFuture.value.map {
         case Left(error) =>
-          logWarn(s"[HomePageController][onPageLoad] Error generating view model: $error")
+          logger.warn(s"[HomePageController][onPageLoad] Error generating view model: $error")
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
         case Right(viewModel) =>

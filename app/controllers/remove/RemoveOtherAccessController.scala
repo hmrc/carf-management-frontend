@@ -19,7 +19,7 @@ package controllers.remove
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import pages.remove.{RemoveOtherAccessPage, RemoveRcaspCachedDetails, RemoveUserBusinessInfoCached}
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import repositories.SessionRepository
@@ -42,7 +42,8 @@ class RemoveOtherAccessController @Inject() (
     view: RemoveOtherAccessView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   private val journeyRecovery: Result = Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
 
@@ -61,7 +62,7 @@ class RemoveOtherAccessController @Inject() (
           )
 
         case _ =>
-          logWarn(
+          logger.warn(
             "[RemoveOtherAccessController][onPageLoad] RemoveRcaspCachedDetails or user business info not found"
           )
           Future.successful(journeyRecovery)
@@ -90,7 +91,7 @@ class RemoveOtherAccessController @Inject() (
             )
 
         case _ =>
-          logWarn(
+          logger.warn(
             "[RemoveOtherAccessController][onSubmit] RemoveRcaspCachedDetails or user business info not found"
           )
           Future.successful(journeyRecovery)

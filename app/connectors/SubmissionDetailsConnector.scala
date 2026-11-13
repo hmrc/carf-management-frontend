@@ -18,23 +18,23 @@ package connectors
 
 import config.FrontendAppConfig
 import models.errors.ApiError.{InternalServerError, JsonValidationError}
+import play.api.Logging
 import play.api.http.Status.OK
 import types.ResultT
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import utils.LoggerUtil.*
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
-class SubmissionDetailsConnector @Inject() (httpClient: HttpClientV2, config: FrontendAppConfig) {
+class SubmissionDetailsConnector @Inject() (httpClient: HttpClientV2, config: FrontendAppConfig) extends Logging {
 
   def checkForSentFiles(carfId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[Boolean] = {
     val requestUrl = url"${config.carfReportingBaseUrl}/check-for-sent-files/$carfId"
 
-    logInfo(s"[SubmissionDetailsConnector][checkForSentFiles] Checking for sent files for carfId $carfId")
+    logger.info(s"[SubmissionDetailsConnector][checkForSentFiles] Checking for sent files for carfId $carfId")
 
     ResultT.fromFuture {
       httpClient
@@ -46,13 +46,13 @@ class SubmissionDetailsConnector @Inject() (httpClient: HttpClientV2, config: Fr
               Try(response.json.as[Boolean]) match {
                 case Success(hasSentFiles) => Right(hasSentFiles)
                 case Failure(_)            =>
-                  logError(
+                  logger.error(
                     s"[SubmissionDetailsConnector][checkForSentFiles] Error parsing response body for carfId $carfId"
                   )
                   Left(JsonValidationError)
               }
             case status =>
-              logWarn(
+              logger.warn(
                 s"[SubmissionDetailsConnector][checkForSentFiles] Unexpected response: status $status, carfId $carfId"
               )
               Left(InternalServerError)

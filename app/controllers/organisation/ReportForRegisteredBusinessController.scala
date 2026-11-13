@@ -25,6 +25,7 @@ import models.{CachedBusinessDetails, ChangeMode, Mode, NormalMode, UserAnswers}
 import navigation.Navigator
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{CachedBusinessDetailsPage, ReportForRegisteredBusinessPage}
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.*
@@ -34,7 +35,6 @@ import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CountryListFactory
-import utils.LoggerUtil.*
 import views.html.organisation.ReportForRegisteredBusinessView
 
 import javax.inject.Inject
@@ -57,7 +57,8 @@ class ReportForRegisteredBusinessController @Inject() (
     view: ReportForRegisteredBusinessView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   lazy val form: Boolean => Form[Boolean] = isChange =>
     formProvider(
@@ -104,19 +105,20 @@ class ReportForRegisteredBusinessController @Inject() (
                 }
 
               case None =>
-                logError(
+                logger.error(
                   "[ReportForRegisteredBusinessController][onPageLoad] " +
                     s"Country with code ${businessDetails.address.countryCode} not found in list of countries"
                 )
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
             }
           case Left(error)            =>
-            logWarn(s"[ReportForRegisteredBusinessController][onPageLoad][Add] Failed to get business details: $error")
+            logger
+              .warn(s"[ReportForRegisteredBusinessController][onPageLoad][Add] Failed to get business details: $error")
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
 
       case None =>
-        logWarn("[ReportForRegisteredBusinessController][onPageLoad][Add] CT UTR not found in request")
+        logger.warn("[ReportForRegisteredBusinessController][onPageLoad][Add] CT UTR not found in request")
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
     }
 
@@ -131,14 +133,14 @@ class ReportForRegisteredBusinessController @Inject() (
             .get(ReportForRegisteredBusinessPage)
             .fold(Redirect(recovery))(value => Ok(view(form(isChangeJourney).fill(value), mode, None, isChangeJourney)))
         } else {
-          logWarn(
+          logger.warn(
             "[ReportForRegisteredBusinessController][onPageLoad][Change] Failed verifications as user is not a " +
               "registered business"
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
         }
       case None      =>
-        logWarn("[ReportForRegisteredBusinessController][onPageLoad][Change] CT UTR not found in request")
+        logger.warn("[ReportForRegisteredBusinessController][onPageLoad][Change] CT UTR not found in request")
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
     }
 
@@ -191,7 +193,7 @@ class ReportForRegisteredBusinessController @Inject() (
           navigator.nextPage(ReportForRegisteredBusinessPage, NormalMode, updatedAnswers)
         )
       case Left(error)        =>
-        logWarn(s"[ReportForRegisteredBusinessController][onSubmit] Error getting how many Rcasps user has: $error")
+        logger.warn(s"[ReportForRegisteredBusinessController][onSubmit] Error getting how many Rcasps user has: $error")
         Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
     }
 
@@ -227,7 +229,7 @@ class ReportForRegisteredBusinessController @Inject() (
           controllers.organisation.routes.RegisteredBusinessIsThisYourBusinessNameController.onPageLoad(NormalMode)
         )
       } else {
-        logWarn(
+        logger.warn(
           "[ReportForRegisteredBusinessController][Change Journey] Cannot change isRCASPUser to true if previously false in API"
         )
         Future.successful(Redirect(recovery))

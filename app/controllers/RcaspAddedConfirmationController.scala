@@ -18,7 +18,7 @@ package controllers
 
 import controllers.actions.*
 import pages.RcaspIdPage
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -34,7 +34,8 @@ class RcaspAddedConfirmationController @Inject() (
     val controllerComponents: MessagesControllerComponents,
     view: RcaspAddedConfirmationView
 ) extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData() andThen requireData) { implicit request =>
     val maybeRcaspId   = request.userAnswers.get(RcaspIdPage)
@@ -43,7 +44,7 @@ class RcaspAddedConfirmationController @Inject() (
     (maybeRcaspId, maybeRcaspName) match {
       case (Some(rcaspId), Some(name)) => Ok(view(rcaspId, name))
       case _                           =>
-        logWarn("[RcaspAddedConfirmationController][onPageLoad] Missing required data")
+        logger.warn("[RcaspAddedConfirmationController][onPageLoad] Missing required data")
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
     }
   }

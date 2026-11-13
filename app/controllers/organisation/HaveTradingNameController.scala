@@ -21,12 +21,12 @@ import forms.GenericYesNoPageFormProvider
 import models.{ChangeMode, Mode, NormalMode}
 import navigation.Navigator
 import pages.organisation.{HaveTradingNamePage, OverwritableOrganisationName}
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.LoggerUtil.*
 import views.html.organisation.HaveTradingNameView
 
 import javax.inject.Inject
@@ -46,7 +46,8 @@ class HaveTradingNameController @Inject() (
     view: HaveTradingNameView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[Boolean] = formProvider("haveTradingName.error.required")
 
@@ -58,7 +59,7 @@ class HaveTradingNameController @Inject() (
         request.userAnswers
           .get(OverwritableOrganisationName)
           .fold {
-            logWarn(
+            logger.warn(
               "[HaveTradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
             )
             Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -79,7 +80,7 @@ class HaveTradingNameController @Inject() (
               request.userAnswers
                 .get(OverwritableOrganisationName)
                 .fold {
-                  logWarn(
+                  logger.warn(
                     "[HaveTradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
                   )
                   Future.successful(

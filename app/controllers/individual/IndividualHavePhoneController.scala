@@ -21,12 +21,12 @@ import forms.GenericYesNoPageFormProvider
 import models.{ChangeMode, Mode, NormalMode}
 import navigation.Navigator
 import pages.individual.{IndividualHavePhonePage, IndividualNamePage}
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.LoggerUtil.*
 import views.html.individual.IndividualHavePhoneView
 
 import javax.inject.Inject
@@ -45,7 +45,8 @@ class IndividualHavePhoneController @Inject() (
     view: IndividualHavePhoneView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[Boolean] = formProvider("individualHavePhone.error.required")
 
@@ -57,7 +58,7 @@ class IndividualHavePhoneController @Inject() (
       request.userAnswers
         .get(IndividualNamePage)
         .fold {
-          logWarn(
+          logger.warn(
             "[IndividualHavePhoneController][onPageLoad] Error! Individual name could not be retrieved from user answers"
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -79,7 +80,7 @@ class IndividualHavePhoneController @Inject() (
             request.userAnswers
               .get(IndividualNamePage)
               .fold {
-                logWarn(
+                logger.warn(
                   "[IndividualHavePhoneController][onSubmit] Error! Individual name could not be retrieved from user answers"
                 )
                 Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))

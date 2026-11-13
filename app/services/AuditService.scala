@@ -28,20 +28,20 @@ import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.*
 import pages.organisation.*
+import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
 import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.*
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
-import utils.LoggerUtil.*
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 import scala.util.control.NonFatal
 
-class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionContext) {
+class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionContext) extends Logging {
 
   def auditAddRcasp(
       userAnswers: UserAnswers
@@ -157,19 +157,19 @@ class AuditService @Inject (auditConnector: AuditConnector)(using ec: ExecutionC
   ): ResultT[Unit] =
     ResultT.fromFuture(auditConnector.sendExtendedEvent(extendedEvent).map {
       case Success         =>
-        logDebug(s"[AuditService][sendEvent] Successfully sent Management audit event for $eventType RCASP")
+        logger.debug(s"[AuditService][sendEvent] Successfully sent Management audit event for $eventType RCASP")
         Right[CarfError, Unit](())
       case Disabled        =>
-        logError(
+        logger.error(
           s"[AuditService][sendEvent] Failed to audit Management for $eventType RCASP - Disabled result returned"
         )
         Left[CarfError, Unit](InternalServerError)
       case Failure(msg, _) =>
-        logError(s"[AuditService][sendEvent] Failed to audit Management for $eventType RCASP with message $msg")
+        logger.error(s"[AuditService][sendEvent] Failed to audit Management for $eventType RCASP with message $msg")
         Left[CarfError, Unit](InternalServerError)
     } recover {
       case e if NonFatal(e) =>
-        logError(s"[AuditService] Failed to audit Management for $eventType RCASP")
+        logger.error(s"[AuditService] Failed to audit Management for $eventType RCASP")
         Left[CarfError, Unit](InternalServerError)
     })
 
