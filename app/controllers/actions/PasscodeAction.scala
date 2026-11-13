@@ -19,13 +19,13 @@ package controllers.actions
 import config.FrontendAppConfig
 import controllers.routes
 import models.requests.PasscodeRequest
+import play.api.Logging
 import play.api.mvc.*
 import play.api.mvc.Results.Redirect
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import utils.LoggerUtil.logWarn
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -51,7 +51,8 @@ class PasscodeActionExtractor @Inject() (
 )(implicit val executionContext: ExecutionContext)
     extends ActionBuilder[PasscodeRequest, AnyContent]
     with ActionFunction[Request, PasscodeRequest]
-    with AuthorisedFunctions {
+    with AuthorisedFunctions
+    with Logging {
 
   override def invokeBlock[A](request: Request[A], block: PasscodeRequest[A] => Future[Result]): Future[Result] = {
     implicit val headerCarrier: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
@@ -59,7 +60,7 @@ class PasscodeActionExtractor @Inject() (
       .retrieve(Retrievals.internalId) {
         case Some(id) => block(PasscodeRequest(request = request, userId = id))
         case _        =>
-          logWarn("[PasscodeActionExtractor][invokeBlock] Could not retrieve internalId")
+          logger.warn("[PasscodeActionExtractor][invokeBlock] Could not retrieve internalId")
           Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       } recover { case _: NoActiveSession =>
       Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))

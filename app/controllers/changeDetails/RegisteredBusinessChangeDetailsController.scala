@@ -20,7 +20,7 @@ import cats.syntax.all.*
 import controllers.actions.*
 import pages.SubmissionSucceededPage
 import pages.changeDetails.ChangeRcaspCachedDetails
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -48,7 +48,8 @@ class RegisteredBusinessChangeDetailsController @Inject() (
     auditService: AuditService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
     (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
@@ -63,13 +64,13 @@ class RegisteredBusinessChangeDetailsController @Inject() (
           ).mapN { (hasDataChanged, section) =>
             Ok(view(section, rcaspId, hasDataChanged))
           }.getOrElse {
-            logWarn(
+            logger.warn(
               "[RegisteredBusinessChangeDetailsController][onPageLoad] Error! Could not load page due to missing answers"
             )
             ifEmptyProtocol
           }
         case _                                                                               =>
-          logWarn(
+          logger.warn(
             "[RegisteredBusinessChangeDetailsController][onPageLoad] Error! Missing ChangeRcaspCachedDetails."
           )
           ifEmptyProtocol
@@ -90,7 +91,7 @@ class RegisteredBusinessChangeDetailsController @Inject() (
                     _                 <- auditService
                                            .auditChangeRcasp(request.userAnswers)
                                            .recover { case e =>
-                                             logDebug(s"Auditing Management failed due to $e")
+                                             logger.debug(s"Auditing Management failed due to $e")
                                              ()
                                            }
                                            .value
@@ -100,13 +101,13 @@ class RegisteredBusinessChangeDetailsController @Inject() (
                     controllers.changeDetails.routes.RcaspUpdatedConfirmationController.onPageLoad()
                   )
                 case Left(error) =>
-                  logWarn(
+                  logger.warn(
                     s"[RegisteredBusinessChangeDetailsController][onSubmit] Unable to update RCASP $rcaspId: $error"
                   )
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
               }
           case None      =>
-            logWarn("[RegisteredBusinessChangeDetailsController][onSubmit] CT UTR not found in request")
+            logger.warn("[RegisteredBusinessChangeDetailsController][onSubmit] CT UTR not found in request")
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
     }

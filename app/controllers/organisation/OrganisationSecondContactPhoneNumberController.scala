@@ -22,7 +22,6 @@ import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{OrganisationSecondContactNamePage, OrganisationSecondContactPhoneNumberPage}
-import utils.LoggerUtil.*
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -30,6 +29,8 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.organisation.OrganisationSecondContactPhoneNumberView
 import play.api.data.Form
 import forms.GenericPhoneFormProvider
+import play.api.Logging
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class OrganisationSecondContactPhoneNumberController @Inject() (
@@ -45,7 +46,8 @@ class OrganisationSecondContactPhoneNumberController @Inject() (
     view: OrganisationSecondContactPhoneNumberView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[String] = formProvider("organisationSecondContactPhoneNumber")
 
@@ -57,7 +59,7 @@ class OrganisationSecondContactPhoneNumberController @Inject() (
       request.userAnswers.get(OrganisationSecondContactNamePage) match {
         case Some(usersName) => Ok(view(preparedForm, mode, usersName))
         case None            =>
-          logWarn(
+          logger.warn(
             "[OrganisationSecondContactPhoneNumberController][onPageLoad] Could not retrieve OrganisationSecondContactNamePage onPageLoad"
           )
           Redirect(
@@ -75,7 +77,7 @@ class OrganisationSecondContactPhoneNumberController @Inject() (
             request.userAnswers.get(OrganisationSecondContactNamePage) match {
               case Some(usersName) => Future.successful(BadRequest(view(formWithErrors, mode, usersName)))
               case None            =>
-                logWarn(
+                logger.warn(
                   "[OrganisationSecondContactPhoneNumberController][onSubmit] Could not retrieve OrganisationSecondContactNamePage onPageSubmit"
                 )
                 Future.successful(

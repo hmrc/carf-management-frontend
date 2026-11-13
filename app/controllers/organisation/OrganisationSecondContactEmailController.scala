@@ -21,7 +21,7 @@ import forms.GenericEmailFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{OrganisationSecondContactEmailPage, OrganisationSecondContactNamePage, OverwritableOrganisationName}
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -45,7 +45,8 @@ class OrganisationSecondContactEmailController @Inject() (
     view: OrganisationSecondContactEmailView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[String] = formProvider("organisationSecondContactEmail")
 
@@ -61,7 +62,7 @@ class OrganisationSecondContactEmailController @Inject() (
         case (Some(secondContactName), Some(rcaspName)) =>
           Ok(view(preparedForm, mode, secondContactName, rcaspName))
         case _                                          =>
-          logWarn(
+          logger.warn(
             "[OrganisationSecondContactEmailController][onPageLoad] Could not retrieve OrganisationSecondContactNamePage and/or OverwritableOrganisationName onPageLoad"
           )
           Redirect(
@@ -83,7 +84,7 @@ class OrganisationSecondContactEmailController @Inject() (
               case (Some(secondContactName), Some(organisationName)) =>
                 Future.successful(BadRequest(view(formWithErrors, mode, secondContactName, organisationName)))
               case _                                                 =>
-                logWarn(
+                logger.warn(
                   "[OrganisationSecondContactEmailController][onSubmit] Could not retrieve OrganisationSecondContactNamePage and/or OverwritableOrganisationName onPageSubmit"
                 )
                 Future.successful(

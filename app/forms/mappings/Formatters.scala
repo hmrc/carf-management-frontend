@@ -20,14 +20,14 @@ import com.google.i18n.phonenumbers.{NumberParseException, PhoneNumberUtil, Phon
 import config.Constants
 import config.Constants.*
 import models.Enumerable
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.data.FormError
 import play.api.data.format.Formatter
 
 import scala.util.control.Exception.nonFatalCatch
 import scala.util.{Failure, Success, Try}
 
-trait Formatters {
+trait Formatters extends Logging {
 
   private type EitherFormErrorOrValue = Either[Seq[FormError], String]
 
@@ -300,7 +300,7 @@ trait Formatters {
                 case Success(value)                   => value
                 case Failure(_: NumberParseException) => formErrorInvalidKey
                 case Failure(exception)               =>
-                  logError(
+                  logger.error(
                     s"[Formatters][phoneNumberFormatter] Unexpected phone number form error occurred with message: ${exception.getMessage}"
                   )
                   formErrorInvalidKey

@@ -23,7 +23,7 @@ import javax.inject.Inject
 import models.Mode
 import navigation.Navigator
 import pages.individual.{IndividualEmailPage, IndividualNamePage}
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -46,7 +46,8 @@ class IndividualEmailController @Inject() (
     view: IndividualEmailView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[String] = formProvider(messageKey = "individualEmail")
 
@@ -58,7 +59,7 @@ class IndividualEmailController @Inject() (
       request.userAnswers
         .get(IndividualNamePage)
         .fold {
-          logWarn(
+          logger.warn(
             "[IndividualEmailController][onPageLoad] Error! Individual name could not be retrieved from user answers"
           )
           Redirect(
@@ -76,7 +77,7 @@ class IndividualEmailController @Inject() (
             request.userAnswers
               .get(IndividualNamePage)
               .fold {
-                logWarn(
+                logger.warn(
                   "[IndividualEmailController][onSubmit] Error! Individual name could not be retrieved from user answers"
                 )
                 Future.successful(

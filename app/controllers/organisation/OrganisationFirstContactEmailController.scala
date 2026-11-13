@@ -27,7 +27,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import forms.GenericEmailFormProvider
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.data.Form
 import views.html.organisation.OrganisationFirstContactEmailView
 
@@ -46,7 +46,8 @@ class OrganisationFirstContactEmailController @Inject() (
     view: OrganisationFirstContactEmailView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[String] = formProvider("organisationFirstContactEmail")
 
@@ -62,7 +63,7 @@ class OrganisationFirstContactEmailController @Inject() (
         case (Some(firstContactName), Some(rcaspName)) =>
           Ok(view(preparedForm, mode, firstContactName, rcaspName))
         case _                                         =>
-          logWarn(
+          logger.warn(
             "[OrganisationFirstContactEmailController][onPageLoad] Could not retrieve OrganisationFirstContactNamePage and/or OverwritableOrganisationName"
           )
           Redirect(
@@ -84,7 +85,7 @@ class OrganisationFirstContactEmailController @Inject() (
               case (Some(firstContactName), Some(organisationName)) =>
                 Future.successful(BadRequest(view(formWithErrors, mode, firstContactName, organisationName)))
               case _                                                =>
-                logWarn(
+                logger.warn(
                   "[OrganisationFirstContactEmailController][onSubmit] Could not retrieve Contact and/or Org name"
                 )
                 Future.successful(

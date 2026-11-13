@@ -20,7 +20,7 @@ import config.Constants.ukZoneId
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import pages.SubmissionSucceededPage
 import pages.remove.{RcaspRemovedDateTimePage, RemoveRcaspCachedDetails}
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -37,7 +37,8 @@ class RcaspRemovedController @Inject() (
     val controllerComponents: MessagesControllerComponents,
     view: RcaspRemovedView
 ) extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad(): Action[AnyContent] = (identify andThen getData() andThen requireData) { implicit request =>
     val submissionSucceeded = request.userAnswers.get(SubmissionSucceededPage).contains(true)
@@ -62,7 +63,7 @@ class RcaspRemovedController @Inject() (
         )
 
       case _ =>
-        logWarn(
+        logger.warn(
           "[RcaspRemovedController][onPageLoad] Missing cached RCASP details, removal datetime, or submission flag not set"
         )
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())

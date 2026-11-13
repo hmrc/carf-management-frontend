@@ -21,7 +21,7 @@ import forms.organisation.TradingNameFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{OverwritableOrganisationName, TradingNamePage}
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -46,7 +46,8 @@ class TradingNameController @Inject() (
     view: TradingNameView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[String] = formProvider()
 
@@ -58,7 +59,7 @@ class TradingNameController @Inject() (
         request.userAnswers
           .get(OverwritableOrganisationName)
           .fold {
-            logWarn(
+            logger.warn(
               "[TradingNameController][onPageLoad] Error! Organisation name could not be retrieved from user answers"
             )
             Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -75,7 +76,7 @@ class TradingNameController @Inject() (
               request.userAnswers
                 .get(OverwritableOrganisationName)
                 .fold {
-                  logWarn(
+                  logger.warn(
                     "[TradingNameController][onSubmit] Error! Organisation name could not be retrieved from user answers"
                   )
                   Future.successful(

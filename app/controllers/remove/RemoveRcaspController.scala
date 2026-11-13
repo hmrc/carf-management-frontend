@@ -20,13 +20,13 @@ import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import pages.SubmissionSucceededPage
 import pages.remove.*
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import services.{AuditService, RcaspSubmissionService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.LoggerUtil.*
 import views.html.remove.RemoveRcaspView
 
 import java.time.{Clock, Instant}
@@ -48,7 +48,8 @@ class RemoveRcaspController @Inject() (
     clock: Clock
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[Boolean] = formProvider("removeRcasp.error.required")
 
@@ -64,7 +65,7 @@ class RemoveRcaspController @Inject() (
           Ok(view(preparedForm, otherAccessAnswer, cachedDetails.getName))
 
         case _ =>
-          logWarn(
+          logger.warn(
             "[RemoveRcaspController][onPageLoad] RemoveRcaspCachedDetails or RemoveOtherAccessPage not found"
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
@@ -99,7 +100,7 @@ class RemoveRcaspController @Inject() (
                         _               <- auditService
                                              .auditRemoveRcasp(userAccessAnswer, otherAccessAnswer, value)
                                              .recover { case e =>
-                                               logDebug(s"[RemoveRcaspController][onSubmit] Auditing Management failed due to $e")
+                                               logger.debug(s"[RemoveRcaspController][onSubmit] Auditing Management failed due to $e")
                                                ()
                                              }
                                              .value
@@ -110,14 +111,14 @@ class RemoveRcaspController @Inject() (
                       } yield Redirect(controllers.remove.routes.RcaspRemovedController.onPageLoad())
 
                     case Left(error) =>
-                      logWarn(s"[RemoveRcaspController][onSubmit] Failed to remove RCASP: $error")
+                      logger.warn(s"[RemoveRcaspController][onSubmit] Failed to remove RCASP: $error")
                       Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
                   }
                 }
             )
 
         case _ =>
-          logWarn(
+          logger.warn(
             "[RemoveRcaspController][onSubmit] RemoveRcaspCachedDetails, RemoveUserAccessPage or RemoveOtherAccessPage not found"
           )
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
