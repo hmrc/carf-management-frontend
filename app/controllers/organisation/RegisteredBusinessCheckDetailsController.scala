@@ -21,7 +21,7 @@ import controllers.actions.{CtUtrRetrievalAction, DataRequiredAction, DataRetrie
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.{OverwritableOrganisationName, ReportForRegisteredBusinessPage}
 import pages.{RcaspIdPage, SubmissionSucceededPage}
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -48,7 +48,8 @@ class RegisteredBusinessCheckDetailsController @Inject() (
     auditService: AuditService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData() andThen submissionLock andThen requireData) {
     implicit request =>
@@ -66,19 +67,19 @@ class RegisteredBusinessCheckDetailsController @Inject() (
               ).mapN { (name, section) =>
                 Ok(view(section, name))
               }.getOrElse {
-                logWarn(
+                logger.warn(
                   "[RegisteredBusinessCheckDetailsController][onPageLoad] Error! Could not load page due to missing answers"
                 )
                 ifEmptyProtocol
               }
             case _          =>
-              logWarn(
+              logger.warn(
                 "[RegisteredBusinessCheckDetailsController][onPageLoad] ReportForRegisteredBusiness is false or missing. Redirecting to SIIM."
               )
               ifEmptyProtocol
           }
         } { _ =>
-          logWarn(
+          logger.warn(
             "[RegisteredBusinessCheckDetailsController][onPageLoad] ChangeRcaspCachedDetails must not be populated on RegisteredBusinessCheckDetails"
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
@@ -101,7 +102,7 @@ class RegisteredBusinessCheckDetailsController @Inject() (
                     _                 <- auditService
                                            .auditAddRcasp(request.userAnswers)
                                            .recover { case e =>
-                                             logDebug(
+                                             logger.debug(
                                                s"[RegisteredBusinessCheckDetailsController][onPageLoad] Auditing Management failed due to $e"
                                              )
                                              ()
@@ -112,11 +113,11 @@ class RegisteredBusinessCheckDetailsController @Inject() (
                     _                 <- sessionRepository.set(uaWithSuccessFlag)
                   } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
                 case Left(error)     =>
-                  logWarn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")
+                  logger.warn(s"[RegisteredBusinessCheckDetailsController][onSubmit] Unable to add RCASP: $error")
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
               }
           case None      =>
-            logWarn("[RegisteredBusinessCheckDetailsController][onSubmit] CT UTR not found in request")
+            logger.warn("[RegisteredBusinessCheckDetailsController][onSubmit] CT UTR not found in request")
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
         }
     }

@@ -21,12 +21,12 @@ import forms.GenericYesNoPageFormProvider
 import models.{ChangeMode, Mode, NormalMode}
 import navigation.Navigator
 import pages.organisation.{OrganisationFirstContactNamePage, OrganisationHaveSecondContactPage}
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.LoggerUtil.*
 import views.html.organisation.OrganisationHaveSecondContactView
 
 import javax.inject.Inject
@@ -45,7 +45,8 @@ class OrganisationHaveSecondContactController @Inject() (
     view: OrganisationHaveSecondContactView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[Boolean] = formProvider("organisationHaveSecondContact.error.required")
 
@@ -57,7 +58,7 @@ class OrganisationHaveSecondContactController @Inject() (
       request.userAnswers.get(OrganisationFirstContactNamePage) match {
         case Some(contactName) => Ok(view(preparedForm, mode, contactName))
         case None              =>
-          logWarn(
+          logger.warn(
             "[OrganisationHaveSecondContactController][onPageLoad] Could not retrieve OrganisationFirstContactNamePage onPageLoad"
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -77,7 +78,7 @@ class OrganisationHaveSecondContactController @Inject() (
             request.userAnswers.get(OrganisationFirstContactNamePage) match {
               case Some(contactName) => Future.successful(BadRequest(view(formWithErrors, mode, contactName)))
               case None              =>
-                logWarn(
+                logger.warn(
                   "[OrganisationHaveSecondContactController][onSubmit] Could not retrieve OrganisationFirstContactNamePage onPageSubmit"
                 )
                 Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))

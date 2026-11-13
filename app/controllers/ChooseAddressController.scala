@@ -23,6 +23,7 @@ import models.requests.DataRequest
 import models.{formatAddress, AddressAndUPRN, AddressUk, FindAddress, Mode, UserAnswers}
 import navigation.Navigator
 import pages.*
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.mvc.*
@@ -30,7 +31,6 @@ import repositories.SessionRepository
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.LoggerUtil.*
 import views.html.ChooseAddressView
 
 import javax.inject.Inject
@@ -50,7 +50,8 @@ class ChooseAddressController @Inject() (
     view: ChooseAddressView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   private case class WithRadiosResult(result: Result, addresses: Seq[AddressAndUPRN])
 
@@ -82,7 +83,7 @@ class ChooseAddressController @Inject() (
         request.userAnswers.retrieveRcaspName match {
           case Some(name) => Ok(view(preparedForm, mode, radios, generateHtml(maybeFindAddress), name))
           case None       =>
-            logWarn(
+            logger.warn(
               "[ChooseAddressController][onPageLoad] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
             )
             Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -102,7 +103,7 @@ class ChooseAddressController @Inject() (
               request.userAnswers.retrieveRcaspName match {
                 case Some(name) => BadRequest(view(formWithErrors, mode, radios, generateHtml(maybeFindAddress), name))
                 case None       =>
-                  logWarn(
+                  logger.warn(
                     "[ChooseAddressController][onSubmit] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
                   )
                   Redirect(controllers.routes.InformationMissingController.onPageLoad())

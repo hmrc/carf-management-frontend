@@ -25,6 +25,7 @@ import models.requests.deleteRcasp.RcaspRequest as DeleteRcaspRequest
 import models.requests.updateRcasp.RcaspRequest as UpdateRcaspRequest
 import models.responses.*
 import models.viewAndUpdateRcasp
+import play.api.Logging
 import play.api.http.Status.*
 import play.api.libs.json.*
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
@@ -32,21 +33,20 @@ import types.ResultT
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import utils.LoggerUtil.*
 
 import java.net.URL
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
-class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpClientV2) {
+class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpClientV2) extends Logging {
 
   def viewRcasp(
       carfId: String
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[List[viewAndUpdateRcasp.RcaspDetails]] = {
     val baseUrl = url"${config.carfAccountBaseUrl}/view-rcasp/$carfId/none"
 
-    logDebug(s"[RcaspConnector][viewRcasp] Viewing RCASPs for carfId: $carfId")
+    logger.debug(s"[RcaspConnector][viewRcasp] Viewing RCASPs for carfId: $carfId")
 
     ResultT.fromFuture {
       http
@@ -57,14 +57,16 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
             Try(response.json.as[ViewRcaspResponse]) match {
               case Success(viewRcaspResponse) => Right(viewRcaspResponse.ViewRCASP.ResponseDetails.RCASPList)
               case Failure(exception)         =>
-                logError(s"[RcaspConnector][viewRcasp] Error parsing ViewRcaspResponse with endpoint: ${baseUrl.toURI}")
+                logger.error(
+                  s"[RcaspConnector][viewRcasp] Error parsing ViewRcaspResponse with endpoint: ${baseUrl.toURI}"
+                )
                 Left(JsonValidationError)
             }
           case response if response.status == NOT_FOUND =>
-            logInfo(s"[RcaspConnector][viewRcasp] No RCASPs found for carfId $carfId")
+            logger.info(s"[RcaspConnector][viewRcasp] No RCASPs found for carfId $carfId")
             Right(List.empty)
           case response                                 =>
-            logError(
+            logger.error(
               s"[RcaspConnector][viewRcasp] Unexpected response: status code: ${response.status}, from endpoint: ${baseUrl.toURI}"
             )
             Left(InternalServerError)
@@ -78,7 +80,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
     val carfId  = createRcaspRequest.RCASPManagement.RequestDetails.SubscriptionID
     val baseUrl = url"${config.carfAccountBaseUrl}/create/$carfId"
 
-    logDebug("[RcaspConnector][createRcasp] Creating RCASP")
+    logger.debug("[RcaspConnector][createRcasp] Creating RCASP")
 
     sendRequest(
       url = baseUrl,
@@ -100,7 +102,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
 
     val baseUrl = url"${config.carfAccountBaseUrl}/update/$requestCarfID"
 
-    logDebug("[RcaspConnector][createRcasp] Updating RCASP")
+    logger.debug("[RcaspConnector][createRcasp] Updating RCASP")
 
     sendRequest(
       url = baseUrl,
@@ -122,7 +124,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
     val carfId  = deleteRcaspRequest.RCASPManagement.RequestDetails.SubscriptionID
     val baseUrl = url"${config.carfAccountBaseUrl}/delete/$carfId"
 
-    logDebug("[RcaspConnector][deleteRcasp] Deleting RCASP")
+    logger.debug("[RcaspConnector][deleteRcasp] Deleting RCASP")
 
     sendRequest(
       url = baseUrl,
@@ -140,7 +142,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   private def sendRequest[T](url: URL, requestBuilder: RequestBuilder)(
       successfulResult: HttpResponse => Either[CarfError, T]
   )(implicit ec: ExecutionContext): ResultT[T] = {
-    logInfo(s"[RcaspConnector][sendRequest] Calling endpoint: ${url.toString}")
+    logger.info(s"[RcaspConnector][sendRequest] Calling endpoint: ${url.toString}")
 
     ResultT.fromFuture(
       requestBuilder
@@ -149,7 +151,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
           httpResponse.status match {
             case OK => successfulResult(httpResponse)
             case _  =>
-              logError(
+              logger.error(
                 s"[RcaspConnector][sendRequest] Unexpected response: status code: ${httpResponse.status}, from endpoint: ${url.toURI}"
               )
               Left(InternalServerError)
@@ -159,7 +161,7 @@ class RcaspConnector @Inject() (val config: FrontendAppConfig, val http: HttpCli
   }
 
   private def logParseError(baseUrl: URL, originatingMethod: String): Unit =
-    logError(
+    logger.error(
       s"[RcaspConnector][$originatingMethod] Error parsing SubmitRcaspResponse with endpoint: ${baseUrl.toURI}"
     )
 }

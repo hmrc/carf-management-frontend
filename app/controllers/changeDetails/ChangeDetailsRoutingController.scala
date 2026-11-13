@@ -21,7 +21,7 @@ import models.viewAndUpdateRcasp.{IndividualRcaspDetails, OrganisationRcaspDetai
 import pages.{PasscodePage, SubmissionSucceededPage}
 import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.organisation.*
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import services.AccountService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -38,7 +38,8 @@ class ChangeDetailsRoutingController @Inject() (
     populateUserAnswersHelper: PopulateUserAnswersHelper,
     val controllerComponents: MessagesControllerComponents
 )(implicit ec: ExecutionContext)
-    extends FrontendBaseController {
+    extends FrontendBaseController
+    with Logging {
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
     (identify andThen ctUtrRetrievalAction() andThen getData()).async { implicit request =>
@@ -57,11 +58,11 @@ class ChangeDetailsRoutingController @Inject() (
         case _ =>
           accountService.getRcaspDetails(request.carfId, rcaspId).value.flatMap {
             case Left(error)                                               =>
-              logWarn(s"[ChangeDetailsRoutingController][onPageLoad] Failed to get RCASP details: $error")
+              logger.warn(s"[ChangeDetailsRoutingController][onPageLoad] Failed to get RCASP details: $error")
               Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
             case Right(individualRcaspDetails: IndividualRcaspDetails)     =>
               if (individualRcaspDetails.IsRCASPUser) {
-                logWarn(
+                logger.warn(
                   s"[ChangeDetailsRoutingController][onPageLoad] RCASP $rcaspId is an individual but isRcaspUser = true"
                 )
                 Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
@@ -75,7 +76,7 @@ class ChangeDetailsRoutingController @Inject() (
             case Right(organisationRcaspDetails: OrganisationRcaspDetails) =>
               if (organisationRcaspDetails.IsRCASPUser) {
                 request.utr.fold {
-                  logWarn(
+                  logger.warn(
                     "[ChangeDetailsRoutingController][onPageLoad] CT UTR not found in request for registered business"
                   )
                   Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))

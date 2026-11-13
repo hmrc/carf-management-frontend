@@ -17,7 +17,7 @@
 package controllers.organisation
 
 import controllers.actions.*
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -34,13 +34,14 @@ class NotInUkController @Inject() (
     val controllerComponents: MessagesControllerComponents,
     view: NotInUkView
 ) extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad(): Action[AnyContent] =
     (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
       request.userAnswers.getRegisteredBusinessOrganisationNameMaybe
         .fold {
-          logWarn(
+          logger.warn(
             "[NotInUkController][onPageLoad] No name or cached business details found. Redirecting to journey recovery."
           )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())

@@ -19,25 +19,25 @@ package connectors
 import config.FrontendAppConfig
 import models.errors.ApiError.{InternalServerError, JsonValidationError, NotFoundError}
 import models.responses.DisplaySubscriptionResponse
+import play.api.Logging
 import play.api.http.Status.{NOT_FOUND, OK}
 import types.ResultT
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import utils.LoggerUtil.*
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
-class SubscriptionConnector @Inject() (val config: FrontendAppConfig, val http: HttpClientV2) {
+class SubscriptionConnector @Inject() (val config: FrontendAppConfig, val http: HttpClientV2) extends Logging {
 
   def displaySubscription(
       carfId: String
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): ResultT[DisplaySubscriptionResponse] = {
     val baseUrl = url"${config.carfAccountBaseUrl}/subscription/display/$carfId"
 
-    logDebug(
+    logger.debug(
       s"[SubscriptionConnector][displaySubscription] Displaying subscription with ID: $carfId"
     )
 
@@ -51,18 +51,18 @@ class SubscriptionConnector @Inject() (val config: FrontendAppConfig, val http: 
               Try(httpResponse.json.as[DisplaySubscriptionResponse]) match {
                 case Success(data)      => Right(data)
                 case Failure(exception) =>
-                  logError(
+                  logger.error(
                     s"[SubscriptionConnector][displaySubscription] Critical Error parsing DisplaySubscriptionResponse with endpoint: ${baseUrl.toURI}"
                   )
                   Left(JsonValidationError)
               }
             case NOT_FOUND =>
-              logError(
+              logger.error(
                 s"[SubscriptionConnector][displaySubscription] No match could be found for carfId $carfId. Status code: ${httpResponse.status}, from endpoint: ${baseUrl.toURI}"
               )
               Left(NotFoundError)
             case _         =>
-              logError(
+              logger.error(
                 s"[SubscriptionConnector][displaySubscription] Unexpected response. Status code: ${httpResponse.status}, from endpoint: ${baseUrl.toURI}"
               )
               Left(InternalServerError)

@@ -21,7 +21,7 @@ import forms.GenericYesNoPageFormProvider
 import models.Mode
 import navigation.Navigator
 import pages.organisation.{CachedBusinessDetailsPage, OverwritableOrganisationName, RegisteredBusinessIsThisYourBusinessNamePage}
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -47,7 +47,8 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
     view: RegisteredBusinessIsThisYourBusinessNameView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[Boolean] = formProvider("registeredBusinessIsThisYourBusinessName.error.required")
 
@@ -62,7 +63,7 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
             Future.successful(Ok(view(preparedForm, mode, businessDetails.name)))
 
           case None =>
-            logWarn(
+            logger.warn(
               "[RegisteredBusinessIsThisYourBusinessNameController][onPageLoad] No cached business details found"
             )
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
@@ -95,7 +96,7 @@ class RegisteredBusinessIsThisYourBusinessNameController @Inject() (
               )
 
           case None =>
-            logWarn(
+            logger.warn(
               "[RegisteredBusinessIsThisYourBusinessNameController][onSubmit] No cached business details found"
             )
             Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))

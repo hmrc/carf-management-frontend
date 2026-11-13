@@ -20,7 +20,7 @@ import connectors.RcaspConnector
 import controllers.actions.*
 import forms.GenericYesNoPageFormProvider
 import models.NormalMode
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
@@ -40,14 +40,15 @@ class YourRcaspsController @Inject() (
     view: YourRcaspsView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[Boolean] = formProvider("yourRcasps.error.required")
 
   def onPageLoad(): Action[AnyContent] = identify.async { implicit request =>
     rcaspConnector.viewRcasp(request.carfId).value.map {
       case Left(error)      =>
-        logWarn(s"[YourRcaspsController][onPageLoad] Error! Could not view rcasps: $error")
+        logger.warn(s"[YourRcaspsController][onPageLoad] Error! Could not view rcasps: $error")
         Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
       case Right(rcaspList) =>
         val listWithActions = YourRcaspsListWithActionsHelper.getYourRcaspsRows(rcaspList)
@@ -62,7 +63,7 @@ class YourRcaspsController @Inject() (
         formWithErrors =>
           rcaspConnector.viewRcasp(request.carfId).value.map {
             case Left(error)      =>
-              logWarn(s"[YourRcaspsController][onSubmit] Error! Could not view rcasps: $error")
+              logger.warn(s"[YourRcaspsController][onSubmit] Error! Could not view rcasps: $error")
               Redirect(controllers.routes.JourneyRecoveryController.onPageLoad())
             case Right(rcaspList) =>
               val listWithActions = YourRcaspsListWithActionsHelper.getYourRcaspsRows(rcaspList)

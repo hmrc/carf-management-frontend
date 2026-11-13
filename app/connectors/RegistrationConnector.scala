@@ -22,7 +22,7 @@ import config.FrontendAppConfig
 import models.errors.ApiError
 import models.requests.RegisterWithIdRequest
 import models.responses.RegisterWithIdResponse
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.libs.json.Json
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
@@ -36,7 +36,7 @@ import scala.util.{Failure, Success, Try}
 
 class RegistrationConnector @Inject() (val config: FrontendAppConfig, val http: HttpClientV2)(implicit
     ec: ExecutionContext
-) {
+) extends Logging {
 
   private val backendBaseUrl = config.carfAccountBaseUrl
 
@@ -55,18 +55,18 @@ class RegistrationConnector @Inject() (val config: FrontendAppConfig, val http: 
             Try(response.json.as[RegisterWithIdResponse]) match {
               case Success(data)      => Right(data)
               case Failure(exception) =>
-                logError(
+                logger.error(
                   s"[RegistrationConnector][registerOrganisationWithUtrCtAutoMatch] Error parsing RegisterWithIdResponse with endpoint: ${url.toURI}"
                 )
                 Left(ApiError.JsonValidationError)
             }
           case response if response.status == NOT_FOUND =>
-            logError( // error as this would stop the progress of the user journey and needs rectifying
+            logger.error( // error as this would stop the progress of the user journey and needs rectifying
               s"[RegistrationConnector][registerOrganisationWithUtrCtAutoMatch] No match found for organisation: status code: ${response.status}, from endpoint: ${url.toURI}"
             )
             Left(ApiError.NotFoundError)
           case response                                 =>
-            logError(
+            logger.error(
               s"[RegistrationConnector][registerOrganisationWithUtrCtAutoMatch] Unexpected response for organisation: status code: ${response.status}, from endpoint: ${url.toURI}"
             )
             Left(ApiError.InternalServerError)
