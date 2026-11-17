@@ -21,12 +21,12 @@ import forms.GenericYesNoPageFormProvider
 import models.{ChangeMode, Mode, NormalMode}
 import navigation.Navigator
 import pages.organisation.{OrganisationFirstContactHavePhonePage, OrganisationFirstContactNamePage, OverwritableOrganisationName}
+import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, Call, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.LoggerUtil.*
 import views.html.organisation.OrganisationFirstContactHavePhoneView
 
 import javax.inject.Inject
@@ -45,7 +45,8 @@ class OrganisationFirstContactHavePhoneController @Inject() (
     view: OrganisationFirstContactHavePhoneView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   val form: Form[Boolean] = formProvider("organisationFirstContactHavePhone.error.required")
 
@@ -61,7 +62,7 @@ class OrganisationFirstContactHavePhoneController @Inject() (
         case (Some(firstContactName), Some(rcaspName)) =>
           Ok(view(preparedForm, mode, firstContactName, rcaspName))
         case _                                         =>
-          logWarn(
+          logger.warn(
             "[OrganisationFirstContactHavePhoneController][onPageLoad] Could not retrieve OrganisationFirstContactNamePage and/or OverwritableOrganisationName onPageLoad"
           )
           Redirect(controllers.routes.InformationMissingController.onPageLoad())
@@ -85,7 +86,7 @@ class OrganisationFirstContactHavePhoneController @Inject() (
               case (Some(firstContactName), Some(organisationName)) =>
                 Future.successful(BadRequest(view(formWithErrors, mode, firstContactName, organisationName)))
               case _                                                =>
-                logWarn(
+                logger.warn(
                   "[OrganisationFirstContactHavePhoneController][onSubmit] Could not retrieve Contact and/or Org name onPageSubmit"
                 )
                 Future.successful(Redirect(controllers.routes.InformationMissingController.onPageLoad()))

@@ -21,7 +21,7 @@ import controllers.actions.*
 import models.Mode
 import navigation.Navigator
 import pages.{AddressPagePrePop, ReviewAddressPageForNavigatorOnly, UkAddressInUserAnswers}
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -42,7 +42,8 @@ class ReviewAddressController @Inject() (
     view: ReviewAddressView
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad(mode: Mode): Action[AnyContent] =
     (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
@@ -55,13 +56,13 @@ class ReviewAddressController @Inject() (
           request.userAnswers.retrieveRcaspName match {
             case Some(name) => Ok(view(address, mode, editAddressLink, name))
             case None       =>
-              logWarn(
+              logger.warn(
                 "[ReviewAddressController][onPageLoad] Could not retrieve IndividualNamePage and/or OverwritableOrganisationName"
               )
               Redirect(controllers.routes.InformationMissingController.onPageLoad())
           }
         case None          =>
-          logWarn("[ReviewAddressController][onPageLoad] No address found in user answers")
+          logger.warn("[ReviewAddressController][onPageLoad] No address found in user answers")
           Redirect(routes.JourneyRecoveryController.onPageLoad())
       }
     }
@@ -75,7 +76,7 @@ class ReviewAddressController @Inject() (
             _              <- sessionRepository.set(updatedAnswers)
           } yield Redirect(navigator.nextPage(ReviewAddressPageForNavigatorOnly, mode, updatedAnswers))
         case None          =>
-          logWarn("[ReviewAddressController][onSubmit] No address found in user answers")
+          logger.warn("[ReviewAddressController][onSubmit] No address found in user answers")
           Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       }
     }

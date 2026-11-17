@@ -24,7 +24,7 @@ import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
 import pages.{RcaspIdPage, SubmissionSucceededPage}
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -50,7 +50,8 @@ class CheckDetailsController @Inject() (
     auditService: AuditService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData() andThen submissionLock andThen requireData) {
     implicit request =>
@@ -64,7 +65,7 @@ class CheckDetailsController @Inject() (
           userAnswers
             .get(OrganisationOrIndividualPage)
             .fold {
-              logWarn("[CheckDetailsController][onPageLoad] Error! OrganisationOrIndividualPage not populated")
+              logger.warn("[CheckDetailsController][onPageLoad] Error! OrganisationOrIndividualPage not populated")
               ifEmptyProtocol
             } {
               case Individual   =>
@@ -77,7 +78,7 @@ class CheckDetailsController @Inject() (
                     Ok(view(Seq(individualSection, contactDetailsSection), name.fullName))
                   }
                   .getOrElse {
-                    logWarn(
+                    logger.warn(
                       "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (individual)"
                     )
                     ifEmptyProtocol
@@ -93,14 +94,16 @@ class CheckDetailsController @Inject() (
                     Ok(view(Seq(organisationSection, firstContactDetailsSection, secondContactDetailsSection), orgName))
                   }
                   .getOrElse {
-                    logWarn(
+                    logger.warn(
                       "[CheckDetailsController][onPageLoad] Error! Could not load page due to missing answers (organisation)"
                     )
                     ifEmptyProtocol
                   }
             }
         } { _ =>
-          logWarn("[CheckDetailsController][onPageLoad] ChangeRcaspCachedDetails must not be populated on CheckDetails")
+          logger.warn(
+            "[CheckDetailsController][onPageLoad] ChangeRcaspCachedDetails must not be populated on CheckDetails"
+          )
           Redirect(controllers.routes.JourneyRecoveryController.onPageLoad().url)
         }
   }
@@ -115,7 +118,7 @@ class CheckDetailsController @Inject() (
             _                 <- auditService
                                    .auditAddRcasp(request.userAnswers)
                                    .recover { case e =>
-                                     logDebug(s"[CheckDetailsController][onSubmit] Auditing Management failed due to $e")
+                                     logger.debug(s"[CheckDetailsController][onSubmit] Auditing Management failed due to $e")
                                      ()
                                    }
                                    .value
@@ -124,7 +127,7 @@ class CheckDetailsController @Inject() (
             _                 <- sessionRepository.set(uaWithSuccessFlag)
           } yield Redirect(controllers.routes.RcaspAddedConfirmationController.onPageLoad())
         case Left(error)     =>
-          logWarn(s"[CheckDetailsController][onSubmit] Unable to add RCASP: $error")
+          logger.warn(s"[CheckDetailsController][onSubmit] Unable to add RCASP: $error")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
   }

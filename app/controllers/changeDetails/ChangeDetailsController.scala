@@ -24,7 +24,7 @@ import pages.changeDetails.ChangeRcaspCachedDetails
 import pages.combined.OrganisationOrIndividualPage
 import pages.individual.IndividualNamePage
 import pages.organisation.OverwritableOrganisationName
-import utils.LoggerUtil.*
+import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -50,7 +50,8 @@ class ChangeDetailsController @Inject() (
     auditService: AuditService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
-    with I18nSupport {
+    with I18nSupport
+    with Logging {
 
   def onPageLoad(rcaspId: String): Action[AnyContent] =
     (identify andThen getData() andThen submissionLock andThen requireData) { implicit request =>
@@ -72,7 +73,7 @@ class ChangeDetailsController @Inject() (
                   Ok(view(Seq(individualSection, contactDetailsSection), name.fullName, rcaspId, hasDataChanged))
                 }
                 .getOrElse {
-                  logWarn(
+                  logger.warn(
                     "[ChangeDetailsController][onPageLoad] Error! Could not load page due to missing answers (individual)"
                   )
                   ifEmptyProtocol
@@ -103,14 +104,14 @@ class ChangeDetailsController @Inject() (
                     )
                 }
                 .getOrElse {
-                  logWarn(
+                  logger.warn(
                     "[ChangeDetailsController][onPageLoad] Error! Could not load page due to missing answers (organisation)"
                   )
                   ifEmptyProtocol
                 }
           }
         case _                                                                                                        =>
-          logWarn(
+          logger.warn(
             "[ChangeDetailsController][onPageLoad] Error! Missing ChangeRcaspCachedDetails or OrganisationOrIndividual"
           )
           ifEmptyProtocol
@@ -125,7 +126,7 @@ class ChangeDetailsController @Inject() (
             _                 <- auditService
                                    .auditChangeRcasp(request.userAnswers)
                                    .recover { case e =>
-                                     logDebug(s"[ChangeDetailsController][onSubmit] Auditing Management failed due to $e")
+                                     logger.debug(s"[ChangeDetailsController][onSubmit] Auditing Management failed due to $e")
                                      ()
                                    }
                                    .value
@@ -135,7 +136,7 @@ class ChangeDetailsController @Inject() (
             controllers.changeDetails.routes.RcaspUpdatedConfirmationController.onPageLoad()
           )
         case Left(error) =>
-          logWarn(s"[ChangeDetailsController][onSubmit] Unable to update RCASP $rcaspId: $error")
+          logger.warn(s"[ChangeDetailsController][onSubmit] Unable to update RCASP $rcaspId: $error")
           Future.successful(Redirect(controllers.routes.JourneyRecoveryController.onPageLoad()))
       }
     }

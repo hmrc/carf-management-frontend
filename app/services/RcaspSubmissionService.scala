@@ -22,9 +22,9 @@ import models.requests.deleteRcasp.{RcaspDetails as DeleteRcaspDetails, RcaspMan
 import models.requests.{RcaspRequestCommon, RequestType}
 import models.responses.{CreateRcaspResponse, UpdateDeleteRcaspResponse}
 import models.{UniqueTaxpayerReference, UserAnswers}
+import play.api.Logging
 import types.ResultT
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.LoggerUtil.*
 import utils.RcaspSubmissionHelper
 
 import javax.inject.Inject
@@ -33,7 +33,7 @@ import scala.concurrent.ExecutionContext
 class RcaspSubmissionService @Inject (
     rcaspConnector: RcaspConnector,
     rcaspSubmissionHelper: RcaspSubmissionHelper
-) {
+) extends Logging {
 
   def createRegisteredBusinessRcasp(
       carfId: String,
@@ -45,11 +45,11 @@ class RcaspSubmissionService @Inject (
         rcaspConnector
           .createRcasp(request)
           .leftMap { error =>
-            logWarn(s"[RcaspSubmissionService][createRegisteredBusinessRcasp] Failed to add RCASP: $error")
+            logger.warn(s"[RcaspSubmissionService][createRegisteredBusinessRcasp] Failed to add RCASP: $error")
             error
           }
       case None          =>
-        logWarn(
+        logger.warn(
           "[RcaspSubmissionService][createRegisteredBusinessRcasp] Error building the RcaspRequest from userAnswers"
         )
         ResultT.fromError(MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers"))
@@ -64,11 +64,11 @@ class RcaspSubmissionService @Inject (
         rcaspConnector
           .createRcasp(request)
           .leftMap { error =>
-            logWarn(s"[RcaspSubmissionService][createRcasp] Failed to add RCASP: $error")
+            logger.warn(s"[RcaspSubmissionService][createRcasp] Failed to add RCASP: $error")
             error
           }
       case None          =>
-        logWarn("[RcaspSubmissionService][createRcasp] Error building the RcaspRequest from userAnswers")
+        logger.warn("[RcaspSubmissionService][createRcasp] Error building the RcaspRequest from userAnswers")
         ResultT.fromError(MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers"))
     }
 
@@ -82,11 +82,11 @@ class RcaspSubmissionService @Inject (
         rcaspConnector
           .updateRcasp(carfId, request)
           .leftMap { error =>
-            logWarn(s"[RcaspSubmissionService][updateRegisteredBusinessRcasp] Failed to update RCASP: $error")
+            logger.warn(s"[RcaspSubmissionService][updateRegisteredBusinessRcasp] Failed to update RCASP: $error")
             error
           }
       case None          =>
-        logWarn(
+        logger.warn(
           "[RcaspSubmissionService][updateRegisteredBusinessRcasp] Error building the RcaspRequest from userAnswers"
         )
         ResultT.fromError(MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers"))
@@ -101,11 +101,11 @@ class RcaspSubmissionService @Inject (
         rcaspConnector
           .updateRcasp(carfId, request)
           .leftMap { error =>
-            logWarn(s"[RcaspSubmissionService][updateRcasp] Failed to update RCASP: $error")
+            logger.warn(s"[RcaspSubmissionService][updateRcasp] Failed to update RCASP: $error")
             error
           }
       case None          =>
-        logWarn("[RcaspSubmissionService][updateRcasp] Error building the RcaspRequest from userAnswers")
+        logger.warn("[RcaspSubmissionService][updateRcasp] Error building the RcaspRequest from userAnswers")
         ResultT.fromError(MandatoryInformationMissingError("Error building the RcaspRequest from userAnswers"))
     }
 
@@ -134,7 +134,7 @@ class RcaspSubmissionService @Inject (
       .deleteRcasp(deleteRequest)
       .bimap(
         error => {
-          logWarn(s"[AccountService][removeRcasp] Error calling deleteRcasp: $error")
+          logger.warn(s"[AccountService][removeRcasp] Error calling deleteRcasp: $error")
           error
         },
         _ => ()
