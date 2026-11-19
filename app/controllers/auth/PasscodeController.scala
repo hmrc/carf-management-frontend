@@ -41,4 +41,11 @@ class PasscodeController @Inject() (
       _              <- sessionRepository.set(updatedAnswers)
     } yield Redirect(controllers.routes.RoutingController.onPageLoad(NormalMode))
   }
+
+  def processPasscodeHomePage(passcode: String): Action[AnyContent] = passcodeAction().async { implicit request =>
+    for {
+      updatedAnswers <- Future.fromTry(UserAnswers(request.userId, false).set(PasscodePage, passcode))
+      _              <- sessionRepository.set(updatedAnswers)
+    } yield Redirect(controllers.home.routes.HomePageController.onPageLoad())
+  }
 }

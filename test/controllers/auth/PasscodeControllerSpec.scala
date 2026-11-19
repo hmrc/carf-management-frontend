@@ -49,4 +49,27 @@ class PasscodeControllerSpec extends SpecBase {
       }
     }
   }
+
+  "processPasscodeHomePage" - {
+    "must create UserAnswers and set PasscodePage to value passed through and redirect to HomePageController" in {
+
+      when(mockSessionRepository.set(any)) thenReturn Future.successful(true)
+
+      val application =
+        applicationBuilder(None)
+          .build()
+
+      running(application) {
+
+        val request = FakeRequest(GET, routes.PasscodeController.processPasscodeHomePage("foo").url)
+
+        val result = route(application, request).value
+
+        status(result)                 mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual controllers.home.routes.HomePageController.onPageLoad().url
+        verify(mockSessionRepository, times(1)).set(argThat(ua => ua.get(PasscodePage).contains("foo")))
+      }
+    }
+  }
+
 }
